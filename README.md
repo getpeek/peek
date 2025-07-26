@@ -54,8 +54,8 @@ Note, the UI requires you to have a workspace set up, but there is no UI to actu
 
 ## Export
 
-- [ ] Context menu on result shape to export to json, csv
-- [ ] export result as json/csv
+- [x] Context menu on result shape to export to json, csv
+- [x] export result as json/csv
 
 ## Misc
 
