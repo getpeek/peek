@@ -2,7 +2,7 @@ import { Text } from "@mantine/core";
 import { CellReference } from "./findReferences";
 import { useEditor } from "tldraw";
 import "./Cell.css";
-import { useExecuteQuery } from "../../../tools/useExecuteQuery";
+import { useExecuteQueries } from "../../../tools/useExecuteQuery";
 
 export const DataCell = ({
   value,
@@ -14,7 +14,7 @@ export const DataCell = ({
   outbound: CellReference[];
 }) => {
   const editor = useEditor();
-  const executeQuery = useExecuteQuery();
+  const executeQuery = useExecuteQueries();
 
   const openOutboundReferences = async () => {
     const queries = outbound.map(

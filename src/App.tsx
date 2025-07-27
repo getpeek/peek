@@ -26,6 +26,7 @@ import "tldraw/tldraw.css";
 import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
 import "./App.css";
+import { AiPromptTool } from "./shapes/Ai/AiTool";
 
 const theme = createTheme({});
 
@@ -126,7 +127,7 @@ function App() {
           shapeUtils={customShapes}
           overrides={customUiOverrides}
           components={customComponents}
-          tools={[QueryTool]}
+          tools={[QueryTool, AiPromptTool]}
         />
       </div>
     </MantineProvider>

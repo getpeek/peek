@@ -12,7 +12,7 @@ import { SqlEditor } from "./Editor/SqlEditor";
 import { editor } from "monaco-editor";
 import { Monaco } from "@monaco-editor/react";
 import { format } from "sql-formatter";
-import { useExecuteQuery } from "../../tools/useExecuteQuery";
+import { useExecuteQueries } from "../../tools/useExecuteQuery";
 
 export type QueryShape = TLBaseShape<
   "query",
@@ -33,7 +33,7 @@ export class QueryShapeUtil extends ShapeUtil<QueryShape> {
   }
 
   component(shape: QueryShape) {
-    const executeQuery = useExecuteQuery();
+    const executeQuery = useExecuteQueries();
 
     const isEditing = this.editor.getEditingShapeId() === shape.id;
 

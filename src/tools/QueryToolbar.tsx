@@ -5,7 +5,7 @@ import {
   track,
   useEditor,
 } from "tldraw";
-import { useExecuteQuery } from "./useExecuteQuery";
+import { useExecuteQueries } from "./useExecuteQuery";
 import { QueryShapeUtil } from "../shapes/Query/QueryShape";
 
 export const QueryContextualToolbarComponent = track(() => {
@@ -15,7 +15,7 @@ export const QueryContextualToolbarComponent = track(() => {
     .getSelectedShapes()
     .find((shape) => shape.type === "query")!;
 
-  const executeQuery = useExecuteQuery();
+  const executeQuery = useExecuteQueries();
 
   const getSelectionBounds = () => {
     const fullBounds = editor.getSelectionRotatedScreenBounds();

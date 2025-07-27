@@ -1,18 +1,30 @@
-import { createShapeId, TLShape, useEditor } from "tldraw";
+import { createShapeId, TLShape, TLShapeId, useEditor } from "tldraw";
 import { createArrowBetweenShapes } from "./createArrowBetweenShapes";
 import { invoke } from "@tauri-apps/api/core";
 
-export const useExecuteQuery = () => {
+export const useExecuteQueries = () => {
   const editor = useEditor();
 
   return async (shape: TLShape, queries: string[]) => {
+    let lastCreatedId: TLShapeId | null = null;
+
     for (let i = 0; i < queries.length; i++) {
       const query = queries[i];
       try {
         const response = (await invoke("get_results", { query })) as string;
         const result = JSON.parse(response) as [string, unknown][][];
 
-        const x = (editor.getSelectionPageBounds()?.right ?? shape.x) + 50;
+        let x =
+          (editor.getSelectionPageBounds()?.right ?? shape.x) +
+          (lastCreatedId === null ? 50 : 0);
+        let y = shape.y;
+        if (lastCreatedId) {
+          const bounds = editor.getShapePageBounds(lastCreatedId);
+          if (bounds) {
+            y = bounds.bottom + 50;
+            x = bounds.left;
+          }
+        }
 
         if (queries.length > 1 && result.length === 0) {
           continue;
@@ -37,7 +49,7 @@ export const useExecuteQuery = () => {
             id: resultShapeId,
             type: "result",
             x: x + 50,
-            y: shape.y,
+            y,
             props: {
               data: result,
               query,
@@ -45,6 +57,7 @@ export const useExecuteQuery = () => {
               h: Math.min(result.length * 45 + 40, 1500),
             },
           });
+          lastCreatedId = resultShapeId;
           createArrowBetweenShapes(editor, shape.id, resultShapeId);
         }
 

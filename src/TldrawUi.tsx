@@ -22,6 +22,17 @@ export const customUiOverrides: TLUiOverrides = {
         editor.setCurrentTool("query");
       },
     };
+
+    tools["ai-prompt"] = {
+      id: "ai-prompt",
+      label: "Ai Prompt",
+      icon: "bot",
+      kbd: "q",
+      onSelect: () => {
+        editor.setCurrentTool("ai-prompt");
+      },
+    };
+
     return tools;
   },
   actions(editor, actions) {
@@ -94,6 +105,16 @@ export const customUiOverrides: TLUiOverrides = {
       },
     };
 
+    actions["ai-prompt"] = {
+      id: "prompt-actions",
+      label: "Create a new AI Prompt",
+      readonlyOk: true,
+      kbd: "a",
+      onSelect() {
+        editor.setCurrentTool("ai-prompt");
+      },
+    };
+
     actions["reset-zoom"] = {
       id: "reset-zoom",
       label: "Reset Zoom",
@@ -120,6 +141,7 @@ export const customComponents: TLComponents = {
       <DefaultToolbar {...props}>
         <TldrawUiMenuItem {...tools["select"]} />
         <TldrawUiMenuItem {...tools["query"]} />
+        <TldrawUiMenuItem {...tools["ai-prompt"]} />
         <TldrawUiMenuItem {...tools["draw"]} />
         <TldrawUiMenuItem {...tools["hand"]} />
         <TldrawUiMenuItem {...tools["text"]} />
