@@ -23,9 +23,12 @@ export const ResultContextualToolbarComponent = () => {
         typeof value === "number" && key !== "id" && !key.endsWith("_id"),
     );
 
-  const tables = new Parser()
-    .tableList(props.query)
-    .map((table) => table.split("::").pop());
+  let tables: (string | undefined)[] = [];
+  try {
+    tables = new Parser()
+      .tableList(props.query)
+      .map((table) => table.split("::").pop());
+  } catch {}
 
   const getSelectionBounds = () => {
     const fullBounds = editor.getSelectionRotatedScreenBounds();

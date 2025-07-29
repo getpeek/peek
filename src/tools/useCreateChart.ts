@@ -43,6 +43,9 @@ export const useCreateChart = (shape: TLShape) => {
       editor.updateShape({
         id: chartShapeId,
         type: "barchart",
+        props: {
+          data: fields,
+        },
       });
     } else {
       editor.createShape({

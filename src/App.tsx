@@ -87,11 +87,11 @@ function App() {
     }
 
     const saveSnapshot = () => {
-      console.log("saving...");
       setSnapshots((previous) => ({
         ...previous,
         [activeConnection.connection.url]: getSnapshot(store),
       }));
+      console.log("Saved changes");
     };
 
     const cleanup = store.listen(
@@ -113,7 +113,7 @@ function App() {
       }
       cleanup();
     };
-  }, [activeConnection?.connection.url, store, setSnapshots]);
+  }, [activeConnection?.connection.url]);
 
   return (
     <MantineProvider theme={theme}>

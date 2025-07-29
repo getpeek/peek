@@ -23,6 +23,7 @@ export const SqlEditor = ({
           options={{
             lineNumbers: "off",
             wordWrap: "on",
+            cursorStyle: "block",
             minimap: { enabled: false },
             padding: { top: 16, bottom: 16 },
             lineDecorationsWidth: 0,
