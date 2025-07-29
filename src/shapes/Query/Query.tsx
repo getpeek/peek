@@ -19,9 +19,16 @@ export const Query = ({
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<Monaco | null>(null);
+  const lastEditorValue = useRef(shape.props.query);
 
   useEffect(() => {
-    editorRef.current?.setValue(shape.props.query);
+    const currentValue = lastEditorValue.current;
+    const shapeValue = shape.props.query;
+
+    if (shapeValue !== currentValue) {
+      editorRef.current?.setValue(shapeValue);
+      lastEditorValue.current = shapeValue;
+    }
   }, [shape.props.query]);
 
   const runQuery = () => {
@@ -77,13 +84,14 @@ export const Query = ({
           formatQuery,
         );
       }}
-      onQueryChange={(query) =>
+      onQueryChange={(query) => {
+        lastEditorValue.current = query;
         editor.updateShape<QueryShape>({
           id: shape.id,
           type: "query",
           props: { query },
-        })
-      }
+        });
+      }}
     />
   );
 };

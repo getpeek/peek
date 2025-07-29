@@ -37,7 +37,11 @@ export const QueryContextualToolbarComponent = track(() => {
     const query = (shape.props as ReturnType<QueryShapeUtil["getDefaultProps"]>)
       .query;
 
-    const formatted = format(query, { language: "postgresql" });
+    const formatted = format(query, {
+      keywordCase: "upper",
+      functionCase: "upper",
+      language: "postgresql",
+    });
 
     editor.updateShape({
       id: shape.id,

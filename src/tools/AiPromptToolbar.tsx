@@ -51,6 +51,9 @@ export const AiPromptContextualToolbarComponent = track(() => {
 
       let is_first_token = true;
 
+      const outputShapeId = createShapeId(`${shape.id}-result`);
+      const outputShape = editor.getShape(outputShapeId);
+
       for await (const chunk of stream) {
         if (is_first_token) {
           if (chunk.text !== "<think>") {
@@ -69,52 +72,55 @@ export const AiPromptContextualToolbarComponent = track(() => {
         editor.updateShape({
           ...shape,
           props: {
+            isLoading: false,
             reason,
           },
         });
+
+        if (outputShape) {
+          editor.updateShape({
+            id: outputShapeId,
+            type: "query",
+            props: {
+              query,
+            },
+          });
+        } else {
+          const x = (editor.getSelectionPageBounds()?.right ?? shape.x) + 50;
+
+          editor.createShape({
+            id: outputShapeId,
+            type: "query",
+            x: x + 50,
+            y: shape.y,
+            props: {
+              query,
+              w: 400,
+              h: 300,
+            },
+          });
+          createArrowBetweenShapes(editor, shape.id, outputShapeId);
+          editor.updateShape({
+            id: shape.id,
+            type: "ai-shape",
+            props: { isLoading: false },
+          });
+        }
       }
 
-      query = format(query, { language: "postgresql" });
-
-      const outputShapeId = createShapeId(`${shape.id}-result`);
-      const outputShape = editor.getShape(outputShapeId);
-      const x = (editor.getSelectionPageBounds()?.right ?? shape.x) + 50;
+      const formatted = format(query, {
+        language: "postgresql",
+        functionCase: "upper",
+        keywordCase: "upper",
+      });
 
       if (outputShape) {
         editor.updateShape({
-          id: outputShapeId,
-          type: "query",
-          props: {
-            query,
-          },
-        });
-      } else {
-        editor.createShape({
-          id: outputShapeId,
-          type: "query",
-          x: x + 50,
-          y: shape.y,
-          props: {
-            query,
-            w: 400,
-            h: 300,
-          },
-        });
-        createArrowBetweenShapes(editor, shape.id, outputShapeId);
-        editor.updateShape({
-          id: shape.id,
-          type: "ai-shape",
-          props: { isLoading: false },
+          ...outputShape,
+          props: { query: formatted },
         });
       }
-    } catch (e) {
-      editor.updateShape({
-        id: shape.id,
-        type: "ai-shape",
-        props: { isLoading: true },
-      });
-      console.error(e);
-    }
+    } catch {}
   };
 
   return (
