@@ -6,13 +6,11 @@ import {
   TLBaseShape,
   resizeBox,
   stopEventPropagation,
+  useEditor,
 } from "tldraw";
 import "./Query.css";
-import { SqlEditor } from "./Editor/SqlEditor";
-import { editor } from "monaco-editor";
-import { Monaco } from "@monaco-editor/react";
-import { format } from "sql-formatter";
-import { useExecuteQueries } from "../../tools/useExecuteQuery";
+import { Query } from "./Query";
+import { useEffect, useState } from "react";
 
 export type QueryShape = TLBaseShape<
   "query",
@@ -22,9 +20,6 @@ export type QueryShape = TLBaseShape<
 export class QueryShapeUtil extends ShapeUtil<QueryShape> {
   static override type = "query" as const;
 
-  private editorInstances = new Map<string, editor.IStandaloneCodeEditor>();
-  private monacoInstances = new Map<string, Monaco>();
-
   override canEdit = () => true;
   override canResize = () => true;
 
@@ -33,90 +28,25 @@ export class QueryShapeUtil extends ShapeUtil<QueryShape> {
   }
 
   component(shape: QueryShape) {
-    const executeQuery = useExecuteQueries();
+    const editor = useEditor();
+    const [isEditing, setIsEditing] = useState(false);
 
-    const isEditing = this.editor.getEditingShapeId() === shape.id;
-
-    const runQuery = () => {
-      const editingShape = this.editor.getEditingShape();
-      if (!editingShape) {
-        return;
-      }
-      const editorInstance = this.editorInstances.get(editingShape.id);
-      if (!editorInstance) {
-        return;
-      }
-
-      executeQuery(editingShape, [editorInstance.getValue()]);
-    };
-
-    const formatQuery = () => {
-      const editingShapeId = this.editor.getEditingShapeId();
-      if (!editingShapeId) {
-        return;
-      }
-      const editorInstance = this.editorInstances.get(editingShapeId);
-      if (!editorInstance) {
-        return;
-      }
-
-      const formatted = format(editorInstance.getValue(), {
-        keywordCase: "upper",
-        functionCase: "upper",
-        language: "postgresql",
-      });
-
-      editorInstance?.setValue(formatted);
-    };
+    useEffect(() => {
+      setIsEditing(editor.getEditingShapeId() === shape.id);
+    }, [editor.getEditingShapeId()]);
 
     return (
       <HTMLContainer
         id={shape.id}
         onPointerDown={isEditing ? stopEventPropagation : undefined}
       >
-        <SqlEditor
-          query={shape.props.query}
-          onMount={(editor, monaco) => {
-            this.editorInstances.set(shape.id, editor);
-            this.monacoInstances.set(shape.id, monaco);
-
-            editor.addCommand(
-              monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-              runQuery,
-            );
-
-            editor.addCommand(
-              monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyI,
-              formatQuery,
-            );
-          }}
-          onQueryChange={(query) =>
-            this.editor.updateShape<QueryShape>({
-              id: shape.id,
-              type: "query",
-              props: { query },
-            })
-          }
-        />
+        <Query shape={shape} isEditing={isEditing} />
       </HTMLContainer>
     );
   }
 
-  override onEditStart(): void {
-    const editingShapeId = this.editor.getEditingShapeId();
-    if (editingShapeId) {
-      const editorInstance = this.editorInstances.get(editingShapeId);
-      editorInstance?.focus();
-    }
-  }
-
-  override onDoubleClick(): void {
-    const editingShapeId = this.editor.getEditingShapeId();
-    if (editingShapeId) {
-      const editorInstance = this.editorInstances.get(editingShapeId);
-      editorInstance?.focus();
-    }
-  }
+  override onEditStart(): void {}
+  override onDoubleClick(): void {}
 
   getGeometry(shape: QueryShape): Geometry2d {
     return new Rectangle2d({

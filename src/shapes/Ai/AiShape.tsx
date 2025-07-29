@@ -32,7 +32,7 @@ export class AIPromptShapeUtil extends ShapeUtil<AIPromptShape> {
             pointerEvents: isEditing ? "all" : undefined,
           }}
         >
-          <AIPrompt shape={shape} />
+          <AIPrompt shape={shape} isEditing={isEditing} />
         </div>
       </HTMLContainer>
     );

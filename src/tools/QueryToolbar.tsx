@@ -7,6 +7,7 @@ import {
 } from "tldraw";
 import { useExecuteQueries } from "./useExecuteQuery";
 import { QueryShapeUtil } from "../shapes/Query/QueryShape";
+import { format } from "sql-formatter";
 
 export const QueryContextualToolbarComponent = track(() => {
   const editor = useEditor();
@@ -32,11 +33,29 @@ export const QueryContextualToolbarComponent = track(() => {
     executeQuery(shape, [query]);
   };
 
+  const formatQuery = () => {
+    const query = (shape.props as ReturnType<QueryShapeUtil["getDefaultProps"]>)
+      .query;
+
+    const formatted = format(query, { language: "postgresql" });
+
+    editor.updateShape({
+      id: shape.id,
+      type: shape.type,
+      props: {
+        query: formatted,
+      },
+    });
+  };
+
   return (
     <TldrawUiContextualToolbar
       getSelectionBounds={getSelectionBounds}
       label="Sizes"
     >
+      <TldrawUiButton title="Format query" type="normal" onClick={formatQuery}>
+        Format
+      </TldrawUiButton>
       <TldrawUiButton
         title="Execute query"
         type="normal"
