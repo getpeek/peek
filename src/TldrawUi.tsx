@@ -27,7 +27,7 @@ export const customUiOverrides: TLUiOverrides = {
       id: "ai-prompt",
       label: "Ai Prompt",
       icon: "bot",
-      kbd: "q",
+      kbd: "a",
       onSelect: () => {
         editor.setCurrentTool("ai-prompt");
       },
@@ -45,9 +45,16 @@ export const customUiOverrides: TLUiOverrides = {
       readonlyOk: true,
       kbd: "cmd+],ctrl+]",
       onSelect() {
-        const current = editor.getOnlySelectedShape();
+        let current = editor.getOnlySelectedShape();
 
         if (!current || current.type !== "query") {
+          current =
+            editor
+              .getCurrentPageShapes()
+              .find((shape) => shape.type === "query") ?? null;
+        }
+
+        if (!current) {
           return;
         }
 
@@ -62,7 +69,7 @@ export const customUiOverrides: TLUiOverrides = {
         editor.select(
           queryShapes[(currentShapeIndex + 1) % queryShapes.length].id,
         );
-        editor.zoomToSelection();
+        editor.zoomToSelection({ animation: { duration: 300 } });
       },
     };
 
@@ -72,12 +79,18 @@ export const customUiOverrides: TLUiOverrides = {
       readonlyOk: true,
       kbd: "cmd+[,ctrl+[",
       onSelect() {
-        const current = editor.getOnlySelectedShape();
+        let current = editor.getOnlySelectedShape();
 
         if (!current || current.type !== "query") {
-          return;
+          current =
+            editor
+              .getCurrentPageShapes()
+              .find((shape) => shape.type === "query") ?? null;
         }
 
+        if (!current) {
+          return;
+        }
         const queryShapes = editor
           .getCurrentPageShapes()
           .filter((shape) => shape.type === "query");
@@ -91,7 +104,7 @@ export const customUiOverrides: TLUiOverrides = {
             (currentShapeIndex - 1 + queryShapes.length) % queryShapes.length
           ].id,
         );
-        editor.zoomToSelection();
+        editor.zoomToSelection({ animation: { duration: 300 } });
       },
     };
 

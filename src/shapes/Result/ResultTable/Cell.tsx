@@ -6,10 +6,12 @@ import { useExecuteQueries } from "../../../tools/useExecuteQuery";
 
 export const DataCell = ({
   value,
+  type,
   inbound,
   outbound,
 }: {
   value: unknown;
+  type: string;
   inbound: CellReference[];
   outbound: CellReference[];
 }) => {
@@ -44,7 +46,7 @@ export const DataCell = ({
     executeQuery(shape, queries);
   };
 
-  if (typeof value === "object" && value !== null) {
+  if ((type === "JSON" || type === "JSONB") && value !== null) {
     return <pre>{JSON.stringify(value, null, 2)}</pre>;
   }
 
@@ -66,7 +68,7 @@ export const DataCell = ({
     return value;
   }
 
-  if (typeof value === "boolean") {
+  if (type === "BOOL") {
     return value ? (
       <Text fs="italic" c="blue">
         TRUE

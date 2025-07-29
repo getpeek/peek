@@ -50,7 +50,7 @@ Note, the UI requires you to have a workspace set up, but there is no UI to actu
 
 - [ ] Live Queries
 - [ ] Query history per Query shape, after each succesful query
-- [ ] AI integration -> Query -> Result
+- [x] AI integration -> Query -> Result
 
 ## Export
 
@@ -59,7 +59,7 @@ Note, the UI requires you to have a workspace set up, but there is no UI to actu
 
 ## Misc
 
-- [ ] Performance improvements somehow
+- [x] Performance improvements somehow
 - [ ] Get rid of AST parser in the frontend
 - [ ] Maybe move completion suggestions to backend via wasm
 

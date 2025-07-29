@@ -3,7 +3,7 @@ import { useAtomValue } from "jotai";
 import { schemaAtom } from "../../state";
 
 const model = new ChatOllama({
-  model: "qwen3:8b",
+  model: "gemma:latest",
   baseUrl: "http://localhost:11434",
   streaming: true,
 });

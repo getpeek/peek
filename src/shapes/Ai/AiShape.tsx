@@ -38,9 +38,7 @@ export class AIPromptShapeUtil extends ShapeUtil<AIPromptShape> {
     );
   }
 
-  override onDoubleClick() {
-    console.log("clicked");
-  }
+  override onDoubleClick() {}
 
   getGeometry(shape: AIPromptShape): Geometry2d {
     return new Rectangle2d({
@@ -51,7 +49,9 @@ export class AIPromptShapeUtil extends ShapeUtil<AIPromptShape> {
   }
 
   indicator(shape: AIPromptShape) {
-    return <rect width={shape.props.w} height={shape.props.h} />;
+    return (
+      <rect width={shape.props.w} height={shape.props.h} rx={16} ry={16} />
+    );
   }
 
   override onResize(shape: AIPromptShape, info: any) {

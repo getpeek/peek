@@ -21,7 +21,7 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
   const rowVirtualizer = useVirtualizer({
     count: totalRows,
     getScrollElement: () => scrollContainerRef.current,
-    overscan: 10,
+    overscan: 40,
     estimateSize: () => 40,
   });
 
@@ -114,7 +114,7 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
           <Table.Tbody>
             {rowVirtualizer.getVirtualItems().map((row, i) => (
               <Table.Tr key={row.key}>
-                {shape.props.data[row.index].map(([column, value], o) => {
+                {shape.props.data[row.index].map(([column, value, type], o) => {
                   const hasInbound = inbound[column]?.length > 0;
                   const hasOutbound = outbound[column]?.length > 0;
 
@@ -134,6 +134,7 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
                     <Table.Td key={o} className={cellClasses.join(" ")}>
                       <DataCell
                         value={value}
+                        type={type}
                         outbound={outbound[column]}
                         inbound={inbound[column]}
                       />

@@ -9,6 +9,7 @@ import {
 import { AIPromptShapeUtil } from "../shapes/Ai/AiShape";
 import { useExecutePrompt } from "../shapes/Ai/useExecutePrompt";
 import { createArrowBetweenShapes } from "./createArrowBetweenShapes";
+import { format } from "sql-formatter";
 
 export const AiPromptContextualToolbarComponent = track(() => {
   const editor = useEditor();
@@ -48,7 +49,15 @@ export const AiPromptContextualToolbarComponent = track(() => {
       let reason = "";
       let is_query = false;
 
+      let is_first_token = true;
+
       for await (const chunk of stream) {
+        if (is_first_token) {
+          if (chunk.text !== "<think>") {
+            is_query = true;
+          }
+          is_first_token = false;
+        }
         if (is_query) {
           query += chunk.text;
         } else {
@@ -64,6 +73,8 @@ export const AiPromptContextualToolbarComponent = track(() => {
           },
         });
       }
+
+      query = format(query, { language: "postgresql" });
 
       const outputShapeId = createShapeId(`${shape.id}-result`);
       const outputShape = editor.getShape(outputShapeId);

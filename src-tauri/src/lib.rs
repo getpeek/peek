@@ -105,7 +105,7 @@ async fn get_results(state: State<'_, Mutex<AppData>>, query: String) -> Result<
 
     let mut results = Vec::new();
     for row in rows {
-        let mut fields: Vec<(String, Value)> = Vec::new();
+        let mut fields: Vec<(String, Value, &str)> = Vec::new();
 
         for (i, col) in row.columns().iter().enumerate() {
             let col_name = col.name();
@@ -177,7 +177,7 @@ async fn get_results(state: State<'_, Mutex<AppData>>, query: String) -> Result<
                 },
             };
 
-            fields.push((col_name.to_string(), value));
+            fields.push((col_name.to_string(), value, type_name));
         }
 
         results.push(json!(fields));

@@ -127,7 +127,9 @@ export class QueryShapeUtil extends ShapeUtil<QueryShape> {
   }
 
   indicator(shape: QueryShape) {
-    return <rect width={shape.props.w} height={shape.props.h} />;
+    return (
+      <rect width={shape.props.w} height={shape.props.h} rx={16} ry={16} />
+    );
   }
 
   override onResize(shape: QueryShape, info: any) {

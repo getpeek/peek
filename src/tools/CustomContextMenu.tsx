@@ -11,11 +11,44 @@ import { save } from "@tauri-apps/plugin-dialog";
 import { ResultShapeUtil } from "../shapes/Result/ResultShape";
 import { toJson } from "./export/json";
 import { toCsv } from "./export/csv";
+import { QueryShapeUtil } from "../shapes/Query/QueryShape";
 
 export const CustomContextMenu = (props: TLUiContextMenuProps) => {
   const editor = useEditor();
 
-  const copyTo = async (format: "json" | "csv") => {
+  const exportAllSql = async () => {
+    const queries = editor
+      .getCurrentPageShapes()
+      .filter((shape) => shape.type === "query")
+      .map(
+        (shape) =>
+          (shape.props as ReturnType<QueryShapeUtil["getDefaultProps"]>).query,
+      )
+      .join("\n\n---\n\n");
+
+    try {
+      const path = await save({
+        filters: [
+          {
+            name: "export",
+            extensions: ["sql"],
+          },
+        ],
+      });
+
+      if (!path) {
+        return;
+      }
+
+      await writeTextFile(path, queries, {
+        baseDir: BaseDirectory.AppConfig,
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const exportTo = async (format: "json" | "csv") => {
     try {
       const shape = editor.getOnlySelectedShape();
       if (!shape) {
@@ -59,12 +92,18 @@ export const CustomContextMenu = (props: TLUiContextMenuProps) => {
   };
 
   const items = [
-    { id: "export-csv", label: "CSV", onSelect: () => copyTo("csv") },
-    { id: "export-json", label: "JSON", onSelect: () => copyTo("json") },
+    { id: "export-csv", label: "CSV", onSelect: () => exportTo("csv") },
+    { id: "export-json", label: "JSON", onSelect: () => exportTo("json") },
   ];
 
   return (
     <DefaultContextMenu {...props}>
+      <TldrawUiMenuItem
+        id="export-sql"
+        label="Export all SQL"
+        onSelect={exportAllSql}
+      />
+
       <TldrawUiMenuGroup id="export">
         <div>
           <TldrawUiMenuSubmenu id="export" label="Export">

@@ -7,10 +7,11 @@ import {
 } from "tldraw";
 import "./ResultShape.css";
 import { ResultTable } from "./ResultTable/ResultTable";
+import { DatabaseResult } from "../../state";
 
 export type ResultShape = TLBaseShape<
   "result",
-  { data: [[string, unknown]][]; w: number; h: number; query: string }
+  { data: DatabaseResult; w: number; h: number; query: string }
 >;
 
 export class ResultShapeUtil extends ShapeUtil<ResultShape> {
@@ -25,7 +26,7 @@ export class ResultShapeUtil extends ShapeUtil<ResultShape> {
   }
 
   getDefaultProps(): {
-    data: [[string, unknown]][];
+    data: DatabaseResult;
     w: number;
     h: number;
     query: string;
