@@ -26,7 +26,7 @@ export const customUiOverrides: TLUiOverrides = {
     tools["ai-prompt"] = {
       id: "ai-prompt",
       label: "Ai Prompt",
-      icon: "bot",
+      icon: "comment",
       kbd: "a",
       onSelect: () => {
         editor.setCurrentTool("ai-prompt");

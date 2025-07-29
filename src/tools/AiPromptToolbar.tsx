@@ -114,9 +114,11 @@ export const AiPromptContextualToolbarComponent = track(() => {
         keywordCase: "upper",
       });
 
-      if (outputShape) {
+      const out = editor.getShape(outputShapeId);
+
+      if (out) {
         editor.updateShape({
-          ...outputShape,
+          ...out,
           props: { query: formatted },
         });
       }
