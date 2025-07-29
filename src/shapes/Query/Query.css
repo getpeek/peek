@@ -6,13 +6,12 @@
         #1e1e1e 0%,
         rgba(59, 130, 246, 0.05) 100%
     );
-    border: 3px solid var(--header-base);
+
     border-radius: 16px;
     box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.15),
         0 0 0 1px rgba(59, 130, 246, 0.1);
     transition: all 0.3s ease;
-    overflow: hidden;
     position: relative;
 }
 
@@ -22,11 +21,9 @@
         0 6px 20px rgba(0, 0, 0, 0.2),
         0 0 0 1px rgba(59, 130, 246, 0.2),
         0 0 20px rgba(59, 130, 246, 0.1);
-    border-color: #60a5fa;
 }
 
 .query-window:focus-within {
-    border-color: #3b82f6;
     box-shadow:
         0 0 0 3px rgba(59, 130, 246, 0.2),
         0 6px 20px rgba(0, 0, 0, 0.25),
@@ -72,7 +69,7 @@
     background: #1e1e1e;
     color: #ffffff;
     font-family:
-        "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Monaspace Krypton",
+        "Monaspace Krypton", "SF Mono", "Monaco", "Inconsolata", "Roboto Mono",
         monospace;
     font-size: 14px;
     line-height: 1.6;
@@ -95,6 +92,7 @@
 
 .monaco-editor .margin {
     background: transparent !important;
+    border-radius: 16px !important;
 }
 
 .monaco-editor .monaco-editor-background {
@@ -103,6 +101,54 @@
         #1e1e1e 0%,
         rgba(59, 130, 246, 0.02) 100%
     ) !important;
+    border-radius: 16px !important;
+}
+
+.monaco-editor .overflow-guard {
+    border-radius: 16px !important;
+}
+
+.monaco-editor .monaco-scrollable-element {
+    border-radius: 16px !important;
+}
+
+.monaco-editor .lines-content {
+    border-radius: 16px !important;
+}
+
+.monaco-editor .view-lines {
+    border-radius: 16px !important;
+}
+
+/* Force specific Monaco elements to have rounded corners */
+.monaco-editor .monaco-editor-background {
+    border-radius: 16px !important;
+}
+
+.monaco-editor .overflow-guard {
+    border-radius: 16px !important;
+}
+
+.monaco-editor .monaco-scrollable-element .monaco-editor-background {
+    border-radius: 16px !important;
+}
+
+.monaco-editor .lines-content {
+    border-radius: 16px !important;
+}
+
+.monaco-editor .view-lines {
+    border-radius: 16px !important;
+}
+
+/* Ensure the main editor container has rounded corners */
+.query-window .monaco-editor {
+    border-radius: 16px !important;
+}
+
+/* Force rounded corners on the main content area */
+.monaco-editor .editor-scrollable {
+    border-radius: 16px !important;
 }
 
 .monaco-editor .current-line {
@@ -111,8 +157,15 @@
     border-radius: 4px !important;
 }
 
-.monaco-editor .cursor {
-    color: #60a5fa !important;
+.monaco-editor .cursors-layer {
+    z-index: 1000 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.monaco-editor .cursors-layer .cursor {
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .monaco-editor .selected-text {
@@ -120,7 +173,6 @@
     border-radius: 2px !important;
 }
 
-/* Custom scrollbar for Monaco */
 .monaco-editor .monaco-scrollable-element > .scrollbar > .slider {
     background: rgba(59, 130, 246, 0.3) !important;
     border-radius: 4px !important;
@@ -134,26 +186,25 @@
     background: rgba(59, 130, 246, 0.1) !important;
 }
 
-/* Syntax highlighting enhancements */
 .monaco-editor .mtk1 {
     color: #ffffff !important;
-} /* Default text */
+}
 .monaco-editor .mtk5 {
     color: #3b82f6 !important;
-} /* Keywords */
+}
 .monaco-editor .mtk6 {
     color: #60a5fa !important;
-} /* Strings */
+}
 .monaco-editor .mtk22 {
     color: #93c5fd !important;
-} /* Comments */
+}
 
-/* Suggestion widget styling */
 .monaco-editor .suggest-widget {
     border: 1px solid #3b82f6 !important;
     border-radius: 8px !important;
     background: #1e1e1e !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    z-index: 10000 !important;
 }
 
 .monaco-editor .suggest-widget .monaco-list .monaco-list-row {
@@ -163,7 +214,6 @@
 
 .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused {
     background: rgba(59, 130, 246, 0.2) !important;
-    border: 1px solid rgba(59, 130, 246, 0.4) !important;
 }
 
 .monaco-editor .suggest-widget .monaco-list .monaco-list-row:hover {
@@ -176,11 +226,9 @@
 
 .monaco-editor .bracket-match {
     background: rgba(59, 130, 246, 0.15) !important;
-    border: 1px solid rgba(59, 130, 246, 0.3) !important;
     border-radius: 2px !important;
 }
 
-/* Execution state styling */
 .query-window.executing {
     border-color: #10b981;
     animation: executeGlow 1.5s ease-in-out infinite;
@@ -272,4 +320,35 @@
         background-position: 200% 0;
         opacity: 0.6;
     }
+}
+
+.monaco-editor > * {
+    border: none !important;
+    outline: none !important;
+}
+
+.monaco-editor .inputarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Remove any focus styles from the editor container */
+.monaco-editor.focused {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Remove border from the main container if any */
+.monaco-editor {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Just in case it's added to the overflow container */
+.monaco-editor .overflow-guard:focus-within {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
 }

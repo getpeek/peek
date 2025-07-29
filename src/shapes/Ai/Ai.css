@@ -92,14 +92,12 @@
     }
 }
 
-/* Add a subtle AI-themed glow on hover */
 .prompt-input:hover:not(.loading) {
     box-shadow:
         0 0 0 2px rgba(139, 69, 195, 0.1),
         0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-/* Magic sparkle effect for AI vibes */
 .prompt-input.thinking {
     background: linear-gradient(
         135deg,
