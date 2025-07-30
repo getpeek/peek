@@ -10,7 +10,6 @@ import {
   TLStore,
 } from "tldraw";
 import { customComponents, customUiOverrides } from "./TldrawUi";
-import { QueryTool } from "./tools/QueryTool";
 import { sqlLanguageAtom, sqlParserAtom } from "./state";
 import { useAtom, useAtomValue } from "jotai";
 import { createTheme, MantineProvider } from "@mantine/core";
@@ -27,6 +26,7 @@ import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
 import "./App.css";
 import { AiPromptTool } from "./shapes/Ai/AiTool";
+import { QueryTool } from "./shapes/Query/QueryTool";
 
 const theme = createTheme({});
 

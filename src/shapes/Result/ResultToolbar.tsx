@@ -1,5 +1,6 @@
 import {
   Box,
+  createShapeId,
   TldrawUiButton,
   TldrawUiContextualToolbar,
   useEditor,
@@ -8,6 +9,8 @@ import { Divider, Group, Text } from "@mantine/core";
 import { Parser } from "node-sql-parser";
 import { useCreateChart } from "../../tools/useCreateChart";
 import { ResultShapeUtil } from "./ResultShape";
+import { IconChartBar, IconMessageChatbot } from "@tabler/icons-react";
+import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
 
 export const ResultContextualToolbarComponent = () => {
   const editor = useEditor();
@@ -42,6 +45,32 @@ export const ResultContextualToolbarComponent = () => {
     createChart();
   };
 
+  const createAskShape = () => {
+    const askShapeId = createShapeId(`${shape.id}-ask`);
+
+    const outputShape = editor.getShape(askShapeId);
+
+    if (outputShape) {
+      editor.select(outputShape);
+      editor.zoomToSelection({ animation: { duration: 200 } });
+    } else {
+      const x = (getSelectionBounds()?.right ?? shape.x) + 50;
+      const y = getSelectionBounds()?.top ?? shape.y;
+      editor.createShape({
+        id: askShapeId,
+        type: "chat",
+        x,
+        y,
+        parentId: shape.id,
+        props: {
+          query: props.query,
+          result: props.data,
+        },
+      });
+      createArrowBetweenShapes(editor, shape.id, askShapeId);
+    }
+  };
+
   return (
     <TldrawUiContextualToolbar
       getSelectionBounds={getSelectionBounds}
@@ -55,18 +84,31 @@ export const ResultContextualToolbarComponent = () => {
             </Text>
           ))}
         </Group>
-        <Divider variant="solid" orientation="vertical" />
+        <Divider variant="solid" orientation="vertical" color="dark" />
         <Group py={0} h="100%">
           <Text size="xs">{props.data.length} Rows</Text>
         </Group>
-        <Divider variant="solid" orientation="vertical" />
+        <Divider variant="solid" orientation="vertical" color="dark" />
+        <TldrawUiButton
+          title="Ask about this result"
+          type="normal"
+          onClick={createAskShape}
+        >
+          <Group align="center" gap={4}>
+            <IconMessageChatbot size={16} />
+            <Text size="xs">Ask</Text>
+          </Group>
+        </TldrawUiButton>
         <TldrawUiButton
           title="Graph"
           type="normal"
           onClick={runCreateChart}
           disabled={!canChart}
         >
-          Chart
+          <Group align="center" gap={4}>
+            <IconChartBar size={16} />
+            <Text size="xs">Chart</Text>
+          </Group>
         </TldrawUiButton>
       </Group>
     </TldrawUiContextualToolbar>

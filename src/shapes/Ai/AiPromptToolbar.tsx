@@ -10,11 +10,19 @@ import { AIPromptShapeUtil } from "./AiShape";
 import { useExecutePrompt } from "./useExecutePrompt";
 import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
 import { format } from "sql-formatter";
+import { useAtomValue } from "jotai";
+import { schemaAtom } from "../../state";
 
 export const AiPromptContextualToolbarComponent = track(() => {
   const editor = useEditor();
+  const schema = useAtomValue(schemaAtom);
 
-  const runPrompt = useExecutePrompt();
+  const runPrompt =
+    useExecutePrompt(`you are an expert database administrator. You are tasked with writing Postgres SQL queries based on user requests.
+  Here is the database schema. It contains all tables and their columns as well as a list of references between foreign keys for different tables.
+  ${JSON.stringify(schema)}.
+
+  Respond ONLY with the sql in text format, no backticks, formatting, comments or anything else. Just the sql query.`);
 
   const getSelectionBounds = () => {
     const fullBounds = editor.getSelectionRotatedScreenBounds();
