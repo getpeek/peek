@@ -1,11 +1,10 @@
 import { format } from "sql-formatter";
 import { useExecuteQueries } from "../../tools/useExecuteQuery";
 import { useEditor } from "tldraw";
-import { QueryShape } from "./QueryShape";
+import { QueryShape, QueryShapeUtil } from "./QueryShape";
 import { SqlEditor } from "./Editor/SqlEditor";
 import { useEffect, useRef } from "react";
 import { editor } from "monaco-editor";
-import { Monaco } from "@monaco-editor/react";
 
 export const Query = ({
   shape,
@@ -15,10 +14,9 @@ export const Query = ({
   isEditing: boolean;
 }) => {
   const executeQuery = useExecuteQueries();
-  const editor = useEditor();
+  const tldrawEditor = useEditor();
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const monacoRef = useRef<Monaco | null>(null);
   const lastEditorValue = useRef(shape.props.query);
 
   useEffect(() => {
@@ -32,33 +30,40 @@ export const Query = ({
   }, [shape.props.query]);
 
   const runQuery = () => {
-    const editingShape = editor.getEditingShape();
-    if (!editingShape) {
-      return;
-    }
-    if (!editorRef.current) {
+    const currentEditingShape = tldrawEditor.getOnlySelectedShape();
+
+    if (!currentEditingShape) {
       return;
     }
 
-    executeQuery(editingShape, [editorRef.current.getValue()]);
+    const query = (
+      currentEditingShape.props as ReturnType<QueryShapeUtil["getDefaultProps"]>
+    ).query;
+
+    executeQuery(currentEditingShape, [query]);
   };
 
   const formatQuery = () => {
-    const editingShapeId = editor.getEditingShapeId();
-    if (!editingShapeId) {
-      return;
-    }
-    if (!editorRef.current) {
+    const currentEditingShape = tldrawEditor.getOnlySelectedShape();
+
+    if (!currentEditingShape) {
       return;
     }
 
-    const formatted = format(editorRef.current.getValue(), {
+    const query = (
+      currentEditingShape.props as ReturnType<QueryShapeUtil["getDefaultProps"]>
+    ).query;
+
+    const formatted = format(query, {
       keywordCase: "upper",
       functionCase: "upper",
       language: "postgresql",
     });
 
-    editorRef.current.setValue(formatted);
+    tldrawEditor.updateShape({
+      ...currentEditingShape,
+      props: { query: formatted },
+    });
   };
 
   useEffect(() => {
@@ -72,7 +77,6 @@ export const Query = ({
       query={shape.props.query}
       onMount={(editor, monaco) => {
         editorRef.current = editor;
-        monacoRef.current = monaco;
 
         editor.addCommand(
           monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
@@ -86,7 +90,7 @@ export const Query = ({
       }}
       onQueryChange={(query) => {
         lastEditorValue.current = query;
-        editor.updateShape<QueryShape>({
+        tldrawEditor.updateShape<QueryShape>({
           id: shape.id,
           type: "query",
           props: { query },
