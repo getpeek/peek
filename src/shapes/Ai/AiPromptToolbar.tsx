@@ -6,9 +6,9 @@ import {
   track,
   useEditor,
 } from "tldraw";
-import { AIPromptShapeUtil } from "../shapes/Ai/AiShape";
-import { useExecutePrompt } from "../shapes/Ai/useExecutePrompt";
-import { createArrowBetweenShapes } from "./createArrowBetweenShapes";
+import { AIPromptShapeUtil } from "./AiShape";
+import { useExecutePrompt } from "./useExecutePrompt";
+import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
 import { format } from "sql-formatter";
 
 export const AiPromptContextualToolbarComponent = track(() => {

@@ -1,4 +1,6 @@
-export const toCsv = (result: [string, unknown][][]): string => {
+import { DatabaseResult } from "../../state";
+
+export const toCsv = (result: DatabaseResult): string => {
   const rows = [];
 
   const headers = result[0].map(([key]) => key);

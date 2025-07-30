@@ -6,8 +6,8 @@ import {
 } from "tldraw";
 import { Divider, Group, Text } from "@mantine/core";
 import { Parser } from "node-sql-parser";
-import { useCreateChart } from "./useCreateChart";
-import { ResultShapeUtil } from "../shapes/Result/ResultShape";
+import { useCreateChart } from "../../tools/useCreateChart";
+import { ResultShapeUtil } from "./ResultShape";
 
 export const ResultContextualToolbarComponent = () => {
   const editor = useEditor();

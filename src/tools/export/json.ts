@@ -1,6 +1,6 @@
-export const toJson = (
-  result: [string, unknown][][],
-): Record<string, unknown>[] => {
+import { DatabaseResult } from "../../state";
+
+export const toJson = (result: DatabaseResult): Record<string, unknown>[] => {
   const output = [];
 
   for (const row of result) {
