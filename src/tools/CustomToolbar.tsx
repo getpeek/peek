@@ -1,7 +1,7 @@
 import { track, useEditor } from "tldraw";
-import { QueryContextualToolbarComponent } from "./QueryToolbar";
-import { ResultContextualToolbarComponent } from "./ResultToolbar";
-import { AiPromptContextualToolbarComponent } from "./AiPromptToolbar";
+import { AiPromptContextualToolbarComponent } from "../shapes/Ai/AiPromptToolbar";
+import { QueryContextualToolbarComponent } from "../shapes/Query/QueryToolbar";
+import { ResultContextualToolbarComponent } from "../shapes/Result/ResultToolbar";
 
 export const CustomContextualToolbarComponent = track(() => {
   const editor = useEditor();
