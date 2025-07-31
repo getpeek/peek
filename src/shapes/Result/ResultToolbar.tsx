@@ -47,14 +47,22 @@ export const ResultContextualToolbarComponent = () => {
 
   const createAskShape = () => {
     const askShapeId = createShapeId(`${shape.id}-chat`);
-
     const outputShape = editor.getShape(askShapeId);
+
+    const selectedShape = editor.getOnlySelectedShape();
+
+    if (!selectedShape) {
+      return;
+    }
+
+    const x = (editor.getSelectionPageBounds()?.right ?? shape.x) + 50;
 
     if (!outputShape) {
       editor.createShape({
         id: askShapeId,
         type: "chat",
-        parentId: shape.id,
+        x,
+        y: shape.y,
         props: {
           query: props.query,
           result: props.data,
@@ -85,16 +93,6 @@ export const ResultContextualToolbarComponent = () => {
         </Group>
         <Divider variant="solid" orientation="vertical" color="dark" />
         <TldrawUiButton
-          title="Ask about this result"
-          type="normal"
-          onClick={createAskShape}
-        >
-          <Group align="center" gap={4}>
-            <IconMessageChatbot size={16} />
-            <Text size="xs">Ask</Text>
-          </Group>
-        </TldrawUiButton>
-        <TldrawUiButton
           title="Graph"
           type="normal"
           onClick={runCreateChart}
@@ -103,6 +101,17 @@ export const ResultContextualToolbarComponent = () => {
           <Group align="center" gap={4}>
             <IconChartBar size={16} />
             <Text size="xs">Chart</Text>
+          </Group>
+        </TldrawUiButton>
+        <Divider variant="solid" orientation="vertical" color="dark" />
+        <TldrawUiButton
+          title="Ask about this result"
+          type="normal"
+          onClick={createAskShape}
+        >
+          <Group align="center" gap={4}>
+            <IconMessageChatbot size={16} />
+            <Text size="xs">Ask</Text>
           </Group>
         </TldrawUiButton>
       </Group>

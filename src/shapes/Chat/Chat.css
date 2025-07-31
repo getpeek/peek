@@ -16,9 +16,11 @@
         monospace;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
+
 .chat-container.loading {
     animation: pulseGlow 1.5s ease-in-out infinite;
 }
+
 @keyframes pulseGlow {
     0%,
     100% {
@@ -122,13 +124,10 @@
 }
 
 .message.context {
-    padding: 16px 8px;
     border-radius: 9999px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--context-message);
-    color: var(--mantine-color-dark);
 }
 
 .message-content {

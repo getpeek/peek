@@ -5,6 +5,7 @@ export interface Message {
   type: "user" | "assistant" | "system" | "context";
   message: string;
   timestamp: number;
+  contextKey?: string;
 }
 
 const advancedModel = new ChatOllama({

@@ -10,6 +10,7 @@ import { getInboundReferences, getOutboundReferences } from "./findReferences";
 import { AST, Parser } from "node-sql-parser";
 import { ChatShape } from "../../Chat/ChatShape";
 import { Message } from "../../Ai/useExecutePrompt";
+import { sha1 } from "object-hash";
 
 export const ResultTable = ({ shape }: { shape: ResultShape }) => {
   const editor = useEditor();
@@ -35,11 +36,23 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
       return;
     }
 
-    const newMessages: Message[] = [
-      ...chatShape.props.messages,
-      {
-        type: "context",
-        message: `I've updated the query, it now looks like this:
+    const contextKey = sha1({
+      query: shape.props.query,
+      data: shape.props.data,
+    });
+
+    // Check if context with this key already exists in the messages
+    const alreadyExists = chatShape.props.messages.some(
+      (msg) => msg.type === "context" && msg.contextKey === contextKey,
+    );
+
+    if (alreadyExists) {
+      return;
+    }
+
+    const contextMessage: Message = {
+      type: "context",
+      message: `I've updated the query, it now looks like this:
 
       ${shape.props.query}
 
@@ -47,12 +60,17 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
 
       ${JSON.stringify(shape.props.data)}
       `,
-        timestamp: Date.now(),
-      },
-    ];
+      contextKey,
+      timestamp: Date.now(),
+    };
 
-    editor.updateShape({ ...chatShape, props: { messages: newMessages } });
-  }, [shape.props.query, shape.props.data]);
+    editor.updateShape({
+      ...chatShape,
+      props: {
+        messages: [...chatShape.props.messages, contextMessage],
+      },
+    });
+  }, [shape.props.query, shape.props.data, editor, shape.id]);
 
   const ast = useMemo(() => {
     try {

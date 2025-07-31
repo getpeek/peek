@@ -6,6 +6,7 @@ import { IconSend } from "@tabler/icons-react";
 import { ChatEmptyState } from "./EmptyState";
 import { MessageList } from "./MessageList";
 import { ChatShape } from "./ChatShape";
+import { sha1 } from "object-hash";
 
 interface ChatProps {
   isEditing: boolean;
@@ -44,26 +45,37 @@ export const Chat = ({
   }, [messages, incomingMessage]);
 
   useEffect(() => {
-    // data has changed, insert a new message with the new context
     const shape = editor.getShape<ChatShape>(shapeId);
     if (!shape) {
       return;
     }
 
-    const oldMessages = shape.props.messages;
-    const newMessage: Message = {
+    const contextKey = sha1({ query, data });
+
+    // Check if context with this key already exists in the messages
+    const alreadyExists = shape.props.messages.some(
+      (msg) => msg.type === "context" && msg.contextKey === contextKey,
+    );
+
+    if (alreadyExists) {
+      return;
+    }
+
+    const contextMessage: Message = {
       type: "context",
       message: `Query: ${query}, result: ${JSON.stringify(data)}`,
+      contextKey,
       timestamp: Date.now(),
     };
 
     editor.updateShape({
       ...shape,
       props: {
-        messages: [...oldMessages, newMessage],
+        ...shape.props,
+        messages: [...shape.props.messages, contextMessage],
       },
     });
-  }, [query, data]);
+  }, [query, data, editor, shapeId]);
 
   const ask = async () => {
     const shape = editor.getShape<ChatShape>(shapeId);
@@ -86,9 +98,9 @@ export const Chat = ({
 
     setQuestion("");
 
+    setIsLoading(true);
     const stream = await runPrompt([...shape.props.messages, userMessage]);
 
-    setIsLoading(true);
     let completeMessage = "";
     for await (const chunk of stream) {
       completeMessage += chunk.text;

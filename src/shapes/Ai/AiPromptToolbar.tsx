@@ -17,14 +17,7 @@ export const AiPromptContextualToolbarComponent = track(() => {
   const editor = useEditor();
   const schema = useAtomValue(schemaAtom);
 
-  const runPrompt = useExecutePrompt(
-    `you are an expert database administrator. You are tasked with writing Postgres SQL queries based on user requests.
-  Here is the database schema. It contains all tables and their columns as well as a list of references between foreign keys for different tables.
-  ${JSON.stringify(schema)}.
-
-  Respond ONLY with the sql in text format, no backticks, formatting, comments or anything else. Just the sql query.`,
-    "fast",
-  );
+  const runPrompt = useExecutePrompt("fast");
 
   const getSelectionBounds = () => {
     const fullBounds = editor.getSelectionRotatedScreenBounds();
@@ -53,7 +46,22 @@ export const AiPromptContextualToolbarComponent = track(() => {
         type: "ai-shape",
         props: { isLoading: true },
       });
-      const stream = await runPrompt(prompt);
+      const stream = await runPrompt([
+        {
+          type: "system",
+          message: `you are an expert database administrator. You are tasked with writing Postgres SQL queries based on user requests.
+      Here is the database schema. It contains all tables and their columns as well as a list of references between foreign keys for different tables.
+      ${JSON.stringify(schema)}.
+
+      Respond ONLY with the sql in text format, no backticks, formatting, comments or anything else. Just the sql query.`,
+          timestamp: Date.now(),
+        },
+        {
+          type: "user",
+          message: prompt,
+          timestamp: Date.now(),
+        },
+      ]);
 
       let query = "";
       let reason = "";
