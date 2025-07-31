@@ -1,4 +1,11 @@
+import { BaseLanguageModelInput } from "@langchain/core/language_models/base";
 import { ChatOllama } from "@langchain/ollama";
+
+export interface Message {
+  type: "user" | "assistant" | "system" | "context";
+  message: string;
+  timestamp: number;
+}
 
 const advancedModel = new ChatOllama({
   model: "qwen3:8b",
@@ -13,14 +20,28 @@ const fastModel = new ChatOllama({
 });
 
 export const useExecutePrompt = (
-  systemPrompt: string,
-  model: "advanced" | "fast" = "advanced",
+  modelType: "advanced" | "fast" = "advanced",
 ) => {
-  return async (prompt: string) => {
-    if (model === "advanced") {
-      return advancedModel.stream(["system", systemPrompt, ["user", prompt]]);
+  return async (messages: Message[] = []) => {
+    const model = modelType === "advanced" ? advancedModel : fastModel;
+
+    const conversation: BaseLanguageModelInput = [];
+
+    for (const message of messages) {
+      if (message.type === "context") {
+        conversation.push([
+          "user",
+          `I've updated the sql query and it resulted in new data: ${message.message}`,
+        ]);
+        conversation.push([
+          "assistant",
+          `Ok! I've received the new query and data`,
+        ]);
+      } else {
+        conversation.push([message.type, message.message]);
+      }
     }
 
-    return fastModel.stream(["system", systemPrompt, ["user", prompt]]);
+    return model.stream(conversation);
   };
 };

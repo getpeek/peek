@@ -1,13 +1,15 @@
 import { Paper, Table, Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import { useRef, useMemo } from "react";
-import { HTMLContainer, useEditor } from "tldraw";
+import { useRef, useMemo, useEffect } from "react";
+import { createShapeId, HTMLContainer, useEditor } from "tldraw";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { schemaAtom } from "../../../state";
 import { ResultShape } from "../ResultShape";
 import { DataCell } from "./Cell";
 import { getInboundReferences, getOutboundReferences } from "./findReferences";
 import { AST, Parser } from "node-sql-parser";
+import { ChatShape } from "../../Chat/ChatShape";
+import { Message } from "../../Ai/useExecutePrompt";
 
 export const ResultTable = ({ shape }: { shape: ResultShape }) => {
   const editor = useEditor();
@@ -24,6 +26,33 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
     overscan: 40,
     estimateSize: () => 40,
   });
+
+  useEffect(() => {
+    const chatShapeId = createShapeId(`${shape.id}-chat`);
+    const chatShape = editor.getShape<ChatShape>(chatShapeId);
+
+    if (!chatShape) {
+      return;
+    }
+
+    const newMessages: Message[] = [
+      ...chatShape.props.messages,
+      {
+        type: "context",
+        message: `I've updated the query, it now looks like this:
+
+      ${shape.props.query}
+
+      And that made the data look like this
+
+      ${JSON.stringify(shape.props.data)}
+      `,
+        timestamp: Date.now(),
+      },
+    ];
+
+    editor.updateShape({ ...chatShape, props: { messages: newMessages } });
+  }, [shape.props.query, shape.props.data]);
 
   const ast = useMemo(() => {
     try {

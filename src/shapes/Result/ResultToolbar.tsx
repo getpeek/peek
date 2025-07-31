@@ -46,7 +46,7 @@ export const ResultContextualToolbarComponent = () => {
   };
 
   const createAskShape = () => {
-    const askShapeId = createShapeId(`${shape.id}-ask`);
+    const askShapeId = createShapeId(`${shape.id}-chat`);
 
     const outputShape = editor.getShape(askShapeId);
 

@@ -12,16 +12,9 @@ import "./Chat.css";
 import { DatabaseResult } from "../../state";
 import { Chat } from "./Chat";
 import { useEffect, useState } from "react";
+import { Message } from "../Ai/useExecutePrompt";
 
-export interface Message {
-  id: string;
-  sender: "user" | "agent";
-  message: string;
-  timestamp: number;
-  isStreaming?: boolean;
-}
-
-type ChatShape = TLBaseShape<
+export type ChatShape = TLBaseShape<
   "chat",
   {
     query: string;
@@ -45,10 +38,14 @@ export class ChatShapeUtil extends ShapeUtil<ChatShape> {
     const [isEditing, setIsEditing] = useState(
       editor.getEditingShapeId() === shape.id,
     );
+    const [isSelected, setIsSelected] = useState(
+      editor.getSelectedShapeIds().includes(shape.id),
+    );
 
     useEffect(() => {
       setIsEditing(editor.getEditingShapeId() === shape.id);
-    }, [editor.getEditingShapeId()]);
+      setIsSelected(editor.getSelectedShapeIds().includes(shape.id));
+    }, [editor.getEditingShapeId(), editor.getSelectedShapeIds()]);
 
     return (
       <HTMLContainer
@@ -66,6 +63,7 @@ export class ChatShapeUtil extends ShapeUtil<ChatShape> {
             query={shape.props.query}
             data={shape.props.result}
             isEditing={isEditing}
+            isSelected={isSelected}
             messages={shape.props.messages}
             shapeId={shape.id}
           />
@@ -81,7 +79,7 @@ export class ChatShapeUtil extends ShapeUtil<ChatShape> {
     h: number;
     messages: Message[];
   } {
-    return { query: "", result: [], w: 400, h: 500, messages: [] };
+    return { query: "", result: [], w: 550, h: 600, messages: [] };
   }
 
   getGeometry(shape: ChatShape): Geometry2d {

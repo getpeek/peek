@@ -1,14 +1,15 @@
-import { useAtomValue } from "jotai";
-import { DatabaseResult, schemaAtom } from "../../state";
-import { useExecutePrompt } from "../Ai/useExecutePrompt";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { DatabaseResult } from "../../state";
+import { Message, useExecutePrompt } from "../Ai/useExecutePrompt";
+import { useEffect, useRef, useState } from "react";
 import { useEditor, TLShapeId } from "tldraw";
-import { Message } from "./ChatShape";
 import { IconSend } from "@tabler/icons-react";
-import Markdown from "react-markdown";
+import { ChatEmptyState } from "./EmptyState";
+import { MessageList } from "./MessageList";
+import { ChatShape } from "./ChatShape";
 
 interface ChatProps {
   isEditing: boolean;
+  isSelected: boolean;
   data: DatabaseResult;
   query: string;
   messages: Message[];
@@ -17,18 +18,20 @@ interface ChatProps {
 
 export const Chat = ({
   isEditing,
+  isSelected,
   data,
   query,
   messages,
   shapeId,
 }: ChatProps) => {
-  const schema = useAtomValue(schemaAtom);
   const editor = useEditor();
   const [question, setQuestion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [incomingMessage, setIncomingMessage] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const runPrompt = useExecutePrompt("fast");
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -37,105 +40,80 @@ export const Chat = ({
   }, [isEditing]);
 
   useEffect(() => {
-    // Auto-scroll to bottom when new messages arrive
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, incomingMessage]);
 
-  // Recreate the prompt when props change
-  const runPrompt = useMemo(() => {
-    const systemPrompt = `You are an expert data analyst that has been tasked with answering users questions about a dataset.
+  useEffect(() => {
+    // data has changed, insert a new message with the new context
+    const shape = editor.getShape<ChatShape>(shapeId);
+    if (!shape) {
+      return;
+    }
 
-The query that generated the dataset looks like this:
-${query}
+    const oldMessages = shape.props.messages;
+    const newMessage: Message = {
+      type: "context",
+      message: `Query: ${query}, result: ${JSON.stringify(data)}`,
+      timestamp: Date.now(),
+    };
 
-And the database schema looks like this:
-${JSON.stringify(schema)}
+    editor.updateShape({
+      ...shape,
+      props: {
+        messages: [...oldMessages, newMessage],
+      },
+    });
+  }, [query, data]);
 
-This has resulted in data that looks like this:
+  const ask = async () => {
+    const shape = editor.getShape<ChatShape>(shapeId);
+    if (!shape) {
+      return;
+    }
 
-${JSON.stringify(data)}
+    const userMessage: Message = {
+      type: "user",
+      message: question,
+      timestamp: Date.now(),
+    };
 
-Please provide clear, concise answers and format any numbers or data nicely for readability.`;
+    editor.updateShape({
+      ...shape,
+      props: {
+        messages: [...shape.props.messages, userMessage],
+      },
+    });
 
-    return useExecutePrompt(systemPrompt);
-  }, [query, schema, data]);
+    setQuestion("");
 
-  const updateShapeMessages = (newMessages: Message[]) => {
-    const shape = editor.getShape(shapeId);
-    if (shape) {
+    const stream = await runPrompt([...shape.props.messages, userMessage]);
+
+    setIsLoading(true);
+    let completeMessage = "";
+    for await (const chunk of stream) {
+      completeMessage += chunk.text;
+      setIncomingMessage(completeMessage);
+    }
+
+    const updatedShape = editor.getShape<ChatShape>(shapeId);
+    if (updatedShape) {
       editor.updateShape({
-        ...shape,
+        ...updatedShape,
         props: {
-          ...shape.props,
-          messages: newMessages,
+          messages: [
+            ...updatedShape.props.messages,
+            {
+              type: "assistant",
+              message: completeMessage,
+              timestamp: Date.now(),
+            },
+          ],
         },
       });
     }
-  };
 
-  const ask = async () => {
-    if (!question.trim() || isLoading) return;
-
-    const currentQuestion = question.trim();
-
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      sender: "user",
-      message: currentQuestion,
-      timestamp: Date.now(),
-    };
-
-    const agentMessage: Message = {
-      id: `agent-${Date.now()}`,
-      sender: "agent",
-      message: "",
-      timestamp: Date.now(),
-      isStreaming: true,
-    };
-
-    const newMessages = [...messages, userMessage, agentMessage];
-    updateShapeMessages(newMessages);
-    setQuestion("");
-    setIsLoading(true);
-
-    try {
-      const stream = await runPrompt(currentQuestion);
-      let output = "";
-
-      for await (const chunk of stream) {
-        output += chunk.text;
-
-        // Update the streaming message in real-time
-        const updatedMessages = [
-          ...messages,
-          userMessage,
-          { ...agentMessage, message: output },
-        ];
-        updateShapeMessages(updatedMessages);
-      }
-
-      // Mark streaming as complete
-      const finalMessages = [
-        ...messages,
-        userMessage,
-        { ...agentMessage, message: output, isStreaming: false },
-      ];
-      updateShapeMessages(finalMessages);
-    } catch (error) {
-      console.error("Error in chat:", error);
-      const errorMessages = [
-        ...messages,
-        userMessage,
-        {
-          ...agentMessage,
-          message: "Sorry, I encountered an error. Please try again.",
-          isStreaming: false,
-        },
-      ];
-      updateShapeMessages(errorMessages);
-    } finally {
-      setIsLoading(false);
-    }
+    setIncomingMessage("");
+    setIsLoading(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -146,34 +124,30 @@ Please provide clear, concise answers and format any numbers or data nicely for 
   };
 
   return (
-    <div className="chat-container">
+    <div className={`chat-container ${isLoading ? "loading" : ""}`}>
       <div
         ref={chatContainerRef}
         className="messages-container"
-        style={{ pointerEvents: isEditing ? "all" : "auto" }}
+        style={{
+          pointerEvents: isEditing ? "all" : "auto",
+          userSelect: isSelected || isEditing ? "text" : "none",
+        }}
       >
         {messages.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-text">Ask questions about your dataset</div>
-            <div className="empty-subtext">
-              Get insights and analysis from your data
-            </div>
-          </div>
+          <ChatEmptyState />
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`message ${message.sender} ${message.isStreaming ? "streaming" : ""}`}
-            >
-              <div className="message-label">
-                {message.sender === "user" ? "Question:" : "Analysis:"}
-              </div>
-              <div className="message-content">
-                <Markdown>{message.message}</Markdown>
-                {message.isStreaming && <span className="cursor">|</span>}
-              </div>
-            </div>
-          ))
+          <MessageList messages={messages} />
+        )}
+        {incomingMessage && (
+          <MessageList
+            messages={[
+              {
+                type: "assistant",
+                message: incomingMessage,
+                timestamp: Date.now(),
+              },
+            ]}
+          />
         )}
         <div ref={messagesEndRef} />
       </div>
