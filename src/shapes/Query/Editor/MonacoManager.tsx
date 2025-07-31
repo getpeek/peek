@@ -66,7 +66,6 @@ export const MonacoManager = () => {
         defaultValue=""
         theme="vs-dark"
         onMount={(editor, monaco) => {
-          console.log("Monaco manager initialized");
           monacoRef.current = monaco;
           editorRef.current = editor;
 

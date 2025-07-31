@@ -91,7 +91,7 @@ function App() {
         ...previous,
         [activeConnection.connection.url]: getSnapshot(store),
       }));
-      console.log("Saved changes");
+      console.log("Saved changes at", new Date().toISOString());
     };
 
     const cleanup = store.listen(

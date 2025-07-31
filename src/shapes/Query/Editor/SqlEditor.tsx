@@ -66,8 +66,8 @@ export const SqlEditor = ({
             lineHeight: 1.6,
             letterSpacing: 0.5,
             smoothScrolling: true,
-            cursorBlinking: "smooth",
-            cursorSmoothCaretAnimation: "on",
+            cursorBlinking: "solid",
+            cursorSmoothCaretAnimation: "off",
           }}
           onChange={(value) => onQueryChange(value ?? "")}
         />

@@ -50,17 +50,10 @@ export const ResultContextualToolbarComponent = () => {
 
     const outputShape = editor.getShape(askShapeId);
 
-    if (outputShape) {
-      editor.select(outputShape);
-      editor.zoomToSelection({ animation: { duration: 200 } });
-    } else {
-      const x = (getSelectionBounds()?.right ?? shape.x) + 50;
-      const y = getSelectionBounds()?.top ?? shape.y;
+    if (!outputShape) {
       editor.createShape({
         id: askShapeId,
         type: "chat",
-        x,
-        y,
         parentId: shape.id,
         props: {
           query: props.query,
@@ -69,6 +62,8 @@ export const ResultContextualToolbarComponent = () => {
       });
       createArrowBetweenShapes(editor, shape.id, askShapeId);
     }
+    editor.select(askShapeId);
+    editor.zoomToSelection({ animation: { duration: 200 } });
   };
 
   return (

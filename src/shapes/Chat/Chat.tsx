@@ -4,6 +4,8 @@ import { useExecutePrompt } from "../Ai/useExecutePrompt";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useEditor, TLShapeId } from "tldraw";
 import { Message } from "./ChatShape";
+import { IconSend } from "@tabler/icons-react";
+import Markdown from "react-markdown";
 
 interface ChatProps {
   isEditing: boolean;
@@ -41,20 +43,21 @@ export const Chat = ({
 
   // Recreate the prompt when props change
   const runPrompt = useMemo(() => {
-    console.log(data);
+    const systemPrompt = `You are an expert data analyst that has been tasked with answering users questions about a dataset.
 
-    return useExecutePrompt(`You are an expert data analyst that has been tasked with answering users questions about a dataset.
+The query that generated the dataset looks like this:
+${query}
 
-    The query that generated the dataset looks like this:
-    ${query}
+And the database schema looks like this:
+${JSON.stringify(schema)}
 
-    And the database schema looks like this:
-    ${JSON.stringify(schema)}
+This has resulted in data that looks like this:
 
-    This has resulted in data that looks like this.
-    ${JSON.stringify(data)}
+${JSON.stringify(data)}
 
-    Please provide clear, concise answers and format any numbers or data nicely for readability.`);
+Please provide clear, concise answers and format any numbers or data nicely for readability.`;
+
+    return useExecutePrompt(systemPrompt);
   }, [query, schema, data]);
 
   const updateShapeMessages = (newMessages: Message[]) => {
@@ -166,7 +169,7 @@ export const Chat = ({
                 {message.sender === "user" ? "Question:" : "Analysis:"}
               </div>
               <div className="message-content">
-                {message.message}
+                <Markdown>{message.message}</Markdown>
                 {message.isStreaming && <span className="cursor">|</span>}
               </div>
             </div>
@@ -199,7 +202,7 @@ export const Chat = ({
             disabled={!question.trim() || isLoading}
             className={`send-button ${isLoading ? "loading" : ""}`}
           >
-            {isLoading ? <span className="loading-spinner">⟳</span> : "→"}
+            <IconSend size={20} />
           </button>
         </div>
       </div>

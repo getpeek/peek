@@ -1,15 +1,26 @@
 import { ChatOllama } from "@langchain/ollama";
 
-const model = new ChatOllama({
+const advancedModel = new ChatOllama({
+  model: "qwen3:8b",
+  baseUrl: "http://localhost:11434",
+  streaming: true,
+});
+
+const fastModel = new ChatOllama({
   model: "gemma:latest",
   baseUrl: "http://localhost:11434",
   streaming: true,
 });
 
-export const useExecutePrompt = (systemPrompt: string) => {
+export const useExecutePrompt = (
+  systemPrompt: string,
+  model: "advanced" | "fast" = "advanced",
+) => {
   return async (prompt: string) => {
-    const response = model.stream(["system", systemPrompt, ["user", prompt]]);
+    if (model === "advanced") {
+      return advancedModel.stream(["system", systemPrompt, ["user", prompt]]);
+    }
 
-    return response;
+    return fastModel.stream(["system", systemPrompt, ["user", prompt]]);
   };
 };
