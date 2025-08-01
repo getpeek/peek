@@ -124,6 +124,7 @@ export const Chat = ({
     const stream = await runPrompt([...shape.props.messages, userMessage]);
 
     let completeMessage = "";
+    let queryCreated = false;
     for await (const chunk of stream) {
       if (chunk.tool_calls?.length) {
         for (const call of chunk.tool_calls) {
@@ -153,6 +154,8 @@ export const Chat = ({
             editor.select(queryNodeId);
             editor.zoomToSelection({ animation: { duration: 200 } });
             createArrowBetweenShapes(editor, shape.id, queryNodeId);
+
+            queryCreated = true;
           }
         }
       }
@@ -163,17 +166,26 @@ export const Chat = ({
 
     const updatedShape = editor.getShape<ChatShape>(shapeId);
     if (updatedShape) {
+      const messagesToAdd = [
+        {
+          type: "assistant",
+          message: completeMessage,
+          timestamp: Date.now(),
+        },
+      ];
+
+      if (queryCreated) {
+        messagesToAdd.push({
+          type: "system",
+          message: "Query created!",
+          timestamp: Date.now(),
+        });
+      }
+
       editor.updateShape({
         ...updatedShape,
         props: {
-          messages: [
-            ...updatedShape.props.messages,
-            {
-              type: "assistant",
-              message: completeMessage,
-              timestamp: Date.now(),
-            },
-          ],
+          messages: [...updatedShape.props.messages, ...messagesToAdd],
         },
       });
     }

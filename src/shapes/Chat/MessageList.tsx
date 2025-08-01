@@ -33,6 +33,29 @@ export const MessageList = ({ messages }: MessageListProps) => {
           </Group>
         </div>
       );
+    } else if (message.type === "system") {
+      return (
+        <div key={i} className="message context">
+          <Group
+            w={300}
+            c="var(--system-message)"
+            bd={`2px solid var(--mantine-color-blue-8)`}
+            py={16}
+            px={8}
+            align="center"
+            justify="center"
+            style={{ borderRadius: 9999 }}
+          >
+            <IconRobot size={20} color="var(--system-message)" />
+            <Stack gap={2}>
+              <Text fw="bold">{message.message}</Text>
+              <Text size="xs" c="var(--system-message-subtle)">
+                Just for you
+              </Text>
+            </Stack>
+          </Group>
+        </div>
+      );
     }
     return (
       <div key={i} className={`message ${message.type}`}>

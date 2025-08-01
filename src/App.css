@@ -38,6 +38,8 @@ body {
     --assistant-label: hsl(200deg, 80%, 30%);
     --context-message: var(--mantine-color-green-8);
     --context-message-subtle: var(--mantine-color-green-7);
+    --system-message: var(--mantine-color-blue-8);
+    --system-message-subtle: var(--mantine-color-blue-7);
 }
 .tl-container[data-color-mode="dark"] {
     --inbound-key: hsl(210deg, 80%, 10%);
@@ -52,4 +54,6 @@ body {
     --assistant-label: hsl(200deg, 80%, 80%);
     --context-message: var(--mantine-color-green-1);
     --context-message-subtle: var(--mantine-color-green-2);
+    --system-message: var(--mantine-color-blue-1);
+    --system-message-subtle: var(--mantine-color-blue-2);
 }
