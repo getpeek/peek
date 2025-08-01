@@ -39,6 +39,7 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
     const contextKey = sha1({
       query: shape.props.query,
       data: shape.props.data,
+      schema,
     });
 
     // Check if context with this key already exists in the messages

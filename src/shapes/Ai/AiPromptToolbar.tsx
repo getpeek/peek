@@ -104,13 +104,16 @@ export const AiPromptContextualToolbarComponent = track(() => {
             },
           });
         } else {
-          const x = (editor.getSelectionPageBounds()?.right ?? shape.x) + 50;
+          const bounds = editor.getShapePageBounds(shape);
+          if (!bounds) {
+            return;
+          }
 
           editor.createShape({
             id: outputShapeId,
             type: "query",
-            x: x + 50,
-            y: shape.y,
+            x: bounds.right + 50,
+            y: bounds.top,
             props: {
               query,
               w: 400,

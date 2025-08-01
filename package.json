@@ -38,7 +38,8 @@
     "scheduler": "^0.26.0",
     "sql-formatter": "^15.6.6",
     "tldraw": "^3.14.0",
-    "web-tree-sitter": "^0.25.8"
+    "web-tree-sitter": "^0.25.8",
+    "zod": "^4.0.14"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

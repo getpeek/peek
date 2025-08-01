@@ -1,17 +1,26 @@
 import { DatabaseResult } from "../../state";
-import { Message, useExecutePrompt } from "../Ai/useExecutePrompt";
+import {
+  createQueryTool,
+  Message,
+  useExecutePrompt,
+} from "../Ai/useExecutePrompt";
 import { useEffect, useRef, useState } from "react";
-import { useEditor, TLShapeId } from "tldraw";
+import { useEditor, TLShapeId, createShapeId } from "tldraw";
 import { IconSend } from "@tabler/icons-react";
 import { ChatEmptyState } from "./EmptyState";
 import { MessageList } from "./MessageList";
 import { ChatShape } from "./ChatShape";
 import { sha1 } from "object-hash";
+import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
 
 interface ChatProps {
   isEditing: boolean;
   isSelected: boolean;
   data: DatabaseResult;
+  schema: {
+    tables: Record<string, string[]>;
+    references: Record<string, string[]>;
+  };
   query: string;
   messages: Message[];
   shapeId: TLShapeId;
@@ -22,6 +31,7 @@ export const Chat = ({
   isSelected,
   data,
   query,
+  schema,
   messages,
   shapeId,
 }: ChatProps) => {
@@ -32,7 +42,7 @@ export const Chat = ({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const runPrompt = useExecutePrompt("fast");
+  const runPrompt = useExecutePrompt("advanced");
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -50,7 +60,10 @@ export const Chat = ({
       return;
     }
 
-    const contextKey = sha1({ query, data });
+    const contextKey = sha1({ query, data, schema });
+
+    const headers = (data.at(0) ?? []).map(([header]) => header).join(";");
+    const rows = data.map((row) => row.map(([, value]) => value)).join(";");
 
     const alreadyExists = shape.props.messages.some(
       (msg) => msg.type === "context" && msg.contextKey === contextKey,
@@ -62,10 +75,20 @@ export const Chat = ({
 
     const contextMessage: Message = {
       type: "context",
-      message: `Query: ${query}, result: ${JSON.stringify(data)}`,
+      message: `
+      Query: ${query}
+
+      schema: ${JSON.stringify(schema)}
+
+      result:
+      ${headers}
+      ${rows}
+      `,
       contextKey,
       timestamp: Date.now(),
     };
+
+    console.log(contextMessage);
 
     editor.updateShape({
       ...shape,
@@ -102,6 +125,38 @@ export const Chat = ({
 
     let completeMessage = "";
     for await (const chunk of stream) {
+      if (chunk.tool_calls?.length) {
+        for (const call of chunk.tool_calls) {
+          if (call.name === "createQuery") {
+            const result = await createQueryTool.func({
+              query: call.args.query,
+            });
+
+            const queryNodeId = createShapeId(`${shape.id}-query`);
+
+            const bounds = editor.getShapePageBounds(shape);
+            if (!bounds) {
+              return;
+            }
+
+            editor.createShape({
+              id: queryNodeId,
+              type: "query",
+              x: bounds.right + 100,
+              y: bounds.top,
+              props: {
+                query: result,
+                w: 400,
+                h: 300,
+              },
+            });
+            editor.select(queryNodeId);
+            editor.zoomToSelection({ animation: { duration: 200 } });
+            createArrowBetweenShapes(editor, shape.id, queryNodeId);
+          }
+        }
+      }
+
       completeMessage += chunk.text;
       setIncomingMessage(completeMessage);
     }

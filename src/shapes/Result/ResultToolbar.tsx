@@ -11,11 +11,14 @@ import { useCreateChart } from "../../tools/useCreateChart";
 import { ResultShapeUtil } from "./ResultShape";
 import { IconChartBar, IconMessageChatbot } from "@tabler/icons-react";
 import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
+import { useAtomValue } from "jotai";
+import { schemaAtom } from "../../state";
 
 export const ResultContextualToolbarComponent = () => {
   const editor = useEditor();
   const shape = editor.getOnlySelectedShape()!;
   const createChart = useCreateChart(shape);
+  const schema = useAtomValue(schemaAtom);
 
   const props = shape.props as ReturnType<ResultShapeUtil["getDefaultProps"]>;
 
@@ -65,6 +68,7 @@ export const ResultContextualToolbarComponent = () => {
         y: shape.y,
         props: {
           query: props.query,
+          schema,
           result: props.data,
         },
       });

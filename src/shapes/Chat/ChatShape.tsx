@@ -19,6 +19,10 @@ export type ChatShape = TLBaseShape<
   {
     query: string;
     result: DatabaseResult;
+    schema: {
+      tables: Record<string, string[]>;
+      references: Record<string, string[]>;
+    };
     w: number;
     h: number;
     messages: Message[];
@@ -62,6 +66,7 @@ export class ChatShapeUtil extends ShapeUtil<ChatShape> {
           <Chat
             query={shape.props.query}
             data={shape.props.result}
+            schema={shape.props.schema}
             isEditing={isEditing}
             isSelected={isSelected}
             messages={shape.props.messages}
@@ -75,11 +80,22 @@ export class ChatShapeUtil extends ShapeUtil<ChatShape> {
   getDefaultProps(): {
     query: string;
     result: DatabaseResult;
+    schema: {
+      tables: Record<string, string[]>;
+      references: Record<string, string[]>;
+    };
     w: number;
     h: number;
     messages: Message[];
   } {
-    return { query: "", result: [], w: 550, h: 600, messages: [] };
+    return {
+      query: "",
+      result: [],
+      w: 550,
+      h: 600,
+      messages: [],
+      schema: { tables: {}, references: {} },
+    };
   }
 
   getGeometry(shape: ChatShape): Geometry2d {

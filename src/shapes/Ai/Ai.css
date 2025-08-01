@@ -6,7 +6,6 @@
         rgba(139, 69, 195, 0.1) 100%
     );
     width: 100%;
-    backdrop-filter: blur(2px);
     height: 100%;
     border-radius: 12px;
     color: var(--mantine-color-dark);
