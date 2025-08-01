@@ -87,6 +87,7 @@ export function createArrowBetweenShapes(
       props: {
         kind: "elbow",
         size: "s",
+        color: "grey",
       },
     });
 

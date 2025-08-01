@@ -52,7 +52,6 @@ export const Chat = ({
 
     const contextKey = sha1({ query, data });
 
-    // Check if context with this key already exists in the messages
     const alreadyExists = shape.props.messages.some(
       (msg) => msg.type === "context" && msg.contextKey === contextKey,
     );

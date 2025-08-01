@@ -36,7 +36,8 @@ body {
     --header-base: hsl(20deg, 0%, 97%);
     --user-label: hsl(90deg, 80%, 30%);
     --assistant-label: hsl(200deg, 80%, 30%);
-    --context-message: hsl(240deg, 100%, 95%);
+    --context-message: var(--mantine-color-green-8);
+    --context-message-subtle: var(--mantine-color-green-7);
 }
 .tl-container[data-color-mode="dark"] {
     --inbound-key: hsl(210deg, 80%, 10%);
@@ -49,5 +50,6 @@ body {
     --header-base: hsl(20deg, 0%, 5%);
     --user-label: hsl(90deg, 80%, 80%);
     --assistant-label: hsl(200deg, 80%, 80%);
-    --context-message: hsl(240deg, 100%, 3%);
+    --context-message: var(--mantine-color-green-1);
+    --context-message-subtle: var(--mantine-color-green-2);
 }

@@ -1,7 +1,7 @@
 import Markdown from "react-markdown";
 import { Message } from "../Ai/useExecutePrompt";
-import { IconRobotFace } from "@tabler/icons-react";
-import { Group, Text } from "@mantine/core";
+import { IconRobot } from "@tabler/icons-react";
+import { Group, Stack, Text } from "@mantine/core";
 
 interface MessageListProps {
   messages: Message[];
@@ -13,16 +13,23 @@ export const MessageList = ({ messages }: MessageListProps) => {
         <div key={i} className="message context">
           <Group
             w={300}
-            c="dark-2"
+            c="var(--context-message)"
+            bd={`2px solid var(--mantine-color-green-8)`}
             py={16}
             px={8}
-            bg="var(--context-message)"
             align="center"
             justify="center"
             style={{ borderRadius: 9999 }}
           >
-            <IconRobotFace size={20} color="var(--mantine-color-blue-6)" />
-            <Text>Context updated!</Text>{" "}
+            <IconRobot size={20} color="var(--context-message)" />
+            <Stack gap={2}>
+              <Text fw="bold">
+                {i === 0 ? "Context inserted" : "Context updated"}!
+              </Text>
+              <Text size="xs" c="var(--context-message-subtle)">
+                {i === 0 ? "Query and result" : "Updated query and result"}
+              </Text>
+            </Stack>
           </Group>
         </div>
       );
