@@ -13,6 +13,14 @@ type BarChartShape = TLBaseShape<
   { data: { key: string; value: number }[]; w: number; h: number }
 >;
 
+const barColors = [
+  "var(--mantine-color-blue-7)",
+  "var(--mantine-color-yellow-7)",
+  "var(--mantine-color-green-7)",
+  "var(--mantine-color-purple-7)",
+  "var(--mantine-color-orange-7)",
+];
+
 export class BarChartShapeUtil extends ShapeUtil<BarChartShape> {
   static override type = "barchart" as const;
 
@@ -36,8 +44,9 @@ export class BarChartShapeUtil extends ShapeUtil<BarChartShape> {
         ([key, value]) =>
           typeof value === "number" && key !== "id" && !key.endsWith("_id"),
       )
-      .map(([key]) => ({
+      .map(([key], i) => ({
         name: key,
+        color: barColors[i % barColors.length],
       }));
 
     return (

@@ -8,8 +8,12 @@ import {
 import { Divider, Group, Text } from "@mantine/core";
 import { Parser } from "node-sql-parser";
 import { useCreateChart } from "../../tools/useCreateChart";
-import { ResultShapeUtil } from "./ResultShape";
-import { IconChartBar, IconMessageChatbot } from "@tabler/icons-react";
+import { ResultShape, ResultShapeUtil } from "./ResultShape";
+import {
+  IconChartBar,
+  IconGitBranch,
+  IconMessageChatbot,
+} from "@tabler/icons-react";
 import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
 import { useAtomValue } from "jotai";
 import { schemaAtom } from "../../state";
@@ -46,6 +50,49 @@ export const ResultContextualToolbarComponent = () => {
 
   const runCreateChart = () => {
     createChart();
+  };
+
+  const createBranch = () => {
+    const selectedShape = editor.getOnlySelectedShape() as ResultShape;
+
+    const outputShapeId = createShapeId(`${shape.id}-branch`);
+
+    if (!selectedShape) {
+      return;
+    }
+
+    const outputShape = editor.getShape(outputShapeId);
+    if (outputShape) {
+      editor.updateShape({
+        ...outputShape,
+        props: {
+          query: selectedShape.props.query,
+        },
+      });
+    } else {
+      const bounds = editor.getSelectionPageBounds();
+
+      if (!bounds) {
+        return;
+      }
+
+      editor.createShape({
+        id: outputShapeId,
+        type: "query",
+        x: bounds.left,
+        y: bounds.top - 200,
+        props: {
+          query: selectedShape.props.query,
+          width: 350,
+          height: 300,
+        },
+      });
+
+      createArrowBetweenShapes(editor, selectedShape.id, outputShapeId);
+    }
+
+    editor.select(outputShapeId);
+    editor.zoomToSelection({ animation: { duration: 200 } });
   };
 
   const createAskShape = () => {
@@ -96,18 +143,27 @@ export const ResultContextualToolbarComponent = () => {
           <Text size="xs">{props.data.length} Rows</Text>
         </Group>
         <Divider variant="solid" orientation="vertical" color="dark" />
-        <TldrawUiButton
-          title="Graph"
-          type="normal"
-          onClick={runCreateChart}
-          disabled={!canChart}
-        >
+        {canChart && (
+          <TldrawUiButton
+            title="Graph"
+            type="normal"
+            onClick={runCreateChart}
+            disabled={!canChart}
+          >
+            <Group align="center" gap={4}>
+              <IconChartBar size={16} />
+              <Text size="xs">Chart</Text>
+            </Group>
+          </TldrawUiButton>
+        )}
+
+        <TldrawUiButton title="Branch" type="normal" onClick={createBranch}>
           <Group align="center" gap={4}>
-            <IconChartBar size={16} />
-            <Text size="xs">Chart</Text>
+            <IconGitBranch size={16} />
+            <Text size="xs">Branch query</Text>
           </Group>
         </TldrawUiButton>
-        <Divider variant="solid" orientation="vertical" color="dark" />
+
         <TldrawUiButton
           title="Ask about this result"
           type="normal"
