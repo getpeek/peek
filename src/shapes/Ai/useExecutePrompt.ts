@@ -8,7 +8,6 @@ import {
   SystemMessage,
 } from "@langchain/core/messages";
 import { invoke } from "@tauri-apps/api/core";
-import { toCsv } from "../../tools/export/csv";
 
 export interface Message {
   type: "user" | "assistant" | "system" | "context";
@@ -29,10 +28,10 @@ const fastModel = new ChatOllama({
   streaming: true,
 });
 
-export const createQueryTool = new DynamicStructuredTool({
-  name: "createQuery",
+export const branchToNewConversationTool = new DynamicStructuredTool({
+  name: "branchToNewConversation",
   description:
-    "Call this only when the user explicitly asks you to write a new PostgreSQL query. Do not use this for explaining or analyzing data.",
+    "Call this only when the user explicitly asks you to write a new PostgreSQL query which branches out to a new conversation. Do not use this for explaining or analyzing data.",
   schema: z.object({
     query: z
       .string()
@@ -46,7 +45,7 @@ export const createQueryTool = new DynamicStructuredTool({
 export const getAdditionalContextTool = new DynamicStructuredTool({
   name: "getAdditionalContext",
   description:
-    "call this tool when you need to fetch additional context from the database to continue analysis.",
+    "call this tool when you need to fetch additional context from the database dig deeper and continue the analysis of data.",
   schema: z.object({
     query: z
       .string()
@@ -54,15 +53,18 @@ export const getAdditionalContextTool = new DynamicStructuredTool({
         "A valid postgres sql query to execute which returns a database result",
       ),
   }),
-  func: async ({ query }: { query: string }): Promise<string> => {
+  func: async ({ query }: { query: string }): Promise<any> => {
     try {
       const response = (await invoke("get_results", { query })) as string;
       const result = JSON.parse(response) as [string, unknown, string][][];
-      const csv = toCsv(result);
 
-      return csv;
+      return { success: true, data: result, query };
     } catch (e) {
-      return `The query returned this error: ${e}`;
+      return {
+        success: false,
+        error: `The query returned this error: ${e}`,
+        query,
+      };
     }
   },
 });
@@ -71,7 +73,10 @@ export const useExecutePrompt = (modelType: "fast" | "advanced") => {
   return async (messages: Message[] = []) => {
     const model =
       modelType === "advanced"
-        ? advancedModel.bindTools([createQueryTool, getAdditionalContextTool])
+        ? advancedModel.bindTools([
+            branchToNewConversationTool,
+            getAdditionalContextTool,
+          ])
         : fastModel;
 
     const conversation: BaseMessage[] = [];
