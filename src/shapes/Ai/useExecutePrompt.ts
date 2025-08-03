@@ -7,6 +7,8 @@ import {
   AIMessage,
   SystemMessage,
 } from "@langchain/core/messages";
+import { invoke } from "@tauri-apps/api/core";
+import { toCsv } from "../../tools/export/csv";
 
 export interface Message {
   type: "user" | "assistant" | "system" | "context";
@@ -16,7 +18,7 @@ export interface Message {
 }
 
 const advancedModel = new ChatOllama({
-  model: "qwen3:8b",
+  model: "qwen3:14b",
   baseUrl: "http://localhost:11434",
   streaming: true,
 });
@@ -29,20 +31,47 @@ const fastModel = new ChatOllama({
 
 export const createQueryTool = new DynamicStructuredTool({
   name: "createQuery",
-  description: "Create a new shape with a query",
+  description:
+    "Call this only when the user explicitly asks you to write a new PostgreSQL query. Do not use this for explaining or analyzing data.",
   schema: z.object({
     query: z
       .string()
       .describe("A valid postgres sql query to create a query node for"),
   }),
-  func: async ({ query }: { query: string }): Promise<string> => query,
+  func: async ({ query }: { query: string }): Promise<string> => {
+    return query;
+  },
+});
+
+export const getAdditionalContextTool = new DynamicStructuredTool({
+  name: "getAdditionalContext",
+  description:
+    "call this tool when you need to fetch additional context from the database to continue analysis.",
+  schema: z.object({
+    query: z
+      .string()
+      .describe(
+        "A valid postgres sql query to execute which returns a database result",
+      ),
+  }),
+  func: async ({ query }: { query: string }): Promise<string> => {
+    try {
+      const response = (await invoke("get_results", { query })) as string;
+      const result = JSON.parse(response) as [string, unknown, string][][];
+      const csv = toCsv(result);
+
+      return csv;
+    } catch (e) {
+      return `The query returned this error: ${e}`;
+    }
+  },
 });
 
 export const useExecutePrompt = (modelType: "fast" | "advanced") => {
   return async (messages: Message[] = []) => {
     const model =
       modelType === "advanced"
-        ? advancedModel.bindTools([createQueryTool])
+        ? advancedModel.bindTools([createQueryTool, getAdditionalContextTool])
         : fastModel;
 
     const conversation: BaseMessage[] = [];

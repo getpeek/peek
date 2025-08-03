@@ -34,6 +34,10 @@ export const MessageList = ({ messages }: MessageListProps) => {
         </div>
       );
     } else if (message.type === "system") {
+      if (i === 0) {
+        return null;
+      }
+
       return (
         <div key={i} className="message context">
           <Group
@@ -57,6 +61,7 @@ export const MessageList = ({ messages }: MessageListProps) => {
         </div>
       );
     }
+
     return (
       <div key={i} className={`message ${message.type}`}>
         <div className="message-label">{message.type}</div>

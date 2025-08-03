@@ -1,6 +1,7 @@
 import { DatabaseResult } from "../../state";
 import {
   createQueryTool,
+  getAdditionalContextTool,
   Message,
   useExecutePrompt,
 } from "../Ai/useExecutePrompt";
@@ -12,6 +13,7 @@ import { MessageList } from "./MessageList";
 import { ChatShape } from "./ChatShape";
 import { sha1 } from "object-hash";
 import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
+import { format } from "sql-formatter";
 
 interface ChatProps {
   isEditing: boolean;
@@ -88,8 +90,6 @@ export const Chat = ({
       timestamp: Date.now(),
     };
 
-    console.log(contextMessage);
-
     editor.updateShape({
       ...shape,
       props: {
@@ -126,8 +126,33 @@ export const Chat = ({
     let completeMessage = "";
     let queryCreated = false;
     for await (const chunk of stream) {
+      if (chunk.text === "<think>" || chunk.text === "</think>") {
+        continue;
+      }
+
       if (chunk.tool_calls?.length) {
         for (const call of chunk.tool_calls) {
+          if (call.name === "getAdditionalContext") {
+            const result = await getAdditionalContextTool.func({
+              query: call.args.query,
+            });
+
+            const contextMessage: Message = {
+              type: "context",
+              message: `The assistant executed this query: ${call.args.query} and got this response
+
+${result}`,
+              timestamp: Date.now(),
+            };
+
+            editor.updateShape({
+              ...shape,
+              props: {
+                messages: [...shape.props.messages, contextMessage],
+              },
+            });
+          }
+
           if (call.name === "createQuery") {
             const result = await createQueryTool.func({
               query: call.args.query,
@@ -146,7 +171,11 @@ export const Chat = ({
               x: bounds.right + 100,
               y: bounds.top,
               props: {
-                query: result,
+                query: format(result, {
+                  language: "postgresql",
+                  keywordCase: "upper",
+                  functionCase: "upper",
+                }),
                 w: 400,
                 h: 300,
               },
@@ -197,7 +226,7 @@ export const Chat = ({
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      ask();
+      ask().finally(() => setIsLoading(false));
     }
   };
 

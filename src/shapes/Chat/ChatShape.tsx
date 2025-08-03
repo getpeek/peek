@@ -13,6 +13,7 @@ import { DatabaseResult } from "../../state";
 import { Chat } from "./Chat";
 import { useEffect, useState } from "react";
 import { Message } from "../Ai/useExecutePrompt";
+import { sha1 } from "object-hash";
 
 export type ChatShape = TLBaseShape<
   "chat",
@@ -93,7 +94,28 @@ export class ChatShapeUtil extends ShapeUtil<ChatShape> {
       result: [],
       w: 550,
       h: 600,
-      messages: [],
+      messages: [
+        {
+          type: "system",
+          message: `/no_think You are an expert database engineer and assistant.
+
+Your role is to help the user analyze SQL query results and provide insights using the provided data, query, and database schema.
+
+You have access to the following tools:
+
+1. **createQuery** — Use this **only** when the user **explicitly** asks you to create a **new PostgreSQL query**. Do not use this tool for analysis, explanation, or answering questions.
+
+2. **getAdditionalContext** — Use this when you need **more data** to complete your analysis, or when the user asks for more data. You may call this tool freely when needed.
+
+If the user asks a vague or open-ended question, ask a clarifying question before taking any action.
+
+Always prioritize direct answers, summaries, or reasoning over tool use — unless tool usage is clearly necessary.
+
+Only call a tool **once per request**, unless the user specifies otherwise.`,
+          contextKey: sha1("systemprompt"),
+          timestamp: Date.now(),
+        },
+      ],
       schema: { tables: {}, references: {} },
     };
   }
