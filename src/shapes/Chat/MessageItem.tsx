@@ -2,6 +2,7 @@ import Markdown from "react-markdown";
 import { Message } from "../Ai/useExecutePrompt";
 import { IconRobot } from "@tabler/icons-react";
 import { Group, Stack, Text } from "@mantine/core";
+import remarkGfm from "remark-gfm";
 
 interface MessageItemProps {
   message: Message;
@@ -69,7 +70,7 @@ export const MessageItem = ({ message, index }: MessageItemProps) => {
     <div className={`message ${message.type}`}>
       <div className="message-label">{message.type}</div>
       <div className="message-content">
-        <Markdown>{message.message}</Markdown>
+        <Markdown remarkPlugins={[remarkGfm]}>{message.message}</Markdown>
       </div>
     </div>
   );

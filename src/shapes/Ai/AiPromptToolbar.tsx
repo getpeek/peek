@@ -53,7 +53,7 @@ export const AiPromptContextualToolbarComponent = track(() => {
       Here is the database schema. It contains all tables and their columns as well as a list of references between foreign keys for different tables.
       ${JSON.stringify(schema)}.
 
-      Respond ONLY with the sql in text format, no backticks, formatting, comments or anything else. Just the sql query.`,
+      Respond ONLY with the sql in text format, no backticks, markdown, formatting, comments or anything else. Just the sql query as plain text.`,
           timestamp: Date.now(),
         },
         {

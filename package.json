@@ -35,6 +35,7 @@
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
     "recharts": "2",
+    "remark-gfm": "^4.0.1",
     "scheduler": "^0.26.0",
     "sql-formatter": "^15.6.6",
     "tldraw": "^3.14.0",
