@@ -1,0 +1,8 @@
+.toolbar {
+    pointer-events: all;
+    border-radius: 9999px;
+    backdrop-filter: blur(10px);
+    background: hsla(247deg, 38%, 10%, 0.4);
+    border: 1px solid hsla(0deg, 0%, 100%, 0.05);
+    margin-bottom: 24px;
+}

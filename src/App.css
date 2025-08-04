@@ -60,6 +60,7 @@ body,
     --system-message-subtle: var(--mantine-color-blue-7);
 }
 .tl-container[data-color-mode="dark"] {
+    /** Table */
     --inbound-key: hsl(237deg, 38%, 11%);
     --inbound-key-hover: hsl(210deg, 80%, 15%);
     --outbound-key: hsl(237deg, 38%, 7%);
@@ -68,6 +69,8 @@ body,
     --cell-base: hsl(237deg, 38%, 9%);
     --cell-striped: hsl(237deg, 38%, 9%);
     --header-base: var(--cell-striped);
+
+    /** CHAT */
     --user-label: hsl(90deg, 80%, 80%);
     --assistant-label: hsl(200deg, 80%, 80%);
     --context-message: var(--mantine-color-green-1);

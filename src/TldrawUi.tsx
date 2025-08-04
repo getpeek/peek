@@ -1,14 +1,13 @@
 import {
   DefaultKeyboardShortcutsDialog,
   DefaultKeyboardShortcutsDialogContent,
-  DefaultToolbar,
   TLComponents,
   TLUiOverrides,
-  TldrawUiMenuItem,
   useTools,
 } from "tldraw";
 import { CustomContextualToolbarComponent } from "./tools/CustomToolbar";
 import { CustomContextMenu } from "./tools/CustomContextMenu";
+import { TlDrawToolbar } from "./tldraw/toolbar/Toolbar";
 
 export const customUiOverrides: TLUiOverrides = {
   tools(editor, tools) {
@@ -142,27 +141,21 @@ export const customUiOverrides: TLUiOverrides = {
 };
 
 export const customComponents: TLComponents = {
-  Toolbar: (props) => {
+  Toolbar: () => {
     const tools = useTools();
 
     delete tools["rectangle"];
     delete tools["arrow"];
     delete tools["line"];
+    delete tools["ellipse"];
 
-    return (
-      <DefaultToolbar {...props}>
-        <TldrawUiMenuItem {...tools["select"]} />
-        <TldrawUiMenuItem {...tools["query"]} />
-        <TldrawUiMenuItem {...tools["ai-prompt"]} />
-        <TldrawUiMenuItem {...tools["draw"]} />
-        <TldrawUiMenuItem {...tools["hand"]} />
-        <TldrawUiMenuItem {...tools["text"]} />
-      </DefaultToolbar>
-    );
+    return <TlDrawToolbar />;
   },
   SharePanel: null,
   ActionsMenu: null,
   HelpMenu: null,
+  Minimap: null,
+  MainMenu: null,
   StylePanel: null,
   QuickActions: null,
   ContextMenu: CustomContextMenu,
