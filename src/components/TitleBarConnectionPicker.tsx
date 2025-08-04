@@ -1,13 +1,46 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Modal, Text } from "@mantine/core";
-import { useAtomValue } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { activeConnectionAtom } from "../Connection/state";
+import { schemaAtom } from "../state";
 import { WorkspacePanel } from "../Connection/WorkspacePanel";
+import { invoke } from "@tauri-apps/api/core";
 import "./TitleBarConnectionPicker.css";
 
 export const TitleBarConnectionPicker: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
+  const [, setSchema] = useAtom(schemaAtom);
+  const [, setIsConnecting] = useState(false);
   const activeConnection = useAtomValue(activeConnectionAtom);
+
+  const fetchSchema = async () => {
+    const response = (await invoke("get_schema")) as string;
+    return JSON.parse(response);
+  };
+
+  useEffect(() => {
+    if (activeConnection) {
+      setConnection(activeConnection.connection.url);
+    }
+    fetchSchema().then(setSchema);
+  }, [activeConnection]);
+
+  const setConnection = async (url: string) => {
+    setIsConnecting(true);
+
+    try {
+      await invoke("set_connection", { connectionString: url });
+
+      const response = (await invoke("get_schema")) as string;
+      const schema = JSON.parse(response);
+
+      setSchema(schema);
+      setShowModal(false);
+    } catch {
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
   return (
     <>

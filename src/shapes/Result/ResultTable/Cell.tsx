@@ -65,7 +65,7 @@ export const DataCell = ({
         </div>
       );
     }
-    return value;
+    return <Text c="#ABA6FF">{value}</Text>;
   }
 
   if (type === "BOOL") {

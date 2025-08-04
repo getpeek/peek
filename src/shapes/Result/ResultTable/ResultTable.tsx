@@ -1,7 +1,7 @@
 import { Paper, Table, Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { useRef, useMemo, useEffect } from "react";
-import { createShapeId, HTMLContainer, useEditor } from "tldraw";
+import { createShapeId, useEditor } from "tldraw";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { schemaAtom } from "../../../state";
 import { ResultShape } from "../ResultShape";
@@ -42,7 +42,6 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
       schema,
     });
 
-    // Check if context with this key already exists in the messages
     const alreadyExists = chatShape.props.messages.some(
       (msg) => msg.type === "context" && msg.contextKey === contextKey,
     );
@@ -95,105 +94,98 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
 
   if (shape.props.data.length === 0) {
     return (
-      <HTMLContainer>
-        <Paper shadow="md" color="blue" c="blue">
-          <div
-            style={{
-              width: shape.props.w,
-              height: shape.props.h,
-            }}
-            className="no-results"
-          >
-            No results
-          </div>
-        </Paper>
-      </HTMLContainer>
+      <Paper shadow="md" color="blue" c="blue">
+        <div
+          style={{
+            width: shape.props.w,
+            height: shape.props.h,
+          }}
+          className="no-results"
+        >
+          No results
+        </div>
+      </Paper>
     );
   }
 
   return (
-    <HTMLContainer id={shape.id}>
-      <div
+    <div
+      style={{
+        width: shape.props.w,
+        height: shape.props.h,
+        pointerEvents: isEditing ? "all" : "auto",
+        overflow: "auto",
+        position: "relative",
+      }}
+      ref={scrollContainerRef}
+    >
+      <Table
+        stickyHeader
+        borderColor="var(--border-base)"
         style={{
-          width: shape.props.w,
-          height: shape.props.h,
-          pointerEvents: isEditing ? "all" : "auto",
-          overflow: "auto",
-          position: "relative",
+          width: "100%",
         }}
-        ref={scrollContainerRef}
       >
-        <Table
-          stickyHeader
-          striped
-          withColumnBorders
-          borderColor="var(--border-base)"
-          style={{
-            position: "absolute",
-            width: "100%",
-          }}
-        >
-          <Table.Thead>
-            <Table.Tr className="header-row">
-              {headers.map((header, i) => {
-                const hasInbound = inbound[header]?.length > 0;
-                const hasOutbound = outbound[header]?.length > 0;
-                const headerClasses = ["header"];
+        <Table.Thead>
+          <Table.Tr className="header-row">
+            {headers.map((header, i) => {
+              const hasInbound = inbound[header]?.length > 0;
+              const hasOutbound = outbound[header]?.length > 0;
+              const headerClasses = ["header"];
+
+              if (hasInbound) {
+                headerClasses.push("inbound");
+              } else if (hasOutbound) {
+                headerClasses.push("outbound");
+              }
+
+              return (
+                <Table.Th key={i} className={headerClasses.join(" ")} p={16}>
+                  <Text fw="bold" c="gray">
+                    {header}
+                    {hasInbound && hasOutbound && " ↕"}
+                    {hasInbound && !hasOutbound && " ↑"}
+                    {hasOutbound && !hasInbound && " ↓"}
+                  </Text>
+                </Table.Th>
+              );
+            })}
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {rowVirtualizer.getVirtualItems().map((row, i) => (
+            <Table.Tr key={row.key}>
+              {shape.props.data[row.index].map(([column, value, type], o) => {
+                const hasInbound = inbound[column]?.length > 0;
+                const hasOutbound = outbound[column]?.length > 0;
+
+                const cellClasses = ["cell"];
 
                 if (hasInbound) {
-                  headerClasses.push("inbound");
+                  cellClasses.push("inbound");
                 } else if (hasOutbound) {
-                  headerClasses.push("outbound");
+                  cellClasses.push("outbound");
+                }
+
+                if (i % 2 === 0) {
+                  cellClasses.push("even");
                 }
 
                 return (
-                  <Table.Th key={i} className={headerClasses.join(" ")}>
-                    <Text fw="bold" c="gray">
-                      {header}
-                      {hasInbound && hasOutbound && " ↕"}
-                      {hasInbound && !hasOutbound && " ↑"}
-                      {hasOutbound && !hasInbound && " ↓"}
-                    </Text>
-                  </Table.Th>
+                  <Table.Td key={o} className={cellClasses.join(" ")} p={16}>
+                    <DataCell
+                      value={value}
+                      type={type}
+                      outbound={outbound[column]}
+                      inbound={inbound[column]}
+                    />
+                  </Table.Td>
                 );
               })}
             </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {rowVirtualizer.getVirtualItems().map((row, i) => (
-              <Table.Tr key={row.key}>
-                {shape.props.data[row.index].map(([column, value, type], o) => {
-                  const hasInbound = inbound[column]?.length > 0;
-                  const hasOutbound = outbound[column]?.length > 0;
-
-                  const cellClasses = ["cell"];
-
-                  if (hasInbound) {
-                    cellClasses.push("inbound");
-                  } else if (hasOutbound) {
-                    cellClasses.push("outbound");
-                  }
-
-                  if (i % 2 === 0) {
-                    cellClasses.push("even");
-                  }
-
-                  return (
-                    <Table.Td key={o} className={cellClasses.join(" ")}>
-                      <DataCell
-                        value={value}
-                        type={type}
-                        outbound={outbound[column]}
-                        inbound={inbound[column]}
-                      />
-                    </Table.Td>
-                  );
-                })}
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
-      </div>
-    </HTMLContainer>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </div>
   );
 };

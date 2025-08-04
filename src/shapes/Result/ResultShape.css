@@ -1,3 +1,34 @@
+/* Gradient border for ResultShape container */
+.result-shape-container {
+    position: relative;
+    border-radius: 4px;
+}
+
+.result-shape-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 4px;
+    padding: 1px;
+    background: linear-gradient(
+        135deg,
+        hsla(0deg, 100%, 100%, 0.3) 0%,
+        hsla(0deg, 100%, 100%, 0) 100%
+    );
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+}
+
 .no-results {
     border-radius: 4px;
     background: var(--cell-base);
@@ -7,6 +38,11 @@
     justify-content: center;
     font-size: 16px;
     color: var(--rp-text);
+}
+
+.mantine-Table-table {
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 th.header {
@@ -41,4 +77,20 @@ th.header {
 
 .even:not(.inbound, .outbound) {
     background: var(--cell-striped);
+}
+
+.mantine-Table-tbody tr:hover .cell {
+    background: color-mix(in srgb, var(--cell-base) 80%, white 2%);
+}
+
+.mantine-Table-tbody tr:hover .even:not(.inbound, .outbound) {
+    background: color-mix(in srgb, var(--cell-striped) 80%, white 2%);
+}
+
+.mantine-Table-tbody tr:hover .inbound {
+    background: color-mix(in srgb, var(--inbound-key) 80%, white 2%);
+}
+
+.mantine-Table-tbody tr:hover .outbound {
+    background: color-mix(in srgb, var(--outbound-key) 80%, white 2%);
 }

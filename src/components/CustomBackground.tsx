@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { useEditor, useIsDarkMode, useValue } from "tldraw";
 
-const EDITOR_BACKGROUND = "#0E101A";
+const EDITOR_BACKGROUND = "#050919";
 const DOT_COLOR = "#26233a"; // Rose Pine overlay color for subtle dots
 const BASE_DOT_SIZE = 1; // Base dot radius in pixels
 const MAJOR_DOT_SIZE = 2; // Major dot radius in pixels

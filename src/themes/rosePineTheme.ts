@@ -10,7 +10,7 @@ export const rosePineTheme: editor.IStandaloneThemeData = {
     { token: "comment.block", foreground: "6e6a86", fontStyle: "italic" },
 
     // Keywords
-    { token: "keyword", foreground: "31748f", fontStyle: "bold" },
+    { token: "keyword", foreground: "3E8FB0", fontStyle: "bold" },
     { token: "keyword.control", foreground: "31748f", fontStyle: "bold" },
     { token: "keyword.operator", foreground: "31748f" },
 
@@ -28,8 +28,8 @@ export const rosePineTheme: editor.IStandaloneThemeData = {
     { token: "identifier.sql", foreground: "e0def4" },
 
     // Functions
-    { token: "predefined.sql", foreground: "9ccfd8" },
-    { token: "function", foreground: "9ccfd8" },
+    { token: "predefined.sql", foreground: "EB6F92" },
+    { token: "function", foreground: "EB6F92" },
 
     // Operators
     { token: "operator", foreground: "908caa" },
@@ -40,8 +40,8 @@ export const rosePineTheme: editor.IStandaloneThemeData = {
     { token: "delimiter.sql", foreground: "908caa" },
 
     // Types
-    { token: "type", foreground: "c4a7e7" },
-    { token: "type.sql", foreground: "c4a7e7" },
+    { token: "type", foreground: "EB6F92" },
+    { token: "type.sql", foreground: "EB6F92" },
 
     // Special
     { token: "tag", foreground: "eb6f92" },
@@ -54,7 +54,7 @@ export const rosePineTheme: editor.IStandaloneThemeData = {
   ],
   colors: {
     // Editor background
-    "editor.background": "#1F1D2E",
+    "editor.background": "#0F1021",
     "editor.foreground": "#e0def4",
 
     // Line numbers
@@ -83,7 +83,7 @@ export const rosePineTheme: editor.IStandaloneThemeData = {
     "editorIndentGuide.activeBackground": "#6e6a86",
 
     // Gutter
-    "editorGutter.background": "#1f1d2e",
+    "editorGutter.background": "#0F1021",
 
     // Scrollbar
     "scrollbarSlider.background": "#26233a",

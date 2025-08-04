@@ -60,14 +60,14 @@ body,
     --system-message-subtle: var(--mantine-color-blue-7);
 }
 .tl-container[data-color-mode="dark"] {
-    --inbound-key: hsl(210deg, 80%, 10%);
+    --inbound-key: hsl(237deg, 38%, 11%);
     --inbound-key-hover: hsl(210deg, 80%, 15%);
-    --outbound-key: hsl(150deg, 30%, 10%);
-    --outbound-key-hover: hsl(150deg, 30%, 15%);
-    --border-base: hsl(0deg, 0%, 10%);
-    --cell-base: hsl(20deg, 0%, 3%);
-    --cell-striped: hsl(20deg, 0%, 5%);
-    --header-base: hsl(20deg, 0%, 5%);
+    --outbound-key: hsl(237deg, 38%, 7%);
+    --outbound-key-hover: hsl(249deg, 12%, 15%);
+    --border-base: hsl(246deg, 33%, 17%);
+    --cell-base: hsl(237deg, 38%, 9%);
+    --cell-striped: hsl(237deg, 38%, 9%);
+    --header-base: var(--cell-striped);
     --user-label: hsl(90deg, 80%, 80%);
     --assistant-label: hsl(200deg, 80%, 80%);
     --context-message: var(--mantine-color-green-1);

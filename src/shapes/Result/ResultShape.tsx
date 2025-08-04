@@ -4,6 +4,7 @@ import {
   resizeBox,
   ShapeUtil,
   TLBaseShape,
+  HTMLContainer,
 } from "tldraw";
 import "./ResultShape.css";
 import { ResultTable } from "./ResultTable/ResultTable";
@@ -22,7 +23,21 @@ export class ResultShapeUtil extends ShapeUtil<ResultShape> {
   override canScroll = () => true;
 
   component(shape: ResultShape) {
-    return <ResultTable shape={shape} />;
+    return (
+      <HTMLContainer
+        id={shape.id}
+        className="result-shape-container"
+        style={{
+          width: shape.props.w,
+          height: shape.props.h,
+          borderRadius: "16px",
+          overflow: "hidden",
+          clipPath: "inset(0 round 16px)",
+        }}
+      >
+        <ResultTable shape={shape} />
+      </HTMLContainer>
+    );
   }
 
   getDefaultProps(): {
@@ -48,7 +63,9 @@ export class ResultShapeUtil extends ShapeUtil<ResultShape> {
   }
 
   indicator(shape: ResultShape) {
-    return <rect width={shape.props.w} height={shape.props.h} />;
+    return (
+      <rect width={shape.props.w} height={shape.props.h} rx={16} ry={16} />
+    );
   }
 
   override onResize(shape: ResultShape, info: any) {
