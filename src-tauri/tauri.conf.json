@@ -15,10 +15,10 @@
         "title": "peek",
         "width": 1200,
         "height": 800,
-        "windowEffects": {
-          "radius": 32,
-          "effects": ["blur"]
-        }
+        "transparent": true,
+        "decorations": false,
+        "shadow": false,
+        "titleBarStyle": "Transparent"
       }
     ],
     "security": {

@@ -9,42 +9,6 @@
     position: relative;
 }
 
-@keyframes shimmer {
-    0% {
-        background-position: -200% 0;
-    }
-    100% {
-        background-position: 200% 0;
-    }
-}
-
-.query-input {
-    display: block;
-    padding: 20px;
-    border-radius: 0 0 14px 14px;
-    border: none;
-    width: 100%;
-    height: calc(100% - 3px);
-    background: #1e1e1e;
-    color: #ffffff;
-    font-family:
-        "Monaspace Krypton", "SF Mono", "Monaco", "Inconsolata", "Roboto Mono",
-        monospace;
-    font-size: 14px;
-    line-height: 1.6;
-    resize: none;
-    outline: none;
-    transition: background-color 0.2s ease;
-}
-
-.query-input:focus {
-    background: linear-gradient(
-        135deg,
-        #1e1e1e 0%,
-        rgba(59, 130, 246, 0.03) 100%
-    );
-}
-
 .monaco-editor {
     border-radius: 0 0 14px 14px !important;
     border: none !important;

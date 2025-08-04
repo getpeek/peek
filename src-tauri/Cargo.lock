@@ -2805,6 +2805,8 @@ name = "peek"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "objc2 0.6.1",
+ "objc2-app-kit",
  "rust_decimal",
  "serde",
  "serde_json",

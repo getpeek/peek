@@ -1,5 +1,23 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: "Monaspace Krypton", monospace;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: transparent;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+    width: 100%;
+    background-color: transparent;
 }
 
 :root {

@@ -27,6 +27,8 @@ import "@mantine/charts/styles.css";
 import "./App.css";
 import { AiPromptTool } from "./shapes/Ai/AiTool";
 import { QueryTool } from "./shapes/Query/QueryTool";
+import { CustomBackground, CustomGrid } from "./components/CustomBackground";
+import { CustomTitleBar } from "./components/CustomTitleBar";
 
 const theme = createTheme({});
 
@@ -117,16 +119,29 @@ function App() {
 
   return (
     <MantineProvider theme={theme}>
-      <div style={{ position: "fixed", inset: 0 }}>
+      <CustomTitleBar />
+      <div
+        style={{
+          borderRadius: 8,
+          background: "transparent",
+          paddingTop: "40px",
+          height: "100%",
+        }}
+      >
         <MonacoManager />
         <Tldraw
           onMount={(editor) => {
             ref.current = editor;
+            editor.updateInstanceState({ isGridMode: true });
           }}
           store={store}
           shapeUtils={customShapes}
           overrides={customUiOverrides}
-          components={customComponents}
+          components={{
+            ...customComponents,
+            Background: CustomBackground,
+            Grid: CustomGrid,
+          }}
           tools={[QueryTool, AiPromptTool]}
         />
       </div>

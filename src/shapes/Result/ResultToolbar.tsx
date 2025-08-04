@@ -11,7 +11,7 @@ import { useCreateChart } from "../../tools/useCreateChart";
 import { ResultShape, ResultShapeUtil } from "./ResultShape";
 import {
   IconChartBar,
-  IconGitBranch,
+  IconGitFork,
   IconMessageChatbot,
 } from "@tabler/icons-react";
 import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
@@ -159,8 +159,8 @@ export const ResultContextualToolbarComponent = () => {
 
         <TldrawUiButton title="Branch" type="normal" onClick={createBranch}>
           <Group align="center" gap={4}>
-            <IconGitBranch size={16} />
-            <Text size="xs">Branch query</Text>
+            <IconGitFork size={16} />
+            <Text size="xs">Fork</Text>
           </Group>
         </TldrawUiButton>
 

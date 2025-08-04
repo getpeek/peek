@@ -4,6 +4,7 @@ import { useAtomValue } from "jotai";
 import { schemaAtom, sqlLanguageAtom, sqlParserAtom } from "../../../state";
 import { createSqlProvider } from "./languageProvider";
 import { editor, IDisposable } from "monaco-editor";
+import { rosePineTheme } from "../../../themes/rosePineTheme";
 
 export const MonacoManager = () => {
   const schema = useAtomValue(schemaAtom);
@@ -68,6 +69,9 @@ export const MonacoManager = () => {
         onMount={(editor, monaco) => {
           monacoRef.current = monaco;
           editorRef.current = editor;
+
+          // Register Rose Pine theme
+          monaco.editor.defineTheme("rose-pine", rosePineTheme);
 
           registerCompletionProvider();
         }}

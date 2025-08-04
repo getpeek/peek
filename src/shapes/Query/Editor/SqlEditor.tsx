@@ -1,6 +1,7 @@
 import Editor, { Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
 import "../Query.css";
+import { rosePineTheme } from "../../../themes/rosePineTheme";
 
 export const SqlEditor = ({
   query,
@@ -18,8 +19,16 @@ export const SqlEditor = ({
           height="100%"
           defaultLanguage="sql"
           defaultValue={query}
-          theme="vs-dark"
-          onMount={onMount}
+          theme="rose-pine"
+          onMount={(editor, monaco) => {
+            try {
+              monaco.editor.setTheme("rose-pine");
+            } catch {
+              monaco.editor.defineTheme("rose-pine", rosePineTheme);
+              monaco.editor.setTheme("rose-pine");
+            }
+            onMount?.(editor, monaco);
+          }}
           options={{
             lineNumbers: "off",
             wordWrap: "on",
