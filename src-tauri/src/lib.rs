@@ -1,7 +1,7 @@
 use serde_json::{json, Value};
 use sqlx::{Column, Connection, PgConnection, Row, TypeInfo};
 use std::collections::HashMap;
-use tauri::{async_runtime::Mutex, Manager, State};
+use tauri::{async_runtime::Mutex, State};
 
 #[derive(Debug, Default)]
 struct AppData {
