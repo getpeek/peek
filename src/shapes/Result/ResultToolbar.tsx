@@ -6,7 +6,6 @@ import {
   useEditor,
 } from "tldraw";
 import { Divider, Group, Text } from "@mantine/core";
-import { Parser } from "node-sql-parser";
 import { useCreateChart } from "../../tools/useCreateChart";
 import { ResultShape, ResultShapeUtil } from "./ResultShape";
 import {
@@ -32,13 +31,6 @@ export const ResultContextualToolbarComponent = () => {
       ([key, value]) =>
         typeof value === "number" && key !== "id" && !key.endsWith("_id"),
     );
-
-  let tables: (string | undefined)[] = [];
-  try {
-    tables = new Parser()
-      .tableList(props.query)
-      .map((table) => table.split("::").pop());
-  } catch {}
 
   const getSelectionBounds = () => {
     const fullBounds = editor.getSelectionRotatedScreenBounds();
@@ -131,13 +123,6 @@ export const ResultContextualToolbarComponent = () => {
       label="Actions"
     >
       <Group>
-        <Group pl="lg" py={0} h="100%">
-          {tables.map((table) => (
-            <Text key={table} size="xs">
-              {table}
-            </Text>
-          ))}
-        </Group>
         <Divider variant="solid" orientation="vertical" color="dark" />
         <Group py={0} h="100%">
           <Text size="xs">{props.data.length} Rows</Text>

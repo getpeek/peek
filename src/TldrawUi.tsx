@@ -155,6 +155,8 @@ export const customComponents: TLComponents = {
   ActionsMenu: null,
   HelpMenu: null,
   Minimap: null,
+  ZoomMenu: null,
+  PageMenu: null,
   MainMenu: null,
   StylePanel: null,
   QuickActions: null,

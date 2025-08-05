@@ -43,7 +43,7 @@ function App() {
   const [store, setStore] = useState<TLStore>();
   const [, setSnapshots] = useAtom(snapshotsAtom);
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isInitialLoadRef = useRef(true); // To track initial snapshot load
+  const isInitialLoadRef = useRef(true);
 
   const initTreeSitter = async () => {
     await Parser.init();
@@ -79,8 +79,10 @@ function App() {
       return;
     }
 
-    loadSnapshot(store, initialSnapshot);
-    isInitialLoadRef.current = false;
+    try {
+      loadSnapshot(store, initialSnapshot);
+      isInitialLoadRef.current = false;
+    } catch {}
   }, [store, initialSnapshot, activeConnection?.connection.url]);
 
   useEffect(() => {
@@ -120,31 +122,23 @@ function App() {
   return (
     <MantineProvider theme={theme}>
       <CustomTitleBar />
-      <div
-        style={{
-          borderRadius: 8,
-          background: "transparent",
-          paddingTop: "40px",
-          height: "100%",
+
+      <MonacoManager />
+      <Tldraw
+        onMount={(editor) => {
+          ref.current = editor;
+          editor.updateInstanceState({ isGridMode: true });
         }}
-      >
-        <MonacoManager />
-        <Tldraw
-          onMount={(editor) => {
-            ref.current = editor;
-            editor.updateInstanceState({ isGridMode: true });
-          }}
-          store={store}
-          shapeUtils={customShapes}
-          overrides={customUiOverrides}
-          components={{
-            ...customComponents,
-            Background: CustomBackground,
-            Grid: CustomGrid,
-          }}
-          tools={[QueryTool, AiPromptTool]}
-        />
-      </div>
+        store={store}
+        shapeUtils={customShapes}
+        overrides={customUiOverrides}
+        components={{
+          ...customComponents,
+          Background: CustomBackground,
+          Grid: CustomGrid,
+        }}
+        tools={[QueryTool, AiPromptTool]}
+      />
     </MantineProvider>
   );
 }

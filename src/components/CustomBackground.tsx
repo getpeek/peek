@@ -1,11 +1,11 @@
 import { useLayoutEffect, useRef } from "react";
 import { useEditor, useIsDarkMode, useValue } from "tldraw";
 
-const EDITOR_BACKGROUND = "#050919";
-const DOT_COLOR = "#26233a"; // Rose Pine overlay color for subtle dots
-const BASE_DOT_SIZE = 1; // Base dot radius in pixels
-const MAJOR_DOT_SIZE = 2; // Major dot radius in pixels
-const MAJOR_DOT_INTERVAL = 5; // Every 5th dot is larger
+const EDITOR_BACKGROUND = "#0E101A";
+const GRID_COLOR = "#1a1825"; // More subtle grid color
+const MAJOR_GRID_COLOR = "#26233a"; // Slightly brighter for major lines
+const BASE_GRID_SIZE = 100; // Base grid spacing in world units
+const MAJOR_GRID_INTERVAL = 4; // Every 4th line is a major line
 
 export function CustomGrid({
   size,
@@ -50,54 +50,80 @@ export function CustomGrid({
     // Calculate the page viewport bounds
     const pageViewportBounds = editor.getViewportPageBounds();
 
-    // Calculate zoom-responsive spacing - closer dots when zoomed in
-    const zoomFactor = Math.max(0.5, Math.min(2, camera.z));
-    const adjustedSize = size / zoomFactor;
+    // Use fixed world-space grid size for smooth zooming
+    const worldGridSize = BASE_GRID_SIZE;
 
-    const startPageX =
-      Math.ceil(pageViewportBounds.minX / adjustedSize) * adjustedSize;
-    const startPageY =
-      Math.ceil(pageViewportBounds.minY / adjustedSize) * adjustedSize;
-    const endPageX =
-      Math.floor(pageViewportBounds.maxX / adjustedSize) * adjustedSize;
-    const endPageY =
-      Math.floor(pageViewportBounds.maxY / adjustedSize) * adjustedSize;
-    const numRows = Math.round((endPageY - startPageY) / adjustedSize);
-    const numCols = Math.round((endPageX - startPageX) / adjustedSize);
+    // Calculate grid bounds with margin
+    const margin = worldGridSize * 2;
+    const startX = pageViewportBounds.minX - margin;
+    const endX = pageViewportBounds.maxX + margin;
+    const startY = pageViewportBounds.minY - margin;
+    const endY = pageViewportBounds.maxY + margin;
 
-    // Set dot properties
-    ctx.fillStyle = DOT_COLOR;
-    ctx.globalAlpha = 0.6;
+    // Calculate grid line positions in world space
+    const firstGridX = Math.floor(startX / worldGridSize) * worldGridSize;
+    const firstGridY = Math.floor(startY / worldGridSize) * worldGridSize;
 
-    // Draw dots at grid intersections
-    for (let row = 0; row <= numRows; row++) {
-      for (let col = 0; col <= numCols; col++) {
-        const pageX = startPageX + col * adjustedSize;
-        const pageY = startPageY + row * adjustedSize;
+    // Set line properties
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
 
-        // Convert page-space coordinates to canvas coordinates
-        const canvasX = (pageX + camera.x) * camera.z * devicePixelRatio;
-        const canvasY = (pageY + camera.y) * camera.z * devicePixelRatio;
+    // Calculate screen spacing and fade opacity based on zoom
+    const screenGridSize = worldGridSize * camera.z * devicePixelRatio;
+    const fadeOpacity = Math.min(1, Math.max(0, (screenGridSize - 10) / 30));
 
-        // Determine if this is a major dot (every 5th in both x and y)
-        const isMajorDot =
-          col % MAJOR_DOT_INTERVAL === 0 && row % MAJOR_DOT_INTERVAL === 0;
-        const dotSize =
-          (isMajorDot ? MAJOR_DOT_SIZE : BASE_DOT_SIZE) *
-          devicePixelRatio *
-          Math.max(0.5, camera.z);
+    // Only draw grid if it's not too dense on screen
+    if (screenGridSize > 5) {
+      // Draw vertical lines
+      for (let x = firstGridX; x <= endX; x += worldGridSize) {
+        // Determine line index for major/minor distinction
+        const lineIndex = Math.round(x / worldGridSize);
+        const isMajorLine = lineIndex % MAJOR_GRID_INTERVAL === 0;
 
-        // Only draw dots that are within the canvas bounds
-        if (
-          canvasX >= -dotSize &&
-          canvasX <= canvasW + dotSize &&
-          canvasY >= -dotSize &&
-          canvasY <= canvasH + dotSize
-        ) {
-          ctx.beginPath();
-          ctx.arc(canvasX, canvasY, dotSize, 0, 2 * Math.PI);
-          ctx.fill();
-        }
+        // Convert to screen coordinates
+        const screenX = (x + camera.x) * camera.z * devicePixelRatio;
+
+        // Skip lines outside the canvas
+        if (screenX < -10 || screenX > canvasW + 10) continue;
+
+        // Set line style with fade
+        ctx.strokeStyle = isMajorLine ? MAJOR_GRID_COLOR : GRID_COLOR;
+        ctx.lineWidth = isMajorLine
+          ? 1 * devicePixelRatio
+          : 0.5 * devicePixelRatio;
+        ctx.globalAlpha = fadeOpacity * (isMajorLine ? 0.4 : 0.2);
+
+        // Draw vertical line
+        ctx.beginPath();
+        ctx.moveTo(screenX, 0);
+        ctx.lineTo(screenX, canvasH);
+        ctx.stroke();
+      }
+
+      // Draw horizontal lines
+      for (let y = firstGridY; y <= endY; y += worldGridSize) {
+        // Determine line index for major/minor distinction
+        const lineIndex = Math.round(y / worldGridSize);
+        const isMajorLine = lineIndex % MAJOR_GRID_INTERVAL === 0;
+
+        // Convert to screen coordinates
+        const screenY = (y + camera.y) * camera.z * devicePixelRatio;
+
+        // Skip lines outside the canvas
+        if (screenY < -10 || screenY > canvasH + 10) continue;
+
+        // Set line style with fade
+        ctx.strokeStyle = isMajorLine ? MAJOR_GRID_COLOR : GRID_COLOR;
+        ctx.lineWidth = isMajorLine
+          ? 1 * devicePixelRatio
+          : 0.5 * devicePixelRatio;
+        ctx.globalAlpha = fadeOpacity * (isMajorLine ? 0.4 : 0.2);
+
+        // Draw horizontal line
+        ctx.beginPath();
+        ctx.moveTo(0, screenY);
+        ctx.lineTo(canvasW, screenY);
+        ctx.stroke();
       }
     }
   }, [screenBounds, camera, size, devicePixelRatio, editor, isDarkMode]);

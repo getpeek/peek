@@ -20,6 +20,11 @@ body,
     background-color: transparent;
 }
 
+/* Just remove temporarily remove this for demo purposes */
+.tl-watermark_SEE-LICENSE {
+    display: none !important;
+}
+
 :root {
     --inbound-key: hsl(210deg, 80%, 90%);
     --inbound-key-hover: hsl(210deg, 80%, 85%);

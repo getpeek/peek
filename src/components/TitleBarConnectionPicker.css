@@ -2,7 +2,6 @@
     display: flex;
     align-items: center;
     height: 100%;
-    /* Prevent connection picker from being draggable */
     -webkit-app-region: no-drag;
 }
 

@@ -4,14 +4,13 @@
     left: 0;
     right: 0;
     height: 40px;
-    background-color: #0b0d18;
+    background-color: hsl(240deg, 40%, 10%, 0.4);
     z-index: 10000;
     user-select: none;
     display: flex;
     align-items: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
 }
@@ -23,7 +22,6 @@
     width: 100%;
     height: 100%;
     padding: 0 16px;
-    /* This makes the entire content area draggable except for buttons */
     -webkit-app-region: drag;
     cursor: grab;
 }
@@ -32,20 +30,10 @@
     cursor: grabbing;
 }
 
-.app-name {
-    font-family: "Monaspace Krypton", monospace;
-    font-size: 14px;
-    font-weight: 500;
-    color: #ffffff;
-    opacity: 0.9;
-    letter-spacing: 0.025em;
-}
-
 .window-controls {
     display: flex;
     align-items: center;
-    gap: 8px;
-    /* Prevent window controls from being draggable */
+    gap: 4px;
     -webkit-app-region: no-drag;
 }
 
@@ -86,39 +74,4 @@
 .close-button:hover {
     background: rgba(255, 69, 58, 0.15);
     color: #ff453a;
-}
-
-/* Ensure the main content doesn't overlap with the titlebar */
-.titlebar-spacer {
-    height: 40px;
-    width: 100%;
-    flex-shrink: 0;
-}
-
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-    .custom-titlebar {
-        background-color: #0b0d18;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-}
-
-/* Light mode adjustments */
-@media (prefers-color-scheme: light) {
-    .custom-titlebar {
-        background-color: #0b0d18;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .app-name {
-        color: #ffffff;
-    }
-
-    .control-button {
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-    .control-button:hover {
-        color: rgba(255, 255, 255, 0.9);
-    }
 }

@@ -26,7 +26,13 @@ export const TlDrawToolbar = () => {
       label: "Select",
       hotkey: "ESC",
       icon: (
-        <IconMouse color={selectedTool === "select" ? "#B7B5E3" : "#212232"} />
+        <IconMouse
+          color={
+            selectedTool === "select"
+              ? "hsl(242deg, 45%, 90%)"
+              : "hsl(242deg, 15%, 40%)"
+          }
+        />
       ),
       tool: "select",
     },
@@ -34,7 +40,13 @@ export const TlDrawToolbar = () => {
       label: "Query node",
       hotkey: "(q)",
       icon: (
-        <IconSql color={selectedTool === "query" ? "#B7B5E3" : "#212232"} />
+        <IconSql
+          color={
+            selectedTool === "query"
+              ? "hsl(242deg, 45%, 90%)"
+              : "hsl(242deg, 15%, 40%)"
+          }
+        />
       ),
       tool: "query",
     },
@@ -42,7 +54,13 @@ export const TlDrawToolbar = () => {
       label: "AI",
       hotkey: "(a)",
       icon: (
-        <IconAi color={selectedTool === "ai-prompt" ? "#B7B5E3" : "#212232"} />
+        <IconAi
+          color={
+            selectedTool === "ai-prompt"
+              ? "hsl(242deg, 45%, 90%)"
+              : "hsl(242deg, 15%, 40%)"
+          }
+        />
       ),
       tool: "ai-prompt",
     },
@@ -50,7 +68,13 @@ export const TlDrawToolbar = () => {
       label: "Draw",
       hotkey: "(d)",
       icon: (
-        <IconPencil color={selectedTool === "draw" ? "#B7B5E3" : "#212232"} />
+        <IconPencil
+          color={
+            selectedTool === "draw"
+              ? "hsl(242deg, 45%, 90%)"
+              : "hsl(242deg, 15%, 40%)"
+          }
+        />
       ),
       tool: "draw",
     },
@@ -59,7 +83,11 @@ export const TlDrawToolbar = () => {
       hotkey: "(t)",
       icon: (
         <IconTypography
-          color={selectedTool === "text" ? "#B7B5E3" : "#212232"}
+          color={
+            selectedTool === "text"
+              ? "hsl(242deg, 45%, 90%)"
+              : "hsl(242deg, 15%, 40%)"
+          }
         />
       ),
       tool: "text",
