@@ -1,0 +1,30 @@
+.back-to-content {
+    position: absolute;
+    left: calc(50vw - 100px);
+    bottom: 90px;
+    pointer-events: all;
+    width: 200px;
+    border-radius: 9999px;
+    backdrop-filter: blur(10px);
+    background: hsla(60deg, 50%, 50%, 0.7);
+    color: hsla(60deg, 50%, 100%, 1);
+    border: 1px solid hsla(60deg, 50%, 50%, 0.9);
+    padding: 16px;
+    animation: slideIn 0.3s ease-in forwards;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    &:hover {
+        background: hsla(60deg, 50%, 40%, 0.7);
+    }
+}
+
+@keyframes slideIn {
+    0% {
+        transform: translateY(15px);
+        opacity: 0;
+    }
+    100 {
+        transform: translateY();
+        opacity: 1;
+    }
+}

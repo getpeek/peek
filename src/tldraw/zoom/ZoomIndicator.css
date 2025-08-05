@@ -1,0 +1,12 @@
+.zoom-indicator {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    pointer-events: all;
+    width: 100px;
+    border-radius: 9999px;
+    backdrop-filter: blur(10px);
+    background: hsla(247deg, 38%, 20%, 0.4);
+    border: 1px solid hsla(0deg, 0%, 100%, 0.05);
+    padding: 16px;
+}

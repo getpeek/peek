@@ -65,6 +65,8 @@ body,
     --system-message-subtle: var(--mantine-color-blue-7);
 }
 .tl-container[data-color-mode="dark"] {
+    --text-color: hsla(242deg, 45%, 80%);
+
     /** Table */
     --inbound-key: hsl(237deg, 38%, 11%);
     --inbound-key-hover: hsl(210deg, 80%, 15%);

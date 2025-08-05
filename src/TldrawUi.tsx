@@ -1,13 +1,9 @@
-import {
-  DefaultKeyboardShortcutsDialog,
-  DefaultKeyboardShortcutsDialogContent,
-  TLComponents,
-  TLUiOverrides,
-  useTools,
-} from "tldraw";
+import { TLComponents, TLUiOverrides, useTools } from "tldraw";
 import { CustomContextualToolbarComponent } from "./tools/CustomToolbar";
 import { CustomContextMenu } from "./tools/CustomContextMenu";
 import { TlDrawToolbar } from "./tldraw/toolbar/Toolbar";
+import { ZoomIndicator } from "./tldraw/zoom/ZoomIndicator";
+import { BackToContent } from "./tldraw/back-to-content/BackToContent";
 
 export const customUiOverrides: TLUiOverrides = {
   tools(editor, tools) {
@@ -155,38 +151,14 @@ export const customComponents: TLComponents = {
   ActionsMenu: null,
   HelpMenu: null,
   Minimap: null,
-  ZoomMenu: null,
+  ZoomMenu: ZoomIndicator,
   PageMenu: null,
+  SnapIndicator: null,
   MainMenu: null,
   StylePanel: null,
+  HelperButtons: BackToContent,
   QuickActions: null,
   ContextMenu: CustomContextMenu,
   InFrontOfTheCanvas: CustomContextualToolbarComponent,
-  KeyboardShortcutsDialog: (props) => {
-    return (
-      <DefaultKeyboardShortcutsDialog {...props}>
-        <DefaultKeyboardShortcutsDialogContent />
-        <div
-          style={{
-            display: "flex",
-            gridColumn: "1 / -1",
-            flexDirection: "column",
-            gap: "8px",
-          }}
-        >
-          <div style={{ fontWeight: "bold" }}>Query editor</div>
-          <div
-            style={{
-              display: "flex",
-              gap: "8px",
-              alignItems: "center",
-            }}
-          >
-            <kbd>Q</kbd>
-            <span>Query editor</span>
-          </div>
-        </div>
-      </DefaultKeyboardShortcutsDialog>
-    );
-  },
+  KeyboardShortcutsDialog: null,
 };

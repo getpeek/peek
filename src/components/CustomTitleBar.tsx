@@ -5,7 +5,6 @@ import "./CustomTitleBar.css";
 
 export const CustomTitleBar: React.FC = () => {
   const handleMinimize = async () => {
-    console.log("minimizing");
     const window = getCurrentWindow();
     await window.minimize();
   };
