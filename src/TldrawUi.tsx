@@ -1,9 +1,9 @@
 import { TLComponents, TLUiOverrides, useTools } from "tldraw";
-import { CustomContextualToolbarComponent } from "./tools/CustomToolbar";
 import { CustomContextMenu } from "./tools/CustomContextMenu";
 import { TlDrawToolbar } from "./tldraw/toolbar/Toolbar";
 import { ZoomIndicator } from "./tldraw/zoom/ZoomIndicator";
 import { BackToContent } from "./tldraw/back-to-content/BackToContent";
+import { ContextToolbar } from "./tldraw/context-toolbar/ContextToolbar";
 
 export const customUiOverrides: TLUiOverrides = {
   tools(editor, tools) {
@@ -159,6 +159,6 @@ export const customComponents: TLComponents = {
   HelperButtons: BackToContent,
   QuickActions: null,
   ContextMenu: CustomContextMenu,
-  InFrontOfTheCanvas: CustomContextualToolbarComponent,
+  InFrontOfTheCanvas: ContextToolbar,
   KeyboardShortcutsDialog: null,
 };

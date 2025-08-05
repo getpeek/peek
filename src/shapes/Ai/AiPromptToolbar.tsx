@@ -1,31 +1,18 @@
-import {
-  Box,
-  createShapeId,
-  TldrawUiButton,
-  TldrawUiContextualToolbar,
-  track,
-  useEditor,
-} from "tldraw";
+import { createShapeId, track, useEditor } from "tldraw";
 import { AIPromptShapeUtil } from "./AiShape";
 import { useExecutePrompt } from "./useExecutePrompt";
 import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
 import { format } from "sql-formatter";
 import { useAtomValue } from "jotai";
 import { schemaAtom } from "../../state";
+import { Button, Group } from "@mantine/core";
+import { IconPlayerPlay } from "@tabler/icons-react";
 
 export const AiPromptContextualToolbarComponent = track(() => {
   const editor = useEditor();
   const schema = useAtomValue(schemaAtom);
 
   const runPrompt = useExecutePrompt("fast");
-
-  const getSelectionBounds = () => {
-    const fullBounds = editor.getSelectionRotatedScreenBounds();
-    if (!fullBounds) {
-      return undefined;
-    }
-    return new Box(fullBounds.x, fullBounds.y, fullBounds.width, 0);
-  };
 
   const runExecuteQuery = async () => {
     const shape = editor
@@ -147,13 +134,10 @@ export const AiPromptContextualToolbarComponent = track(() => {
   };
 
   return (
-    <TldrawUiContextualToolbar
-      getSelectionBounds={getSelectionBounds}
-      label="Sizes"
-    >
-      <TldrawUiButton title="Prompt" type="normal" onClick={runExecuteQuery}>
-        Generate query
-      </TldrawUiButton>
-    </TldrawUiContextualToolbar>
+    <Group>
+      <Button title="Prompt" variant="transparent" onClick={runExecuteQuery}>
+        Generate <IconPlayerPlay size={20} />
+      </Button>
+    </Group>
   );
 });

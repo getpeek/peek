@@ -11,12 +11,14 @@ import { AST, Parser } from "node-sql-parser";
 import { ChatShape } from "../../Chat/ChatShape";
 import { Message } from "../../Ai/useExecutePrompt";
 import { sha1 } from "object-hash";
+import { useCreateChart } from "../../../tools/useCreateChart";
 
 export const ResultTable = ({ shape }: { shape: ResultShape }) => {
   const editor = useEditor();
   const isEditing = editor.getEditingShapeId() === shape.id;
   const schema = useAtomValue(schemaAtom);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const manageChart = useCreateChart(shape);
 
   const headers = (shape.props.data[0] ?? []).map(([key]) => key);
   const totalRows = shape.props.data.length;
@@ -27,6 +29,17 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
     overscan: 40,
     estimateSize: () => 40,
   });
+
+  useEffect(() => {
+    const chartShapeId = createShapeId(`${shape.id}-chart`);
+    const chart = editor.getShape(chartShapeId);
+
+    if (!chart) {
+      return;
+    }
+
+    manageChart();
+  }, [shape.props.data]);
 
   useEffect(() => {
     const chatShapeId = createShapeId(`${shape.id}-chat`);

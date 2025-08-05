@@ -1,11 +1,5 @@
-import {
-  Box,
-  createShapeId,
-  TldrawUiButton,
-  TldrawUiContextualToolbar,
-  useEditor,
-} from "tldraw";
-import { Divider, Group, Text } from "@mantine/core";
+import { createShapeId, useEditor } from "tldraw";
+import { Button, Divider, Group, Text } from "@mantine/core";
 import { useCreateChart } from "../../tools/useCreateChart";
 import { ResultShape, ResultShapeUtil } from "./ResultShape";
 import {
@@ -16,6 +10,7 @@ import {
 import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
 import { useAtomValue } from "jotai";
 import { schemaAtom } from "../../state";
+import "../../tldraw/context-toolbar/ContextToolbar.css";
 
 export const ResultContextualToolbarComponent = () => {
   const editor = useEditor();
@@ -31,14 +26,6 @@ export const ResultContextualToolbarComponent = () => {
       ([key, value]) =>
         typeof value === "number" && key !== "id" && !key.endsWith("_id"),
     );
-
-  const getSelectionBounds = () => {
-    const fullBounds = editor.getSelectionRotatedScreenBounds();
-    if (!fullBounds) {
-      return undefined;
-    }
-    return new Box(fullBounds.x, fullBounds.y, fullBounds.width, 0);
-  };
 
   const runCreateChart = () => {
     createChart();
@@ -118,48 +105,42 @@ export const ResultContextualToolbarComponent = () => {
   };
 
   return (
-    <TldrawUiContextualToolbar
-      getSelectionBounds={getSelectionBounds}
-      label="Actions"
-    >
-      <Group>
-        <Divider variant="solid" orientation="vertical" color="dark" />
-        <Group py={0} h="100%">
-          <Text size="xs">{props.data.length} Rows</Text>
-        </Group>
-        <Divider variant="solid" orientation="vertical" color="dark" />
-        {canChart && (
-          <TldrawUiButton
-            title="Graph"
-            type="normal"
-            onClick={runCreateChart}
-            disabled={!canChart}
-          >
-            <Group align="center" gap={4}>
-              <IconChartBar size={16} />
-              <Text size="xs">Chart</Text>
-            </Group>
-          </TldrawUiButton>
-        )}
-
-        <TldrawUiButton title="Branch" type="normal" onClick={createBranch}>
-          <Group align="center" gap={4}>
-            <IconGitFork size={16} />
-            <Text size="xs">Fork</Text>
-          </Group>
-        </TldrawUiButton>
-
-        <TldrawUiButton
-          title="Ask about this result"
-          type="normal"
-          onClick={createAskShape}
+    <Group>
+      <Group py={0} h="100%">
+        <Text size="xs">{props.data.length} Rows</Text>
+      </Group>
+      <Divider variant="solid" orientation="vertical" color="dark" />
+      {canChart && (
+        <Button
+          variant="transparent"
+          title="Graph"
+          onClick={runCreateChart}
+          disabled={!canChart}
         >
           <Group align="center" gap={4}>
-            <IconMessageChatbot size={16} />
-            <Text size="xs">Ask</Text>
+            <IconChartBar size={16} />
+            <Text size="xs">Chart</Text>
           </Group>
-        </TldrawUiButton>
-      </Group>
-    </TldrawUiContextualToolbar>
+        </Button>
+      )}
+
+      <Button variant="transparent" onClick={createBranch}>
+        <Group align="center" gap={4}>
+          <IconGitFork size={16} />
+          <Text size="xs">Fork</Text>
+        </Group>
+      </Button>
+
+      <Button
+        variant="transparent"
+        title="Ask about this result"
+        onClick={createAskShape}
+      >
+        <Group align="center" gap={4}>
+          <IconMessageChatbot size={16} />
+          <Text size="xs">Ask</Text>
+        </Group>
+      </Button>
+    </Group>
   );
 };
