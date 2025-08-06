@@ -23,7 +23,7 @@
         transform: translateY(15px);
         opacity: 0;
     }
-    100 {
+    100% {
         transform: translateY();
         opacity: 1;
     }

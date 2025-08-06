@@ -21,6 +21,7 @@ import {
   snapshotsAtom,
 } from "./Connection/state";
 import { customShapes } from "./shapes";
+import { indexedDBService } from "./db/IndexedDBService";
 import "tldraw/tldraw.css";
 import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
@@ -59,6 +60,15 @@ function App() {
   };
 
   useEffect(() => {
+    const initialize = async () => {
+      try {
+        await indexedDBService.init();
+      } catch (error) {
+        console.error("Failed to initialize IndexedDB:", error);
+      }
+    };
+
+    initialize();
     initTreeSitter().then(() => {});
   }, []);
 

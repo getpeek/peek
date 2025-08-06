@@ -1,18 +1,17 @@
-import { atomWithStorage } from "jotai/utils";
 import { Connection, Workspace } from "./types";
-import { TLEditorSnapshot } from "tldraw";
 import { atom } from "jotai";
+import {
+  atomWithIndexedDB,
+  atomWithIndexedDBSnapshots,
+} from "../db/atomWithIndexedDB";
 
-export const workspacesAtom = atomWithStorage<Workspace[]>("workspaces", []);
+export const workspacesAtom = atomWithIndexedDB<Workspace[]>("workspaces", []);
 
-export const activeConnectionAtom = atomWithStorage<
+export const activeConnectionAtom = atomWithIndexedDB<
   { connection: Connection; workspaceName: string } | undefined
 >("activeConnection", undefined);
 
-export const snapshotsAtom = atomWithStorage<Record<string, TLEditorSnapshot>>(
-  "snapshots",
-  {},
-);
+export const snapshotsAtom = atomWithIndexedDBSnapshots();
 
 export const snapshotForUrlAtom = (url: string) =>
   atom((get) => get(snapshotsAtom)[url]);

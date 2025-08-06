@@ -26,44 +26,27 @@ body,
 }
 
 :root {
-    --inbound-key: hsl(210deg, 80%, 90%);
-    --inbound-key-hover: hsl(210deg, 80%, 85%);
-    --outbound-key: hsl(50deg, 80%, 90%);
-    --outbound-key-hover: hsl(20deg, 80%, 85%);
-    --border-base: hsl(0deg, 0%, 90%);
-    --cell-base: hsl(20deg, 0%, 97%);
-    --cell-striped: hsl(20deg, 0%, 100%);
-    --header-base: hsl(20deg, 0%, 97%);
-    --user-label: hsl(90deg, 80%, 30%);
-    @media (prefers-color-scheme: dark) {
-        --inbound-key: hsl(210deg, 80%, 10%);
-        --inbound-key-hover: hsl(210deg, 80%, 15%);
-        --outbound-key: hsl(150deg, 30%, 10%);
-        --outbound-key-hover: hsl(150deg, 30%, 15%);
-        --border-base: hsl(0deg, 0%, 10%);
-        --cell-base: hsl(20deg, 0%, 3%);
-        --cell-striped: hsl(20deg, 0%, 5%);
-        --header-base: hsl(20deg, 0%, 5%);
-        --user-label: hsl(90deg, 80%, 80%);
-    }
+    --text-color: hsla(242deg, 45%, 80%);
+
+    /** Table */
+    --inbound-key: hsl(237deg, 38%, 11%);
+    --inbound-key-hover: hsl(210deg, 80%, 15%);
+    --outbound-key: hsl(237deg, 38%, 7%);
+    --outbound-key-hover: hsl(249deg, 12%, 15%);
+    --border-base: hsl(246deg, 33%, 17%);
+    --cell-base: hsl(237deg, 38%, 9%);
+    --cell-striped: hsl(237deg, 38%, 9%);
+    --header-base: var(--cell-striped);
+
+    /** CHAT */
+    --user-label: hsl(90deg, 80%, 80%);
+    --assistant-label: hsl(200deg, 80%, 80%);
+    --context-message: var(--mantine-color-green-1);
+    --context-message-subtle: var(--mantine-color-green-2);
+    --system-message: var(--mantine-color-blue-1);
+    --system-message-subtle: var(--mantine-color-blue-2);
 }
 
-.tl-container[data-color-mode="light"] {
-    --inbound-key: hsl(210deg, 80%, 90%);
-    --inbound-key-hover: hsl(210deg, 80%, 85%);
-    --outbound-key: hsl(50deg, 80%, 90%);
-    --outbound-key-hover: hsl(20deg, 80%, 85%);
-    --border-base: hsl(0deg, 0%, 90%);
-    --cell-base: hsl(20deg, 0%, 97%);
-    --cell-striped: hsl(20deg, 0%, 100%);
-    --header-base: hsl(20deg, 0%, 97%);
-    --user-label: hsl(90deg, 80%, 30%);
-    --assistant-label: hsl(200deg, 80%, 30%);
-    --context-message: var(--mantine-color-green-8);
-    --context-message-subtle: var(--mantine-color-green-7);
-    --system-message: var(--mantine-color-blue-8);
-    --system-message-subtle: var(--mantine-color-blue-7);
-}
 .tl-container[data-color-mode="dark"] {
     --text-color: hsla(242deg, 45%, 80%);
 

@@ -17,7 +17,7 @@ export interface Message {
 }
 
 const advancedModel = new ChatOllama({
-  model: "qwen3:14b",
+  model: "gpt-oss:20b",
   baseUrl: "http://localhost:11434",
   streaming: true,
 });
