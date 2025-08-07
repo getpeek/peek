@@ -27,6 +27,7 @@ body,
 
 :root {
     --text-color: hsla(242deg, 45%, 80%);
+    --remove-color: hsla(10deg, 75%, 70%);
 
     /** Table */
     --inbound-key: hsl(237deg, 38%, 11%);

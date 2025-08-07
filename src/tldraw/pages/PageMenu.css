@@ -1,0 +1,33 @@
+.page-menu {
+    position: absolute;
+    top: 60px;
+    left: 20px;
+    color: var(--text-color);
+    cursor: pointer;
+    pointer-events: all;
+    border-radius: 9999px;
+    backdrop-filter: blur(10px);
+    border: 1px solid hsla(0deg, 0%, 100%, 0.05);
+    padding: 8px 16px;
+    background: hsla(247deg, 38%, 20%, 0.4);
+    &:hover {
+        background: hsla(247deg, 38%, 30%, 0.4);
+    }
+    white-space: nowrap;
+    transition: background 0.2s ease-in;
+}
+
+.page-name {
+    color: var(--text-color);
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    &[data-active="true"] {
+        color: #fff;
+    }
+}
+
+.dropdown {
+    width: 300px;
+}

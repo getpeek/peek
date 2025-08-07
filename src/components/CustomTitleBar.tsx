@@ -27,6 +27,7 @@ export const CustomTitleBar: React.FC = () => {
             className="control-button close-button"
             onClick={handleClose}
             aria-label="Close"
+            tabIndex={-1}
           >
             <svg width="10" height="10" viewBox="0 0 10 10">
               <path
@@ -41,6 +42,7 @@ export const CustomTitleBar: React.FC = () => {
             className="control-button minimize-button"
             onClick={handleMinimize}
             aria-label="Minimize"
+            tabIndex={-1}
           >
             <svg width="10" height="10" viewBox="0 0 10 10">
               <path
@@ -55,6 +57,7 @@ export const CustomTitleBar: React.FC = () => {
             className="control-button maximize-button"
             onClick={handleMaximize}
             aria-label="Maximize"
+            tabIndex={-1}
           >
             <svg width="10" height="10" viewBox="0 0 10 10">
               <path

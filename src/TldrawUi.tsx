@@ -4,6 +4,7 @@ import { TlDrawToolbar } from "./tldraw/toolbar/Toolbar";
 import { ZoomIndicator } from "./tldraw/zoom/ZoomIndicator";
 import { BackToContent } from "./tldraw/back-to-content/BackToContent";
 import { ContextToolbar } from "./tldraw/context-toolbar/ContextToolbar";
+import { PageMenu } from "./tldraw/pages/PageMenu";
 
 export const customUiOverrides: TLUiOverrides = {
   tools(editor, tools) {
@@ -152,7 +153,7 @@ export const customComponents: TLComponents = {
   HelpMenu: null,
   Minimap: null,
   ZoomMenu: ZoomIndicator,
-  PageMenu: null,
+  PageMenu: PageMenu,
   SnapIndicator: null,
   MainMenu: null,
   StylePanel: null,
