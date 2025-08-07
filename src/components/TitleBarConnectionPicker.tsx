@@ -55,47 +55,28 @@ export const TitleBarConnectionPicker: React.FC = () => {
 
       <div className="titlebar-connection-picker">
         {activeConnection ? (
-          <Button
-            variant="subtle"
-            size="xs"
+          <button
             onClick={() => setShowModal(true)}
             className="connection-button"
             style={{
-              backgroundColor: `${activeConnection.connection.color}30`,
-              borderColor: `${activeConnection.connection.color}60`,
-              border: `1px solid ${activeConnection.connection.color}60`,
+              backgroundColor: `color-mix(in srgb, ${activeConnection.connection.color} 20%, 100% transparent)`,
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = `${activeConnection.connection.color}45`;
-              e.currentTarget.style.borderColor = `${activeConnection.connection.color}80`;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = `${activeConnection.connection.color}30`;
-              e.currentTarget.style.borderColor = `${activeConnection.connection.color}60`;
-            }}
-            leftSection={
-              <div
-                className="connection-indicator"
-                style={{ backgroundColor: activeConnection.connection.color }}
-              />
-            }
           >
+            <div
+              className="connection-indicator"
+              style={{ backgroundColor: activeConnection.connection.color }}
+            />
             <Text size="xs" className="connection-text">
               {activeConnection.connection.name} (
               {activeConnection.workspaceName})
             </Text>
-          </Button>
+          </button>
         ) : (
           <Button
             variant="subtle"
             size="xs"
             onClick={() => setShowModal(true)}
-            className="connection-button"
-            style={{
-              backgroundColor: "rgba(255, 255, 255, 0.08)",
-              borderColor: "rgba(255, 255, 255, 0.15)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-            }}
+            className="connection-button no-connection"
           >
             <Text size="xs" className="connection-text">
               No connection

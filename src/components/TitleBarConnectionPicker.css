@@ -10,17 +10,15 @@
     padding: 0 8px;
     border-radius: 4px;
     transition: all 0.15s ease;
-    max-width: 200px;
     overflow: hidden;
     position: relative;
-}
-
-.connection-button:hover {
-    transform: translateY(-1px);
-}
-
-.connection-button:active {
-    transform: scale(0.98);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border: 1px solid hsla(0deg, 0%, 100%, 0.05);
+    border-radius: 9999px;
+    cursor: pointer;
 }
 
 .connection-indicator {
