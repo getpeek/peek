@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { useState } from "react";
-import { IconDotsVertical, IconMenu, IconX } from "@tabler/icons-react";
+import { IconDotsVertical, IconX } from "@tabler/icons-react";
 
 export const PageMenu = () => {
   const editor = useEditor();
