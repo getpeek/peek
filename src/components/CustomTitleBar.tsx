@@ -2,8 +2,13 @@ import React from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { TitleBarConnectionPicker } from "./TitleBarConnectionPicker";
 import "./CustomTitleBar.css";
+import { useAtomValue } from "jotai";
+import { activeConnectionAtom } from "../Connection/state";
+import { IconMaximize, IconMinus, IconX } from "@tabler/icons-react";
 
 export const CustomTitleBar: React.FC = () => {
+  const activeConnection = useAtomValue(activeConnectionAtom);
+
   const handleMinimize = async () => {
     const window = getCurrentWindow();
     await window.minimize();
@@ -20,7 +25,15 @@ export const CustomTitleBar: React.FC = () => {
   };
 
   return (
-    <div className="custom-titlebar">
+    <div
+      className="custom-titlebar"
+      style={
+        {
+          "--background":
+            activeConnection?.connection.color ?? "hsl(240deg, 40%, 10%, 0.4)",
+        } as React.CSSProperties
+      }
+    >
       <div className="titlebar-content" data-tauri-drag-region>
         <div className="window-controls">
           <button
@@ -29,14 +42,7 @@ export const CustomTitleBar: React.FC = () => {
             aria-label="Close"
             tabIndex={-1}
           >
-            <svg width="10" height="10" viewBox="0 0 10 10">
-              <path
-                d="M1.5 1.5l7 7m-7 0l7-7"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <IconX size={9} color="#333" className="icon" stroke={3} />
           </button>
           <button
             className="control-button minimize-button"
@@ -44,14 +50,7 @@ export const CustomTitleBar: React.FC = () => {
             aria-label="Minimize"
             tabIndex={-1}
           >
-            <svg width="10" height="10" viewBox="0 0 10 10">
-              <path
-                d="M1 5h8"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <IconMinus size={9} color="#333" className="icon" stroke={3} />
           </button>
           <button
             className="control-button maximize-button"
@@ -59,15 +58,7 @@ export const CustomTitleBar: React.FC = () => {
             aria-label="Maximize"
             tabIndex={-1}
           >
-            <svg width="10" height="10" viewBox="0 0 10 10">
-              <path
-                d="M1.5 1.5h7v7h-7z"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                fill="none"
-                strokeLinecap="round"
-              />
-            </svg>
+            <IconMaximize size={9} color="#333" className="icon" stroke={3} />
           </button>
         </div>
         <TitleBarConnectionPicker />

@@ -4,15 +4,14 @@
     left: 0;
     right: 0;
     height: 40px;
-    background-color: hsl(240deg, 40%, 10%, 0.4);
+    background-color: hsl(240deg, 40%, 10%, 0.3);
     z-index: 10000;
     user-select: none;
     display: flex;
     align-items: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(10px);
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
+    border-radius: 8px 8px 0 0;
 }
 
 .titlebar-content {
@@ -33,15 +32,21 @@
 .window-controls {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     -webkit-app-region: no-drag;
+    .icon {
+        display: none;
+    }
+    &:hover .icon {
+        display: block;
+    }
 }
 
 .control-button {
-    width: 28px;
-    height: 28px;
+    width: 13px;
+    height: 13px;
     border: none;
-    border-radius: 6px;
+    border-radius: 9999px;
     background: transparent;
     color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
@@ -52,26 +57,19 @@
     position: relative;
 }
 
-.control-button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
-}
-
 .control-button:active {
     transform: scale(0.95);
+    color: #111;
 }
 
-.minimize-button:hover {
-    background: rgba(255, 204, 0, 0.15);
-    color: #ffcc00;
+.minimize-button {
+    background: rgb(255, 255, 0);
 }
 
-.maximize-button:hover {
-    background: rgba(40, 205, 65, 0.15);
-    color: #28cd41;
+.maximize-button {
+    background: rgb(20, 255, 20);
 }
 
-.close-button:hover {
-    background: rgba(255, 69, 58, 0.15);
-    color: #ff453a;
+.close-button {
+    background: rgba(255, 20, 40);
 }

@@ -1,7 +1,7 @@
-import { ActionIcon, Group, Menu, Text } from "@mantine/core";
-import { IconCheck, IconDotsVertical } from "@tabler/icons-react";
+import { Group, Text } from "@mantine/core";
 import { Connection } from "./types";
 import "./WorkspacePanel";
+import { IconCheck } from "@tabler/icons-react";
 
 interface ConnectionItemProps {
   isActive: boolean;
@@ -14,7 +14,6 @@ export const ConnectionItem = ({
   isActive,
   connection,
   onActivate,
-  onRemove,
 }: ConnectionItemProps) => {
   const redactedUrl = connection.url.replace(
     /(postgres:\/\/[^:]+:)[^@]+(@)/,
@@ -22,7 +21,7 @@ export const ConnectionItem = ({
   );
 
   const truncatedUrl =
-    redactedUrl.length > 42 ? redactedUrl.slice(0, 40) + "..." : redactedUrl;
+    redactedUrl.length > 42 ? redactedUrl.slice(0, 30) + "..." : redactedUrl;
 
   return (
     <div onClick={onActivate} className="connection" data-is-active={isActive}>
@@ -32,41 +31,21 @@ export const ConnectionItem = ({
             className="color"
             style={{ backgroundColor: connection.color }}
           ></div>
-          <Text size="xs" fw="bold" c={isActive ? "#2B60DB" : "dark"}>
+          <Text
+            size="xs"
+            fw="bold"
+            c={isActive ? "var(--text-color)" : "hsl(220deg, 40%, 70%)"}
+          >
             {connection.name}
           </Text>
-          <Text size="xs" c={isActive ? "#535353" : "#737373"}>
+          <Text
+            size="xs"
+            c={isActive ? "hsl(0deg, 0%, 80%)" : "hsl(0deg, 0%, 50%)"}
+          >
             {truncatedUrl}
           </Text>
         </Group>
-        {isActive ? (
-          <IconCheck color="#2B60DB" />
-        ) : (
-          <Menu>
-            <Menu.Target>
-              <ActionIcon
-                variant="transparent"
-                size="sm"
-                c="dark"
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                <IconDotsVertical />
-              </ActionIcon>
-            </Menu.Target>
-            <Menu.Dropdown>
-              <Menu.Item
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemove();
-                }}
-              >
-                Remove connection
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
-        )}
+        {isActive ? <IconCheck color="hsl(220deg, 40%, 80%)" /> : null}
       </Group>
     </div>
   );

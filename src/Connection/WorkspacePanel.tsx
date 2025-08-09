@@ -41,15 +41,17 @@ export const WorkspacePanel = () => {
           </Button>
         </Group>
       </form>
-      {workspaces.map((workspace, i) => (
-        <Fragment key={workspace.name}>
-          <Workspace
-            connections={workspace.connections}
-            name={workspace.name}
-          />
-          {i !== workspaces.length - 1 && <Divider />}
-        </Fragment>
-      ))}
+      <Stack gap={24} style={{ overflowY: "auto" }} mah={800}>
+        {workspaces.map((workspace, i) => (
+          <Fragment key={workspace.name}>
+            <Workspace
+              connections={workspace.connections}
+              name={workspace.name}
+            />
+            {i !== workspaces.length - 1 && <Divider />}
+          </Fragment>
+        ))}
+      </Stack>
     </Stack>
   );
 };

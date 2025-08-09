@@ -3,7 +3,7 @@ import { useExecuteQueries } from "../../tools/useExecuteQuery";
 import { QueryShapeUtil } from "./QueryShape";
 import { format } from "sql-formatter";
 import { IconIndentIncrease, IconPlayerPlay } from "@tabler/icons-react";
-import { Button, Divider, Group } from "@mantine/core";
+import { Button, Divider, Group, Text } from "@mantine/core";
 
 export const QueryContextualToolbarComponent = track(() => {
   const editor = useEditor();
@@ -42,18 +42,15 @@ export const QueryContextualToolbarComponent = track(() => {
     <Group gap={0}>
       <Button variant="transparent" title="Format query" onClick={formatQuery}>
         <Group gap={8} align="center">
-          <IconIndentIncrease size={16} />
-          Format
+          <Text size="sm">Format</Text>
+          <IconIndentIncrease size={14} color="var(--text-color)" />
         </Group>
       </Button>
       <Divider orientation="vertical" color="dark" />
-      <Button
-        variant="transparent"
-        title="Execute query"
-        onClick={runExecuteQuery}
-      >
+      <Button variant="transparent" title="Run query" onClick={runExecuteQuery}>
         <Group gap={8} align="center">
-          <IconPlayerPlay size={16} /> Execute
+          <Text size="sm">Run</Text>
+          <IconPlayerPlay size={14} color="var(--text-color)" />
         </Group>
       </Button>
     </Group>

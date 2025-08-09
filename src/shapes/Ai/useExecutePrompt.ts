@@ -17,13 +17,14 @@ export interface Message {
 }
 
 const advancedModel = new ChatOllama({
-  model: "qwen3:8b",
+  model: "gpt-oss:20b",
   baseUrl: "http://localhost:11434",
   streaming: true,
+  numThread: 32,
 });
 
 const fastModel = new ChatOllama({
-  model: "gemma3n:e2b",
+  model: "gpt-oss:20b",
   baseUrl: "http://localhost:11434",
   streaming: true,
 });
@@ -50,7 +51,7 @@ export const getAdditionalContextTool = new DynamicStructuredTool({
     query: z
       .string()
       .describe(
-        "A valid postgres sql query to execute which returns a database result",
+        "A valid postgres sql query to execute which returns a new database result to be analyzed",
       ),
   }),
   func: async ({ query }: { query: string }): Promise<any> => {

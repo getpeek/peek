@@ -65,6 +65,8 @@ export const ConnectionForm = ({ workspaceName }: ConnectionFormProps) => {
       <input
         type="text"
         name="name"
+        autoCorrect="off"
+        autoComplete="off"
         key={form.key("name")}
         className="input"
         placeholder="Name"
@@ -74,6 +76,8 @@ export const ConnectionForm = ({ workspaceName }: ConnectionFormProps) => {
       <input
         type="text"
         name="url"
+        autoCorrect="off"
+        autoComplete="off"
         key={form.key("url")}
         placeholder="postgres://user:pass@localhost/db"
         className="input"

@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, Text } from "@mantine/core";
+import { Popover, Text } from "@mantine/core";
 import { useAtom, useAtomValue } from "jotai";
 import { activeConnectionAtom } from "../Connection/state";
 import { schemaAtom } from "../state";
-import { WorkspacePanel } from "../Connection/WorkspacePanel";
 import { invoke } from "@tauri-apps/api/core";
 import "./TitleBarConnectionPicker.css";
+import { WorkspacePopover } from "../Connection/WorkspacePopover";
 
 export const TitleBarConnectionPicker: React.FC = () => {
-  const [showModal, setShowModal] = useState(false);
   const [, setSchema] = useAtom(schemaAtom);
   const [, setIsConnecting] = useState(false);
   const activeConnection = useAtomValue(activeConnectionAtom);
@@ -35,7 +34,6 @@ export const TitleBarConnectionPicker: React.FC = () => {
       const schema = JSON.parse(response);
 
       setSchema(schema);
-      setShowModal(false);
     } catch {
     } finally {
       setIsConnecting(false);
@@ -43,47 +41,42 @@ export const TitleBarConnectionPicker: React.FC = () => {
   };
 
   return (
-    <>
-      <Modal
-        size="lg"
-        opened={showModal}
-        onClose={() => setShowModal(false)}
-        title="Workspaces"
+    <Popover radius="lg">
+      <Popover.Target>
+        <div className="titlebar-connection-picker">
+          {activeConnection ? (
+            <button
+              className="connection-button"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${activeConnection.connection.color} 20%, 100% transparent)`,
+              }}
+            >
+              <div
+                className="connection-indicator"
+                style={{ backgroundColor: activeConnection.connection.color }}
+              />
+              <Text size="xs" className="connection-text">
+                {activeConnection.connection.name} (
+                {activeConnection.workspaceName})
+              </Text>
+            </button>
+          ) : (
+            <button className="connection-button no-connection">
+              <Text size="xs" className="connection-text">
+                No connection
+              </Text>
+            </button>
+          )}
+        </div>
+      </Popover.Target>
+      <Popover.Dropdown
+        bg="transparent"
+        bd="none"
+        p={0}
+        style={{ backdropFilter: "blur(40px)" }}
       >
-        <WorkspacePanel />
-      </Modal>
-
-      <div className="titlebar-connection-picker">
-        {activeConnection ? (
-          <button
-            onClick={() => setShowModal(true)}
-            className="connection-button"
-            style={{
-              backgroundColor: `color-mix(in srgb, ${activeConnection.connection.color} 20%, 100% transparent)`,
-            }}
-          >
-            <div
-              className="connection-indicator"
-              style={{ backgroundColor: activeConnection.connection.color }}
-            />
-            <Text size="xs" className="connection-text">
-              {activeConnection.connection.name} (
-              {activeConnection.workspaceName})
-            </Text>
-          </button>
-        ) : (
-          <Button
-            variant="subtle"
-            size="xs"
-            onClick={() => setShowModal(true)}
-            className="connection-button no-connection"
-          >
-            <Text size="xs" className="connection-text">
-              No connection
-            </Text>
-          </Button>
-        )}
-      </div>
-    </>
+        <WorkspacePopover />
+      </Popover.Dropdown>
+    </Popover>
   );
 };

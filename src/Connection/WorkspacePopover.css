@@ -1,0 +1,8 @@
+.popover {
+    width: 500px;
+    padding: 24px;
+    border-radius: 16px;
+    background-color: hsl(240deg, 40%, 10%, 0.3);
+    border: 1px solid hsla(240deg, 40%, 40%, 0.4);
+    backdrop-filter: blur(40px);
+}
