@@ -20,6 +20,29 @@ export function useIndexedDB() {
   return { isReady, error };
 }
 
+export const useGetAllDocuments = () => {
+  const [documents, setDocuments] = useState<TLEditorSnapshot[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    indexedDBService
+      .getAllDocuments()
+      .then((docs) => {
+        if (docs) {
+          setDocuments(Object.values(docs));
+        }
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        setError(err);
+        setIsLoading(false);
+      });
+  }, []);
+
+  return { documents, isLoading, error };
+};
+
 export function useDocument(
   connectionUrl: string | undefined,
   workspaceName?: string,

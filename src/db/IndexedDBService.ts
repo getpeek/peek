@@ -269,31 +269,6 @@ class IndexedDBService {
       request.onerror = () => reject(request.error);
     });
   }
-
-  // Cleanup old documents
-  async cleanupOldDocuments(daysToKeep: number = 30): Promise<void> {
-    const db = await this.ensureDB();
-    const cutoffTime = Date.now() - daysToKeep * 24 * 60 * 60 * 1000;
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([DOCUMENTS_STORE], "readwrite");
-      const store = transaction.objectStore(DOCUMENTS_STORE);
-      const index = store.index("updatedAt");
-      const range = IDBKeyRange.upperBound(cutoffTime);
-      const request = index.openCursor(range);
-
-      request.onsuccess = (event) => {
-        const cursor = (event.target as IDBRequest).result;
-        if (cursor) {
-          store.delete(cursor.primaryKey);
-          cursor.continue();
-        }
-      };
-
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(transaction.error);
-    });
-  }
 }
 
 export const indexedDBService = new IndexedDBService();

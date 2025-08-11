@@ -17,14 +17,14 @@ export interface Message {
 }
 
 const advancedModel = new ChatOllama({
-  model: "gpt-oss:20b",
+  model: "qwen3:8b",
   baseUrl: "http://localhost:11434",
   streaming: true,
   numThread: 32,
 });
 
 const fastModel = new ChatOllama({
-  model: "gpt-oss:20b",
+  model: "qwen3:8b",
   baseUrl: "http://localhost:11434",
   streaming: true,
 });

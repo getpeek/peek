@@ -10,8 +10,8 @@ import {
   TLStore,
 } from "tldraw";
 import { customComponents, customUiOverrides } from "./TldrawUi";
-import { sqlLanguageAtom, sqlParserAtom } from "./state";
-import { useAtom, useAtomValue } from "jotai";
+import { sqlLanguageAtom, sqlParserAtom, editorAtom } from "./state";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { createTheme, MantineProvider } from "@mantine/core";
 import { Parser, Language } from "web-tree-sitter";
 import { MonacoManager } from "./shapes/Query/Editor/MonacoManager";
@@ -30,6 +30,7 @@ import { AiPromptTool } from "./shapes/Ai/AiTool";
 import { QueryTool } from "./shapes/Query/QueryTool";
 import { CustomBackground, CustomGrid } from "./components/CustomBackground";
 import { CustomTitleBar } from "./components/CustomTitleBar";
+import { CommandPalette } from "./command-palette/CommandPalette";
 
 const theme = createTheme({});
 
@@ -37,6 +38,7 @@ function App() {
   const ref = useRef<Editor>();
   const [, setSqlParser] = useAtom(sqlParserAtom);
   const [, sqlSqlLanguage] = useAtom(sqlLanguageAtom);
+  const setEditor = useSetAtom(editorAtom);
   const activeConnection = useAtomValue(activeConnectionAtom);
   const initialSnapshot = useAtomValue(
     snapshotForUrlAtom(activeConnection?.connection.url ?? "default"),
@@ -137,6 +139,7 @@ function App() {
       <Tldraw
         onMount={(editor) => {
           ref.current = editor;
+          setEditor(editor);
           editor.updateInstanceState({ isGridMode: true });
         }}
         store={store}
@@ -149,6 +152,7 @@ function App() {
         }}
         tools={[QueryTool, AiPromptTool]}
       />
+      <CommandPalette />
     </MantineProvider>
   );
 }
