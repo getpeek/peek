@@ -41,7 +41,6 @@
     color: #fff;
     appearance: none;
     -webkit-appearance: none;
-    border-bottom: 1px solid hsla(0deg, 0%, 90%, 0.1);
     &::placeholder {
         color: hsla(0deg, 0%, 100%, 0.2);
     }
@@ -49,6 +48,7 @@
 
 .output {
     color: var(--text-color);
+    border-top: 1px solid hsla(0deg, 0%, 90%, 0.05);
     background: hsla(220deg, 40%, 20%, 0.2);
     padding: 16px;
     border-radius: 0 0 16px 16px;
@@ -62,7 +62,7 @@
     &.active,
     &:hover {
         cursor: pointer;
-        outline: 1px solid hsla(0deg, 0%, 90%, 0.3);
+        background: hsla(0deg, 0%, 90%, 0.1);
     }
 }
 

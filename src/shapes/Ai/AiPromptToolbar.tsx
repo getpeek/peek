@@ -36,7 +36,7 @@ export const AiPromptContextualToolbarComponent = track(() => {
       const stream = await runPrompt([
         {
           type: "system",
-          message: `you are an expert database administrator. You are tasked with writing Postgres SQL queries based on user requests.
+          message: `/no_think you are an expert database administrator. You are tasked with writing Postgres SQL queries based on user requests.
       Here is the database schema. It contains all tables and their columns as well as a list of references between foreign keys for different tables.
       ${JSON.stringify(schema)}.
 
@@ -59,7 +59,35 @@ export const AiPromptContextualToolbarComponent = track(() => {
       const outputShapeId = createShapeId(`${shape.id}-result`);
       const outputShape = editor.getShape(outputShapeId);
 
+      if (!outputShape) {
+        const bounds = editor.getShapePageBounds(shape);
+        if (!bounds) {
+          return;
+        }
+
+        editor.createShape({
+          id: outputShapeId,
+          type: "query",
+          x: bounds.right + 50,
+          y: bounds.top,
+          props: {
+            query,
+            w: 400,
+            h: 300,
+          },
+        });
+        createArrowBetweenShapes(editor, shape.id, outputShapeId);
+        editor.updateShape({
+          id: shape.id,
+          type: "ai-shape",
+          props: { isLoading: false },
+        });
+      }
+
+      console.log("this is here at least?");
+
       for await (const chunk of stream) {
+        console.log(chunk.text);
         if (is_first_token) {
           if (chunk.text !== "<think>") {
             is_query = true;
@@ -82,38 +110,13 @@ export const AiPromptContextualToolbarComponent = track(() => {
           },
         });
 
-        if (outputShape) {
-          editor.updateShape({
-            id: outputShapeId,
-            type: "query",
-            props: {
-              query,
-            },
-          });
-        } else {
-          const bounds = editor.getShapePageBounds(shape);
-          if (!bounds) {
-            return;
-          }
-
-          editor.createShape({
-            id: outputShapeId,
-            type: "query",
-            x: bounds.right + 50,
-            y: bounds.top,
-            props: {
-              query,
-              w: 400,
-              h: 300,
-            },
-          });
-          createArrowBetweenShapes(editor, shape.id, outputShapeId);
-          editor.updateShape({
-            id: shape.id,
-            type: "ai-shape",
-            props: { isLoading: false },
-          });
-        }
+        editor.updateShape({
+          id: outputShapeId,
+          type: "query",
+          props: {
+            query,
+          },
+        });
       }
 
       const formatted = format(query, {

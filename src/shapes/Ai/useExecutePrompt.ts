@@ -16,17 +16,11 @@ export interface Message {
   contextKey?: string;
 }
 
-const advancedModel = new ChatOllama({
+const baseModel = new ChatOllama({
   model: "qwen3:8b",
   baseUrl: "http://localhost:11434",
   streaming: true,
   numThread: 32,
-});
-
-const fastModel = new ChatOllama({
-  model: "qwen3:8b",
-  baseUrl: "http://localhost:11434",
-  streaming: true,
 });
 
 export const branchToNewConversationTool = new DynamicStructuredTool({
@@ -74,11 +68,11 @@ export const useExecutePrompt = (modelType: "fast" | "advanced") => {
   return async (messages: Message[] = []) => {
     const model =
       modelType === "advanced"
-        ? advancedModel.bindTools([
+        ? baseModel.bindTools([
             branchToNewConversationTool,
             getAdditionalContextTool,
           ])
-        : fastModel;
+        : baseModel;
 
     const conversation: BaseMessage[] = [];
 

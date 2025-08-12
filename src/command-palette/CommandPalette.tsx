@@ -3,11 +3,14 @@ import "./CommandPalette.css";
 import { useSearch } from "./useSearch";
 import { Group, Stack } from "@mantine/core";
 import { getHotkeyHandler, useClickOutside, useHotkeys } from "@mantine/hooks";
+import { useAtomValue } from "jotai";
+import { editorAtom } from "../state";
 
 export const CommandPalette = () => {
   const [show, setShow] = useState(false);
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
+  const editor = useAtomValue(editorAtom);
   const results = useSearch(query);
   const hideSearch = () => {
     setQuery("");
@@ -22,7 +25,7 @@ export const CommandPalette = () => {
     );
   };
 
-  if (!show) {
+  if (!show || !editor) {
     return null;
   }
 
@@ -42,7 +45,7 @@ export const CommandPalette = () => {
           [
             "enter",
             () => {
-              results[cursor]?.onSelect();
+              results[cursor]?.onSelect(editor);
               hideSearch();
             },
           ],
@@ -53,9 +56,7 @@ export const CommandPalette = () => {
         }}
         placeholder="Search a command or anything else"
         style={{
-          borderBottom:
-            results.length > 0 ? `1px solid hsla(0deg, 0%, 90%, 0.1)` : "",
-          borderRadius: results.length === 0 ? "16px" : "",
+          borderRadius: results.length === 0 ? 16 : "16px 16px 0 0",
         }}
       />
       {results.length > 0 && (
@@ -65,7 +66,7 @@ export const CommandPalette = () => {
               <div
                 className={`result ${i === cursor ? "active" : ""}`}
                 key={i}
-                onClick={result.onSelect}
+                onClick={() => result.onSelect(editor)}
                 style={{ animationDelay: `${i * 0.05}s` }}
               >
                 <Group gap="sm">
