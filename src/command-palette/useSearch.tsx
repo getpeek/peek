@@ -1,12 +1,13 @@
 import { useAtomValue } from "jotai";
+import fuzzysort from "fuzzysort";
 import { commands } from "./commands";
 import { editorAtom } from "../state";
-import { useGetQueryCommands } from "./commands/useQueryCommands";
+import { useGoToQueryCommands } from "./commands/useGoToQueryCommands";
 import { useGetConnectionCommands } from "./commands/useGetConnectionCommands";
 
 export const useSearch = (query: string) => {
   const editor = useAtomValue(editorAtom);
-  const queryCommands = useGetQueryCommands();
+  const queryCommands = useGoToQueryCommands();
   const connectionCommands = useGetConnectionCommands();
 
   if (!editor) {
@@ -17,9 +18,8 @@ export const useSearch = (query: string) => {
     return [];
   }
 
-  return [...commands, ...queryCommands, ...connectionCommands]
-    .filter((command) =>
-      command.searchAgainst.toLowerCase().match(query.toLowerCase()),
-    )
-    .slice(0, 10);
+  const searchSpace = [...commands, ...queryCommands, ...connectionCommands];
+  return fuzzysort
+    .go(query, searchSpace, { key: "searchAgainst" })
+    .map((result) => result.obj);
 };
