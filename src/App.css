@@ -69,3 +69,25 @@ body,
     --system-message: var(--mantine-color-blue-1);
     --system-message-subtle: var(--mantine-color-blue-2);
 }
+
+.tl-container[data-color-mode="light"] {
+    --text-color: hsla(242deg, 85%, 10%);
+
+    /** Table */
+    --inbound-key: hsl(80deg, 28%, 81%);
+    --inbound-key-hover: hsl(80deg, 80%, 85%);
+    --outbound-key: hsl(10deg, 38%, 87%);
+    --outbound-key-hover: hsl(15deg, 12%, 85%);
+    --border-base: hsl(40deg, 33%, 90%);
+    --cell-base: hsl(40deg, 38%, 89%);
+    --cell-striped: hsl(40deg, 38%, 91%);
+    --header-base: var(--cell-striped);
+
+    /** CHAT */
+    --user-label: hsl(90deg, 80%, 10%);
+    --assistant-label: hsl(200deg, 80%, 10%);
+    --context-message: var(--mantine-color-green-1);
+    --context-message-subtle: var(--mantine-color-green-2);
+    --system-message: var(--mantine-color-blue-1);
+    --system-message-subtle: var(--mantine-color-blue-2);
+}

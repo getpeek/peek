@@ -1,10 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { useEditor, useIsDarkMode, useValue } from "tldraw";
 
-const EDITOR_BACKGROUND = "#0E101A";
-const GRID_COLOR = "hsla(220deg, 40%, 80%, 0.03)";
-const GRID_COLOR_BOLD = "hsla(220deg, 40%, 80%, 0.05)";
-
 export function CustomGrid({
   ...camera
 }: {
@@ -30,6 +26,14 @@ export function CustomGrid({
   const canvas = useRef<HTMLCanvasElement>(null);
 
   useLayoutEffect(() => {
+    const EDITOR_BACKGROUND = isDarkMode ? "#0E101A" : "hsl(30deg, 20%, 90%)";
+    const GRID_COLOR = isDarkMode
+      ? "hsla(220deg, 40%, 80%, 0.03)"
+      : "hsla(220deg, 40%, 10%, 0.03)";
+    const GRID_COLOR_BOLD = isDarkMode
+      ? "hsla(220deg, 40%, 80%, 0.05)"
+      : "hsla(220deg, 40%, 10%, 0.05)";
+
     if (!canvas.current) {
       return;
     }
@@ -119,7 +123,6 @@ export function CustomBackground() {
         left: 0,
         width: "100%",
         height: "100%",
-        backgroundColor: EDITOR_BACKGROUND,
         zIndex: -2,
       }}
     />

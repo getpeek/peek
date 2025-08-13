@@ -127,10 +127,16 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
         width: shape.props.w,
         height: shape.props.h,
         pointerEvents: isEditing ? "all" : "auto",
+        userSelect: "text",
         overflow: "auto",
         position: "relative",
       }}
       ref={scrollContainerRef}
+      data-tldraw-disable-pan
+      data-tldraw-disable-zoom
+      onPointerDown={(e) => isEditing && e.stopPropagation()}
+      onPointerUp={(e) => isEditing && e.stopPropagation()}
+      onPointerMove={(e) => isEditing && e.stopPropagation()}
     >
       <Table
         stickyHeader
