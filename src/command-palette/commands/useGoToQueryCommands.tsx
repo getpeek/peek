@@ -17,7 +17,7 @@ export const useGoToQueryCommands = () => {
     return [];
   }
 
-  return shapes
+  return (shapes ?? [])
     .filter((shape) => shape.type === "query")
     .map((shape) => ({
       icon: <IconSql />,
