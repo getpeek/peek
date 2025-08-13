@@ -61,7 +61,7 @@ export const PageMenu = () => {
       <Popover.Dropdown
         w={300}
         variant="unstyled"
-        bg="hsla(247deg, 38%, 30%, 0.3)"
+        bg="var(--ui-glass-background)"
         bd="1px solid hsla(0deg, 0%, 100%, 0.05)"
         style={{ backdropFilter: "blur(10px)", transform: "translateX(20px)" }}
       >

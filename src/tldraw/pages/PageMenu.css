@@ -9,9 +9,9 @@
     backdrop-filter: blur(10px);
     border: 1px solid hsla(0deg, 0%, 100%, 0.05);
     padding: 8px 16px;
-    background: hsla(247deg, 38%, 20%, 0.4);
+    background: var(--ui-glass-background);
     &:hover {
-        background: hsla(247deg, 38%, 30%, 0.4);
+        background: var(--ui-glass-background);
     }
     white-space: nowrap;
     transition: background 0.2s ease-in;

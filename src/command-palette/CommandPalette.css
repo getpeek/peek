@@ -34,7 +34,7 @@
     width: 100%;
     padding: 16px;
     font-size: 14px;
-    background: hsla(220deg, 40%, 20%, 0.2);
+    background: var(--ui-glass-background);
     border: none;
     border-radius: 16px 16px 0 0;
     outline: none;
@@ -49,7 +49,7 @@
 .output {
     color: var(--text-color);
     border-top: 1px solid hsla(0deg, 0%, 90%, 0.05);
-    background: hsla(220deg, 40%, 20%, 0.2);
+    background: var(--ui-glass-background);
     padding: 16px;
     border-radius: 0 0 16px 16px;
 }
@@ -57,22 +57,9 @@
 .result {
     padding: 16px 24px;
     border-radius: 9999px;
-    opacity: 0;
-    animation: slideIn 0.15s ease-in-out forwards;
     &.active,
     &:hover {
         cursor: pointer;
         background: hsla(0deg, 0%, 90%, 0.1);
-    }
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0px);
     }
 }

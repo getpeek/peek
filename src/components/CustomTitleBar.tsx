@@ -2,13 +2,9 @@ import React from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { TitleBarConnectionPicker } from "./TitleBarConnectionPicker";
 import "./CustomTitleBar.css";
-import { useAtomValue } from "jotai";
-import { activeConnectionAtom } from "../Connection/state";
 import { IconMaximize, IconMinus, IconX } from "@tabler/icons-react";
 
 export const CustomTitleBar: React.FC = () => {
-  const activeConnection = useAtomValue(activeConnectionAtom);
-
   const handleMinimize = async () => {
     const window = getCurrentWindow();
     await window.minimize();
@@ -25,15 +21,7 @@ export const CustomTitleBar: React.FC = () => {
   };
 
   return (
-    <div
-      className="custom-titlebar"
-      style={
-        {
-          "--background":
-            activeConnection?.connection.color ?? "hsl(240deg, 40%, 10%, 0.4)",
-        } as React.CSSProperties
-      }
-    >
+    <div className="custom-titlebar">
       <div className="titlebar-content" data-tauri-drag-region>
         <div className="window-controls">
           <button

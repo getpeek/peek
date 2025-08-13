@@ -5,7 +5,7 @@
     pointer-events: all;
     border-radius: 9999px;
     backdrop-filter: blur(10px);
-    background: hsla(247deg, 38%, 20%, 0.4);
+    background: var(--ui-glass-background);
     border: 1px solid hsla(0deg, 0%, 100%, 0.05);
     margin-bottom: 24px;
     padding: 0 24px;

@@ -46,6 +46,36 @@ body,
     --context-message-subtle: var(--mantine-color-green-2);
     --system-message: var(--mantine-color-blue-1);
     --system-message-subtle: var(--mantine-color-blue-2);
+
+    /** UI */
+    --ui-glass-background: hsl(40deg, 40%, 80%, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-color: hsla(242deg, 45%, 90%);
+
+        /** Table */
+        --inbound-key: hsl(237deg, 38%, 11%);
+        --inbound-key-hover: hsl(210deg, 80%, 15%);
+        --outbound-key: hsl(237deg, 38%, 7%);
+        --outbound-key-hover: hsl(249deg, 12%, 15%);
+        --border-base: hsl(246deg, 33%, 17%);
+        --cell-base: hsl(237deg, 38%, 9%);
+        --cell-striped: hsl(237deg, 38%, 9%);
+        --header-base: var(--cell-striped);
+
+        /** CHAT */
+        --user-label: hsl(90deg, 80%, 80%);
+        --assistant-label: hsl(200deg, 80%, 80%);
+        --context-message: var(--mantine-color-green-1);
+        --context-message-subtle: var(--mantine-color-green-2);
+        --system-message: var(--mantine-color-blue-1);
+        --system-message-subtle: var(--mantine-color-blue-2);
+
+        /** UI */
+        --ui-glass-background: hsl(240deg, 40%, 10%, 0.4);
+    }
 }
 
 .tl-container[data-color-mode="dark"] {
@@ -68,6 +98,9 @@ body,
     --context-message-subtle: var(--mantine-color-green-2);
     --system-message: var(--mantine-color-blue-1);
     --system-message-subtle: var(--mantine-color-blue-2);
+
+    /** UI */
+    --ui-glass-background: hsl(240deg, 40%, 10%, 0.4);
 }
 
 .tl-container[data-color-mode="light"] {
@@ -90,4 +123,7 @@ body,
     --context-message-subtle: var(--mantine-color-green-2);
     --system-message: var(--mantine-color-blue-1);
     --system-message-subtle: var(--mantine-color-blue-2);
+
+    /** UI */
+    --ui-glass-background: hsl(40deg, 40%, 70%, 0.3);
 }

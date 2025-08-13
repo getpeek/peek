@@ -4,7 +4,7 @@
     left: 0;
     right: 0;
     height: 40px;
-    background-color: hsl(240deg, 40%, 10%, 0.3);
+    background-color: var(--ui-glass-background);
     z-index: 10000;
     user-select: none;
     display: flex;

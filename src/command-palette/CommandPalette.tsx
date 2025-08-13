@@ -13,11 +13,11 @@ export const CommandPalette = () => {
   const editor = useAtomValue(editorAtom);
   const results = useSearch(query);
   const hideSearch = () => {
-    setQuery("");
     setShow(false);
+    setQuery("");
   };
   const ref = useClickOutside(hideSearch);
-  useHotkeys([["meta+shift+P", () => setShow(true)]], ["INPUT", "TEXTAREA"]);
+  useHotkeys([["mod+shift+P", () => setShow(true)]], ["INPUT", "TEXTAREA"]);
 
   const moveCursor = (direction: -1 | 1) => {
     setCursor((prev) =>
@@ -39,11 +39,11 @@ export const CommandPalette = () => {
         autoCorrect="off"
         value={query}
         onKeyDown={getHotkeyHandler([
-          ["esc", hideSearch],
-          ["arrowup", () => moveCursor(-1)],
-          ["arrowdown", () => moveCursor(1)],
+          ["Escape", hideSearch],
+          ["ArrowUp", () => moveCursor(-1)],
+          ["ArrowDown", () => moveCursor(1)],
           [
-            "enter",
+            "Enter",
             () => {
               results[cursor]?.onSelect(editor);
               hideSearch();

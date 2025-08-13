@@ -6,7 +6,7 @@
     border-radius: 9999px;
     cursor: pointer;
     backdrop-filter: blur(10px);
-    background: hsla(247deg, 38%, 20%, 0.4);
+    background: var(--ui-glass-background);
     border: 1px solid hsla(0deg, 0%, 100%, 0.05);
     padding: 16px;
 }
