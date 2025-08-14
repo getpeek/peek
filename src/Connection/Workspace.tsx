@@ -1,12 +1,14 @@
-import { useAtom, useSetAtom } from "jotai";
-import { activeConnectionAtom, workspacesAtom } from "./state";
-import { Button, Group, Stack, Text } from "@mantine/core";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import {
+  activeConnectionAtom,
+  workspaceIsEditModeAtom,
+  workspacesAtom,
+} from "./state";
+import { Group, Stack, Text } from "@mantine/core";
 import { ConnectionItem } from "./ConnectionItem";
 import { Connection } from "./types";
-import "./WorkspacePanel.css";
-import { IconPencil } from "@tabler/icons-react";
 import { ConnectionForm } from "./ConnectionForm";
-import { useState } from "react";
+import "./WorkspacePanel.css";
 
 interface WorkspaceProps {
   name: string;
@@ -14,7 +16,7 @@ interface WorkspaceProps {
 }
 export const Workspace = ({ name, connections }: WorkspaceProps) => {
   const [activeConnection, setActiveConnection] = useAtom(activeConnectionAtom);
-  const [isEditing, setIsEditing] = useState(false);
+  const isEditing = useAtomValue(workspaceIsEditModeAtom);
   const setWorkspaces = useSetAtom(workspacesAtom);
 
   const removeConnection = (connection: Connection) => {
@@ -40,14 +42,6 @@ export const Workspace = ({ name, connections }: WorkspaceProps) => {
         <Text size="xs" fw="bold" pos="sticky" c="var(--text-color)">
           {name}
         </Text>
-        <Button
-          size="xs"
-          variant="transparent"
-          c="hsla(0deg, 0%, 90%, 0.5)"
-          onClick={() => setIsEditing((prev) => !prev)}
-        >
-          <IconPencil size={16} color="hsla(0deg, 0%, 90%, 0.5)" />
-        </Button>
       </Group>
       <Stack gap={0}>
         {connections.map((connection) => (

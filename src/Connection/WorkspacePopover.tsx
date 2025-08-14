@@ -1,19 +1,18 @@
 import { useAtom } from "jotai";
 import "./WorkspacePopover.css";
-import { workspacesAtom } from "./state";
+import { workspaceIsEditModeAtom, workspacesAtom } from "./state";
 import { Workspace } from "./Workspace";
 import { Button, Group, Stack, Text } from "@mantine/core";
 import { IconPencil, IconX } from "@tabler/icons-react";
-import { useState } from "react";
 import { AddWorkspaceForm } from "./AddWorkspaceForm";
 
 export const WorkspacePopover = () => {
   const [workspaces, setWorkspaces] = useAtom(workspacesAtom);
-  const [showForm, setShowForm] = useState(false);
+  const [isEditing, setIsEditing] = useAtom(workspaceIsEditModeAtom);
 
   const addWorkspace = (name: string) => {
     setWorkspaces((prev) => [...prev, { name, connections: [] }]);
-    setShowForm(false);
+    setIsEditing(false);
   };
 
   return (
@@ -24,19 +23,19 @@ export const WorkspacePopover = () => {
           <Button
             variant="transparent"
             onClick={() => {
-              setShowForm((prev) => !prev);
+              setIsEditing((prev) => !prev);
             }}
             size="xs"
             c="#fff"
           >
-            {showForm ? (
+            {isEditing ? (
               <IconX size={20} strokeWidth={1} />
             ) : (
               <IconPencil size={20} strokeWidth={1} />
             )}
           </Button>
         </Group>
-        {showForm && <AddWorkspaceForm onCreate={addWorkspace} />}
+        {isEditing && <AddWorkspaceForm onCreate={addWorkspace} />}
         <Stack gap={40}>
           {workspaces.map((workspace) => (
             <Workspace

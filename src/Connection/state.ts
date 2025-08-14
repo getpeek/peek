@@ -15,3 +15,5 @@ export const snapshotsAtom = atomWithIndexedDBSnapshots();
 
 export const snapshotForUrlAtom = (url: string) =>
   atom((get) => get(snapshotsAtom)[url]);
+
+export const workspaceIsEditModeAtom = atom(false);
