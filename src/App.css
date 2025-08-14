@@ -26,7 +26,7 @@ body,
 }
 
 :root {
-    --text-color: hsla(242deg, 45%, 80%);
+    --text-color: hsla(242deg, 85%, 10%);
     --remove-color: hsla(10deg, 75%, 70%);
 
     /** Table */
@@ -49,6 +49,8 @@ body,
 
     /** UI */
     --ui-glass-background: hsl(40deg, 40%, 80%, 0.3);
+    --tool-color: hsl(40deg, 30%, 50%);
+    --selected-tool-color: hsl(40deg, 55%, 30%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -75,6 +77,8 @@ body,
 
         /** UI */
         --ui-glass-background: hsl(240deg, 40%, 10%, 0.4);
+        --tool-color: hsl(242deg, 15%, 40%);
+        --selected-tool-color: hsl(242deg, 15%, 80%);
     }
 }
 
@@ -101,6 +105,8 @@ body,
 
     /** UI */
     --ui-glass-background: hsl(240deg, 40%, 10%, 0.4);
+    --tool-color: hsl(242deg, 15%, 60%);
+    --selected-tool-color: hsl(242deg, 15%, 90%);
 }
 
 .tl-container[data-color-mode="light"] {
@@ -126,4 +132,6 @@ body,
 
     /** UI */
     --ui-glass-background: hsl(40deg, 40%, 70%, 0.3);
+    --tool-color: hsl(40deg, 30%, 50%);
+    --selected-tool-color: hsl(40deg, 55%, 20%);
 }

@@ -30,9 +30,7 @@ export const TitleBarConnectionPicker: React.FC = () => {
     try {
       await invoke("set_connection", { connectionString: url });
 
-      const response = (await invoke("get_schema")) as string;
-      const schema = JSON.parse(response);
-
+      const schema = await fetchSchema();
       setSchema(schema);
     } catch {
     } finally {
@@ -41,7 +39,7 @@ export const TitleBarConnectionPicker: React.FC = () => {
   };
 
   return (
-    <Popover radius="lg">
+    <Popover radius="lg" trapFocus>
       <Popover.Target>
         <div className="titlebar-connection-picker">
           {activeConnection ? (
@@ -73,7 +71,7 @@ export const TitleBarConnectionPicker: React.FC = () => {
         bg="transparent"
         bd="none"
         p={0}
-        style={{ backdropFilter: "blur(40px)" }}
+        style={{ backdropFilter: "blur(10px)" }}
       >
         <WorkspacePopover />
       </Popover.Dropdown>

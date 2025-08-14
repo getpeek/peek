@@ -1,16 +1,11 @@
-.form {
-    display: grid;
-    grid-template-columns: 16px 80px 1fr 20px;
-    align-items: center;
-    gap: 16px;
-    padding: 8px 16px;
-}
-
 .input {
     padding: 4px;
-    border: none;
-    appearance: unset;
     font-size: 12px;
+    background: transparent;
+    border: 1px solid hsla(0deg, 0%, 100%, 0.1);
+    padding: 8px 16px;
+    border-radius: 999px;
+    color: hsla(0deg, 0%, 100%, 1);
 }
 
 .color {

@@ -18,6 +18,7 @@ export const CommandPalette = () => {
   };
   const ref = useClickOutside(hideSearch);
   useHotkeys([["mod+shift+P", () => setShow(true)]], ["INPUT", "TEXTAREA"]);
+  useHotkeys([["mod+P", () => setShow(true)]], ["INPUT", "TEXTAREA"]);
 
   const moveCursor = (direction: -1 | 1) => {
     setCursor((prev) =>

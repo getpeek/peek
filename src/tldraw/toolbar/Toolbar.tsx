@@ -29,8 +29,8 @@ export const TlDrawToolbar = () => {
         <IconMouse
           color={
             selectedTool === "select"
-              ? "hsl(242deg, 45%, 90%)"
-              : "hsl(242deg, 15%, 40%)"
+              ? "var(--selected-tool-color)"
+              : "var(--tool-color)"
           }
         />
       ),
@@ -43,8 +43,8 @@ export const TlDrawToolbar = () => {
         <IconSql
           color={
             selectedTool === "query"
-              ? "hsl(242deg, 45%, 90%)"
-              : "hsl(242deg, 15%, 40%)"
+              ? "var(--selected-tool-color)"
+              : "var(--tool-color)"
           }
         />
       ),
@@ -57,8 +57,8 @@ export const TlDrawToolbar = () => {
         <IconAi
           color={
             selectedTool === "ai-prompt"
-              ? "hsl(242deg, 45%, 90%)"
-              : "hsl(242deg, 15%, 40%)"
+              ? "var(--selected-tool-color)"
+              : "var(--tool-color)"
           }
         />
       ),
@@ -71,8 +71,8 @@ export const TlDrawToolbar = () => {
         <IconPencil
           color={
             selectedTool === "draw"
-              ? "hsl(242deg, 45%, 90%)"
-              : "hsl(242deg, 15%, 40%)"
+              ? "var(--selected-tool-color)"
+              : "var(--tool-color)"
           }
         />
       ),
@@ -85,8 +85,8 @@ export const TlDrawToolbar = () => {
         <IconTypography
           color={
             selectedTool === "text"
-              ? "hsl(242deg, 45%, 90%)"
-              : "hsl(242deg, 15%, 40%)"
+              ? "var(--selected-tool-color)"
+              : "var(--tool-color)"
           }
         />
       ),

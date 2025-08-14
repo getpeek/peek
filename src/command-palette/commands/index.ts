@@ -2,6 +2,8 @@ import { ReactNode } from "react";
 import { Editor } from "tldraw";
 import { rerunAllQueriesOnPage } from "./rerunAllQueriesOnPage";
 import { rerunSelectedQueries } from "./rerunSelectedQueries";
+import { exportSelectedDataCsv } from "./exportSelectedDataCsv";
+import { exportSelectedDataJson } from "./exportSelectedDataJson";
 
 export interface CommandPaletteResult {
   icon: ReactNode;
@@ -11,4 +13,9 @@ export interface CommandPaletteResult {
   onSelect: (editor: Editor) => void;
 }
 
-export const commands = [rerunAllQueriesOnPage, rerunSelectedQueries];
+export const commands = [
+  rerunAllQueriesOnPage,
+  rerunSelectedQueries,
+  exportSelectedDataCsv,
+  exportSelectedDataJson,
+];

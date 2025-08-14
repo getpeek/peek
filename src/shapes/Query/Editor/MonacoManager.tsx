@@ -27,6 +27,7 @@ export const MonacoManager = () => {
     }
 
     if (providerRef.current) {
+      console.log("disposing old provider");
       providerRef.current.dispose();
       providerRef.current = null;
     }
@@ -47,6 +48,7 @@ export const MonacoManager = () => {
   };
 
   useEffect(() => {
+    console.log("setting completions");
     registerCompletionProvider();
   }, [schema, parser, language]);
 

@@ -15,11 +15,9 @@
     align-items: center;
     margin-bottom: 8px;
     transition: background 0.1s ease-out;
-    &[data-is-active="true"] {
-        background: hsl(220deg, 50%, 15%);
-    }
+    &[data-is-active="true"],
     &:hover {
-        background: hsl(220deg, 50%, 15%);
+        background: hsla(0, 0%, 95%, 0.1);
     }
 }
 
@@ -27,4 +25,12 @@
     width: 16px;
     height: 16px;
     border-radius: 999px;
+}
+
+.add-workspace-input {
+    color: var(--text-color);
+    background: hsla(0deg, 0%, 10%, 0.1);
+    border: 1px solid hsla(0deg, 0%, 100%, 0.1);
+    border-radius: 9999px;
+    padding: 8px 16px;
 }

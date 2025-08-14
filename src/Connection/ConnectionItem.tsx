@@ -1,6 +1,6 @@
 import { Group, Text } from "@mantine/core";
 import { Connection } from "./types";
-import "./WorkspacePanel";
+import "./WorkspacePanel.css";
 import { IconCheck } from "@tabler/icons-react";
 
 interface ConnectionItemProps {
@@ -20,9 +20,6 @@ export const ConnectionItem = ({
     "$1*****$2",
   );
 
-  const truncatedUrl =
-    redactedUrl.length > 42 ? redactedUrl.slice(0, 30) + "..." : redactedUrl;
-
   return (
     <div onClick={onActivate} className="connection" data-is-active={isActive}>
       <Group align="center" justify="space-between" h={30}>
@@ -30,19 +27,23 @@ export const ConnectionItem = ({
           <div
             className="color"
             style={{ backgroundColor: connection.color }}
-          ></div>
+          />
           <Text
             size="xs"
             fw="bold"
             c={isActive ? "var(--text-color)" : "hsl(220deg, 40%, 70%)"}
+            truncate="end"
+            maw={80}
           >
             {connection.name}
           </Text>
           <Text
             size="xs"
+            maw={250}
             c={isActive ? "hsl(0deg, 0%, 80%)" : "hsl(0deg, 0%, 50%)"}
+            truncate="end"
           >
-            {truncatedUrl}
+            {redactedUrl}
           </Text>
         </Group>
         {isActive ? <IconCheck color="hsl(220deg, 40%, 80%)" /> : null}

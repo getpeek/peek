@@ -31,8 +31,22 @@ export const customUiOverrides: TLUiOverrides = {
     return tools;
   },
   actions(editor, actions) {
-    delete actions["send-to-front"];
-    delete actions["bring-to-front"];
+    const actionsToRemove = [
+      "send-to-front",
+      "bring-to-front",
+      "print",
+      "toggle-lock",
+      "convert-to-bookmark",
+      "convert-to-bookmark",
+      "toggle-tool-lock",
+      "insert-embed",
+      "insert-media",
+      "toggle-grid",
+    ];
+
+    actionsToRemove.forEach((actionId) => {
+      delete actions[actionId];
+    });
 
     actions["select-next-query"] = {
       id: "select-next-query",
@@ -129,8 +143,7 @@ export const customUiOverrides: TLUiOverrides = {
       readonlyOk: true,
       kbd: "0",
       onSelect() {
-        editor.zoomToSelection();
-        editor.resetZoom();
+        editor.zoomToSelection({ animation: { duration: 200 } });
       },
     };
     return actions;
