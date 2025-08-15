@@ -48,7 +48,6 @@ export const MonacoManager = () => {
   };
 
   useEffect(() => {
-    console.log("setting completions");
     registerCompletionProvider();
   }, [schema, parser, language]);
 

@@ -26,7 +26,9 @@ export function CustomGrid({
   const canvas = useRef<HTMLCanvasElement>(null);
 
   useLayoutEffect(() => {
-    const EDITOR_BACKGROUND = isDarkMode ? "#0E101A" : "hsl(30deg, 20%, 90%)";
+    const EDITOR_BACKGROUND = isDarkMode
+      ? "hsl(220deg, 50%, 10%)"
+      : "hsl(30deg, 20%, 90%)";
     const GRID_COLOR = isDarkMode
       ? "hsla(220deg, 40%, 80%, 0.03)"
       : "hsla(220deg, 40%, 10%, 0.03)";
