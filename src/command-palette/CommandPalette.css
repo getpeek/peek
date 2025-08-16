@@ -43,7 +43,8 @@
     -webkit-appearance: none;
     &::placeholder {
         color: hsla(0deg, 0%, 40%, 0.5);
-        @media (prefers-color-scheme: dark) {
+
+        .dark & {
             color: hsla(0deg, 0%, 90%, 0.3);
         }
     }
@@ -55,7 +56,8 @@
     padding: 16px;
     border-radius: 0 0 16px 16px;
     border-top: 1px solid hsla(0deg, 0%, 10%, 0.15);
-    @media (prefers-color-scheme: dark) {
+
+    .dark & {
         border-top: 1px solid hsla(0deg, 0%, 90%, 0.05);
     }
 }
@@ -66,9 +68,10 @@
     cursor: pointer;
     &.active,
     &:hover {
-        background: hsla(0deg, 0%, 10%, 0.1);
+        background: hsla(0deg, 0%, 0%, 0.05);
     }
-    @media (prefers-color-scheme: dark) {
+
+    .dark & {
         &.active,
         &:hover {
             background: hsla(0deg, 0%, 90%, 0.05);

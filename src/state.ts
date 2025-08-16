@@ -21,3 +21,9 @@ export const persistanceAtom = atomWithStorage<string>(
 export const sqlParserAtom = atom<Parser>();
 export const sqlLanguageAtom = atom<Language>();
 export const editorAtom = atom<Editor | null>(null);
+
+// Dark mode atom that syncs with localStorage
+export const darkModeAtom = atomWithStorage<boolean>(
+  "darkMode",
+  window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false,
+);

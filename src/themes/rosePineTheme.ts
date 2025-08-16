@@ -92,7 +92,7 @@ export const rosePineTheme: editor.IStandaloneThemeData = {
 
     // Suggest widget
     "editorSuggestWidget.background": "#26233a",
-    "editorSuggestWidget.border": "#524f67",
+    "editorSuggestWidget.border": "#3b82f6",
     "editorSuggestWidget.foreground": "#e0def4",
     "editorSuggestWidget.highlightForeground": "#c4a7e7",
     "editorSuggestWidget.selectedBackground": "#403d52",

@@ -22,10 +22,10 @@
         hsla(0deg, 100%, 100%, 0.5) 0%,
         hsla(0deg, 100%, 100%, 0) 100%
     );
-    -webkit-mask:
+    mask:
         linear-gradient(hsla(0deg, 0%, 100%, 0.1) 0 0) content-box,
         linear-gradient(hsla(0deg, 0%, 100%, 0.1) 0 0);
-    -webkit-mask-composite: xor;
+    mask-composite: xor;
     pointer-events: none;
 }
 
@@ -48,8 +48,7 @@
 }
 
 .monaco-editor .current-line {
-    border: none !important;
-    background: rgba(59, 130, 246, 0.08) !important;
+    background: rgba(59, 130, 246, 0.2) !important;
     border-radius: 4px !important;
 }
 
@@ -67,9 +66,8 @@
 }
 
 .monaco-editor .suggest-widget {
-    border: 1px solid #3b82f6 !important;
+    background: #26233a !important;
     border-radius: 8px !important;
-    background: #1e1e1e !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
     z-index: 9999 !important;
 }

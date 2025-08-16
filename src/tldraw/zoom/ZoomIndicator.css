@@ -7,6 +7,10 @@
     cursor: pointer;
     backdrop-filter: blur(10px);
     background: var(--ui-glass-background);
-    border: 1px solid hsla(0deg, 0%, 100%, 0.05);
+    border: 1px solid hsla(0deg, 0%, 0%, 0.1);
+
+    .dark & {
+        border: 1px solid hsla(0deg, 0%, 100%, 0.05);
+    }
     padding: 16px;
 }

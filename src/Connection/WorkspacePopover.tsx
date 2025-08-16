@@ -36,7 +36,7 @@ export const WorkspacePopover = () => {
           </Button>
         </Group>
         {isEditing && <AddWorkspaceForm onCreate={addWorkspace} />}
-        <Stack gap={40}>
+        <Stack gap={40} mah="60vh" style={{ overflowY: "auto" }}>
           {workspaces.map((workspace) => (
             <Workspace
               key={workspace.name}

@@ -8,9 +8,15 @@ import {
   loadSnapshot,
   Tldraw,
   TLStore,
+  useEditor,
 } from "tldraw";
 import { customComponents, customUiOverrides } from "./TldrawUi";
-import { sqlLanguageAtom, sqlParserAtom, editorAtom } from "./state";
+import {
+  sqlLanguageAtom,
+  sqlParserAtom,
+  editorAtom,
+  darkModeAtom,
+} from "./state";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { createTheme, MantineProvider } from "@mantine/core";
 import { Parser, Language } from "web-tree-sitter";
@@ -34,12 +40,62 @@ import { CommandPalette } from "./command-palette/CommandPalette";
 
 const theme = createTheme({});
 
+// Dark mode sync component to handle tldraw dark mode changes
+function DarkModeSync() {
+  const editor = useEditor();
+  const [isDarkMode, setIsDarkMode] = useAtom(darkModeAtom);
+
+  // Sync app dark mode to tldraw on mount and when it changes
+  useEffect(() => {
+    if (editor) {
+      editor.user.updateUserPreferences({
+        colorScheme: isDarkMode ? "dark" : "light",
+      });
+    }
+  }, [isDarkMode, editor]);
+
+  // Add global keyboard shortcut for dark mode toggle
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "d") {
+        e.preventDefault();
+        setIsDarkMode((prev) => !prev);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [setIsDarkMode]);
+
+  // Listen for tldraw dark mode changes and sync to app
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleChange = () => {
+      const tldrawDarkMode = editor.user.getIsDarkMode();
+      if (tldrawDarkMode !== isDarkMode) {
+        setIsDarkMode(tldrawDarkMode);
+      }
+    };
+
+    const cleanup = editor.store.listen(handleChange, {
+      source: "user",
+      scope: "document",
+    });
+
+    return cleanup;
+  }, [editor, isDarkMode, setIsDarkMode]);
+
+  return null;
+}
+
 function App() {
   const ref = useRef<Editor>();
   const [, setSqlParser] = useAtom(sqlParserAtom);
   const [, sqlSqlLanguage] = useAtom(sqlLanguageAtom);
   const setEditor = useSetAtom(editorAtom);
   const activeConnection = useAtomValue(activeConnectionAtom);
+  const isDarkMode = useAtomValue(darkModeAtom);
   const initialSnapshot = useAtomValue(
     snapshotForUrlAtom(activeConnection?.connection.url ?? "default"),
   );
@@ -131,8 +187,22 @@ function App() {
     };
   }, [activeConnection?.connection.url]);
 
+  // Apply dark mode class to root element
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+    } else {
+      document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
+    }
+  }, [isDarkMode]);
+
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider
+      theme={theme}
+      forceColorScheme={isDarkMode ? "dark" : "light"}
+    >
       <CustomTitleBar />
 
       <MonacoManager />
@@ -170,7 +240,9 @@ function App() {
           Grid: CustomGrid,
         }}
         tools={[QueryTool, AiPromptTool]}
-      />
+      >
+        <DarkModeSync />
+      </Tldraw>
       <CommandPalette />
     </MantineProvider>
   );

@@ -1,7 +1,9 @@
 import Editor, { Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
 import "../Query.css";
-import { rosePineTheme } from "../../../themes/rosePineTheme";
+import { useEffect, useRef } from "react";
+import { useAtomValue } from "jotai";
+import { darkModeAtom } from "../../../state";
 
 export const SqlEditor = ({
   query,
@@ -12,6 +14,17 @@ export const SqlEditor = ({
   onQueryChange: (query: string) => void;
   onMount?: (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => void;
 }) => {
+  const isDarkMode = useAtomValue(darkModeAtom);
+  const ref = useRef<Monaco | null>(null);
+  const theme = isDarkMode ? "rose-pine" : "rose-pine-dawn";
+
+  useEffect(() => {
+    if (!ref.current) {
+      return;
+    }
+    ref.current.editor.setTheme(theme);
+  }, [isDarkMode, ref.current]);
+
   return (
     <div style={{ height: "100%", width: "100%", position: "relative" }}>
       <div className="query-window" style={{ height: "100%", width: "100%" }}>
@@ -21,12 +34,8 @@ export const SqlEditor = ({
           defaultValue={query}
           theme="rose-pine"
           onMount={(editor, monaco) => {
-            try {
-              monaco.editor.setTheme("rose-pine");
-            } catch {
-              monaco.editor.defineTheme("rose-pine", rosePineTheme);
-              monaco.editor.setTheme("rose-pine");
-            }
+            ref.current = monaco;
+            monaco.editor.setTheme(theme);
             onMount?.(editor, monaco);
           }}
           options={{

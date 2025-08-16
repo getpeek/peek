@@ -9,7 +9,11 @@
     user-select: none;
     display: flex;
     align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+    .dark & {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
     backdrop-filter: blur(10px);
     border-radius: 8px 8px 0 0;
 }
@@ -48,7 +52,11 @@
     border: none;
     border-radius: 9999px;
     background: transparent;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(0, 0, 0, 0.7);
+
+    .dark & {
+        color: rgba(255, 255, 255, 0.7);
+    }
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -59,7 +67,11 @@
 
 .control-button:active {
     transform: scale(0.95);
-    color: #111;
+    color: rgba(0, 0, 0, 0.9);
+
+    .dark & {
+        color: rgba(255, 255, 255, 0.9);
+    }
 }
 
 .minimize-button {

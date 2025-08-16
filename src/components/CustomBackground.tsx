@@ -1,5 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
-import { useEditor, useIsDarkMode, useValue } from "tldraw";
+import { useEditor, useValue } from "tldraw";
+import { useAtomValue } from "jotai";
+import { darkModeAtom } from "../state";
 
 export function CustomGrid({
   ...camera
@@ -21,7 +23,7 @@ export function CustomGrid({
     () => editor.getInstanceState().devicePixelRatio,
     [],
   );
-  const isDarkMode = useIsDarkMode();
+  const isDarkMode = useAtomValue(darkModeAtom);
 
   const canvas = useRef<HTMLCanvasElement>(null);
 

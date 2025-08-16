@@ -5,6 +5,7 @@ import { schemaAtom, sqlLanguageAtom, sqlParserAtom } from "../../../state";
 import { createSqlProvider } from "./languageProvider";
 import { editor, IDisposable } from "monaco-editor";
 import { rosePineTheme } from "../../../themes/rosePineTheme";
+import { rosePineDawnTheme } from "../../../themes/rosePineDawnTheme";
 
 export const MonacoManager = () => {
   const schema = useAtomValue(schemaAtom);
@@ -73,6 +74,7 @@ export const MonacoManager = () => {
 
           // Register Rose Pine theme
           monaco.editor.defineTheme("rose-pine", rosePineTheme);
+          monaco.editor.defineTheme("rose-pine-dawn", rosePineDawnTheme);
 
           registerCompletionProvider();
         }}

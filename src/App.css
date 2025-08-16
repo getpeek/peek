@@ -25,92 +25,11 @@ body,
     display: none !important;
 }
 
-:root {
+/* Light mode styles (default) */
+:root,
+.light {
     --text-color: hsla(242deg, 85%, 10%);
     --remove-color: hsla(10deg, 75%, 70%);
-
-    /** Table */
-    --inbound-key: hsl(237deg, 38%, 11%);
-    --inbound-key-hover: hsl(210deg, 80%, 15%);
-    --outbound-key: hsl(237deg, 38%, 7%);
-    --outbound-key-hover: hsl(249deg, 12%, 15%);
-    --border-base: hsl(246deg, 33%, 17%);
-    --cell-base: hsl(237deg, 38%, 9%);
-    --cell-striped: hsl(237deg, 38%, 9%);
-    --header-base: var(--cell-striped);
-
-    /** CHAT */
-    --user-label: hsl(90deg, 80%, 80%);
-    --assistant-label: hsl(200deg, 80%, 80%);
-    --context-message: var(--mantine-color-green-1);
-    --context-message-subtle: var(--mantine-color-green-2);
-    --system-message: var(--mantine-color-blue-1);
-    --system-message-subtle: var(--mantine-color-blue-2);
-
-    /** UI */
-    --ui-glass-background: hsl(40deg, 40%, 80%, 0.3);
-    --tool-color: hsl(40deg, 30%, 50%);
-    --selected-tool-color: hsl(40deg, 55%, 30%);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --text-color: hsla(242deg, 45%, 90%);
-
-        /** Table */
-        --inbound-key: hsl(237deg, 38%, 11%);
-        --inbound-key-hover: hsl(210deg, 80%, 15%);
-        --outbound-key: hsl(237deg, 38%, 7%);
-        --outbound-key-hover: hsl(249deg, 12%, 15%);
-        --border-base: hsl(246deg, 33%, 17%);
-        --cell-base: hsl(237deg, 38%, 9%);
-        --cell-striped: hsl(237deg, 38%, 9%);
-        --header-base: var(--cell-striped);
-
-        /** CHAT */
-        --user-label: hsl(90deg, 80%, 80%);
-        --assistant-label: hsl(200deg, 80%, 80%);
-        --context-message: var(--mantine-color-green-1);
-        --context-message-subtle: var(--mantine-color-green-2);
-        --system-message: var(--mantine-color-blue-1);
-        --system-message-subtle: var(--mantine-color-blue-2);
-
-        /** UI */
-        --ui-glass-background: hsl(240deg, 40%, 10%, 0.4);
-        --tool-color: hsl(242deg, 15%, 40%);
-        --selected-tool-color: hsl(242deg, 15%, 80%);
-    }
-}
-
-.tl-container[data-color-mode="dark"] {
-    --text-color: hsla(242deg, 45%, 80%);
-
-    /** Table */
-    --inbound-key: hsl(237deg, 38%, 11%);
-    --inbound-key-hover: hsl(210deg, 80%, 15%);
-    --outbound-key: hsl(237deg, 38%, 7%);
-    --outbound-key-hover: hsl(249deg, 12%, 15%);
-    --border-base: hsl(246deg, 33%, 17%);
-    --cell-base: hsl(237deg, 38%, 9%);
-    --cell-striped: hsl(237deg, 38%, 9%);
-    --header-base: var(--cell-striped);
-
-    /** CHAT */
-    --user-label: hsl(90deg, 80%, 80%);
-    --assistant-label: hsl(200deg, 80%, 80%);
-    --context-message: var(--mantine-color-green-1);
-    --context-message-subtle: var(--mantine-color-green-2);
-    --system-message: var(--mantine-color-blue-1);
-    --system-message-subtle: var(--mantine-color-blue-2);
-
-    /** UI */
-    --ui-glass-background: hsl(240deg, 40%, 10%, 0.4);
-    --tool-color: hsl(242deg, 15%, 60%);
-    --selected-tool-color: hsl(242deg, 15%, 90%);
-}
-
-.tl-container[data-color-mode="light"] {
-    --text-color: hsla(242deg, 85%, 10%);
 
     /** Table */
     --inbound-key: hsl(80deg, 28%, 81%);
@@ -134,4 +53,33 @@ body,
     --ui-glass-background: hsl(40deg, 40%, 70%, 0.3);
     --tool-color: hsl(40deg, 30%, 50%);
     --selected-tool-color: hsl(40deg, 55%, 20%);
+}
+
+/* Dark mode styles */
+.dark {
+    --text-color: hsla(242deg, 45%, 90%);
+    --remove-color: hsla(10deg, 75%, 70%);
+
+    /** Table */
+    --inbound-key: hsl(237deg, 38%, 11%);
+    --inbound-key-hover: hsl(210deg, 80%, 15%);
+    --outbound-key: hsl(237deg, 38%, 7%);
+    --outbound-key-hover: hsl(249deg, 12%, 15%);
+    --border-base: hsl(246deg, 33%, 17%);
+    --cell-base: hsl(237deg, 38%, 9%);
+    --cell-striped: hsl(237deg, 38%, 9%);
+    --header-base: var(--cell-striped);
+
+    /** CHAT */
+    --user-label: hsl(90deg, 80%, 80%);
+    --assistant-label: hsl(200deg, 80%, 80%);
+    --context-message: var(--mantine-color-green-1);
+    --context-message-subtle: var(--mantine-color-green-2);
+    --system-message: var(--mantine-color-blue-1);
+    --system-message-subtle: var(--mantine-color-blue-2);
+
+    /** UI */
+    --ui-glass-background: hsl(240deg, 40%, 10%, 0.4);
+    --tool-color: hsl(242deg, 15%, 60%);
+    --selected-tool-color: hsl(242deg, 15%, 90%);
 }
