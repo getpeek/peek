@@ -81,8 +81,6 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
         references[fromTable] = toTables;
       });
 
-      console.log(references);
-
       for (const shape of shapes) {
         const table = shape.props.query.split(" ")[1];
 
