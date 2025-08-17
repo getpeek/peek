@@ -18,5 +18,11 @@ pub trait Database: Send + Sync {
     /// from each column to each table.column as map, where the key is the column.
     async fn get_schema(
         &self,
-    ) -> Result<(HashMap<String, Vec<String>>, HashMap<String, Vec<String>>), String>;
+    ) -> Result<
+        (
+            HashMap<String, Vec<(String, String)>>,
+            HashMap<String, Vec<String>>,
+        ),
+        String,
+    >;
 }

@@ -84,10 +84,7 @@ export const AiPromptContextualToolbarComponent = track(() => {
         });
       }
 
-      console.log("this is here at least?");
-
       for await (const chunk of stream) {
-        console.log(chunk.text);
         if (is_first_token) {
           if (chunk.text !== "<think>") {
             is_query = true;

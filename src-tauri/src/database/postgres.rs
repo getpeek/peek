@@ -112,13 +112,24 @@ impl Database for PostgresDatabase {
 
     async fn get_schema(
         &self,
-    ) -> Result<(HashMap<String, Vec<String>>, HashMap<String, Vec<String>>), String> {
+    ) -> Result<
+        (
+            HashMap<String, Vec<(String, String)>>,
+            HashMap<String, Vec<String>>,
+        ),
+        String,
+    > {
         let mut conn = PgConnection::connect(&self.connection_string)
             .await
             .map_err(|e| e.to_string())?;
 
         let columns = sqlx::query(
-            "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema = 'public'",
+            r#"SELECT
+                table_name,
+                column_name,
+                udt_name AS pg_type
+            FROM information_schema.columns
+            WHERE table_schema = 'public'"#,
         )
         .fetch_all(&mut conn)
         .await
@@ -128,14 +139,20 @@ impl Database for PostgresDatabase {
 
         let column_map = columns
             .into_iter()
-            .map(|row| (row.get::<String, _>(0), row.get::<String, _>(1)))
-            .collect::<Vec<(String, String)>>();
+            .map(|row| {
+                (
+                    row.get::<String, _>(0),
+                    row.get::<String, _>(1),
+                    row.get::<String, _>(2),
+                )
+            })
+            .collect::<Vec<(String, String, String)>>();
 
-        for (table_name, column_name) in &column_map {
+        for (table_name, column_name, column_type) in &column_map {
             schema_map
                 .entry(table_name.clone())
                 .or_insert(Vec::new())
-                .push(column_name.clone());
+                .push((column_name.clone(), column_type.clone()));
         }
 
         let fk_rows = sqlx::query(

@@ -3,8 +3,9 @@ import { IconNetwork } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 import { activeConnectionAtom } from "../../Connection/state";
 import { useWorkspaces } from "../../db";
+import { CommandPaletteResult } from ".";
 
-export const useGetConnectionCommands = () => {
+export const useGetConnectionCommands = (): CommandPaletteResult[] => {
   const connections = useWorkspaces();
   const setActiveConnection = useSetAtom(activeConnectionAtom);
 

@@ -13,7 +13,7 @@ export interface CommandPaletteResult {
   onSelect: (editor: Editor) => void;
 }
 
-export const commands = [
+export const commands: CommandPaletteResult[] = [
   rerunAllQueriesOnPage,
   rerunSelectedQueries,
   exportSelectedDataCsv,

@@ -6,7 +6,7 @@ import { Editor } from "tldraw";
 export type DatabaseResult = [string, unknown, string][][];
 
 export const schemaAtom = atom<{
-  tables: Record<string, string[]>;
+  tables: Record<string, [string, string][]>;
   references: Record<string, string[]>;
 }>({
   tables: {},

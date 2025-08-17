@@ -156,7 +156,13 @@ impl Database for MysqlDatabase {
 
     async fn get_schema(
         &self,
-    ) -> Result<(HashMap<String, Vec<String>>, HashMap<String, Vec<String>>), String> {
+    ) -> Result<
+        (
+            HashMap<String, Vec<(String, String)>>,
+            HashMap<String, Vec<String>>,
+        ),
+        String,
+    > {
         let mut conn = MySqlConnection::connect(&self.connection_string)
             .await
             .map_err(|e| e.to_string())?;
@@ -169,7 +175,7 @@ impl Database for MysqlDatabase {
             .unwrap_or("mysql");
 
         let columns = sqlx::query(
-            "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema = ?",
+            "SELECT table_name, column_name, column_type FROM information_schema.columns WHERE table_schema = ?",
         )
         .bind(db_name)
         .fetch_all(&mut conn)
@@ -177,55 +183,24 @@ impl Database for MysqlDatabase {
         .map_err(|_| "Could not get columns".to_string())?;
 
         let mut schema_map = HashMap::new();
+        let mut column_map = HashMap::new();
 
-        let column_map = columns
-            .into_iter()
-            .map(|row| (row.get::<String, _>(0), row.get::<String, _>(1)))
-            .collect::<Vec<(String, String)>>();
+        for row in columns {
+            let table_name = row.get::<String, _>(0);
+            let column_name = row.get::<String, _>(1);
+            let column_type = row.get::<String, _>(2);
 
-        for (table_name, column_name) in &column_map {
             schema_map
+                .entry(table_name.clone())
+                .or_insert(Vec::new())
+                .push((column_name.clone(), column_type.clone()));
+
+            column_map
                 .entry(table_name.clone())
                 .or_insert(Vec::new())
                 .push(column_name.clone());
         }
 
-        let fk_rows = sqlx::query(
-            r#"
-                SELECT
-                    kcu.TABLE_NAME AS referencing_table,
-                    kcu.COLUMN_NAME AS referencing_column,
-                    kcu.REFERENCED_TABLE_NAME AS referenced_table,
-                    kcu.REFERENCED_COLUMN_NAME AS referenced_column
-                FROM
-                    information_schema.KEY_COLUMN_USAGE AS kcu
-                WHERE
-                    kcu.REFERENCED_TABLE_NAME IS NOT NULL
-                    AND kcu.TABLE_SCHEMA = ?
-                "#,
-        )
-        .bind(db_name)
-        .fetch_all(&mut conn)
-        .await
-        .map_err(|_| "Could not get foreign key info".to_string())?;
-
-        let mut fk_map: HashMap<String, Vec<String>> = HashMap::new();
-
-        for row in fk_rows {
-            let referencing_table: String = row.get("referencing_table");
-            let referencing_column: String = row.get("referencing_column");
-            let referenced_table: String = row.get("referenced_table");
-            let referenced_column: String = row.get("referenced_column");
-
-            let referenced_key = format!("{}.{}", referenced_table, referenced_column);
-            let referencing_key = format!("{}.{}", referencing_table, referencing_column);
-
-            fk_map
-                .entry(referenced_key)
-                .or_default()
-                .push(referencing_key);
-        }
-
-        Ok((schema_map, fk_map))
+        Ok((schema_map, column_map))
     }
 }

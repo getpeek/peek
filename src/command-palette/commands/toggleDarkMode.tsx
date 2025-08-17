@@ -14,7 +14,6 @@ export const useToggleDarkModeCommand = (): CommandPaletteResult => {
         {isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
       </Text>
     ),
-    description: "Toggle between light and dark themes",
     searchAgainst: "toggle dark mode light theme switch appearance",
     onSelect: () => {
       setIsDarkMode(!isDarkMode);

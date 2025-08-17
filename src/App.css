@@ -29,6 +29,7 @@ body,
 :root,
 .light {
     --text-color: hsla(242deg, 85%, 10%);
+    --text-color-subtle: hsla(242deg, 85%, 10%);
     --remove-color: hsla(10deg, 75%, 70%);
 
     /** Table */
@@ -58,6 +59,7 @@ body,
 /* Dark mode styles */
 .dark {
     --text-color: hsla(242deg, 45%, 90%);
+    --text-color-subtle: hsla(242deg, 15%, 40%);
     --remove-color: hsla(10deg, 75%, 70%);
 
     /** Table */

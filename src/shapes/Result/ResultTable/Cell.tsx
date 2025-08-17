@@ -51,14 +51,14 @@ export const DataCell = ({
   }
 
   if (typeof value === "string" || typeof value === "number") {
-    if (inbound.length > 0) {
+    if (inbound?.length > 0) {
       return (
         <div onClick={openInboundReferences} className="reference">
           <Text c="blue">{value}</Text>
         </div>
       );
     }
-    if (outbound.length > 0) {
+    if (outbound?.length > 0) {
       return (
         <div onClick={openOutboundReferences} className="reference">
           <Text c="blue">{value}</Text>

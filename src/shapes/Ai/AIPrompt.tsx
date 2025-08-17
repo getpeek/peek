@@ -23,7 +23,9 @@ export const AIPrompt = ({
     <textarea
       value={shape.props.prompt}
       ref={inputRef}
-      placeholder="All users that haven't logged in in the last 3 months"
+      placeholder="Generate a query that..."
+      autoComplete="off"
+      autoCorrect="off"
       className={`prompt-input ${shape.props.isLoading ? "loading" : ""}`}
       onChange={(e) =>
         editor.updateShape({

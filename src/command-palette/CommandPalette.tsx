@@ -71,7 +71,10 @@ export const CommandPalette = () => {
                 style={{ animationDelay: `${i * 0.05}s` }}
               >
                 <Group gap="sm">
-                  {result.icon} {result.label}
+                  {result.icon}{" "}
+                  <Group>
+                    {result.label} {result.description}
+                  </Group>
                 </Group>
               </div>
             ))}

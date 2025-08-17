@@ -4,8 +4,9 @@ import { IconSql } from "@tabler/icons-react";
 import { QueryShape } from "../../shapes/Query/QueryShape";
 import { Text } from "@mantine/core";
 import { useValue } from "tldraw";
+import { CommandPaletteResult } from ".";
 
-export const useGoToQueryCommands = () => {
+export const useGoToQueryCommands = (): CommandPaletteResult[] => {
   const editor = useAtomValue(editorAtom);
   const shapes = useValue(
     "current page shapes for search",

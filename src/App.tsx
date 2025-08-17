@@ -211,25 +211,6 @@ function App() {
           ref.current = editor;
           setEditor(editor);
           editor.updateInstanceState({ isGridMode: true });
-          editor.sideEffects.registerBeforeDeleteHandler("shape", (shape) => {
-            editor
-              .getCurrentPageShapes()
-              .filter(({ type }) => type === "arrow")
-              .forEach((arrow) => {
-                const bindings = editor.getBindingsInvolvingShape(arrow);
-
-                bindings.forEach((binding) => {
-                  console.log(binding.fromId, binding.toId);
-                  if (
-                    binding.toId === shape.id ||
-                    binding.fromId === shape.id
-                  ) {
-                    console.log("we should delete this arrow");
-                    editor.deleteShape(arrow);
-                  }
-                });
-              });
-          });
         }}
         store={store}
         shapeUtils={customShapes}

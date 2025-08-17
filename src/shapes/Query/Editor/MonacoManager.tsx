@@ -28,7 +28,6 @@ export const MonacoManager = () => {
     }
 
     if (providerRef.current) {
-      console.log("disposing old provider");
       providerRef.current.dispose();
       providerRef.current = null;
     }

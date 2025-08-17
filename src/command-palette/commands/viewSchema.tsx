@@ -13,6 +13,11 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
     icon: <IconSchema size={16} />,
     label: <Text size="xs">View Schema</Text>,
     searchAgainst: "View database schema",
+    description: (
+      <Text size="xs" c="var(--text-color-subtle)">
+        opens in a new page
+      </Text>
+    ),
     onSelect: (editor) => {
       let schemaPage = editor.getPages().find((page) => page.name === "schema");
 
@@ -34,9 +39,18 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
       let y = 0;
 
       Object.entries(schema.tables).forEach(([table, columns]) => {
-        const data: DatabaseResult = columns.map((col) => [
-          [table, col, "string"],
-        ]);
+        const header: DatabaseResult = [
+          [
+            [table, "", ""],
+            ["", "", ""],
+          ],
+        ];
+        const data: DatabaseResult = columns.map(([col, kind]) => {
+          return [
+            ["column", col, "string"],
+            ["type", kind, kind],
+          ];
+        });
         editor.createShape<ResultShape>({
           id: createShapeId(`schema-table-${table}`),
           type: "result",
@@ -44,11 +58,12 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
           y,
           props: {
             query: `describe ${table}`,
-            data,
-            h: columns.length * 60 + 50,
+            data: [...header, ...data],
+            h: columns.length * 60 + 100,
+            w: 450,
           },
         });
-        x += 400;
+        x += 550;
         if (x > 1400) {
           x = 0;
           y += 500;

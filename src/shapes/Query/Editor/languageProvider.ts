@@ -7,7 +7,7 @@ export const createSqlProvider = ({
   parser,
   language,
 }: {
-  tables: Record<string, string[]>;
+  tables: Record<string, [string, string][]>;
   references: Record<string, string[]>;
   parser: Parser;
   language: Language;
@@ -77,7 +77,7 @@ export const createSqlProvider = ({
     return aliases;
   };
 
-  const getColumnsForTable = (tableName: string): string[] => {
+  const getColumnsForTable = (tableName: string): [string, string][] => {
     return tables[tableName] || [];
   };
 
@@ -375,7 +375,7 @@ export const createSqlProvider = ({
 
     const uniqueTableNames = new Set(Array.from(tables.values()));
     for (const tableName of uniqueTableNames) {
-      const columns = getColumnsForTable(tableName);
+      const columns = getColumnsForTable(tableName).map(([col]) => col);
       availableColumns.push(...columns);
     }
 
@@ -429,7 +429,9 @@ export const createSqlProvider = ({
 
           case "column":
             if (context.tableContext) {
-              const columns = getColumnsForTable(context.tableContext);
+              const columns = getColumnsForTable(context.tableContext).map(
+                ([col]) => col,
+              );
               suggestions = columns.map((column) => ({
                 label: column,
                 kind: languages.CompletionItemKind.Field,
