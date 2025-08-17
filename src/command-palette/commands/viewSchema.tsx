@@ -5,6 +5,7 @@ import { createShapeId, TLPage } from "tldraw";
 import { useAtomValue } from "jotai";
 import { DatabaseResult, schemaAtom } from "../../state";
 import { ResultShape } from "../../shapes/Result/ResultShape";
+import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
 
 export const useViewSchemaCommand = (): CommandPaletteResult => {
   const schema = useAtomValue(schemaAtom);
@@ -69,6 +70,31 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
           y += 500;
         }
       });
+
+      const shapes = editor.getCurrentPageShapes() as ResultShape[];
+
+      const references: Record<string, string[]> = {};
+
+      Object.entries(schema.references).forEach(([from, to]) => {
+        const fromTable = from.split(".")[0];
+        const toTables = to.map((table) => table.split(".")[0]);
+        references[fromTable] = toTables;
+      });
+
+      console.log(references);
+
+      for (const shape of shapes) {
+        const table = shape.props.query.split(" ")[1];
+
+        const toShapes = (references[table] ?? []).flatMap((name) => {
+          const id = createShapeId(`schema-table-${name}`);
+          return editor.getShape(id) ?? [];
+        });
+
+        for (const toShape of toShapes) {
+          createArrowBetweenShapes(editor, shape.id, toShape.id);
+        }
+      }
     },
   };
 };
