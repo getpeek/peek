@@ -57,7 +57,6 @@ impl Database for MysqlDatabase {
                         .unwrap_or(Value::Null),
 
                     "TINYINT" => {
-                        // Check if it's a boolean
                         if col.type_info().to_string().contains("(1)") {
                             row.try_get::<bool, _>(i)
                                 .map(|v| json!(v))
@@ -130,24 +129,20 @@ impl Database for MysqlDatabase {
                         })
                         .unwrap_or(Value::Null),
 
-                    // MySQL UUID (stored as CHAR(36) or BINARY(16))
                     "UUID" | "CHAR(36)" => row
                         .try_get::<String, _>(i)
                         .map(|v| json!(v))
                         .unwrap_or(Value::Null),
 
-                    // MySQL ENUM and SET types
                     "ENUM" | "SET" => row
                         .try_get::<String, _>(i)
                         .map(|v| json!(v))
                         .unwrap_or(Value::Null),
 
-                    _ => {
-                        // For MySQL, try to get as string for unknown types
-                        row.try_get::<String, _>(i)
-                            .map(|v| json!(v))
-                            .unwrap_or(Value::Null)
-                    }
+                    _ => row
+                        .try_get::<String, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
                 };
 
                 fields.push((col_name.to_string(), value, type_name));
@@ -166,7 +161,6 @@ impl Database for MysqlDatabase {
             .await
             .map_err(|e| e.to_string())?;
 
-        // Extract database name from connection string
         let db_name = self
             .connection_string
             .split('/')

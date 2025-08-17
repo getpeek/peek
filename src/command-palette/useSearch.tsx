@@ -5,12 +5,14 @@ import { editorAtom } from "../state";
 import { useGoToQueryCommands } from "./commands/useGoToQueryCommands";
 import { useGetConnectionCommands } from "./commands/useGetConnectionCommands";
 import { useToggleDarkModeCommand } from "./commands/toggleDarkMode";
+import { useViewSchemaCommand } from "./commands/viewSchema";
 
 export const useSearch = (query: string) => {
   const editor = useAtomValue(editorAtom);
   const queryCommands = useGoToQueryCommands();
   const connectionCommands = useGetConnectionCommands();
   const toggleDarkModeCommand = useToggleDarkModeCommand();
+  const viewSchemaCommand = useViewSchemaCommand();
 
   if (!editor) {
     return [];
@@ -25,6 +27,7 @@ export const useSearch = (query: string) => {
     ...queryCommands,
     ...connectionCommands,
     toggleDarkModeCommand,
+    viewSchemaCommand,
   ];
   return fuzzysort
     .go(query, searchSpace, { key: "searchAgainst" })
