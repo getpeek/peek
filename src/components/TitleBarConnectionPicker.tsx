@@ -46,7 +46,7 @@ export const TitleBarConnectionPicker: React.FC = () => {
             <button
               className="connection-button"
               style={{
-                backgroundColor: `color-mix(in srgb, ${activeConnection.connection.color} 20%, 100% transparent)`,
+                backgroundColor: `color-mix(in srgb, ${activeConnection.connection.color} 40%, 100% transparent)`,
               }}
             >
               <div

@@ -1,0 +1,237 @@
+use super::Database;
+use serde_json::{json, Value};
+use sqlx::{Column, Connection, MySqlConnection, Row, TypeInfo};
+use std::collections::HashMap;
+
+pub struct MysqlDatabase {
+    connection_string: String,
+}
+
+impl MysqlDatabase {
+    pub fn new(connection_string: &str) -> Self {
+        Self {
+            connection_string: connection_string.to_string(),
+        }
+    }
+}
+
+#[async_trait::async_trait]
+impl Database for MysqlDatabase {
+    async fn get_results(&self, query: &str) -> Result<Vec<Value>, String> {
+        let mut conn = MySqlConnection::connect(&self.connection_string)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        let rows = sqlx::query(query)
+            .fetch_all(&mut conn)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        let mut results = Vec::new();
+        for row in rows {
+            let mut fields: Vec<(String, Value, &str)> = Vec::new();
+
+            for (i, col) in row.columns().iter().enumerate() {
+                let col_name = col.name();
+                let type_name = col.type_info().name();
+
+                let value: Value = match type_name {
+                    "VARCHAR" | "CHAR" | "TEXT" | "TINYTEXT" | "MEDIUMTEXT" | "LONGTEXT" => row
+                        .try_get::<String, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "DATE" => row
+                        .try_get::<chrono::NaiveDate, _>(i)
+                        .map(|v| json!(v.format("%Y-%m-%d").to_string()))
+                        .unwrap_or(Value::Null),
+
+                    "DATETIME" | "TIMESTAMP" => row
+                        .try_get::<chrono::NaiveDateTime, _>(i)
+                        .map(|dt| json!(dt.format("%Y-%m-%dT%H:%M:%S").to_string()))
+                        .unwrap_or(Value::Null),
+
+                    "TIME" => row
+                        .try_get::<chrono::NaiveTime, _>(i)
+                        .map(|t| json!(t.format("%H:%M:%S").to_string()))
+                        .unwrap_or(Value::Null),
+
+                    "TINYINT" => {
+                        // Check if it's a boolean
+                        if col.type_info().to_string().contains("(1)") {
+                            row.try_get::<bool, _>(i)
+                                .map(|v| json!(v))
+                                .unwrap_or(Value::Null)
+                        } else {
+                            row.try_get::<i8, _>(i)
+                                .map(|v| json!(v))
+                                .unwrap_or(Value::Null)
+                        }
+                    }
+
+                    "SMALLINT" => row
+                        .try_get::<i16, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "INT" | "MEDIUMINT" => row
+                        .try_get::<i32, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "BIGINT" => row
+                        .try_get::<i64, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    // MySQL Unsigned Integer types
+                    "UNSIGNED TINYINT" => row
+                        .try_get::<u8, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "UNSIGNED SMALLINT" => row
+                        .try_get::<u16, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "UNSIGNED INT" | "UNSIGNED MEDIUMINT" => row
+                        .try_get::<u32, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "UNSIGNED BIGINT" => row
+                        .try_get::<u64, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "FLOAT" => row
+                        .try_get::<f32, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "DOUBLE" => row
+                        .try_get::<f64, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "DECIMAL" | "NUMERIC" => row
+                        .try_get::<rust_decimal::Decimal, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "JSON" => row.try_get::<Value, _>(i).unwrap_or(Value::Null),
+
+                    "BINARY" | "VARBINARY" | "BLOB" | "TINYBLOB" | "MEDIUMBLOB" | "LONGBLOB" => row
+                        .try_get::<Vec<u8>, _>(i)
+                        .map(|bytes| {
+                            use base64::Engine;
+                            json!(base64::engine::general_purpose::STANDARD.encode(bytes))
+                        })
+                        .unwrap_or(Value::Null),
+
+                    // MySQL UUID (stored as CHAR(36) or BINARY(16))
+                    "UUID" | "CHAR(36)" => row
+                        .try_get::<String, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    // MySQL ENUM and SET types
+                    "ENUM" | "SET" => row
+                        .try_get::<String, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    _ => {
+                        // For MySQL, try to get as string for unknown types
+                        row.try_get::<String, _>(i)
+                            .map(|v| json!(v))
+                            .unwrap_or(Value::Null)
+                    }
+                };
+
+                fields.push((col_name.to_string(), value, type_name));
+            }
+
+            results.push(json!(fields));
+        }
+
+        Ok(results)
+    }
+
+    async fn get_schema(
+        &self,
+    ) -> Result<(HashMap<String, Vec<String>>, HashMap<String, Vec<String>>), String> {
+        let mut conn = MySqlConnection::connect(&self.connection_string)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        // Extract database name from connection string
+        let db_name = self
+            .connection_string
+            .split('/')
+            .last()
+            .and_then(|s| s.split('?').next())
+            .unwrap_or("mysql");
+
+        let columns = sqlx::query(
+            "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema = ?",
+        )
+        .bind(db_name)
+        .fetch_all(&mut conn)
+        .await
+        .map_err(|_| "Could not get columns".to_string())?;
+
+        let mut schema_map = HashMap::new();
+
+        let column_map = columns
+            .into_iter()
+            .map(|row| (row.get::<String, _>(0), row.get::<String, _>(1)))
+            .collect::<Vec<(String, String)>>();
+
+        for (table_name, column_name) in &column_map {
+            schema_map
+                .entry(table_name.clone())
+                .or_insert(Vec::new())
+                .push(column_name.clone());
+        }
+
+        let fk_rows = sqlx::query(
+            r#"
+                SELECT
+                    kcu.TABLE_NAME AS referencing_table,
+                    kcu.COLUMN_NAME AS referencing_column,
+                    kcu.REFERENCED_TABLE_NAME AS referenced_table,
+                    kcu.REFERENCED_COLUMN_NAME AS referenced_column
+                FROM
+                    information_schema.KEY_COLUMN_USAGE AS kcu
+                WHERE
+                    kcu.REFERENCED_TABLE_NAME IS NOT NULL
+                    AND kcu.TABLE_SCHEMA = ?
+                "#,
+        )
+        .bind(db_name)
+        .fetch_all(&mut conn)
+        .await
+        .map_err(|_| "Could not get foreign key info".to_string())?;
+
+        let mut fk_map: HashMap<String, Vec<String>> = HashMap::new();
+
+        for row in fk_rows {
+            let referencing_table: String = row.get("referencing_table");
+            let referencing_column: String = row.get("referencing_column");
+            let referenced_table: String = row.get("referenced_table");
+            let referenced_column: String = row.get("referenced_column");
+
+            let referenced_key = format!("{}.{}", referenced_table, referenced_column);
+            let referencing_key = format!("{}.{}", referencing_table, referencing_column);
+
+            fk_map
+                .entry(referenced_key)
+                .or_default()
+                .push(referencing_key);
+        }
+
+        Ok((schema_map, fk_map))
+    }
+}

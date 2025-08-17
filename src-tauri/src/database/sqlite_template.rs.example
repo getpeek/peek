@@ -1,0 +1,184 @@
+// Example template for adding SQLite support
+// To enable SQLite support:
+// 1. Rename this file to sqlite.rs
+// 2. Add "sqlite" to sqlx features in Cargo.toml
+// 3. Add SQLite to DatabaseType enum in lib.rs
+// 4. Add SQLite detection in set_connection function
+// 5. Add SQLite case in database_commands.rs
+
+use crate::database::Database;
+use serde_json::{json, Value};
+use sqlx::{Column, Connection, Row, SqliteConnection, TypeInfo};
+use std::collections::HashMap;
+
+pub struct SqliteDatabase {
+    connection_string: String,
+}
+
+impl SqliteDatabase {
+    pub fn new(connection_string: &str) -> Self {
+        Self {
+            connection_string: connection_string.to_string(),
+        }
+    }
+}
+
+#[async_trait::async_trait]
+impl Database for SqliteDatabase {
+    async fn get_results(&self, query: &str) -> Result<Vec<Value>, String> {
+        let mut conn = SqliteConnection::connect(&self.connection_string)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        let rows = sqlx::query(query)
+            .fetch_all(&mut conn)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        let mut results = Vec::new();
+        for row in rows {
+            let mut fields: Vec<(String, Value, &str)> = Vec::new();
+
+            for (i, col) in row.columns().iter().enumerate() {
+                let col_name = col.name();
+                let type_name = col.type_info().name();
+
+                let value: Value = match type_name {
+                    // SQLite types are simpler - it only has a few core types
+                    "TEXT" => row
+                        .try_get::<String, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "INTEGER" => row
+                        .try_get::<i64, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "REAL" => row
+                        .try_get::<f64, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "BLOB" => row
+                        .try_get::<Vec<u8>, _>(i)
+                        .map(|bytes| {
+                            use base64::Engine;
+                            json!(base64::engine::general_purpose::STANDARD.encode(bytes))
+                        })
+                        .unwrap_or(Value::Null),
+
+                    "NULL" => Value::Null,
+
+                    // SQLite is flexible with types, so handle unexpected cases
+                    _ => {
+                        // Try as string first, then as number
+                        row.try_get::<String, _>(i)
+                            .map(|v| json!(v))
+                            .or_else(|_| row.try_get::<i64, _>(i).map(|v| json!(v)))
+                            .or_else(|_| row.try_get::<f64, _>(i).map(|v| json!(v)))
+                            .unwrap_or(Value::Null)
+                    }
+                };
+
+                fields.push((col_name.to_string(), value, type_name));
+            }
+
+            results.push(json!(fields));
+        }
+
+        Ok(results)
+    }
+
+    async fn get_schema(
+        &self,
+    ) -> Result<(HashMap<String, Vec<String>>, HashMap<String, Vec<String>>), String> {
+        let mut conn = SqliteConnection::connect(&self.connection_string)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        // Get all tables
+        let tables = sqlx::query(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
+        )
+        .fetch_all(&mut conn)
+        .await
+        .map_err(|_| "Could not get tables".to_string())?;
+
+        let mut schema_map = HashMap::new();
+
+        // For each table, get its columns
+        for table_row in tables {
+            let table_name: String = table_row.get(0);
+
+            // Use PRAGMA to get table info
+            let columns = sqlx::query(&format!("PRAGMA table_info('{}')", table_name))
+                .fetch_all(&mut conn)
+                .await
+                .map_err(|_| format!("Could not get columns for table {}", table_name))?;
+
+            let mut column_names = Vec::new();
+            for col_row in columns {
+                // Column name is in the second position (index 1) of PRAGMA table_info
+                let col_name: String = col_row.get(1);
+                column_names.push(col_name);
+            }
+
+            schema_map.insert(table_name, column_names);
+        }
+
+        // Get foreign keys for each table
+        let mut fk_map: HashMap<String, Vec<String>> = HashMap::new();
+
+        for (table_name, _) in &schema_map {
+            let fk_info = sqlx::query(&format!("PRAGMA foreign_key_list('{}')", table_name))
+                .fetch_all(&mut conn)
+                .await
+                .map_err(|_| format!("Could not get foreign keys for table {}", table_name))?;
+
+            for fk_row in fk_info {
+                // PRAGMA foreign_key_list returns:
+                // 0: id, 1: seq, 2: table (referenced), 3: from (referencing column),
+                // 4: to (referenced column), 5: on_update, 6: on_delete, 7: match
+                let referenced_table: String = fk_row.get(2);
+                let referencing_column: String = fk_row.get(3);
+                let referenced_column: String = fk_row.get(4);
+
+                let referenced_key = format!("{}.{}", referenced_table, referenced_column);
+                let referencing_key = format!("{}.{}", table_name, referencing_column);
+
+                fk_map
+                    .entry(referenced_key)
+                    .or_default()
+                    .push(referencing_key);
+            }
+        }
+
+        Ok((schema_map, fk_map))
+    }
+}
+
+// Example of how to update lib.rs:
+//
+// #[derive(Debug)]
+// pub enum DatabaseType {
+//     PostgreSQL,
+//     MySQL,
+//     SQLite,  // Add this
+//     Unknown,
+// }
+//
+// In set_connection function, add:
+// } else if connection_string.starts_with("sqlite://")
+//     || connection_string.ends_with(".db")
+//     || connection_string.ends_with(".sqlite")
+//     || connection_string.ends_with(".sqlite3") {
+//     DatabaseType::SQLite
+//
+// Example of how to update database_commands.rs:
+//
+// In get_schema and get_results functions, add:
+// DatabaseType::SQLite => {
+//     let db = SqliteDatabase::new(&state.connection_string);
+//     db.get_schema().await? // or db.get_results(&query).await?
+// }

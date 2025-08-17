@@ -118,16 +118,16 @@ export const ResultContextualToolbarComponent = () => {
           disabled={!canChart}
         >
           <Group align="center" gap={4}>
-            <IconChartBar size={16} />
             <Text size="xs">Chart</Text>
+            <IconChartBar size={16} />
           </Group>
         </Button>
       )}
 
       <Button variant="transparent" onClick={createBranch}>
         <Group align="center" gap={4}>
-          <IconGitFork size={16} />
           <Text size="xs">Fork</Text>
+          <IconGitFork size={16} />
         </Group>
       </Button>
 
@@ -137,8 +137,8 @@ export const ResultContextualToolbarComponent = () => {
         onClick={createAskShape}
       >
         <Group align="center" gap={4}>
-          <IconMessageChatbot size={16} />
           <Text size="xs">Ask</Text>
+          <IconMessageChatbot size={16} />
         </Group>
       </Button>
     </Group>
