@@ -101,7 +101,9 @@ export const PageMenu = () => {
                 <>
                   <input
                     type="text"
+                    autoFocus
                     value={page.name}
+                    className="page-name-input"
                     onChange={(e) =>
                       updatePage({ ...page, name: e.currentTarget.value })
                     }

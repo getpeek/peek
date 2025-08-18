@@ -2,7 +2,7 @@ import React from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { TitleBarConnectionPicker } from "./TitleBarConnectionPicker";
 import "./CustomTitleBar.css";
-import { IconMaximize, IconMinus, IconX } from "@tabler/icons-react";
+import { IconArrowsDiagonal2, IconMinus, IconX } from "@tabler/icons-react";
 
 export const CustomTitleBar: React.FC = () => {
   const handleMinimize = async () => {
@@ -46,7 +46,12 @@ export const CustomTitleBar: React.FC = () => {
             aria-label="Maximize"
             tabIndex={-1}
           >
-            <IconMaximize size={9} color="#333" className="icon" stroke={3} />
+            <IconArrowsDiagonal2
+              size={9}
+              color="#333"
+              className="icon"
+              stroke={3}
+            />
           </button>
         </div>
         <TitleBarConnectionPicker />
