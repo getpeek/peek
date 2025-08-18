@@ -127,7 +127,6 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
         width: shape.props.w,
         height: shape.props.h,
         pointerEvents: isEditing ? "all" : "auto",
-        userSelect: "text",
         overflow: "auto",
         position: "relative",
       }}

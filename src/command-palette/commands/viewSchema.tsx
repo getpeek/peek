@@ -6,9 +6,11 @@ import { useAtomValue } from "jotai";
 import { DatabaseResult, schemaAtom } from "../../state";
 import { ResultShape } from "../../shapes/Result/ResultShape";
 import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
+import { calculateLayout } from "./calculateSchemaLayout";
 
 export const useViewSchemaCommand = (): CommandPaletteResult => {
   const schema = useAtomValue(schemaAtom);
+  const positions = calculateLayout(schema);
 
   return {
     icon: <IconSchema size={16} />,
@@ -36,10 +38,9 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
       const previousSchema = editor.getCurrentPageShapes();
       editor.deleteShapes(previousSchema);
 
-      let x = 0;
-      let y = 0;
-
       Object.entries(schema.tables).forEach(([table, columns]) => {
+        const { x, y } = positions[table];
+
         const header: DatabaseResult = [
           [
             [table, "", ""],
@@ -64,11 +65,6 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
             w: 450,
           },
         });
-        x += 550;
-        if (x > 1400) {
-          x = 0;
-          y += 500;
-        }
       });
 
       const shapes = editor.getCurrentPageShapes() as ResultShape[];
