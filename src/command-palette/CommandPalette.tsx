@@ -70,8 +70,8 @@ export const CommandPalette = () => {
                 onClick={() => result.onSelect(editor)}
                 style={{ animationDelay: `${i * 0.05}s` }}
               >
-                <Group gap="sm">
-                  {result.icon}{" "}
+                <Group gap="sm" align="center">
+                  {result.icon}
                   <Group>
                     {result.label} {result.description}
                   </Group>

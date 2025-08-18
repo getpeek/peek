@@ -1,5 +1,4 @@
 import { Group, Text } from "@mantine/core";
-import { IconNetwork } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 import { activeConnectionAtom } from "../../Connection/state";
 import { useWorkspaces } from "../../db";
@@ -18,9 +17,9 @@ export const useGetConnectionCommands = (): CommandPaletteResult[] => {
     )
     .map((workspace) => ({
       searchAgainst: workspace.workspaceName + " " + workspace.connection.name,
-      icon: <IconNetwork size={16} />,
+      icon: null,
       label: (
-        <Group gap="md" align="center">
+        <Group gap="xs" align="center">
           <div
             className="color"
             style={{
@@ -29,10 +28,13 @@ export const useGetConnectionCommands = (): CommandPaletteResult[] => {
               height: 12,
             }}
           />
-          <Text size="xs">
-            {workspace.workspaceName} - {workspace.connection.name}
-          </Text>
+          <Text size="xs">{workspace.connection.name}</Text>
         </Group>
+      ),
+      description: (
+        <Text size="xs" c="var(--text-color-subtle)">
+          {workspace.workspaceName}
+        </Text>
       ),
       onSelect() {
         setActiveConnection({

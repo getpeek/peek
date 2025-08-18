@@ -29,7 +29,7 @@ body,
 :root,
 .light {
     --text-color: hsla(242deg, 85%, 10%);
-    --text-color-subtle: hsla(242deg, 85%, 10%);
+    --text-color-subtle: hsla(40deg, 10%, 50%);
     --remove-color: hsla(10deg, 75%, 70%);
 
     /** Table */
