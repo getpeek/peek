@@ -1,26 +1,52 @@
 import { TLPage, useEditor, useValue } from "tldraw";
 import "./PageMenu.css";
-import {
-  ActionIcon,
-  Button,
-  Group,
-  Popover,
-  Stack,
-  Text,
-  UnstyledButton,
-} from "@mantine/core";
+import { Popover, Stack, Text, UnstyledButton } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { useState } from "react";
-import { IconDotsVertical, IconX } from "@tabler/icons-react";
+import { IconPencil, IconTrash } from "@tabler/icons-react";
 
 export const PageMenu = () => {
   const editor = useEditor();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number>();
   const pages = useValue("pages", () => editor.getPages(), [editor.getPages()]);
   const activePage = useValue("active-page", () => editor.getCurrentPage(), [
     editor.getCurrentPage(),
   ]);
+  const [index, setIndex] = useState(
+    pages.findIndex((page) => page.id === activePage.id),
+  );
+  const hideDropdown = () => {
+    setEditingIndex(undefined);
+    setShowDropdown(false);
+  };
+
   useHotkeys([["p", () => setShowDropdown(true)]], ["INPUT", "TEXTAREA"]);
+  useHotkeys([["Escape", hideDropdown]], ["INPUT", "TEXTAREA"]);
+  useHotkeys([
+    [
+      "Enter",
+      () => {
+        const newPage = pages[index];
+        if (newPage) {
+          selectPage(newPage);
+        }
+      },
+    ],
+  ]);
+  useHotkeys(
+    [["ArrowDown", () => setIndex((old) => (old + 1) % pages.length)]],
+    ["INPUT", "TEXTAREA"],
+  );
+  useHotkeys(
+    [
+      [
+        "ArrowUp",
+        () => setIndex((old) => (old - 1 + pages.length) % pages.length),
+      ],
+    ],
+    ["INPUT", "TEXTAREA"],
+  );
 
   const selectPage = (page: TLPage) => {
     editor.setCurrentPage(page);
@@ -47,11 +73,12 @@ export const PageMenu = () => {
       trapFocus
       variant="unstyled"
       position="bottom"
-      offset={16}
+      offset={8}
       radius="lg"
       opened={showDropdown}
       onChange={setShowDropdown}
       closeOnClickOutside
+      onClose={hideDropdown}
     >
       <Popover.Target>
         <button className="page-menu" onClick={() => setShowDropdown(true)}>
@@ -63,46 +90,59 @@ export const PageMenu = () => {
         variant="unstyled"
         bg="var(--ui-glass-background)"
         bd="1px solid hsla(0deg, 0%, 100%, 0.05)"
-        style={{ backdropFilter: "blur(10px)", transform: "translateX(20px)" }}
+        px={8}
+        py={16}
+        style={{ backdropFilter: "blur(10px)", transform: "translateX(15px)" }}
       >
-        <Stack>
-          {pages.map((page) => (
-            <Group id={page.id} justify="space-between">
-              <button
-                data-active={page.id === activePage.id}
-                onClick={() => selectPage(page)}
-                className="page-name"
-              >
-                {page.name}
-              </button>
-              <Popover trapFocus>
-                <Popover.Target>
-                  <ActionIcon variant="transparent" c="var(--text-color)">
-                    <IconDotsVertical />
-                  </ActionIcon>
-                </Popover.Target>
-                <Popover.Dropdown bg="dark" bd="none">
-                  <Stack>
-                    <Button
-                      variant="transparent"
-                      c="#fff"
-                      onClick={() => updatePage(page)}
-                    >
-                      Rename
-                    </Button>
-                    <Button
-                      variant="transparent"
-                      c="#fff"
-                      onClick={() => removePage(page)}
-                    >
-                      <IconX /> Remove
-                    </Button>
-                  </Stack>
-                </Popover.Dropdown>
-              </Popover>
-            </Group>
+        <Stack gap={8}>
+          {pages.map((page, i) => (
+            <div className="page-wrapper" key={page.id}>
+              {editingIndex === i ? (
+                <>
+                  <input
+                    type="text"
+                    value={page.name}
+                    onChange={(e) =>
+                      updatePage({ ...page, name: e.currentTarget.value })
+                    }
+                  />
+                  <IconTrash
+                    size={16}
+                    color={"var(--remove-color)"}
+                    onClick={() => {
+                      removePage(page);
+                      setEditingIndex(undefined);
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <div
+                    data-active={i === index}
+                    onClick={() => {
+                      setIndex(i);
+                      selectPage(page);
+                    }}
+                    className="page-name"
+                  >
+                    {page.name}
+                  </div>
+                  <div
+                    onClick={() => setEditingIndex(i)}
+                    style={{ width: 20 }}
+                    className="edit-page-button"
+                  >
+                    <IconPencil size={16} color="var(--text-color-subtle)" />
+                  </div>
+                </>
+              )}
+            </div>
           ))}
+
           <UnstyledButton
+            pt={16}
+            px={8}
+            tabIndex={0}
             style={{ color: "var(--text-color)", fontSize: 12 }}
             size="xs"
             onClick={() => addPage("new page")}

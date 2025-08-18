@@ -17,14 +17,36 @@
     transition: background 0.2s ease-in;
 }
 
+.page-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 30px;
+    align-items: center;
+    gap: 16px;
+}
+
+.edit-page-button {
+    cursor: pointer;
+}
+
 .page-name {
     color: var(--text-color);
     background: none;
     border: none;
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 999px;
+    &:hover {
+        background: hsla(0deg, 0%, 40%, 0.1);
+        .dark & {
+            background: hsla(0deg, 0%, 90%, 0.05);
+        }
+    }
     &[data-active="true"] {
-        color: #fff;
+        background: hsla(0deg, 0%, 40%, 0.4);
+        .dark & {
+            background: hsla(0deg, 0%, 90%, 0.1);
+        }
     }
 }
 

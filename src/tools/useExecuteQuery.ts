@@ -54,7 +54,7 @@ export const useExecuteQueries = () => {
               data: result,
               query,
               w: Math.max(columnCount * 250, 200),
-              h: Math.min(result.length * 45 + 40, 1500),
+              h: Math.min(result.length * 50 + 50, 1500),
             },
           });
           lastCreatedId = resultShapeId;

@@ -131,8 +131,6 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
         position: "relative",
       }}
       ref={scrollContainerRef}
-      data-tldraw-disable-pan
-      data-tldraw-disable-zoom
       onPointerDown={(e) => isEditing && e.stopPropagation()}
       onPointerUp={(e) => isEditing && e.stopPropagation()}
       onPointerMove={(e) => isEditing && e.stopPropagation()}
