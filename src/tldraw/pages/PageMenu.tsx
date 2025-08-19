@@ -1,7 +1,7 @@
 import { TLPage, useEditor, useValue } from "tldraw";
 import "./PageMenu.css";
-import { Popover, Stack, Text, UnstyledButton } from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
+import { Box, Popover, Stack, Text } from "@mantine/core";
+import { getHotkeyHandler, useHotkeys } from "@mantine/hooks";
 import { useState } from "react";
 import { IconPencil, IconTrash } from "@tabler/icons-react";
 
@@ -27,6 +27,9 @@ export const PageMenu = () => {
     [
       "Enter",
       () => {
+        if (!showDropdown) {
+          return;
+        }
         const newPage = pages[index];
         if (newPage) {
           selectPage(newPage);
@@ -35,14 +38,29 @@ export const PageMenu = () => {
     ],
   ]);
   useHotkeys(
-    [["ArrowDown", () => setIndex((old) => (old + 1) % pages.length)]],
+    [
+      [
+        "ArrowDown",
+        () => {
+          if (!showDropdown) {
+            return;
+          }
+          setIndex((old) => (old + 1) % pages.length);
+        },
+      ],
+    ],
     ["INPUT", "TEXTAREA"],
   );
   useHotkeys(
     [
       [
         "ArrowUp",
-        () => setIndex((old) => (old - 1 + pages.length) % pages.length),
+        () => {
+          if (!showDropdown) {
+            return;
+          }
+          setIndex((old) => (old - 1 + pages.length) % pages.length);
+        },
       ],
     ],
     ["INPUT", "TEXTAREA"],
@@ -104,6 +122,10 @@ export const PageMenu = () => {
                     autoFocus
                     value={page.name}
                     className="page-name-input"
+                    onKeyDown={getHotkeyHandler([
+                      ["Escape", () => setEditingIndex(undefined)],
+                      ["Enter", () => setEditingIndex(undefined)],
+                    ])}
                     onChange={(e) =>
                       updatePage({ ...page, name: e.currentTarget.value })
                     }
@@ -141,16 +163,19 @@ export const PageMenu = () => {
             </div>
           ))}
 
-          <UnstyledButton
+          <Box
             pt={16}
             px={8}
-            tabIndex={0}
-            style={{ color: "var(--text-color)", fontSize: 12 }}
+            style={{
+              color: "var(--text-color)",
+              fontSize: 12,
+              cursor: "pointer",
+            }}
             size="xs"
             onClick={() => addPage("new page")}
           >
             Add Page
-          </UnstyledButton>
+          </Box>
         </Stack>
       </Popover.Dropdown>
     </Popover>

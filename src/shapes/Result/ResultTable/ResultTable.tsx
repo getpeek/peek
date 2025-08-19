@@ -131,9 +131,6 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
         position: "relative",
       }}
       ref={scrollContainerRef}
-      onPointerDown={(e) => isEditing && e.stopPropagation()}
-      onPointerUp={(e) => isEditing && e.stopPropagation()}
-      onPointerMove={(e) => isEditing && e.stopPropagation()}
     >
       <Table
         stickyHeader
