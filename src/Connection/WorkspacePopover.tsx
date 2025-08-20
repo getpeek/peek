@@ -26,7 +26,7 @@ export const WorkspacePopover = () => {
               setIsEditing((prev) => !prev);
             }}
             size="xs"
-            c="#fff"
+            c="var(--text-color-subtle)"
           >
             {isEditing ? (
               <IconX size={20} strokeWidth={1} />

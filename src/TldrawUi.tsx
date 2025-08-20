@@ -28,24 +28,6 @@ export const customUiOverrides: TLUiOverrides = {
       },
     };
 
-    tools["variables"] = {
-      id: "variables",
-      label: "Variables",
-      icon: "variables",
-      kbd: "x",
-      onSelect: () => {
-        const shape = editor
-          .getCurrentPageShapes()
-          .find((shape) => shape.type === "variables");
-        if (shape) {
-          editor.select(shape);
-          editor.zoomToSelection({ animation: { duration: 200 } });
-        } else {
-          editor.setCurrentTool("variablesd");
-        }
-      },
-    };
-
     return tools;
   },
   actions(editor, actions) {
@@ -155,15 +137,6 @@ export const customUiOverrides: TLUiOverrides = {
       },
     };
 
-    actions["reset-zoom"] = {
-      id: "reset-zoom",
-      label: "Reset Zoom",
-      readonlyOk: true,
-      kbd: "0",
-      onSelect() {
-        editor.zoomToSelection({ animation: { duration: 200 } });
-      },
-    };
     return actions;
   },
 };

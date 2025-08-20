@@ -17,7 +17,13 @@
     transition: background 0.1s ease-out;
     &[data-is-active="true"],
     &:hover {
-        background: hsla(0, 0%, 95%, 0.1);
+        background: hsla(40deg, 50%, 55%, 0.4);
+    }
+    .dark {
+        &[data-is-active="true"],
+        &:hover {
+            background: hsla(0, 0%, 95%, 0.1);
+        }
     }
 }
 

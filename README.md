@@ -35,14 +35,13 @@ Note, the UI requires you to have a workspace set up, but there is no UI to actu
 
 ## Introspection
 
-- [ ] Show schema graph
+- [x] Show schema graph
 - [x] Better completions based on query concrete syntax tree
 - [ ] Query meta info (execution time, tables)
 
 ## UI
 
 - [ ] Pagination on query results if limit/offset in query
-- [ ] Context menu on result shape to select result tree
 - [x] Charts
 - [~] Virtualization for tables for large result shape performance
 
@@ -65,7 +64,13 @@ Note, the UI requires you to have a workspace set up, but there is no UI to actu
 
 # V.2
 
-- [ ] Support for more databases
+Support for more databases
+
+- [x] Postgres
+- [x] MySQL
+- [ ] Sqlite
+- [ ] Meiliserach
+- [ ] Elasticsearch
 
 # V.3
 

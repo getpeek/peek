@@ -31,22 +31,17 @@ export const ConnectionItem = ({
           <Text
             size="xs"
             fw="bold"
-            c={isActive ? "var(--text-color)" : "hsl(220deg, 40%, 70%)"}
             truncate="end"
             maw={80}
+            className="connection-name"
           >
             {connection.name}
           </Text>
-          <Text
-            size="xs"
-            maw={250}
-            c={isActive ? "hsl(0deg, 0%, 80%)" : "hsl(0deg, 0%, 50%)"}
-            truncate="end"
-          >
+          <Text size="xs" maw={250} truncate="end" className="connection-url">
             {redactedUrl}
           </Text>
         </Group>
-        {isActive ? <IconCheck color="hsl(220deg, 40%, 80%)" /> : null}
+        {isActive ? <IconCheck color="var(--text-color)" /> : null}
       </Group>
     </div>
   );
