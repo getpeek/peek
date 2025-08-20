@@ -1,8 +1,9 @@
 import { Text } from "@mantine/core";
 import { CellReference } from "./findReferences";
 import { useEditor } from "tldraw";
-import "./Cell.css";
 import { useExecuteQueries } from "../../../tools/useExecuteQuery";
+import { syntaxHighlight } from "./highlight-json";
+import "./Cell.css";
 
 export const DataCell = ({
   value,
@@ -47,7 +48,14 @@ export const DataCell = ({
   };
 
   if ((type === "JSON" || type === "JSONB") && value !== null) {
-    return <pre>{JSON.stringify(value, null, 2)}</pre>;
+    return (
+      <pre
+        className="json"
+        dangerouslySetInnerHTML={{
+          __html: syntaxHighlight(JSON.stringify(value, null, 2)),
+        }}
+      />
+    );
   }
 
   if (typeof value === "string" || typeof value === "number") {

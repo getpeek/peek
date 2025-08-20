@@ -1,3 +1,58 @@
 .reference {
     cursor: pointer;
 }
+
+.json {
+    .true,
+    .false {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 8px;
+    }
+}
+
+.light .json {
+    .string {
+        color: hsla(60deg, 70%, 20%);
+    }
+    .number {
+        color: hsla(240deg, 80%, 60%);
+    }
+    .key {
+        color: hsla(900deg, 100%, 10%);
+    }
+    .true {
+        color: hsla(200deg, 100%, 20%, 1);
+        background: hsla(200deg, 100%, 80%, 1);
+    }
+    .false {
+        color: hsla(0deg, 100%, 20%, 1);
+        background: hsla(0deg, 100%, 80%, 1);
+    }
+    .null {
+        color: gray;
+    }
+}
+
+.dark .json {
+    .string {
+        color: #f6c177;
+    }
+    .number {
+        color: #ea9a97;
+    }
+    .key {
+        color: #e0def4;
+    }
+    .true {
+        color: hsla(200deg, 100%, 50%, 1);
+        background: hsla(200deg, 100%, 10%, 1);
+    }
+    .false {
+        color: hsla(0deg, 100%, 50%, 1);
+        background: hsla(0deg, 100%, 10%, 1);
+    }
+    .null {
+        color: gray;
+    }
+}
