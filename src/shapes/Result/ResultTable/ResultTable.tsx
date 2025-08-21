@@ -1,4 +1,4 @@
-import { Paper, Table, Text } from "@mantine/core";
+import { Table, Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { useRef, useMemo, useEffect } from "react";
 import { createShapeId, useEditor } from "tldraw";
@@ -107,17 +107,15 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
 
   if (shape.props.data.length === 0) {
     return (
-      <Paper shadow="md" color="blue" c="blue">
-        <div
-          style={{
-            width: shape.props.w,
-            height: shape.props.h,
-          }}
-          className="no-results"
-        >
-          No results
-        </div>
-      </Paper>
+      <div
+        className="no-results"
+        style={{
+          width: shape.props.w,
+          height: shape.props.h,
+        }}
+      >
+        <Text c="var(--remove-color)">No results</Text>
+      </div>
     );
   }
 
@@ -137,6 +135,7 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
         borderColor="var(--border-base)"
         style={{
           width: "100%",
+          userSelect: "all",
         }}
       >
         <Table.Thead>

@@ -42,6 +42,8 @@ export const useExecuteQueries = () => {
             props: {
               data: result,
               query,
+              w: Math.max(columnCount * 250, 200),
+              h: Math.min(result.length * 50 + 50, 1500),
             },
           });
         } else {

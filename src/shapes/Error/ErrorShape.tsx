@@ -5,8 +5,11 @@ import {
   resizeBox,
   ShapeUtil,
   TLBaseShape,
+  useEditor,
 } from "tldraw";
 import "./ErrorShape.css";
+import { QueryShape } from "../Query/QueryShape";
+import { useExecutePrompt } from "../Ai/useExecutePrompt";
 
 type QueryErrorShape = TLBaseShape<
   "query-error",
@@ -21,9 +24,18 @@ export class QueryErrorShapeUtil extends ShapeUtil<QueryErrorShape> {
   override canScroll = () => true;
 
   component(shape: QueryErrorShape) {
+    const runPrompt = useExecutePrompt("fast");
+    const editor = useEditor();
+    const isEditing = editor.getOnlySelectedShape()?.id === shape.id;
+
     return (
-      <HTMLContainer id={shape.id}>
-        <div className="error-shape">{shape.props.message}</div>
+      <HTMLContainer
+        id={shape.id}
+        style={{ pointerEvents: isEditing ? "all" : "auto" }}
+      >
+        <div className="error-shape">
+          {shape.props.message} <button>Fix</button>
+        </div>
       </HTMLContainer>
     );
   }
@@ -32,8 +44,9 @@ export class QueryErrorShapeUtil extends ShapeUtil<QueryErrorShape> {
     message: string;
     w: number;
     h: number;
+    queryShape: QueryShape | null;
   } {
-    return { message: "", w: 300, h: 80 };
+    return { message: "", w: 300, h: 80, queryShape: null };
   }
 
   getGeometry(shape: QueryErrorShape): Geometry2d {

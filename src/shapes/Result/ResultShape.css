@@ -1,6 +1,8 @@
 .result-shape-container {
     position: relative;
     border-radius: 16px;
+    box-shadow: 2px 2px 16px hsla(0deg, 0%, 0%, 0.1);
+    background: #0f1022;
 }
 
 .result-shape-container::before {
@@ -11,6 +13,7 @@
     right: 0;
     bottom: 0;
     border-radius: 16px;
+    z-index: -1;
 
     background: linear-gradient(
         to bottom right,
@@ -38,13 +41,22 @@
 
 .no-results {
     border-radius: 16px;
-    background: var(--ui-glass-background);
-    border: 1px solid hsl(200deg, 80%, 60%);
+    background: color-mix(
+        in hsla,
+        var(--ui-glass-background) 50%,
+        hsla(0deg, 0%, 0%, 0.1) 50%
+    );
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
-    color: var(--rp-text);
+}
+
+.light .no-results {
+    border: 1px solid hsla(0deg, 80%, 60%, 0.2);
+}
+
+.dark .no-results {
+    border: 1px solid hsla(0deg, 80%, 60%, 0.2);
 }
 
 .mantine-Table-table {

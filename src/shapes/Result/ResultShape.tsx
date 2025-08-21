@@ -33,7 +33,6 @@ export class ResultShapeUtil extends ShapeUtil<ResultShape> {
           borderRadius: "16px",
           overflow: "hidden",
           clipPath: "inset(0 round 16px)",
-          backgroundColor: "#0F1022",
         }}
       >
         <ResultTable shape={shape} />
