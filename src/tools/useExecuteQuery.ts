@@ -1,6 +1,7 @@
 import { createShapeId, TLShape, TLShapeId, useEditor } from "tldraw";
 import { createArrowBetweenShapes } from "./createArrowBetweenShapes";
 import { invoke } from "@tauri-apps/api/core";
+import { QueryErrorShape } from "../shapes/Error/ErrorShape";
 
 export const useExecuteQueries = () => {
   const editor = useEditor();
@@ -68,13 +69,15 @@ export const useExecuteQueries = () => {
       } catch (e) {
         const errorShapeId = createShapeId(shape.id + "-error");
 
-        editor.createShape({
+        editor.createShape<QueryErrorShape>({
           id: errorShapeId,
           type: "query-error",
           x: shape.x,
           y: shape.y - 130,
           props: {
-            message: e,
+            queryShapeId: shape.id,
+            query,
+            message: `${e}`,
           },
         });
 

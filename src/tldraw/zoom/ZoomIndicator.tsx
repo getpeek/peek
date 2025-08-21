@@ -9,7 +9,7 @@ export const ZoomIndicator = () => {
   ]);
 
   const resetZoom = () => {
-    editor.resetZoom();
+    editor.resetZoom(undefined, { animation: { duration: 200 } });
   };
 
   return (

@@ -1,19 +1,26 @@
 import {
+  createShapeId,
   Geometry2d,
   HTMLContainer,
   Rectangle2d,
   resizeBox,
   ShapeUtil,
   TLBaseShape,
+  TLShapeId,
   useEditor,
 } from "tldraw";
-import "./ErrorShape.css";
 import { QueryShape } from "../Query/QueryShape";
-import { useExecutePrompt } from "../Ai/useExecutePrompt";
+import { ErrorFixer } from "./ErrorFixer";
 
-type QueryErrorShape = TLBaseShape<
+export type QueryErrorShape = TLBaseShape<
   "query-error",
-  { message: string; w: number; h: number }
+  {
+    queryShapeId: TLShapeId;
+    query: string;
+    message: string;
+    w: number;
+    h: number;
+  }
 >;
 
 export class QueryErrorShapeUtil extends ShapeUtil<QueryErrorShape> {
@@ -24,7 +31,6 @@ export class QueryErrorShapeUtil extends ShapeUtil<QueryErrorShape> {
   override canScroll = () => true;
 
   component(shape: QueryErrorShape) {
-    const runPrompt = useExecutePrompt("fast");
     const editor = useEditor();
     const isEditing = editor.getOnlySelectedShape()?.id === shape.id;
 
@@ -33,20 +39,27 @@ export class QueryErrorShapeUtil extends ShapeUtil<QueryErrorShape> {
         id={shape.id}
         style={{ pointerEvents: isEditing ? "all" : "auto" }}
       >
-        <div className="error-shape">
-          {shape.props.message} <button>Fix</button>
-        </div>
+        <ErrorFixer shape={shape} />
       </HTMLContainer>
     );
   }
 
   getDefaultProps(): {
+    queryShapeId: TLShapeId;
     message: string;
+    query: string;
     w: number;
     h: number;
     queryShape: QueryShape | null;
   } {
-    return { message: "", w: 300, h: 80, queryShape: null };
+    return {
+      queryShapeId: createShapeId("query"),
+      message: "",
+      query: "",
+      w: 400,
+      h: 300,
+      queryShape: null,
+    };
   }
 
   getGeometry(shape: QueryErrorShape): Geometry2d {
