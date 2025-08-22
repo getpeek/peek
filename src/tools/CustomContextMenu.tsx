@@ -91,6 +91,12 @@ export const CustomContextMenu = (props: TLUiContextMenuProps) => {
     }
   };
 
+  const shape = editor.getOnlySelectedShape();
+
+  if (shape?.type !== "result") {
+    <DefaultContextMenu {...props} />;
+  }
+
   const items = [
     { id: "export-csv", label: "CSV", onSelect: () => exportTo("csv") },
     { id: "export-json", label: "JSON", onSelect: () => exportTo("json") },

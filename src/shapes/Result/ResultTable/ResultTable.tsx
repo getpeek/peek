@@ -26,8 +26,8 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
   const rowVirtualizer = useVirtualizer({
     count: totalRows,
     getScrollElement: () => scrollContainerRef.current,
-    overscan: 40,
-    estimateSize: () => 40,
+    overscan: 5,
+    estimateSize: () => 52, // Adjust based on your actual row height with padding
   });
 
   useEffect(() => {
@@ -119,6 +119,14 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
     );
   }
 
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
+  const paddingBottom =
+    virtualItems.length > 0
+      ? rowVirtualizer.getTotalSize() -
+        virtualItems[virtualItems.length - 1].end
+      : 0;
+
   return (
     <div
       style={{
@@ -165,37 +173,63 @@ export const ResultTable = ({ shape }: { shape: ResultShape }) => {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {rowVirtualizer.getVirtualItems().map((row, i) => (
-            <Table.Tr key={row.key}>
-              {shape.props.data[row.index].map(([column, value, type], o) => {
-                const hasInbound = inbound[column]?.length > 0;
-                const hasOutbound = outbound[column]?.length > 0;
+          {paddingTop > 0 && (
+            <tr>
+              <td
+                colSpan={headers.length}
+                style={{
+                  height: paddingTop,
+                  padding: 0,
+                  border: "none",
+                }}
+              />
+            </tr>
+          )}
+          {virtualItems.map((virtualRow) => (
+            <Table.Tr key={virtualRow.key}>
+              {shape.props.data[virtualRow.index].map(
+                ([column, value, type], o) => {
+                  const hasInbound = inbound[column]?.length > 0;
+                  const hasOutbound = outbound[column]?.length > 0;
 
-                const cellClasses = ["cell"];
+                  const cellClasses = ["cell"];
 
-                if (hasInbound) {
-                  cellClasses.push("inbound");
-                } else if (hasOutbound) {
-                  cellClasses.push("outbound");
-                }
+                  if (hasInbound) {
+                    cellClasses.push("inbound");
+                  } else if (hasOutbound) {
+                    cellClasses.push("outbound");
+                  }
 
-                if (i % 2 === 0) {
-                  cellClasses.push("even");
-                }
+                  if (virtualRow.index % 2 === 0) {
+                    cellClasses.push("even");
+                  }
 
-                return (
-                  <Table.Td key={o} className={cellClasses.join(" ")} p={16}>
-                    <DataCell
-                      value={value}
-                      type={type}
-                      outbound={outbound[column]}
-                      inbound={inbound[column]}
-                    />
-                  </Table.Td>
-                );
-              })}
+                  return (
+                    <Table.Td key={o} className={cellClasses.join(" ")} p={16}>
+                      <DataCell
+                        value={value}
+                        type={type}
+                        outbound={outbound[column]}
+                        inbound={inbound[column]}
+                      />
+                    </Table.Td>
+                  );
+                },
+              )}
             </Table.Tr>
           ))}
+          {paddingBottom > 0 && (
+            <tr>
+              <td
+                colSpan={headers.length}
+                style={{
+                  height: paddingBottom,
+                  padding: 0,
+                  border: "none",
+                }}
+              />
+            </tr>
+          )}
         </Table.Tbody>
       </Table>
     </div>
