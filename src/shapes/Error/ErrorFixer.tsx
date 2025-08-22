@@ -27,8 +27,6 @@ export const ErrorFixer = ({ shape }: ErrorFixerProps) => {
 
     const height = suggestionRef.current.getBoundingClientRect().height;
 
-    console.log(height);
-
     editor.updateShape<QueryErrorShape>({
       ...shape,
       props: { h: height + 250 },
@@ -94,7 +92,7 @@ The database schema looks like this ${JSON.stringify(schema, null, 2)}. You can 
   };
 
   return (
-    <div className="error-shape">
+    <div className={`error-shape ${isThinking ? "loading" : ""}`}>
       <Stack gap="md">
         <Text size="sm">{shape.props.message}</Text>
         <button
