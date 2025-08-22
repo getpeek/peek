@@ -69,17 +69,24 @@ export const useExecuteQueries = () => {
       } catch (e) {
         const errorShapeId = createShapeId(shape.id + "-error");
 
+        let y = undefined;
+        if ("h" in shape.props) {
+          y = shape.y + shape.props.h + 50;
+        }
+
         editor.createShape<QueryErrorShape>({
           id: errorShapeId,
           type: "query-error",
           x: shape.x,
-          y: shape.y - 130,
+          y,
           props: {
             queryShapeId: shape.id,
             query,
             message: `${e}`,
           },
         });
+
+        createArrowBetweenShapes(editor, errorShapeId, shape.id);
 
         editor.select(errorShapeId);
         editor.zoomToSelection({ animation: { duration: 300 } });

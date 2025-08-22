@@ -37,7 +37,10 @@ export class QueryErrorShapeUtil extends ShapeUtil<QueryErrorShape> {
     return (
       <HTMLContainer
         id={shape.id}
-        style={{ pointerEvents: isEditing ? "all" : "auto" }}
+        style={{
+          pointerEvents: isEditing ? "all" : "auto",
+          height: shape.props.h ?? 200,
+        }}
       >
         <ErrorFixer shape={shape} />
       </HTMLContainer>

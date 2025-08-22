@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { format } from "sql-formatter";
 import { useEditor } from "tldraw";
 import { schemaAtom } from "../../state";
@@ -16,8 +16,24 @@ export const ErrorFixer = ({ shape }: ErrorFixerProps) => {
   const runPrompt = useExecutePrompt("fast");
   const editor = useEditor();
   const schema = useAtomValue(schemaAtom);
+  const suggestionRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+
+  useLayoutEffect(() => {
+    if (!suggestionRef.current) {
+      return;
+    }
+
+    const height = suggestionRef.current.getBoundingClientRect().height;
+
+    console.log(height);
+
+    editor.updateShape<QueryErrorShape>({
+      ...shape,
+      props: { h: height + 250 },
+    });
+  }, [query]);
 
   const getResponse = async () => {
     setIsThinking(true);
@@ -65,7 +81,16 @@ The database schema looks like this ${JSON.stringify(schema, null, 2)}. You can 
         query,
       },
     });
-    setQuery("");
+    const bindings = editor.getBindingsInvolvingShape(shape);
+    for (const binding of bindings) {
+      editor.deleteShape(binding.fromId);
+      editor.deleteShape(binding.toId);
+    }
+    editor.deleteBindings(bindings);
+    editor.select(shape.props.queryShapeId);
+    editor.zoomToSelectionIfOffscreen(undefined, {
+      animation: { duration: 200 },
+    });
   };
 
   return (
@@ -81,7 +106,7 @@ The database schema looks like this ${JSON.stringify(schema, null, 2)}. You can 
         </button>
         {query.length > 0 && (
           <Stack>
-            <div className="query-suggestion">
+            <div className="query-suggestion" ref={suggestionRef}>
               <pre>{query}</pre>
             </div>
             <button className="suggest-fix-button" onClick={acceptQuery}>
