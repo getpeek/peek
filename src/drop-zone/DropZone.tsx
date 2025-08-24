@@ -2,12 +2,11 @@ import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
 import "./DropZone.css";
 import { readTextFile } from "@tauri-apps/plugin-fs";
-// import { fromCsv } from "../tools/import/csv";
 import { useAtomValue } from "jotai";
 import { editorAtom, ImportedDataResult } from "../state";
 import { fromJson } from "../tools/import/json";
 import { ImportedDataSourceShape } from "../shapes/ImportedData/ImportedDataShape";
-import { invoke } from "@tauri-apps/api/core";
+import { fromCsv } from "../tools/import/csv";
 
 export const DropZone = () => {
   const [showDropZone, setShowDropZone] = useState(false);
@@ -35,17 +34,7 @@ export const DropZone = () => {
         let result: ImportedDataResult | null = null;
         const file = await readTextFile(path);
         if (path.endsWith(".csv")) {
-          console.log("importing");
-          try {
-            await invoke("import_csv", {
-              csv: file,
-              tableName: "test_import",
-            });
-          } catch (e) {
-            console.error(e);
-          }
-
-          // result = fromCsv(file);
+          result = fromCsv(file);
         } else if (path.endsWith(".json")) {
           result = fromJson(file);
         }
