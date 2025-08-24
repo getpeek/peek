@@ -59,6 +59,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             database_commands::get_results,
             database_commands::get_schema,
+            database_commands::import_csv,
             set_connection
         ])
         .run(tauri::generate_context!())

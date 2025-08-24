@@ -1,71 +1,64 @@
 import {
-  createShapeId,
   Geometry2d,
   HTMLContainer,
   Rectangle2d,
   resizeBox,
   ShapeUtil,
   TLBaseShape,
-  TLShapeId,
   useEditor,
 } from "tldraw";
-import { QueryShape } from "../Query/QueryShape";
-import { ErrorFixer } from "./ErrorFixer";
+import { ImportedDataSource } from "./ImportedDataSource";
+import { ImportedDataResult } from "../../state";
+import "./ImportedResult.css";
 
-export type QueryErrorShape = TLBaseShape<
-  "query-error",
+export type ImportedDataSourceShape = TLBaseShape<
+  "imported-data-source",
   {
-    queryShapeId: TLShapeId;
-    query: string;
-    message: string;
+    data: ImportedDataResult;
     w: number;
     h: number;
   }
 >;
 
-export class QueryErrorShapeUtil extends ShapeUtil<QueryErrorShape> {
-  static override type = "query-error" as const;
+export class ImportedDataSourceShapeUtil extends ShapeUtil<ImportedDataSourceShape> {
+  static override type = "imported-data-source" as const;
 
   override canResize = () => true;
   override canEdit = () => true;
   override canScroll = () => true;
 
-  component(shape: QueryErrorShape) {
+  component(shape: ImportedDataSourceShape) {
     const editor = useEditor();
     const isEditing = editor.getOnlySelectedShape()?.id === shape.id;
 
     return (
       <HTMLContainer
         id={shape.id}
+        className="imported-result-container"
         style={{
           pointerEvents: isEditing ? "all" : "auto",
-          height: shape.props.h ?? 200,
+          height: shape.props.h,
+          width: shape.props.w,
         }}
       >
-        <ErrorFixer shape={shape} />
+        <ImportedDataSource shape={shape} />
       </HTMLContainer>
     );
   }
 
   getDefaultProps(): {
-    queryShapeId: TLShapeId;
-    message: string;
-    query: string;
     w: number;
     h: number;
-    queryShape: QueryShape | null;
+    data: ImportedDataResult;
   } {
     return {
-      queryShapeId: createShapeId("query"),
-      message: "",
-      query: "",
+      data: [],
       w: 400,
       h: 300,
-      queryShape: null,
     };
   }
 
-  getGeometry(shape: QueryErrorShape): Geometry2d {
+  getGeometry(shape: ImportedDataSourceShape): Geometry2d {
     return new Rectangle2d({
       width: shape.props.w,
       height: shape.props.h,
@@ -73,13 +66,13 @@ export class QueryErrorShapeUtil extends ShapeUtil<QueryErrorShape> {
     });
   }
 
-  indicator(shape: QueryErrorShape) {
+  indicator(shape: ImportedDataSourceShape) {
     return (
       <rect width={shape.props.w} height={shape.props.h} rx={16} ry={16} />
     );
   }
 
-  override onResize(shape: QueryErrorShape, info: any) {
+  override onResize(shape: ImportedDataSourceShape, info: any) {
     return resizeBox(shape, info);
   }
 }

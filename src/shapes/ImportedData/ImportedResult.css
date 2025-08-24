@@ -1,11 +1,11 @@
-.result-shape-container {
+.imported-result-container {
     position: relative;
     border-radius: 16px;
     box-shadow: 2px 2px 16px hsla(0deg, 0%, 0%, 0.1);
     background: #0f1022;
 }
 
-.result-shape-container::before {
+.imported-result-container::before {
     content: "";
     position: absolute;
     top: -1px;
@@ -28,7 +28,7 @@
     pointer-events: none;
 }
 
-.dark .result-shape-container::before {
+.dark .imported-result-container::before {
     background: linear-gradient(
         to bottom right,
         hsla(0deg, 100%, 100%, 0.1) 0%,
@@ -37,26 +37,6 @@
     mask:
         linear-gradient(hsla(0deg, 0%, 100%, 0.1) 0 0) content-box,
         linear-gradient(hsla(0deg, 0%, 100%, 0.1) 0 0);
-}
-
-.no-results {
-    border-radius: 16px;
-    background: color-mix(
-        in hsla,
-        var(--ui-glass-background) 50%,
-        hsla(0deg, 0%, 0%, 0.1) 50%
-    );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.light .no-results {
-    border: 1px solid hsla(0deg, 80%, 60%, 0.2);
-}
-
-.dark .no-results {
-    border: 1px solid hsla(0deg, 80%, 60%, 0.2);
 }
 
 .mantine-Table-table {

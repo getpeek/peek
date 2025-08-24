@@ -144,11 +144,15 @@ export const customUiOverrides: TLUiOverrides = {
 export const customComponents: TLComponents = {
   Toolbar: () => {
     const tools = useTools();
+    console.log(tools);
 
     delete tools["rectangle"];
     delete tools["arrow"];
     delete tools["line"];
     delete tools["ellipse"];
+    delete tools["octagon"];
+    delete tools["star"];
+    delete tools["trapezoid"];
 
     return <TlDrawToolbar />;
   },

@@ -30,6 +30,62 @@ pub async fn get_schema(state: State<'_, Mutex<AppData>>) -> Result<String, Stri
 }
 
 #[tauri::command]
+pub async fn import_csv(
+    state: State<'_, Mutex<AppData>>,
+    table_name: String,
+    csv: String,
+) -> Result<String, String> {
+    let state = state.lock().await;
+
+    let columns = csv
+        .lines()
+        .nth(0)
+        .unwrap_or_default()
+        .split(",")
+        .map(|col| format!("{col} TEXT"))
+        .collect::<Vec<_>>()
+        .join(", ");
+
+    let values = csv
+        .lines()
+        .skip(1)
+        .map(|line| {
+            let row = line
+                .split(",")
+                .map(|cell| format!("'{}'", cell.trim()))
+                .collect::<Vec<_>>()
+                .join(",");
+
+            format!("({row})")
+        })
+        .collect::<Vec<String>>()
+        .join(", ");
+
+    println!("CREATE TEMP TABLE {table_name} ({columns})");
+
+    match state.database_type {
+        DatabaseType::PostgreSQL => {
+            let db = PostgresDatabase::new(&state.connection_string);
+            db.execute(format!("CREATE TEMP TABLE {table_name} ({columns})").as_str())
+                .await
+                .unwrap();
+
+            db.execute(format!("INSERT INTO {table_name} VALUES {values}").as_str())
+                .await
+                .unwrap();
+        }
+        DatabaseType::MySQL => {
+            // let db = PostgresDatabase::new(&state.connection_string);
+        }
+        DatabaseType::Unknown => {
+            // let db = PostgresDatabase::new(&state.connection_string);
+        }
+    }
+
+    Ok(String::from(""))
+}
+
+#[tauri::command]
 pub async fn get_results(
     state: State<'_, Mutex<AppData>>,
     query: String,

@@ -4,6 +4,7 @@ import { Language, Parser } from "web-tree-sitter";
 import { Editor } from "tldraw";
 
 export type DatabaseResult = [string, unknown, string][][];
+export type ImportedDataResult = [string, unknown][][];
 
 export const schemaAtom = atom<{
   tables: Record<string, [string, string][]>;

@@ -154,6 +154,19 @@ impl Database for MysqlDatabase {
         Ok(results)
     }
 
+    async fn execute(&self, query: &str) -> Result<String, String> {
+        let mut conn = MySqlConnection::connect(&self.connection_string)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        sqlx::query(query)
+            .execute(&mut conn)
+            .await
+            .map_err(|e| e.to_string())?;
+
+        Ok("ok".to_string())
+    }
+
     async fn get_schema(
         &self,
     ) -> Result<

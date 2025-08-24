@@ -1,0 +1,11 @@
+.drop-zone {
+    position: absolute;
+    z-index: 2;
+    top: 40px;
+    height: calc(100vh - 40px);
+    width: 100vw;
+    background: hsla(220deg, 80%, 80%, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

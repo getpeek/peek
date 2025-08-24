@@ -13,6 +13,9 @@ pub trait Database: Send + Sync {
     /// [column_name, value, column_type]
     async fn get_results(&self, query: &str) -> Result<Vec<Value>, String>;
 
+    /// Execute an sql statement and return whatever the statement returns
+    async fn execute(&self, query: &str) -> Result<String, String>;
+
     /// Get the database schema information
     /// Returns a list of all tables and their columns as well as a list of all references
     /// from each column to each table.column as map, where the key is the column.
