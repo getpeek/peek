@@ -1,10 +1,9 @@
-import React from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { TitleBarConnectionPicker } from "./TitleBarConnectionPicker";
 import "./CustomTitleBar.css";
 import { IconArrowsDiagonal2, IconMinus, IconX } from "@tabler/icons-react";
 
-export const CustomTitleBar: React.FC = () => {
+export const CustomTitleBar = () => {
   const handleMinimize = async () => {
     const window = getCurrentWindow();
     await window.minimize();

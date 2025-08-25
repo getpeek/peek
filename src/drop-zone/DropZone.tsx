@@ -1,16 +1,23 @@
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
-import "./DropZone.css";
 import { readTextFile } from "@tauri-apps/plugin-fs";
-import { useAtomValue } from "jotai";
-import { editorAtom, ImportedDataResult } from "../state";
-import { fromJson } from "../tools/import/json";
-import { ImportedDataSourceShape } from "../shapes/ImportedData/ImportedDataShape";
-import { fromCsv } from "../tools/import/csv";
+import { useAtomValue, useSetAtom } from "jotai";
+import { editorAtom, schemaAtom } from "../state";
+import { invoke } from "@tauri-apps/api/core";
+import { QueryShape } from "../shapes/Query/QueryShape";
+import "./DropZone.css";
 
 export const DropZone = () => {
   const [showDropZone, setShowDropZone] = useState(false);
   const editor = useAtomValue(editorAtom);
+  const setSchema = useSetAtom(schemaAtom);
+
+  const fetchSchema = async () => {
+    const response = (await invoke("get_schema")) as string;
+    const schema = JSON.parse(response);
+    console.log(schema);
+    setSchema(schema);
+  };
 
   useEffect(() => {
     let [enter, leave, drop] = [null, null, null] as (UnlistenFn | null)[];
@@ -31,25 +38,22 @@ export const DropZone = () => {
       }
 
       for (const path of payload.paths as string[]) {
-        let result: ImportedDataResult | null = null;
         const file = await readTextFile(path);
+        const fileName =
+          path.split("/").pop()?.split(".")[0] ?? "imported_data";
         if (path.endsWith(".csv")) {
-          result = fromCsv(file);
-        } else if (path.endsWith(".json")) {
-          result = fromJson(file);
-        }
+          await invoke("import_csv", { tableName: fileName, csv: file });
 
-        if (result) {
-          editor.createShape<ImportedDataSourceShape>({
-            type: "imported-data-source",
+          editor.createShape<QueryShape>({
+            type: "query",
             props: {
-              data: result,
-              w: 1000,
-              h: 1000,
+              query: `SELECT * FROM ${fileName}`,
             },
           });
         }
       }
+
+      await fetchSchema();
     }).then((cb) => (drop = cb));
 
     return () => {

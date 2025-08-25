@@ -1,25 +1,16 @@
 use tauri::{async_runtime::Mutex, State};
 
-use crate::database::{mysql::MysqlDatabase, postgres::PostgresDatabase, Database};
-use crate::{AppData, DatabaseType};
+use crate::AppData;
 
 #[tauri::command]
 pub async fn get_schema(state: State<'_, Mutex<AppData>>) -> Result<String, String> {
-    let state = state.lock().await;
+    let mut state = state.lock().await;
 
-    let (tables, references) = match state.database_type {
-        DatabaseType::PostgreSQL => {
-            let db = PostgresDatabase::new(&state.connection_string);
-            db.get_schema().await?
-        }
-        DatabaseType::MySQL => {
-            let db = MysqlDatabase::new(&state.connection_string);
-            db.get_schema().await?
-        }
-        DatabaseType::Unknown => {
-            return Err("Unknown database type. Please set a valid connection string.".to_string())
-        }
+    let Some(connection) = state.connection.as_mut() else {
+        return Err("error getting connection".to_string());
     };
+
+    let (tables, references) = connection.get_schema().await?;
 
     let full_schema = serde_json::json!({
         "tables": tables,
@@ -30,13 +21,27 @@ pub async fn get_schema(state: State<'_, Mutex<AppData>>) -> Result<String, Stri
 }
 
 #[tauri::command]
+pub async fn get_results(
+    state: State<'_, Mutex<AppData>>,
+    query: String,
+) -> Result<String, String> {
+    let mut state = state.lock().await;
+
+    let Some(connection) = state.connection.as_mut() else {
+        return Err("error getting connection".to_string());
+    };
+
+    let results = connection.get_results(&query).await?;
+
+    serde_json::to_string(&results).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn import_csv(
     state: State<'_, Mutex<AppData>>,
     table_name: String,
     csv: String,
 ) -> Result<String, String> {
-    let state = state.lock().await;
-
     let columns = csv
         .lines()
         .nth(0)
@@ -49,6 +54,7 @@ pub async fn import_csv(
     let values = csv
         .lines()
         .skip(1)
+        .filter(|line| !line.is_empty())
         .map(|line| {
             let row = line
                 .split(",")
@@ -61,50 +67,18 @@ pub async fn import_csv(
         .collect::<Vec<String>>()
         .join(", ");
 
-    println!("CREATE TEMP TABLE {table_name} ({columns})");
+    let mut state = state.lock().await;
 
-    match state.database_type {
-        DatabaseType::PostgreSQL => {
-            let db = PostgresDatabase::new(&state.connection_string);
-            db.execute(format!("CREATE TEMP TABLE {table_name} ({columns})").as_str())
-                .await
-                .unwrap();
-
-            db.execute(format!("INSERT INTO {table_name} VALUES {values}").as_str())
-                .await
-                .unwrap();
-        }
-        DatabaseType::MySQL => {
-            // let db = PostgresDatabase::new(&state.connection_string);
-        }
-        DatabaseType::Unknown => {
-            // let db = PostgresDatabase::new(&state.connection_string);
-        }
-    }
-
-    Ok(String::from(""))
-}
-
-#[tauri::command]
-pub async fn get_results(
-    state: State<'_, Mutex<AppData>>,
-    query: String,
-) -> Result<String, String> {
-    let state = state.lock().await;
-
-    let results = match state.database_type {
-        DatabaseType::PostgreSQL => {
-            let db = PostgresDatabase::new(&state.connection_string);
-            db.get_results(&query).await?
-        }
-        DatabaseType::MySQL => {
-            let db = MysqlDatabase::new(&state.connection_string);
-            db.get_results(&query).await?
-        }
-        DatabaseType::Unknown => {
-            return Err("Unknown database type. Please set a valid connection string.".to_string())
-        }
+    let Some(connection) = state.connection.as_mut() else {
+        return Err("error getting connection".to_string());
     };
 
-    serde_json::to_string(&results).map_err(|e| e.to_string())
+    connection
+        .execute(format!("CREATE TEMP TABLE IF NOT EXISTS {table_name} ({columns})").as_str())
+        .await?;
+    connection
+        .execute(format!("INSERT INTO {table_name} VALUES {values}").as_str())
+        .await?;
+
+    Ok(format!("data imported into {table_name}"))
 }

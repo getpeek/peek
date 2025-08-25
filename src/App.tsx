@@ -85,15 +85,7 @@ function App() {
   };
 
   useEffect(() => {
-    const initialize = async () => {
-      try {
-        await indexedDBService.init();
-      } catch (error) {
-        console.error("Failed to initialize IndexedDB:", error);
-      }
-    };
-
-    initialize();
+    indexedDBService.init().catch(console.error);
     initTreeSitter().then(() => {});
   }, []);
 
@@ -154,7 +146,6 @@ function App() {
     };
   }, [activeConnection?.connection.url]);
 
-  // Apply dark mode class to root element
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");

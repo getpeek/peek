@@ -1,29 +1,23 @@
 use super::Database;
 use serde_json::{json, Value};
-use sqlx::{Column, Connection, PgConnection, Row, TypeInfo};
+use sqlx::{Column, PgConnection, Row, TypeInfo};
 use std::collections::HashMap;
 
 pub struct PostgresDatabase {
-    connection_string: String,
+    connection: PgConnection,
 }
 
 impl PostgresDatabase {
-    pub fn new(connection_string: &str) -> Self {
-        Self {
-            connection_string: connection_string.to_string(),
-        }
+    pub fn new(connection: PgConnection) -> Self {
+        Self { connection }
     }
 }
 
 #[async_trait::async_trait]
 impl Database for PostgresDatabase {
-    async fn get_results(&self, query: &str) -> Result<Vec<Value>, String> {
-        let mut conn = PgConnection::connect(&self.connection_string)
-            .await
-            .map_err(|e| e.to_string())?;
-
+    async fn get_results(&mut self, query: &str) -> Result<Vec<Value>, String> {
         let rows = sqlx::query(query)
-            .fetch_all(&mut conn)
+            .fetch_all(&mut self.connection)
             .await
             .map_err(|e| e.to_string())?;
 
@@ -110,13 +104,9 @@ impl Database for PostgresDatabase {
         Ok(results)
     }
 
-    async fn execute(&self, query: &str) -> Result<String, String> {
-        let mut conn = PgConnection::connect(&self.connection_string)
-            .await
-            .map_err(|e| e.to_string())?;
-
+    async fn execute(&mut self, query: &str) -> Result<String, String> {
         sqlx::query(query)
-            .execute(&mut conn)
+            .execute(&mut self.connection)
             .await
             .map_err(|e| e.to_string())?;
 
@@ -124,7 +114,7 @@ impl Database for PostgresDatabase {
     }
 
     async fn get_schema(
-        &self,
+        &mut self,
     ) -> Result<
         (
             HashMap<String, Vec<(String, String)>>,
@@ -132,19 +122,29 @@ impl Database for PostgresDatabase {
         ),
         String,
     > {
-        let mut conn = PgConnection::connect(&self.connection_string)
-            .await
-            .map_err(|e| e.to_string())?;
-
         let columns = sqlx::query(
             r#"SELECT
-                table_name,
-                column_name,
-                udt_name AS pg_type
-            FROM information_schema.columns
-            WHERE table_schema = 'public'"#,
+                c.table_name,
+                c.column_name,
+                c.udt_name AS pg_type
+            FROM information_schema.columns c
+            WHERE c.table_schema = 'public'
+
+            UNION ALL
+
+            SELECT
+                c.relname AS table_name,
+                a.attname AS column_name,
+                t.typname AS pg_type
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            JOIN pg_attribute a ON a.attrelid = c.oid
+            JOIN pg_type t ON t.oid = a.atttypid
+            WHERE c.relpersistence = 't'
+              AND a.attnum > 0
+              AND NOT a.attisdropped;"#,
         )
-        .fetch_all(&mut conn)
+        .fetch_all(&mut self.connection)
         .await
         .map_err(|_| "Could not get columns".to_string())?;
 
@@ -187,7 +187,7 @@ impl Database for PostgresDatabase {
                   AND tc.table_schema = 'public';
                 "#,
         )
-        .fetch_all(&mut conn)
+        .fetch_all(&mut self.connection)
         .await
         .map_err(|_| "Could not get foreign key info".to_string())?;
 

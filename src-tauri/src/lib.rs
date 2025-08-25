@@ -1,25 +1,18 @@
 mod database;
 mod database_commands;
 
+use database::{mysql::MysqlDatabase, postgres::PostgresDatabase, Database};
+use sqlx::Connection;
 use tauri::{async_runtime::Mutex, State};
 
-#[derive(Debug)]
-pub enum DatabaseType {
-    PostgreSQL,
-    MySQL,
-    Unknown,
-}
-
-impl Default for DatabaseType {
-    fn default() -> Self {
-        DatabaseType::Unknown
-    }
-}
-
-#[derive(Debug, Default)]
 pub struct AppData {
-    pub connection_string: String,
-    pub database_type: DatabaseType,
+    connection: Option<Box<dyn Database>>,
+}
+
+impl Default for AppData {
+    fn default() -> Self {
+        Self { connection: None }
+    }
 }
 
 #[tauri::command]
@@ -29,21 +22,20 @@ async fn set_connection(
 ) -> Result<(), String> {
     let mut state = state.lock().await;
 
-    // Detect database type from connection string
-    let database_type = if connection_string.starts_with("postgres://")
+    if connection_string.starts_with("postgres://")
         || connection_string.starts_with("postgresql://")
     {
-        DatabaseType::PostgreSQL
-    } else if connection_string.starts_with("mysql://")
-        || connection_string.starts_with("mariadb://")
-    {
-        DatabaseType::MySQL
-    } else {
-        DatabaseType::Unknown
-    };
-
-    state.connection_string = connection_string;
-    state.database_type = database_type;
+        let connection = sqlx::PgConnection::connect(&connection_string)
+            .await
+            .map_err(|e| e.to_string())?;
+        let db = PostgresDatabase::new(connection);
+        state.connection = Some(Box::new(db));
+        return Ok(());
+    }
+    if connection_string.starts_with("mysql://") || connection_string.starts_with("mariadb://") {
+        let db = MysqlDatabase::new(&connection_string);
+        state.connection = Some(Box::new(db));
+    }
 
     Ok(())
 }

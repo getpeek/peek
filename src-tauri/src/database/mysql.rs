@@ -17,7 +17,7 @@ impl MysqlDatabase {
 
 #[async_trait::async_trait]
 impl Database for MysqlDatabase {
-    async fn get_results(&self, query: &str) -> Result<Vec<Value>, String> {
+    async fn get_results(&mut self, query: &str) -> Result<Vec<Value>, String> {
         let mut conn = MySqlConnection::connect(&self.connection_string)
             .await
             .map_err(|e| e.to_string())?;
@@ -154,7 +154,7 @@ impl Database for MysqlDatabase {
         Ok(results)
     }
 
-    async fn execute(&self, query: &str) -> Result<String, String> {
+    async fn execute(&mut self, query: &str) -> Result<String, String> {
         let mut conn = MySqlConnection::connect(&self.connection_string)
             .await
             .map_err(|e| e.to_string())?;
@@ -168,7 +168,7 @@ impl Database for MysqlDatabase {
     }
 
     async fn get_schema(
-        &self,
+        &mut self,
     ) -> Result<
         (
             HashMap<String, Vec<(String, String)>>,
