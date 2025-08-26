@@ -69,7 +69,9 @@ export const customUiOverrides: TLUiOverrides = {
 
         const queryShapes = editor
           .getCurrentPageShapes()
-          .filter((shape) => shape.type === "query");
+          .filter((shape) => shape.type === "query")
+          .slice()
+          .sort((a, b) => a.x - b.x);
 
         const currentShapeIndex = queryShapes.findIndex(
           (shape) => shape.id.toString() === current.id.toString(),
@@ -102,7 +104,9 @@ export const customUiOverrides: TLUiOverrides = {
         }
         const queryShapes = editor
           .getCurrentPageShapes()
-          .filter((shape) => shape.type === "query");
+          .filter((shape) => shape.type === "query")
+          .slice()
+          .sort((a, b) => a.x - b.x);
 
         const currentShapeIndex = queryShapes.findIndex(
           (shape) => shape.id.toString() === current.id.toString(),
