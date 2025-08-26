@@ -1,13 +1,8 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import {
-  activeConnectionAtom,
-  workspaceIsEditModeAtom,
-  workspacesAtom,
-} from "./state";
+import { useAtom } from "jotai";
+import { activeConnectionAtom } from "./state";
 import { Group, Stack, Text } from "@mantine/core";
 import { ConnectionItem } from "./ConnectionItem";
 import { Connection } from "./types";
-import { ConnectionForm } from "./ConnectionForm";
 import "./WorkspacePanel.css";
 
 interface WorkspaceProps {
@@ -16,25 +11,6 @@ interface WorkspaceProps {
 }
 export const Workspace = ({ name, connections }: WorkspaceProps) => {
   const [activeConnection, setActiveConnection] = useAtom(activeConnectionAtom);
-  const isEditing = useAtomValue(workspaceIsEditModeAtom);
-  const setWorkspaces = useSetAtom(workspacesAtom);
-
-  const removeConnection = (connection: Connection) => {
-    setWorkspaces((prevWorkspaces) => {
-      const updatedWorkspaces = prevWorkspaces.map((workspace) => {
-        if (workspace.name === name) {
-          return {
-            ...workspace,
-            connections: workspace.connections.filter(
-              (conn) => conn.url !== connection.url,
-            ),
-          };
-        }
-        return workspace;
-      });
-      return updatedWorkspaces;
-    });
-  };
 
   return (
     <Stack gap="xs">
@@ -52,13 +28,9 @@ export const Workspace = ({ name, connections }: WorkspaceProps) => {
             onActivate={() =>
               setActiveConnection({ workspaceName: name, connection })
             }
-            onRemove={() => {
-              removeConnection(connection);
-            }}
           />
         ))}
       </Stack>
-      {isEditing && <ConnectionForm workspaceName={name} />}
     </Stack>
   );
 };

@@ -25,6 +25,7 @@ import {
   activeConnectionAtom,
   snapshotForUrlAtom,
   snapshotsAtom,
+  workspacesAtom,
 } from "./Connection/state";
 import { customShapes } from "./shapes";
 import { indexedDBService } from "./db/IndexedDBService";
@@ -38,6 +39,8 @@ import { CustomBackground, CustomGrid } from "./components/CustomBackground";
 import { CustomTitleBar } from "./components/CustomTitleBar";
 import { CommandPalette } from "./command-palette/CommandPalette";
 import { DropZone } from "./drop-zone/DropZone";
+import { invoke } from "@tauri-apps/api/core";
+import { Workspace } from "./Connection/types";
 
 const theme = createTheme({});
 
@@ -58,6 +61,7 @@ function DarkModeSync() {
 
 function App() {
   const ref = useRef<Editor>();
+  const setWorkspaces = useSetAtom(workspacesAtom);
   const setSqlParser = useSetAtom(sqlParserAtom);
   const sqlSqlLanguage = useSetAtom(sqlLanguageAtom);
   const setEditor = useSetAtom(editorAtom);
@@ -70,6 +74,17 @@ function App() {
   const setSnapshots = useSetAtom(snapshotsAtom);
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitialLoadRef = useRef(true);
+
+  useEffect(() => {
+    invoke("get_workspaces").then((workspaces) => {
+      const config = JSON.parse(workspaces as string) as {
+        workspaces: Workspace[];
+      };
+      console.log(config.workspaces);
+      setWorkspaces(config.workspaces);
+      console.log(config);
+    });
+  }, []);
 
   const initTreeSitter = async () => {
     await Parser.init();

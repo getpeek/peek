@@ -5,7 +5,7 @@ import {
   atomWithIndexedDBSnapshots,
 } from "../db/atomWithIndexedDB";
 
-export const workspacesAtom = atomWithIndexedDB<Workspace[]>("workspaces", []);
+export const workspacesAtom = atom<Workspace[]>([]);
 
 export const activeConnectionAtom = atomWithIndexedDB<
   { connection: Connection; workspaceName: string } | undefined
@@ -15,5 +15,3 @@ export const snapshotsAtom = atomWithIndexedDBSnapshots();
 
 export const snapshotForUrlAtom = (url: string) =>
   atom((get) => get(snapshotsAtom)[url]);
-
-export const workspaceIsEditModeAtom = atom(false);

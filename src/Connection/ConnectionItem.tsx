@@ -7,7 +7,6 @@ interface ConnectionItemProps {
   isActive: boolean;
   connection: Connection;
   onActivate: () => void;
-  onRemove: () => void;
 }
 
 export const ConnectionItem = ({

@@ -1,3 +1,4 @@
+pub mod config;
 mod database;
 mod database_commands;
 
@@ -52,6 +53,7 @@ pub fn run() {
             database_commands::get_results,
             database_commands::get_schema,
             database_commands::import_csv,
+            config::get_workspaces,
             set_connection
         ])
         .run(tauri::generate_context!())
