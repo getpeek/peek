@@ -42,30 +42,33 @@ pub async fn import_csv(
     table_name: String,
     csv: String,
 ) -> Result<String, String> {
-    let columns = csv
-        .lines()
-        .nth(0)
-        .unwrap_or_default()
-        .split(",")
-        .map(|col| format!("{col} TEXT"))
+    let mut reader = csv::Reader::from_reader(csv.as_bytes());
+
+    let columns = reader
+        .headers()
+        .map_err(|_| String::from("could not parse csv"))?
+        .iter()
+        .map(|header| format!("{header} TEXT"))
         .collect::<Vec<_>>()
-        .join(", ");
+        .join(",");
 
-    let values = csv
-        .lines()
-        .skip(1)
-        .filter(|line| !line.is_empty())
-        .map(|line| {
-            let row = line
-                .split(",")
-                .map(|cell| format!("'{}'", cell.trim()))
-                .collect::<Vec<_>>()
-                .join(",");
-
-            format!("({row})")
+    let values = reader
+        .records()
+        .into_iter()
+        .filter_map(|record| {
+            if let Ok(record) = record {
+                let values = record
+                    .iter()
+                    .map(|value| format!("'{value}'"))
+                    .collect::<Vec<_>>()
+                    .join(",");
+                Some(format!("({values})"))
+            } else {
+                None
+            }
         })
-        .collect::<Vec<String>>()
-        .join(", ");
+        .collect::<Vec<_>>()
+        .join(",");
 
     let mut state = state.lock().await;
 
