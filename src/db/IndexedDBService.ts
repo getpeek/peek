@@ -1,5 +1,5 @@
 import { TLEditorSnapshot } from "tldraw";
-import { Connection, Workspace } from "../Connection/types";
+import { Connection } from "../Connection/types";
 
 const DB_NAME = "PeekDatabase";
 const DB_VERSION = 1;
@@ -105,40 +105,6 @@ class IndexedDBService {
       throw new Error("Failed to initialize IndexedDB");
     }
     return this.db;
-  }
-
-  // Workspace operations
-  async getWorkspaces(): Promise<Workspace[]> {
-    const db = await this.ensureDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([WORKSPACES_STORE], "readonly");
-      const store = transaction.objectStore(WORKSPACES_STORE);
-      const request = store.getAll();
-
-      request.onsuccess = () => resolve(request.result || []);
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async saveWorkspaces(workspaces: Workspace[]): Promise<void> {
-    const db = await this.ensureDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([WORKSPACES_STORE], "readwrite");
-      const store = transaction.objectStore(WORKSPACES_STORE);
-
-      // Clear existing workspaces
-      const clearRequest = store.clear();
-
-      clearRequest.onsuccess = () => {
-        // Add new workspaces
-        workspaces.forEach((workspace, index) => {
-          store.add({ ...workspace, id: index + 1 });
-        });
-      };
-
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(transaction.error);
-    });
   }
 
   // Active connection operations

@@ -77,9 +77,10 @@ export const customUiOverrides: TLUiOverrides = {
           (shape) => shape.id.toString() === current.id.toString(),
         );
 
-        editor.select(
-          queryShapes[(currentShapeIndex + 1) % queryShapes.length].id,
-        );
+        const toShape =
+          queryShapes[(currentShapeIndex + 1) % queryShapes.length];
+
+        editor.select(toShape.id);
         editor.zoomToSelection({ animation: { duration: 300 } });
       },
     };
@@ -112,11 +113,12 @@ export const customUiOverrides: TLUiOverrides = {
           (shape) => shape.id.toString() === current.id.toString(),
         );
 
-        editor.select(
+        const toShape =
           queryShapes[
             (currentShapeIndex - 1 + queryShapes.length) % queryShapes.length
-          ].id,
-        );
+          ];
+
+        editor.select(toShape.id);
         editor.zoomToSelection({ animation: { duration: 300 } });
       },
     };

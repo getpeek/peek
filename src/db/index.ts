@@ -8,9 +8,4 @@ export {
   atomWithIndexedDB,
   atomWithIndexedDBSnapshots,
 } from "./atomWithIndexedDB";
-export {
-  useIndexedDB,
-  useDocument,
-  useWorkspaces,
-  useActiveConnection,
-} from "./hooks";
+export { useIndexedDB, useDocument, useActiveConnection } from "./hooks";

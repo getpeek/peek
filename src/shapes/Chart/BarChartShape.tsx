@@ -61,8 +61,7 @@ export class BarChartShapeUtil extends ShapeUtil<BarChartShape> {
           <BarChart
             h="100%"
             w="100%"
-            mih={50}
-            miw={50}
+            mih={undefined}
             data={shape.props.data}
             dataKey={dataKey}
             series={series}

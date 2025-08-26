@@ -1,14 +1,13 @@
 import { Group, Text } from "@mantine/core";
-import { useSetAtom } from "jotai";
-import { activeConnectionAtom } from "../../Connection/state";
-import { useWorkspaces } from "../../db";
+import { useAtomValue, useSetAtom } from "jotai";
+import { activeConnectionAtom, workspacesAtom } from "../../Connection/state";
 import { CommandPaletteResult } from ".";
 
 export const useGetConnectionCommands = (): CommandPaletteResult[] => {
-  const connections = useWorkspaces();
+  const workspaces = useAtomValue(workspacesAtom);
   const setActiveConnection = useSetAtom(activeConnectionAtom);
 
-  return connections.workspaces
+  return workspaces
     .flatMap((workspace) =>
       workspace.connections.map((connection) => ({
         workspaceName: workspace.name,

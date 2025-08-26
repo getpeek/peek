@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { indexedDBService } from "./IndexedDBService";
 import { TLEditorSnapshot } from "tldraw";
-import { Connection, Workspace } from "../Connection/types";
+import { Connection } from "../Connection/types";
 
 export function useIndexedDB() {
   const [isReady, setIsReady] = useState(false);
@@ -108,46 +108,6 @@ export function useDocument(
     error,
     saveDocument,
     deleteDocument,
-  };
-}
-
-export function useWorkspaces() {
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const loadWorkspaces = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await indexedDBService.getWorkspaces();
-      setWorkspaces(data);
-    } catch (err) {
-      setError(err as Error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadWorkspaces();
-  }, []);
-
-  const saveWorkspaces = useCallback(async (newWorkspaces: Workspace[]) => {
-    try {
-      await indexedDBService.saveWorkspaces(newWorkspaces);
-      setWorkspaces(newWorkspaces);
-    } catch (err) {
-      setError(err as Error);
-      throw err;
-    }
-  }, []);
-
-  return {
-    workspaces,
-    isLoading,
-    error,
-    saveWorkspaces,
-    refetch: loadWorkspaces,
   };
 }
 

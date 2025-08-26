@@ -1,7 +1,7 @@
 import { atom, WritableAtom } from "jotai";
 import { indexedDBService } from "./IndexedDBService";
 import { TLEditorSnapshot } from "tldraw";
-import { Connection, Workspace } from "../Connection/types";
+import { Connection } from "../Connection/types";
 
 // Helper to create an atom with IndexedDB persistence
 export function atomWithIndexedDB<T, V = any>(
@@ -29,11 +29,6 @@ export function atomWithIndexedDB<T, V = any>(
         : nextValue;
 
       switch (key) {
-        case "workspaces":
-          indexedDBService
-            .saveWorkspaces(valueToSave as Workspace[])
-            .catch(console.error);
-          break;
         case "activeConnection":
           indexedDBService
             .saveActiveConnection(
@@ -49,16 +44,12 @@ export function atomWithIndexedDB<T, V = any>(
     },
   );
 
-  // Initialize from IndexedDB
   derivedAtom.onMount = (setAtom) => {
     const loadData = async () => {
       try {
         let value: any;
 
         switch (key) {
-          case "workspaces":
-            value = await indexedDBService.getWorkspaces();
-            break;
           case "activeConnection":
             value = await indexedDBService.getActiveConnection();
             break;

@@ -12,7 +12,7 @@ pub fn get_workspaces() -> Result<String, String> {
         return Ok(json!(PeekConfig::default()).to_string());
     };
     let config: PeekConfig =
-        toml::from_str(&config_file).map_err(|_| "Can't parse config file".to_owned())?;
+        toml::from_str(&config_file).map_err(|e| format!("Can't parse config file {e:?}"))?;
 
     serde_json::to_string(&config).map_err(|_| "Can't serialize config".to_string())
 }
@@ -42,5 +42,5 @@ pub struct SSHConfig {
     port: u16,
     username: String,
     password: Option<String>,
-    certificate: Option<String>,
+    ssh_key: Option<String>,
 }
