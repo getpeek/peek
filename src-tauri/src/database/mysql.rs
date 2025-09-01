@@ -219,9 +219,7 @@ impl Database for MysqlDatabase {
         Ok((schema_map, column_map))
     }
 
-    async fn import_data(&mut self, data: ImportedData) -> Result<(), String> {
-        println!("importing {}", data.table_name);
-
+    async fn import_data(&mut self, _data: ImportedData) -> Result<(), String> {
         Ok(())
     }
 }
