@@ -1,6 +1,7 @@
 pub mod config;
 mod database;
 mod database_commands;
+pub mod import;
 
 use database::{mysql::MysqlDatabase, postgres::PostgresDatabase, Database};
 use sqlx::Connection;
@@ -52,7 +53,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             database_commands::get_results,
             database_commands::get_schema,
-            database_commands::import_csv,
+            database_commands::import_file,
             config::get_workspaces,
             set_connection
         ])

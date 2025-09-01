@@ -1,6 +1,5 @@
+use crate::{import::FileImporter, AppData};
 use tauri::{async_runtime::Mutex, State};
-
-use crate::AppData;
 
 #[tauri::command]
 pub async fn get_schema(state: State<'_, Mutex<AppData>>) -> Result<String, String> {
@@ -37,51 +36,28 @@ pub async fn get_results(
 }
 
 #[tauri::command]
-pub async fn import_csv(
-    state: State<'_, Mutex<AppData>>,
-    table_name: String,
-    csv: String,
-) -> Result<String, String> {
-    let mut reader = csv::Reader::from_reader(csv.as_bytes());
-
-    let columns = reader
-        .headers()
-        .map_err(|_| String::from("could not parse csv"))?
-        .iter()
-        .map(|header| format!("{header} TEXT"))
-        .collect::<Vec<_>>()
-        .join(",");
-
-    let values = reader
-        .records()
-        .into_iter()
-        .filter_map(|record| {
-            if let Ok(record) = record {
-                let values = record
-                    .iter()
-                    .map(|value| format!("'{value}'"))
-                    .collect::<Vec<_>>()
-                    .join(",");
-                Some(format!("({values})"))
-            } else {
-                None
-            }
-        })
-        .collect::<Vec<_>>()
-        .join(",");
-
+pub async fn import_file(state: State<'_, Mutex<AppData>>, path: String) -> Result<String, String> {
     let mut state = state.lock().await;
+
+    let file_path = std::path::Path::new(&path);
+    let extension = file_path
+        .extension()
+        .and_then(|p| p.to_str())
+        .unwrap_or("unknown");
+
+    let Ok(imported_data) = (match extension {
+        "csv" => FileImporter::csv(file_path.to_path_buf()),
+        _ => return Err(format!("Unknown file format {extension}")),
+    }) else {
+        return Err(format!("could not parse input data"));
+    };
 
     let Some(connection) = state.connection.as_mut() else {
         return Err("error getting connection".to_string());
     };
 
-    connection
-        .execute(format!("CREATE TEMP TABLE IF NOT EXISTS {table_name} ({columns})").as_str())
-        .await?;
-    connection
-        .execute(format!("INSERT INTO {table_name} VALUES {values}").as_str())
-        .await?;
+    let table_name = imported_data.table_name.clone();
 
-    Ok(format!("data imported into {table_name}"))
+    connection.import_data(imported_data).await.ok();
+    Ok(table_name)
 }

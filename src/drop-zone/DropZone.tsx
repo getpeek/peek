@@ -1,6 +1,5 @@
 import { listen, TauriEvent, UnlistenFn } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
-import { readTextFile } from "@tauri-apps/plugin-fs";
 import { useAtomValue, useSetAtom } from "jotai";
 import { editorAtom, schemaAtom } from "../state";
 import { invoke } from "@tauri-apps/api/core";
@@ -41,22 +40,17 @@ export const DropZone = () => {
       }
 
       for (const path of payload.paths as string[]) {
-        const file = await readTextFile(path);
-        const fileName =
-          path.split("/").pop()?.split(".")[0] ?? "imported_data";
-        if (path.endsWith(".csv")) {
-          await invoke("import_csv", { tableName: fileName, csv: file });
-          const pos = editor.screenToPage({ x, y });
+        const tableName = await invoke("import_file", { path });
+        const pos = editor.screenToPage({ x, y });
 
-          editor.createShape<QueryShape>({
-            type: "query",
-            x: pos.x,
-            y: pos.y,
-            props: {
-              query: `SELECT * FROM ${fileName}`,
-            },
-          });
-        }
+        editor.createShape<QueryShape>({
+          type: "query",
+          x: pos.x,
+          y: pos.y,
+          props: {
+            query: `SELECT * FROM ${tableName}`,
+          },
+        });
       }
 
       await fetchSchema();

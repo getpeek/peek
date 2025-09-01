@@ -5,6 +5,8 @@ use async_trait::async_trait;
 use serde_json::Value;
 use std::collections::HashMap;
 
+use crate::import::ImportedData;
+
 /// Trait defining the interface for database operations
 #[async_trait]
 pub trait Database: Send + Sync {
@@ -14,6 +16,7 @@ pub trait Database: Send + Sync {
     async fn get_results(&mut self, query: &str) -> Result<Vec<Value>, String>;
 
     /// Execute an sql statement and return whatever the statement returns
+    #[allow(unused)]
     async fn execute(&mut self, query: &str) -> Result<String, String>;
 
     /// Get the database schema information
@@ -28,4 +31,6 @@ pub trait Database: Send + Sync {
         ),
         String,
     >;
+
+    async fn import_data(&mut self, data: ImportedData) -> Result<(), String>;
 }

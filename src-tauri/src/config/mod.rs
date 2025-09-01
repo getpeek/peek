@@ -20,6 +20,20 @@ pub fn get_workspaces() -> Result<String, String> {
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct PeekConfig {
     workspaces: Vec<Workspace>,
+    ai: AIConfig,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AIConfig {
+    model: String,
+}
+
+impl Default for AIConfig {
+    fn default() -> Self {
+        Self {
+            model: "qwen-3:8b".to_string(),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]

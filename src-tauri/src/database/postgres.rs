@@ -1,3 +1,5 @@
+use crate::import::{ImportType, ImportedData};
+
 use super::Database;
 use serde_json::{json, Value};
 use sqlx::{Column, PgConnection, Row, TypeInfo};
@@ -209,5 +211,95 @@ impl Database for PostgresDatabase {
         }
 
         Ok((schema_map, fk_map))
+    }
+
+    async fn import_data(&mut self, data: ImportedData) -> Result<(), String> {
+        let table_name = sanitize_table_name(&data.table_name);
+
+        let fields_vec: Vec<_> = data.fields.iter().collect();
+
+        let Some(first) = fields_vec.first() else {
+            return Ok(());
+        };
+
+        let columns = first
+            .iter()
+            .map(|(name, kind)| {
+                let col_type = match kind {
+                    ImportType::UUID(_) => "uuid",
+                    ImportType::Date(_) => "date",
+                    ImportType::DateTime(_) => "datetime",
+                    ImportType::Text(_) => "text",
+                    ImportType::Number(_) => "int",
+                    ImportType::Float(_) => "numeric",
+                    ImportType::Boolean(_) => "boolean",
+                };
+                format!("{name} {col_type}")
+            })
+            .collect::<Vec<String>>()
+            .join(", ");
+
+        let values = data
+            .fields
+            .iter()
+            .map(|row| {
+                let formatted_values = row
+                    .iter()
+                    .map(|(_, value)| match value {
+                        ImportType::UUID(uuid) => format!("'{uuid}'"),
+                        ImportType::Date(date) => format!("'{date}'"),
+                        ImportType::DateTime(date) => format!("'{date}'"),
+                        ImportType::Text(text) => format!("'{text}'"),
+                        ImportType::Number(number) => format!("{number}"),
+                        ImportType::Float(float) => format!("{float}",),
+                        ImportType::Boolean(boolean) => format!("{boolean}"),
+                    })
+                    .collect::<Vec<String>>()
+                    .join(",");
+
+                format!("({})", formatted_values)
+            })
+            .collect::<Vec<_>>();
+
+        sqlx::query(format!("CREATE TEMP TABLE IF NOT EXISTS {table_name} ({columns})").as_str())
+            .execute(&mut self.connection)
+            .await
+            .map_err(|_| "Could not create temporary table ".to_string())?;
+
+        for chunk in values.chunks(1000).into_iter() {
+            let chunk_values = chunk.join(",");
+            let column_names = first
+                .iter()
+                .map(|(name, _)| name)
+                .cloned()
+                .collect::<Vec<_>>()
+                .join(",");
+
+            sqlx::query(
+                format!("INSERT INTO {table_name} ({column_names}) VALUES {chunk_values}").as_str(),
+            )
+            .execute(&mut self.connection)
+            .await
+            .map_err(|e| e.to_string())?;
+        }
+
+        Ok(())
+    }
+}
+
+pub(crate) fn sanitize_table_name(name: &str) -> String {
+    let sanitized: String = name
+        .chars()
+        .filter(|c| c.is_alphanumeric() || *c == '_')
+        .collect::<String>()
+        .replace('-', " ")
+        .to_lowercase();
+
+    if sanitized.chars().next().map_or(false, |c| c.is_numeric()) {
+        format!("t_{}", sanitized)
+    } else if sanitized.is_empty() {
+        "imported_table".to_string()
+    } else {
+        sanitized
     }
 }
