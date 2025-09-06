@@ -7,6 +7,6 @@ mod tests {
     #[test]
     fn test_normalize_name() {
         let path = Path::new("File Name.csv");
-        assert_eq!(normalize_table_name(&path.to_path_buf()), "file_name");
+        assert_eq!(normalize_table_name(path), "file_name");
     }
 }

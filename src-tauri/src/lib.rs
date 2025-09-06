@@ -7,14 +7,9 @@ use database::{mysql::MysqlDatabase, postgres::PostgresDatabase, Database};
 use sqlx::Connection;
 use tauri::{async_runtime::Mutex, State};
 
+#[derive(Default)]
 pub struct AppData {
     connection: Option<Box<dyn Database>>,
-}
-
-impl Default for AppData {
-    fn default() -> Self {
-        Self { connection: None }
-    }
 }
 
 #[tauri::command]

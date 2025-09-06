@@ -15,7 +15,6 @@ impl super::FileImporter {
 
         let fields: Vec<Vec<(String, ImportType)>> = reader
             .records()
-            .into_iter()
             .filter_map(|record| record.ok())
             .map(|record| {
                 record

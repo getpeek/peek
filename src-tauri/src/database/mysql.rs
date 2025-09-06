@@ -185,7 +185,7 @@ impl Database for MysqlDatabase {
         let db_name = self
             .connection_string
             .split('/')
-            .last()
+            .next_back()
             .and_then(|s| s.split('?').next())
             .unwrap_or("mysql");
 

@@ -229,10 +229,11 @@ impl Database for PostgresDatabase {
                     ImportType::UUID(_) => "uuid",
                     ImportType::Date(_) => "date",
                     ImportType::DateTime(_) => "datetime",
-                    ImportType::Text(_) => "text",
+                    ImportType::Null | ImportType::Text(_) => "text",
                     ImportType::Number(_) => "int",
                     ImportType::Float(_) => "numeric",
                     ImportType::Boolean(_) => "boolean",
+                    ImportType::JSON(_) => "json",
                 };
                 format!("{name} {col_type}")
             })
@@ -253,6 +254,8 @@ impl Database for PostgresDatabase {
                         ImportType::Number(number) => format!("{number}"),
                         ImportType::Float(float) => format!("{float}",),
                         ImportType::Boolean(boolean) => format!("{boolean}"),
+                        ImportType::Null => "NULL".to_string(),
+                        ImportType::JSON(json) => format!("'{json}'"),
                     })
                     .collect::<Vec<String>>()
                     .join(",");
@@ -266,7 +269,7 @@ impl Database for PostgresDatabase {
             .await
             .map_err(|_| "Could not create temporary table ".to_string())?;
 
-        for chunk in values.chunks(1000).into_iter() {
+        for chunk in values.chunks(1) {
             let chunk_values = chunk.join(",");
             let column_names = first
                 .iter()
@@ -275,12 +278,14 @@ impl Database for PostgresDatabase {
                 .collect::<Vec<_>>()
                 .join(",");
 
-            sqlx::query(
+            if let Err(err) = sqlx::query(
                 format!("INSERT INTO {table_name} ({column_names}) VALUES {chunk_values}").as_str(),
             )
             .execute(&mut self.connection)
             .await
-            .map_err(|e| e.to_string())?;
+            {
+                eprintln!("{err:?}");
+            }
         }
 
         Ok(())
@@ -295,7 +300,7 @@ pub(crate) fn sanitize_table_name(name: &str) -> String {
         .replace('-', " ")
         .to_lowercase();
 
-    if sanitized.chars().next().map_or(false, |c| c.is_numeric()) {
+    if sanitized.chars().next().is_some_and(|c| c.is_numeric()) {
         format!("t_{}", sanitized)
     } else if sanitized.is_empty() {
         "imported_table".to_string()

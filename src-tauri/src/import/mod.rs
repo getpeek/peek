@@ -1,4 +1,7 @@
+use serde_json::Value;
+
 pub mod csv;
+pub mod json;
 mod test;
 
 #[derive(Debug)]
@@ -13,6 +16,8 @@ pub enum ImportType {
     Number(isize),
     Float(f64),
     Boolean(bool),
+    Null,
+    JSON(Value),
 }
 
 #[derive(Debug)]
@@ -37,7 +42,7 @@ pub fn normalize_column_name(name: impl std::fmt::Display) -> String {
         .collect()
 }
 
-pub fn normalize_table_name(path: &std::path::PathBuf) -> String {
+pub fn normalize_table_name(path: &std::path::Path) -> String {
     path.file_stem()
         .and_then(|name| name.to_str())
         .unwrap_or("table_name")

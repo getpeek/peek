@@ -21,7 +21,7 @@ https://github.com/user-attachments/assets/fe88693b-4741-42bc-9286-67db0c44a084
 1. Clone this repo
 2. yarn tauri build
 
-Note, the UI requires you to have a workspace set up, but there is no UI to actually manage workspaces right now, so you'll have to create on in localstorage.
+You'll need to set up a workspace by creating a ~/.config/peek/config.toml file, there will be an example here soon :tm:
 
 ## TODO
 
@@ -43,12 +43,11 @@ Note, the UI requires you to have a workspace set up, but there is no UI to actu
 
 - [ ] Pagination on query results if limit/offset in query
 - [x] Charts
-- [~] Virtualization for tables for large result shape performance
+- [x] Virtualization for tables for large result shape performance
 
 ## Tools
 
 - [ ] Live Queries
-- [ ] Query history per Query shape, after each succesful query
 - [x] AI integration -> Query -> Result
 
 ## Export
@@ -69,9 +68,10 @@ Support for more databases
 - [x] Postgres
 - [x] MySQL
 - [ ] Sqlite
+- [ ] DuckDB
 - [ ] Meiliserach
 - [ ] Elasticsearch
 
 # V.3
 
-- [ ] Support for more datasources (hubspot, salesforce, etc.)
+- [ ] Support for more datasources (hubspot, salesforce, etc., or just cURL + variables / environment)

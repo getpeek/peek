@@ -47,9 +47,10 @@ pub async fn import_file(state: State<'_, Mutex<AppData>>, path: String) -> Resu
 
     let Ok(imported_data) = (match extension {
         "csv" => FileImporter::csv(file_path.to_path_buf()),
+        "json" => FileImporter::json(file_path.to_path_buf()),
         _ => return Err(format!("Unknown file format {extension}")),
     }) else {
-        return Err(format!("could not parse input data"));
+        return Err("could not parse input data".to_string());
     };
 
     let Some(connection) = state.connection.as_mut() else {
