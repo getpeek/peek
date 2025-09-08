@@ -33,6 +33,7 @@ export const AiPromptContextualToolbarComponent = track(() => {
         type: "ai-shape",
         props: { isLoading: true },
       });
+
       const stream = await runPrompt([
         {
           type: "system",

@@ -60,10 +60,7 @@ export const getAdditionalContextTool = new DynamicStructuredTool({
 });
 
 export const useExecutePrompt = (modelType: "fast" | "advanced") => {
-  const config = useAtomValue(configAtom);
-  if (!config) {
-    return;
-  }
+  const config = useAtomValue(configAtom)!;
 
   const baseModel = new ChatOllama({
     model: config.ai.model,
