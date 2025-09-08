@@ -49,7 +49,7 @@ pub fn run() {
             database_commands::get_results,
             database_commands::get_schema,
             database_commands::import_file,
-            config::get_workspaces,
+            config::get_config,
             set_connection
         ])
         .run(tauri::generate_context!())

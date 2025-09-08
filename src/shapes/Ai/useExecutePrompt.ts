@@ -8,6 +8,8 @@ import {
   SystemMessage,
 } from "@langchain/core/messages";
 import { invoke } from "@tauri-apps/api/core";
+import { useAtomValue } from "jotai";
+import { configAtom } from "../../state";
 
 export interface Message {
   type: "user" | "assistant" | "system" | "context";
@@ -15,13 +17,6 @@ export interface Message {
   timestamp: number;
   contextKey?: string;
 }
-
-const baseModel = new ChatOllama({
-  model: "qwen3:8b",
-  baseUrl: "http://localhost:11434",
-  streaming: true,
-  numThread: 32,
-});
 
 export const branchToNewConversationTool = new DynamicStructuredTool({
   name: "branchToNewConversation",
@@ -65,6 +60,18 @@ export const getAdditionalContextTool = new DynamicStructuredTool({
 });
 
 export const useExecutePrompt = (modelType: "fast" | "advanced") => {
+  const config = useAtomValue(configAtom);
+  if (!config) {
+    return;
+  }
+
+  const baseModel = new ChatOllama({
+    model: config.ai.model,
+    baseUrl: config.ai.url,
+    streaming: true,
+    numThread: 32,
+  });
+
   return async (messages: Message[] = []) => {
     const model =
       modelType === "advanced"

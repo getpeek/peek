@@ -12,7 +12,7 @@ import { CustomBackground, CustomGrid } from "./components/CustomBackground";
 import { CustomTitleBar } from "./components/CustomTitleBar";
 import { CommandPalette } from "./command-palette/CommandPalette";
 import { DropZone } from "./drop-zone/DropZone";
-import { useLoadWorkspaces } from "./app/useLoadWorkspaces";
+import { useGetConfig } from "./app/useGetConfig";
 import { useTreesitter } from "./app/useInitTreesitter";
 import { useTLStore } from "./app/useTLStore";
 import { DarkModeSync } from "./app/DarkModeSync";
@@ -31,7 +31,7 @@ function App() {
   const isDarkMode = useAtomValue(darkModeAtom);
 
   const store = useTLStore();
-  useLoadWorkspaces();
+  useGetConfig();
   useTreesitter();
   useAutoSaveDocument(store);
   useLoadDocument(store);

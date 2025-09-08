@@ -2,9 +2,18 @@ import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { Language, Parser } from "web-tree-sitter";
 import { Editor } from "tldraw";
+import { Workspace } from "./Connection/types";
 
 export type DatabaseResult = [string, unknown, string][][];
-export type ImportedDataResult = [string, unknown][][];
+export interface Config {
+  ai: {
+    model: string;
+    url: string;
+  };
+  workspaces: Workspace[];
+}
+
+export const configAtom = atom<Config>();
 
 export const schemaAtom = atom<{
   tables: Record<string, [string, string][]>;

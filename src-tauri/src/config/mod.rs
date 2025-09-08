@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[tauri::command]
-pub fn get_workspaces() -> Result<String, String> {
+pub fn get_config() -> Result<String, String> {
     let Ok(home_dir) = std::env::var("HOME") else {
         return Ok(json!(PeekConfig::default()).to_string());
     };
@@ -26,12 +26,14 @@ pub struct PeekConfig {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AIConfig {
     model: String,
+    url: String,
 }
 
 impl Default for AIConfig {
     fn default() -> Self {
         Self {
-            model: "qwen-3:8b".to_string(),
+            model: "qwen3:8b".to_string(),
+            url: "http://localhost:11434".to_string(),
         }
     }
 }
