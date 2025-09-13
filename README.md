@@ -21,7 +21,34 @@ https://github.com/user-attachments/assets/fe88693b-4741-42bc-9286-67db0c44a084
 1. Clone this repo
 2. yarn tauri build
 
-You'll need to set up a workspace by creating a ~/.config/peek/config.toml file, there will be an example here soon :tm:
+You'll need to set up a workspace by creating a ~/.config/peek/config.toml file. Here is an example
+
+```toml
+[[ai]]
+model = "qwen3:8b"
+url = "http://localhost:11434"
+
+[[workspaces]]
+name = 'My project'
+
+[[workspaces.connections]]
+name = 'local'
+color = 'blue'
+url = 'postgres://dbuser:dbpassword@localhost/dbname'
+
+[[workspaces.connections]]
+name = 'production'
+color = 'red'
+url = 'postgres://dbuser:dbpassword@123.45.56.11/dbname'
+
+[[workspaces]]
+name = 'Another project'
+
+[[workspaces.connections]]
+name = 'dev'
+color = 'blue'
+url = 'postgres://dbuser:dbpassword@rds-host.biz/dbname'
+```
 
 ## TODO
 
