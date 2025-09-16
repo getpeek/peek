@@ -24,7 +24,7 @@ https://github.com/user-attachments/assets/fe88693b-4741-42bc-9286-67db0c44a084
 You'll need to set up a workspace by creating a ~/.config/peek/config.toml file. Here is an example
 
 ```toml
-[[ai]]
+[ai]
 model = "qwen3:8b"
 url = "http://localhost:11434"
 
