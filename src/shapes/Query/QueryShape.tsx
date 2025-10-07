@@ -5,12 +5,9 @@ import {
   ShapeUtil,
   TLBaseShape,
   resizeBox,
-  stopEventPropagation,
-  useEditor,
 } from "tldraw";
 import "./Query.css";
 import { Query } from "./Query";
-import { useEffect, useState } from "react";
 
 export type QueryShape = TLBaseShape<
   "query",
@@ -22,25 +19,26 @@ export class QueryShapeUtil extends ShapeUtil<QueryShape> {
 
   override canEdit = () => true;
   override canResize = () => true;
+  override canScroll = () => true;
 
   getDefaultProps(): QueryShape["props"] {
     return { query: "", w: 350, h: 240 };
   }
 
   component(shape: QueryShape) {
-    const editor = useEditor();
-    const [isEditing, setIsEditing] = useState(false);
-
-    useEffect(() => {
-      setIsEditing(editor.getEditingShapeId() === shape.id);
-    }, [editor.getEditingShapeId()]);
+    const isEditing = this.editor.getEditingShapeId() === shape.id;
 
     return (
-      <HTMLContainer
-        id={shape.id}
-        onPointerDown={isEditing ? stopEventPropagation : undefined}
-      >
-        <Query shape={shape} isEditing={isEditing} />
+      <HTMLContainer id={shape.id}>
+        <div
+          style={{
+            width: shape.props.w,
+            height: shape.props.h,
+            pointerEvents: isEditing ? "all" : undefined,
+          }}
+        >
+          <Query shape={shape} isEditing={isEditing} />
+        </div>
       </HTMLContainer>
     );
   }

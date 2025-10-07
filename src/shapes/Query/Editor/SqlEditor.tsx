@@ -86,6 +86,23 @@ export const SqlEditor = ({
             smoothScrolling: true,
             cursorBlinking: "solid",
             cursorSmoothCaretAnimation: "off",
+            // Improve mouse interaction
+            smartSelect: {
+              selectSubwords: true,
+              selectLeadingAndTrailingWhitespace: false,
+            },
+            mouseWheelZoom: false,
+            dragAndDrop: true,
+            multiCursorModifier: "ctrlCmd",
+            selectOnLineNumbers: false,
+            contextmenu: true,
+            columnSelection: false,
+            selectionHighlight: true,
+            occurrencesHighlight: "singleFile",
+            readOnly: false,
+            renderControlCharacters: false,
+            renderWhitespace: "none",
+            copyWithSyntaxHighlighting: true,
           }}
           onChange={(value) => onQueryChange(value ?? "")}
         />

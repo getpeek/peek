@@ -65,6 +65,10 @@
     background: rgba(59, 130, 246, 0.1) !important;
 }
 
+.monaco-editor .sticky-widget {
+    display: none !important;
+}
+
 .monaco-editor .suggest-widget {
     background: #26233a !important;
     border-radius: 8px !important;
