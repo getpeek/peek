@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Editor, Tldraw } from "tldraw";
 import { customComponents, customUiOverrides } from "./TldrawUi";
-import { editorAtom, darkModeAtom } from "./state";
+import { darkModeAtom, editorAtom } from "./state";
 import { useAtomValue, useSetAtom } from "jotai";
 import { createTheme, MantineProvider } from "@mantine/core";
 import { MonacoManager } from "./shapes/Query/Editor/MonacoManager";
@@ -50,6 +50,28 @@ function App() {
           ref.current = editor;
           setEditor(editor);
           editor.updateInstanceState({ isGridMode: true });
+          editor.addListener("deleted-shapes", (ids) => {
+            for (const id of ids) {
+              const bindings = editor.getBindingsInvolvingShape(id);
+              for (const binding of bindings) {
+                const deletedShape = editor.getShape(id);
+                if (deletedShape?.type === "arrow") {
+                  continue;
+                }
+                const from = editor.getShape(binding.fromId);
+                const to = editor.getShape(binding.toId);
+
+                console.log(from, to);
+                if (from?.type === "arrow") {
+                  editor.deleteShape(from);
+                }
+
+                if (to?.type === "arrow") {
+                  editor.deleteShape(to);
+                }
+              }
+            }
+          });
         }}
         store={store}
         shapeUtils={customShapes}

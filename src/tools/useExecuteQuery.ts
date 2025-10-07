@@ -15,8 +15,7 @@ export const useExecuteQueries = () => {
         const response = (await invoke("get_results", { query })) as string;
         const result = JSON.parse(response) as [string, unknown][][];
 
-        let x =
-          (editor.getSelectionPageBounds()?.right ?? shape.x) +
+        let x = (editor.getSelectionPageBounds()?.right ?? shape.x) +
           (lastCreatedId === null ? 50 : 0);
         let y = shape.y;
         if (lastCreatedId) {
@@ -33,6 +32,7 @@ export const useExecuteQueries = () => {
 
         const columnCount = result[0]?.length ?? 0;
         const resultShapeId = createShapeId(shape.id + "-result-" + i);
+        const errorShapeId = createShapeId(shape.id + "-error");
 
         const resultShape = editor.getShape(resultShapeId);
 
@@ -63,6 +63,8 @@ export const useExecuteQueries = () => {
           lastCreatedId = resultShapeId;
           createArrowBetweenShapes(editor, shape.id, resultShapeId);
         }
+
+        editor.deleteShape(errorShapeId);
 
         editor.select(resultShapeId);
         editor.zoomToSelection({ animation: { duration: 300 } });
