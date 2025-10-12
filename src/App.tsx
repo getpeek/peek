@@ -1,8 +1,8 @@
 import { useRef } from "react";
 import { Editor, Tldraw } from "tldraw";
 import { customComponents, customUiOverrides } from "./TldrawUi";
-import { darkModeAtom, editorAtom } from "./state";
-import { useAtomValue, useSetAtom } from "jotai";
+import { editorAtom } from "./state";
+import { useSetAtom } from "jotai";
 import { createTheme, MantineProvider } from "@mantine/core";
 import { MonacoManager } from "./shapes/Query/Editor/MonacoManager";
 import { customShapes } from "./shapes";
@@ -15,7 +15,6 @@ import { DropZone } from "./drop-zone/DropZone";
 import { useGetConfig } from "./app/useGetConfig";
 import { useTreesitter } from "./app/useInitTreesitter";
 import { useTLStore } from "./app/useTLStore";
-import { DarkModeSync } from "./app/DarkModeSync";
 import { useAutoSaveDocument } from "./app/useAutoSaveDocument";
 import { useLoadDocument } from "./app/useLoadDocument";
 import "tldraw/tldraw.css";
@@ -28,7 +27,6 @@ const theme = createTheme({});
 function App() {
   const ref = useRef<Editor>();
   const setEditor = useSetAtom(editorAtom);
-  const isDarkMode = useAtomValue(darkModeAtom);
 
   const store = useTLStore();
   useGetConfig();
@@ -37,10 +35,7 @@ function App() {
   useLoadDocument(store);
 
   return (
-    <MantineProvider
-      theme={theme}
-      forceColorScheme={isDarkMode ? "dark" : "light"}
-    >
+    <MantineProvider theme={theme} forceColorScheme={"dark"}>
       <CustomTitleBar />
       <DropZone />
       <MonacoManager />
@@ -61,7 +56,6 @@ function App() {
                 const from = editor.getShape(binding.fromId);
                 const to = editor.getShape(binding.toId);
 
-                console.log(from, to);
                 if (from?.type === "arrow") {
                   editor.deleteShape(from);
                 }
@@ -82,9 +76,7 @@ function App() {
           Grid: CustomGrid,
         }}
         tools={[QueryTool, AiPromptTool]}
-      >
-        <DarkModeSync />
-      </Tldraw>
+      />
       <CommandPalette />
     </MantineProvider>
   );

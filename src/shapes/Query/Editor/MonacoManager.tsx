@@ -78,13 +78,13 @@ export const MonacoManager = () => {
           registerCompletionProvider();
         }}
         options={{
-          readOnly: true,
+          readOnly: false,
           minimap: { enabled: false },
           lineNumbers: "off",
           folding: false,
           scrollBeyondLastLine: false,
-          renderLineHighlight: "none",
-          selectionHighlight: false,
+          renderLineHighlight: "all",
+          selectionHighlight: true,
           contextmenu: false,
         }}
       />

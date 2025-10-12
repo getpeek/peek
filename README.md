@@ -76,6 +76,7 @@ url = 'postgres://dbuser:dbpassword@rds-host.biz/dbname'
 
 - [ ] Live Queries
 - [x] AI integration -> Query -> Result
+- [ ] BYOK for external AI solutions
 
 ## Export
 

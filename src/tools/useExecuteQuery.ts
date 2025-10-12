@@ -13,7 +13,7 @@ export const useExecuteQueries = () => {
       const query = queries[i];
       try {
         const response = (await invoke("get_results", { query })) as string;
-        const result = JSON.parse(response) as [string, unknown][][];
+        const result = JSON.parse(response) as [string, unknown, string][][];
 
         let x = (editor.getSelectionPageBounds()?.right ?? shape.x) +
           (lastCreatedId === null ? 50 : 0);

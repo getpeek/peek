@@ -1,8 +1,8 @@
 // Define simulation constants - you'll need to tune these!
 const ITERATIONS = 200;
-const K_REPEL = 200000; // Repulsive force strength
-const K_ATTRACT = 0.05; // Attractive force (spring) strength
-const IDEAL_LENGTH = 350; // Ideal spring length
+const K_REPEL = 50000; // Repulsive force strength - reduced to keep disconnected nodes closer
+const K_ATTRACT = 0.1; // Attractive force (spring) strength - increased for stronger connections
+const IDEAL_LENGTH = 550; // Ideal spring length - increased for more padding between connected nodes
 const DAMPING = 0.95; // Friction to slow things down
 
 interface Node {
@@ -67,11 +67,22 @@ export function calculateLayout(schema: {
       for (const nodeB of Object.values(nodes)) {
         if (nodeA.id === nodeB.id) continue;
 
-        const dx = nodeA.x - nodeB.x;
-        const dy = nodeA.y - nodeB.y;
+        // Calculate center-to-center distance
+        const centerAX = nodeA.x + nodeA.width / 2;
+        const centerAY = nodeA.y + nodeA.height / 2;
+        const centerBX = nodeB.x + nodeB.width / 2;
+        const centerBY = nodeB.y + nodeB.height / 2;
+
+        const dx = centerAX - centerBX;
+        const dy = centerAY - centerBY;
         const distance = Math.sqrt(dx * dx + dy * dy) || 1; // Avoid division by zero
 
-        const force = K_REPEL / (distance * distance);
+        // Consider the size of nodes - use minimum distance based on node dimensions
+        const minDistance =
+          Math.max(nodeA.width, nodeA.height, nodeB.width, nodeB.height) / 2;
+        const effectiveDistance = Math.max(distance, minDistance);
+
+        const force = K_REPEL / (effectiveDistance * effectiveDistance);
         totalForceX += (dx / distance) * force;
         totalForceY += (dy / distance) * force;
       }
@@ -84,8 +95,15 @@ export function calculateLayout(schema: {
 
         if (otherNodeId) {
           const nodeB = nodes[otherNodeId];
-          const dx = nodeB.x - nodeA.x;
-          const dy = nodeB.y - nodeA.y;
+
+          // Use center-to-center distance for springs too
+          const centerAX = nodeA.x + nodeA.width / 2;
+          const centerAY = nodeA.y + nodeA.height / 2;
+          const centerBX = nodeB.x + nodeB.width / 2;
+          const centerBY = nodeB.y + nodeB.height / 2;
+
+          const dx = centerBX - centerAX;
+          const dy = centerBY - centerAY;
           const distance = Math.sqrt(dx * dx + dy * dy) || 1;
 
           const displacement = distance - IDEAL_LENGTH;
@@ -131,8 +149,8 @@ export function calculateLayout(schema: {
   return positions;
 }
 
-const RESOLVE_ITERATIONS = 10;
-const PADDING = 10; // Extra space between shapes
+const RESOLVE_ITERATIONS = 20; // Increased for better overlap resolution
+const PADDING = 50; // Extra space between shapes - increased for more visual separation
 
 function resolveOverlaps(nodes: Record<string, Node>) {
   const nodeArray = Object.values(nodes);
