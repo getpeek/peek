@@ -24,10 +24,12 @@ export const exportSelectedDataJson: CommandPaletteResult = {
     }
 
     const model = new ChatOllama({
-      model: "qwen3:8b",
+      model: "qwen3:14b",
       baseUrl: "http://localhost:11434",
       streaming: false,
       numThread: 32,
+      keepAlive: "10m",
+      think: false,
     });
 
     const path = await open({ directory: true, multiple: false });

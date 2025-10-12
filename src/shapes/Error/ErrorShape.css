@@ -52,4 +52,5 @@
     margin: 16px;
     background: hsla(0deg, 0%, 90%, 0.1);
     border-radius: 8px;
+    overflow-x: hidden;
 }

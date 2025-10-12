@@ -1,0 +1,145 @@
+name: Build and Sign macOS App
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+env:
+  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+  APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+  APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+  APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+  APPLE_TEAM_ID: 93JGDXCC8N
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    environment: default
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Import Apple Developer Certificate
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          # Create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+          # Import certificate from secrets
+          echo -n "$APPLE_CERTIFICATE" | base64 --decode -o $CERTIFICATE_PATH
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          # Import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          # Allow codesign to access keychain
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          # Verify certificate was imported
+          echo "Certificates in keychain:"
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+          # Ensure we have the Developer ID certificate
+          if ! security find-identity -v -p codesigning $KEYCHAIN_PATH | grep -q "Developer ID Application"; then
+            echo "ERROR: Developer ID Application certificate not found in keychain!"
+            exit 1
+          fi
+          # Export the signing identity for Tauri to use
+          SIGNING_IDENTITY=$(security find-identity -v -p codesigning $KEYCHAIN_PATH | grep "Developer ID Application" | head -1 | awk '{print $2}')
+          echo "SIGNING_IDENTITY=$SIGNING_IDENTITY" >> $GITHUB_ENV
+          echo "Using signing identity: $SIGNING_IDENTITY"
+      - name: Build Tauri App (ARM64)
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_TEAM_ID: 93JGDXCC8N
+          ENABLE_CODE_SIGNING: true
+        run: |
+          # 1. Create a temporary file path for the API key
+          API_KEY_PATH=$RUNNER_TEMP/api_key.p8
+
+          # 2. Decode the base64 secret into the temporary file
+          echo -n "$APPLE_API_KEY" | base64 --decode -o $API_KEY_PATH
+
+          # 3. Export the file path for Tauri to use
+          echo "APPLE_API_KEY_PATH=$API_KEY_PATH" >> $GITHUB_ENV
+
+          cd src-tauri
+          # Build for Apple Silicon (Tauri will handle signing and notarization)
+          echo "Building for Apple Silicon (ARM64)..."
+          echo "Tauri will automatically sign and notarize the app."
+          yarn tauri build --target aarch64-apple-darwin
+
+      - name: Verify Build Output
+        run: |
+          echo "✅ Build completed successfully!"
+          echo ""
+          echo "Tauri automatically:"
+          echo "• Signed the app with Developer ID certificate"
+          echo "• Notarized the app with Apple"
+          echo "• Created a signed DMG"
+          echo ""
+          # List the build artifacts
+          echo "Build artifacts:"
+          ls -lh src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+          ls -lh src-tauri/target/aarch64-apple-darwin/release/bundle/macos/
+
+      - name: Upload macOS ARM64 Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm64-binary
+          path: |
+            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Peek.app
+
+      - name: Create Release (if tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+            # src-tauri/target/universal-apple-darwin/release/bundle/Peek.dmg
+            # src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup keychain
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/app-signing.keychain-db" ]; then
+            security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
+          fi
+          if [ -f "$RUNNER_TEMP/build_certificate.p12" ]; then
+            rm $RUNNER_TEMP/build_certificate.p12
+          fi

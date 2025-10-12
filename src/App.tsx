@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Editor, Tldraw, useIsDarkMode } from "tldraw";
+import { Editor, Tldraw } from "tldraw";
 import { customComponents, customUiOverrides } from "./TldrawUi";
 import { darkModeAtom, editorAtom } from "./state";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -26,7 +26,7 @@ import { DarkModeSync } from "./app/DarkModeSync";
 const theme = createTheme({});
 
 function App() {
-  const ref = useRef<Editor>();
+  const ref = useRef<Editor>(null);
   const setEditor = useSetAtom(editorAtom);
   const isDarkMode = useAtomValue(darkModeAtom);
 

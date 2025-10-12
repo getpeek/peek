@@ -67,6 +67,8 @@ export const useExecutePrompt = (modelType: "fast" | "advanced") => {
     baseUrl: config.ai.url,
     streaming: true,
     numThread: 32,
+    keepAlive: "10m",
+    think: false,
   });
 
   return async (messages: Message[] = []) => {
