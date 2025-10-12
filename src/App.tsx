@@ -1,8 +1,8 @@
 import { useRef } from "react";
-import { Editor, Tldraw } from "tldraw";
+import { Editor, Tldraw, useIsDarkMode } from "tldraw";
 import { customComponents, customUiOverrides } from "./TldrawUi";
-import { editorAtom } from "./state";
-import { useSetAtom } from "jotai";
+import { darkModeAtom, editorAtom } from "./state";
+import { useAtomValue, useSetAtom } from "jotai";
 import { createTheme, MantineProvider } from "@mantine/core";
 import { MonacoManager } from "./shapes/Query/Editor/MonacoManager";
 import { customShapes } from "./shapes";
@@ -21,12 +21,14 @@ import "tldraw/tldraw.css";
 import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
 import "./App.css";
+import { DarkModeSync } from "./app/DarkModeSync";
 
 const theme = createTheme({});
 
 function App() {
   const ref = useRef<Editor>();
   const setEditor = useSetAtom(editorAtom);
+  const isDarkMode = useAtomValue(darkModeAtom);
 
   const store = useTLStore();
   useGetConfig();
@@ -35,7 +37,10 @@ function App() {
   useLoadDocument(store);
 
   return (
-    <MantineProvider theme={theme} forceColorScheme={"dark"}>
+    <MantineProvider
+      theme={theme}
+      forceColorScheme={isDarkMode ? "dark" : "light"}
+    >
       <CustomTitleBar />
       <DropZone />
       <MonacoManager />
@@ -76,7 +81,9 @@ function App() {
           Grid: CustomGrid,
         }}
         tools={[QueryTool, AiPromptTool]}
-      />
+      >
+        <DarkModeSync />
+      </Tldraw>
       <CommandPalette />
     </MantineProvider>
   );
