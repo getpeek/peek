@@ -6,6 +6,7 @@ import {
   ShapeUtil,
   stopEventPropagation,
   TLBaseShape,
+  TLShape,
   useEditor,
 } from "tldraw";
 import "./Chat.css";
@@ -14,6 +15,8 @@ import { Chat } from "./Chat";
 import { useEffect, useState } from "react";
 import { Message } from "../Ai/useExecutePrompt";
 import { sha1 } from "object-hash";
+import { ResultShape } from "../Result/ResultShape";
+import { toCsv } from "../../tools/export/csv";
 
 export type ChatShape = TLBaseShape<
   "chat",
@@ -137,6 +140,37 @@ Only call a tool **once per request**, unless the user specifies otherwise.`,
 
   override onResize(shape: ChatShape, info: any) {
     return resizeBox(shape, info);
+  }
+
+  override onDropShapesOver(
+    target: ChatShape,
+    draggingShapes: TLShape[],
+  ): void {
+    const messages: Message[] = [];
+    for (const shape of draggingShapes) {
+      if (shape.type !== "result") {
+        continue;
+      }
+
+      const { query, data } = (shape as ResultShape).props;
+
+      const csv = toCsv(data);
+
+      messages.push({
+        type: "context",
+        message: `The user ran an additional query ${query} which resulted in this data:
+${csv}`,
+        timestamp: Date.now(),
+      });
+    }
+
+    this.editor.updateShape<ChatShape>({
+      ...target,
+      props: {
+        ...target.props,
+        messages: target.props.messages.concat(messages),
+      },
+    });
   }
 
   override onDoubleClick() {}
