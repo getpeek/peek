@@ -4,7 +4,6 @@ import {
   Rectangle2d,
   resizeBox,
   ShapeUtil,
-  stopEventPropagation,
   TLBaseShape,
   TLShape,
   useEditor,
@@ -58,7 +57,12 @@ export class ChatShapeUtil extends ShapeUtil<ChatShape> {
     return (
       <HTMLContainer
         id={shape.id}
-        onPointerDown={isEditing ? stopEventPropagation : undefined}
+        onPointerDown={(event) => {
+          if (isEditing) {
+            editor.markEventAsHandled(event);
+            event.stopPropagation();
+          }
+        }}
       >
         <div
           style={{
