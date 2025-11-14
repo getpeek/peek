@@ -1,18 +1,8 @@
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 #[tauri::command]
 pub fn get_config() -> Result<String, String> {
-    let Ok(home_dir) = std::env::var("HOME") else {
-        return Ok(json!(PeekConfig::default()).to_string());
-    };
-
-    let Ok(config_file) = std::fs::read_to_string(format!("{home_dir}/.config/peek/config.toml"))
-    else {
-        return Ok(json!(PeekConfig::default()).to_string());
-    };
-    let config: PeekConfig =
-        toml::from_str(&config_file).map_err(|e| format!("Can't parse config file {e:?}"))?;
+    let config = PeekConfig::get_or_default();
 
     serde_json::to_string(&config).map_err(|_| "Can't serialize config".to_string())
 }
@@ -35,6 +25,21 @@ impl Default for AIConfig {
             model: "qwen3:8b".to_string(),
             url: "http://localhost:11434".to_string(),
         }
+    }
+}
+
+impl PeekConfig {
+    pub fn get_or_default() -> Self {
+        let Ok(home_dir) = std::env::var("HOME") else {
+            return PeekConfig::default();
+        };
+
+        let Ok(config_file) =
+            std::fs::read_to_string(format!("{home_dir}/.config/peek/config.toml"))
+        else {
+            return PeekConfig::default();
+        };
+        toml::from_str(&config_file).unwrap_or(PeekConfig::default())
     }
 }
 

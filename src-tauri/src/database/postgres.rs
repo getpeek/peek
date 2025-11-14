@@ -226,14 +226,14 @@ impl Database for PostgresDatabase {
             .iter()
             .map(|(name, kind)| {
                 let col_type = match kind {
-                    ImportType::UUID(_) => "uuid",
+                    ImportType::Uuid(_) => "uuid",
                     ImportType::Date(_) => "date",
                     ImportType::DateTime(_) => "datetime",
                     ImportType::Null | ImportType::Text(_) => "text",
                     ImportType::Number(_) => "int",
                     ImportType::Float(_) => "numeric",
                     ImportType::Boolean(_) => "boolean",
-                    ImportType::JSON(_) => "json",
+                    ImportType::Json(_) => "json",
                 };
                 format!("{name} {col_type}")
             })
@@ -247,7 +247,7 @@ impl Database for PostgresDatabase {
                 let formatted_values = row
                     .iter()
                     .map(|(_, value)| match value {
-                        ImportType::UUID(uuid) => format!("'{uuid}'"),
+                        ImportType::Uuid(uuid) => format!("'{uuid}'"),
                         ImportType::Date(date) => format!("'{date}'"),
                         ImportType::DateTime(date) => format!("'{date}'"),
                         ImportType::Text(text) => format!("'{text}'"),
@@ -255,7 +255,7 @@ impl Database for PostgresDatabase {
                         ImportType::Float(float) => format!("{float}",),
                         ImportType::Boolean(boolean) => format!("{boolean}"),
                         ImportType::Null => "NULL".to_string(),
-                        ImportType::JSON(json) => format!("'{json}'"),
+                        ImportType::Json(json) => format!("'{json}'"),
                     })
                     .collect::<Vec<String>>()
                     .join(",");

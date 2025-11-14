@@ -9,7 +9,8 @@ pub struct FileImporter;
 
 #[derive(Debug)]
 pub enum ImportType {
-    UUID(uuid::Uuid),
+    #[allow(unused)]
+    Uuid(uuid::Uuid),
     Date(chrono::NaiveDate),
     DateTime(chrono::NaiveDateTime),
     Text(String),
@@ -17,7 +18,7 @@ pub enum ImportType {
     Float(f64),
     Boolean(bool),
     Null,
-    JSON(Value),
+    Json(Value),
 }
 
 #[derive(Debug)]
@@ -29,6 +30,7 @@ pub struct ImportedData {
 #[derive(Debug)]
 pub enum ImportError {
     FileNotFound,
+    #[allow(unused)]
     UnknownFormat,
     BadData,
 }
