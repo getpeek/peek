@@ -32,7 +32,7 @@ export const Query = ({
   const runQuery = () => {
     const currentEditingShape = tldrawEditor.getOnlySelectedShape();
 
-    if (!currentEditingShape) {
+    if (!currentEditingShape || currentEditingShape.type !== "query") {
       return;
     }
 
