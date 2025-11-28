@@ -19,16 +19,11 @@ export const useCreateChart = (shape: TLShape) => {
     const fields = [];
 
     for (const row of props.data) {
-      let has_label = false;
-
       const chart_data: Record<string, string | number> = {};
 
       for (const [key, value] of row) {
-        if (typeof value === "number") {
+        if (typeof value === "number" || typeof value === "string") {
           chart_data[key] = value;
-        } else if (typeof value === "string" && !has_label) {
-          chart_data[key] = value;
-          has_label = true;
         }
       }
 

@@ -1,23 +1,37 @@
 import { useAtomValue } from "jotai";
 import { useEffect, useRef } from "react";
-import { loadSnapshot, TLStore } from "tldraw";
-import { snapshotForUrlAtom, activeConnectionAtom } from "../Connection/state";
+import { getSnapshot, loadSnapshot, TLEditorSnapshot, TLStore } from "tldraw";
+import { activeConnectionAtom } from "../Connection/state";
+import { invoke } from "@tauri-apps/api/core";
 
 export const useLoadDocument = (store: TLStore | undefined) => {
   const isInitialLoadRef = useRef(true);
   const activeConnection = useAtomValue(activeConnectionAtom);
-  const initialSnapshot = useAtomValue(
-    snapshotForUrlAtom(activeConnection?.connection.url ?? "default"),
-  );
 
   useEffect(() => {
-    if (!store) {
+    if (!store || !activeConnection) {
       return;
     }
 
+    invoke("load", {
+      workspace: activeConnection.workspaceName,
+      connectionName: activeConnection.connection.name,
+    }).then((result) => {
+      snapshot = JSON.parse(result as string);
+    });
+
+    let snapshot: TLEditorSnapshot = getSnapshot(store);
+
     try {
-      loadSnapshot(store, initialSnapshot);
-      isInitialLoadRef.current = false;
+      invoke("load", {
+        workspace: activeConnection.workspaceName,
+        connectionName: activeConnection.connection.name,
+      }).then((result) => {
+        console.log(result);
+        snapshot = JSON.parse(result as string);
+        loadSnapshot(store, snapshot);
+        isInitialLoadRef.current = false;
+      });
     } catch {}
-  }, [store, initialSnapshot, activeConnection?.connection.url]);
+  }, [store, activeConnection?.connection.url]);
 };
