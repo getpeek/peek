@@ -1,7 +1,8 @@
 pub mod config;
 mod database;
 mod database_commands;
-pub mod import;
+mod import;
+mod storage_commands;
 
 use database::{mysql::MysqlDatabase, postgres::PostgresDatabase, Database};
 use sqlx::Connection;
@@ -49,6 +50,8 @@ pub fn run() {
             database_commands::get_results,
             database_commands::get_schema,
             database_commands::import_file,
+            storage_commands::load,
+            storage_commands::save,
             config::get_config,
             set_connection
         ])

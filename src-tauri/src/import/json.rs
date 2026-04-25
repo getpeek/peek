@@ -40,7 +40,7 @@ impl super::FileImporter {
                         ));
                     } else if matches!(value, Value::Object(_)) || matches!(value, Value::Array(_))
                     {
-                        current.push((key.to_string(), ImportType::JSON(value.clone())));
+                        current.push((key.to_string(), ImportType::Json(value.clone())));
                     } else if matches!(value, Value::Number(_)) {
                         current.push((
                             key.to_string(),

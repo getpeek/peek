@@ -2,6 +2,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { activeConnectionAtom, snapshotsAtom } from "../Connection/state";
 import { useEffect, useRef } from "react";
 import { getSnapshot, TLStore } from "tldraw";
+import { invoke } from "@tauri-apps/api/core";
 
 export const useAutoSaveDocument = (store: TLStore | undefined) => {
   const activeConnection = useAtomValue(activeConnectionAtom);
@@ -13,12 +14,14 @@ export const useAutoSaveDocument = (store: TLStore | undefined) => {
       return;
     }
 
-    const saveSnapshot = () => {
-      setSnapshots((previous) => ({
-        ...previous,
-        [activeConnection.connection.url]: getSnapshot(store),
-      }));
-      console.log("Saved changes at", new Date().toISOString());
+    const saveSnapshot = async () => {
+      const result = await invoke("save", {
+        workspace: activeConnection.workspaceName,
+        connectionName: activeConnection.connection.name,
+        contents: JSON.stringify(getSnapshot(store), null, 2),
+      });
+
+      console.log("Saved changes at", new Date().toISOString(), result);
     };
 
     const cleanup = store.listen(
