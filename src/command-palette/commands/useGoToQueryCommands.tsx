@@ -1,39 +1,31 @@
-import { useAtomValue } from "jotai";
-import { editorAtom } from "../../state";
 import { IconSql } from "@tabler/icons-react";
-import { QueryShape } from "../../shapes/Query/QueryShape";
 import { Text } from "@mantine/core";
-import { useValue } from "tldraw";
+import { useAtomValue } from "jotai";
+import { canvasApiAtom, nodesAtom } from "../../canvas/state";
 import { CommandPaletteResult } from ".";
+import type { QueryNode } from "../../canvas/types";
 
 export const useGoToQueryCommands = (): CommandPaletteResult[] => {
-  const editor = useAtomValue(editorAtom);
-  const shapes = useValue(
-    "current page shapes for search",
-    () => editor?.getCurrentPageShapes(),
-    [editor?.getCurrentPageShapes()],
-  );
+  const nodes = useAtomValue(nodesAtom);
+  const canvas = useAtomValue(canvasApiAtom);
 
-  if (!editor) {
-    return [];
-  }
-
-  return (shapes ?? [])
-    .filter((shape) => shape.type === "query")
-    .map((shape) => ({
+  return nodes
+    .filter((n): n is QueryNode => n.type === "query")
+    .map((node) => ({
       icon: <IconSql />,
       label: (
         <Text size="xs">
-          {(shape as QueryShape).props.query
+          {node.data.query
             .replace(/\s/g, " ")
             .substring(0, 60)
             .toString()}
         </Text>
       ),
-      searchAgainst: (shape as QueryShape).props.query.toLowerCase(),
+      searchAgainst: node.data.query.toLowerCase(),
       onSelect: () => {
-        editor.select(shape);
-        editor.zoomToSelection({ animation: { duration: 200 } });
+        if (!canvas) return;
+        canvas.selectOnly(node.id);
+        canvas.zoomToNode(node.id, { duration: 200 });
       },
     }));
 };

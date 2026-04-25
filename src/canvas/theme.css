@@ -1,0 +1,66 @@
+:root {
+    --pk-font-sans:
+        "Monaspace Krypton", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    --pk-font-mono:
+        "Monaspace Krypton", "SF Mono", Monaco, Inconsolata, "Roboto Mono",
+        monospace;
+}
+
+html,
+body {
+    background: #000;
+    color: #e8e5f0;
+    font-family: var(--pk-font-sans);
+    margin: 0;
+    padding: 0;
+    font-family:
+        "Monaspace Krypton",
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+#root {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+}
+
+/* Mantine dark surface overrides so popovers/menus look on-brand */
+[data-mantine-color-scheme="dark"] {
+    --mantine-color-body: #0e0d12;
+    --mantine-color-default: #16141c;
+    --mantine-color-default-hover: #1c1a24;
+    --mantine-color-default-border: #2a2733;
+    --mantine-color-default-color: #e8e5f0;
+    --mantine-color-text: #e8e5f0;
+    --mantine-color-dimmed: #9c97ab;
+    --mantine-color-placeholder: #5e5a6b;
+}
+
+/* Legacy variable aliases — kept so any unported style references resolve
+   to Plock dark theme tokens. */
+:root {
+    --text-color: #e8e5f0;
+    --text-color-subtle: #9c97ab;
+    --remove-color: #e24a35;
+    --border-base: #2a2733;
+    --cell-base: #16141c;
+    --header-base: #1c1a24;
+    --ui-glass-background: #16141c;
+    --inbound-key: rgba(246, 201, 68, 0.16);
+    --inbound-key-hover: rgba(246, 201, 68, 0.32);
+    --outbound-key: rgba(107, 138, 253, 0.16);
+    --outbound-key-hover: rgba(107, 138, 253, 0.32);
+    --user-label: #9c97ab;
+    --assistant-label: #9354e0;
+    --context-message: #4da660;
+    --context-message-subtle: #5e5a6b;
+    --system-message: #6b8afd;
+    --system-message-subtle: #5e5a6b;
+    --selected-tool-color: #9354e0;
+    --tool-color: #9c97ab;
+}

@@ -16,17 +16,18 @@ pub trait Database: Send + Sync {
     async fn get_results(&mut self, query: &str) -> Result<Vec<Value>, String>;
 
     /// Execute an sql statement and return whatever the statement returns
-    #[allow(unused)]
     async fn execute(&mut self, query: &str) -> Result<String, String>;
 
     /// Get the database schema information
-    /// Returns a list of all tables and their columns as well as a list of all references
-    /// from each column to each table.column as map, where the key is the column.
+    /// Returns a list of all tables and their columns, a list of all references
+    /// from each column to each table.column as map (keyed by column), and a map
+    /// of primary key columns per table (in ordinal order).
     async fn get_schema(
         &mut self,
     ) -> Result<
         (
             HashMap<String, Vec<(String, String)>>,
+            HashMap<String, Vec<String>>,
             HashMap<String, Vec<String>>,
         ),
         String,

@@ -1,88 +1,30 @@
 import { IconPlayerPlay } from "@tabler/icons-react";
-import { CommandPaletteResult } from "./";
 import { Text } from "@mantine/core";
-import { createShapeId, Editor } from "tldraw";
-import { invoke } from "@tauri-apps/api/core";
-import { createArrowBetweenShapes } from "../../tools/createArrowBetweenShapes";
+import { useAtomValue } from "jotai";
+import { canvasApiAtom } from "../../canvas/state";
+import { executeQueries } from "../../canvas/executeQueries";
+import type { CommandPaletteResult } from ".";
+import type { QueryNode } from "../../canvas/types";
 
-export const rerunAllQueriesOnPage: CommandPaletteResult = {
-  searchAgainst: "rerun all queries on page",
-  label: <Text size="xs">Rerun all queries on page</Text>,
-  icon: <IconPlayerPlay size={16} />,
-  onSelect: async (editor: Editor) => {
-    const allShapes = editor.getCurrentPageShapes();
-    const queryShapes = allShapes.filter((shape) => shape.type === "query");
+export const useRerunAllQueriesOnPageCommand = (): CommandPaletteResult => {
+  const canvas = useAtomValue(canvasApiAtom);
 
-    const results: { shapeId: string; success: boolean; error?: any }[] = [];
-
-    for (const shape of queryShapes) {
-      if (!("query" in shape.props) || typeof shape.props.query !== "string") {
-        continue;
-      }
-
-      const query = shape.props.query.trim();
-      if (!query) {
-        continue;
-      }
-
-      try {
-        const response = (await invoke("get_results", { query })) as string;
-
-        const result = JSON.parse(response) as [string, unknown][][];
-
-        const resultShapeId = createShapeId(shape.id + "-result-0");
-        const existingShape = editor.getShape(resultShapeId);
-
-        if (existingShape) {
-          editor.updateShape({
-            id: resultShapeId,
-            type: "result",
-            props: {
-              data: result,
-              query,
-            },
-          });
-        } else {
-          const columnCount = result[0]?.length ?? 0;
-          editor.createShape({
-            id: resultShapeId,
-            type: "result",
-            x: shape.x + 300,
-            y: shape.y,
-            props: {
-              data: result,
-              query,
-              w: Math.max(columnCount * 250, 200),
-              h: Math.min(result.length * 45 + 40, 1500),
-            },
-          });
-
-          createArrowBetweenShapes(editor, shape.id, resultShapeId);
+  return {
+    searchAgainst: "rerun all queries on page",
+    label: <Text size="xs">Rerun all queries on page</Text>,
+    icon: <IconPlayerPlay size={16} />,
+    onSelect: async () => {
+      if (!canvas) return;
+      const queries = canvas
+        .getNodes()
+        .filter((n): n is QueryNode => n.type === "query");
+      for (const node of queries) {
+        const q = node.data.query.trim();
+        if (q) {
+          await executeQueries(canvas, node, [q]);
+          await new Promise((r) => setTimeout(r, 20));
         }
-
-        results.push({ shapeId: shape.id, success: true });
-      } catch (error) {
-        const errorShapeId = createShapeId(shape.id + "-error");
-        const existingError = editor.getShape(errorShapeId);
-
-        if (!existingError) {
-          editor.createShape({
-            id: errorShapeId,
-            type: "query-error",
-            x: shape.x,
-            y: shape.y - 130,
-            props: {
-              message: String(error),
-            },
-          });
-        }
-
-        results.push({ shapeId: shape.id, success: false, error });
       }
-
-      await new Promise((resolve) => setTimeout(resolve, 20));
-    }
-
-    return results;
-  },
+    },
+  };
 };

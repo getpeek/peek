@@ -16,6 +16,7 @@ export const SqlEditor = ({
 }) => {
   const isDarkMode = useAtomValue(darkModeAtom);
   const ref = useRef<Monaco | null>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const theme = isDarkMode ? "rose-pine" : "rose-pine-dawn";
 
   useEffect(() => {
@@ -24,6 +25,14 @@ export const SqlEditor = ({
     }
     ref.current.editor.setTheme(theme);
   }, [isDarkMode, ref.current]);
+
+  useEffect(() => {
+    const ed = editorRef.current;
+    if (!ed) return;
+    if (ed.getValue() !== query) {
+      ed.setValue(query);
+    }
+  }, [query]);
 
   return (
     <div style={{ height: "100%", width: "100%", position: "relative" }}>
@@ -35,6 +44,7 @@ export const SqlEditor = ({
           theme="rose-pine"
           onMount={(editor, monaco) => {
             ref.current = monaco;
+            editorRef.current = editor;
             monaco.editor.setTheme(theme);
             onMount?.(editor, monaco);
           }}

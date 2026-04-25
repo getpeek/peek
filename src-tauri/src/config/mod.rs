@@ -22,7 +22,7 @@ pub struct AIConfig {
 impl Default for AIConfig {
     fn default() -> Self {
         Self {
-            model: "qwen3:8b".to_string(),
+            model: "gemma4:e2b".to_string(),
             url: "http://localhost:11434".to_string(),
         }
     }

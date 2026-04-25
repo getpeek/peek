@@ -1,40 +1,54 @@
 .workspace-picker {
-    width: 800px;
+  width: 800px;
 }
 
 .workspace {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .connection {
-    cursor: pointer;
-    border-radius: 999px;
-    padding: 8px 16px;
-    width: 100%;
-    flex-wrap: nowrap;
-    align-items: center;
-    margin-bottom: 8px;
-    transition: background 0.1s ease-out;
-    &[data-is-active="true"],
-    &:hover {
-        background: hsla(40deg, 50%, 55%, 0.4);
-    }
-    .dark &[data-is-active="true"],
-    .dark &:hover {
-        background: hsla(0, 0%, 95%, 0.1);
-    }
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 8px 12px;
+  width: 100%;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin-bottom: 4px;
+  transition: background 0.12s ease-out;
+  color: var(--pk-fg);
 }
 
-.color {
-    width: 16px;
-    height: 16px;
-    border-radius: 999px;
+.connection:hover,
+.connection[data-is-active="true"] {
+  background: var(--pk-node-bg-2);
+}
+
+.connection[data-is-active="true"] {
+  outline: 1px solid var(--pk-accent-line);
+}
+
+.connection .color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.connection-name {
+  color: var(--pk-fg);
+}
+
+.connection-url {
+  color: var(--pk-fg-muted);
+  font-family: var(--pk-font-mono);
 }
 
 .add-workspace-input {
-    color: var(--text-color);
-    background: hsla(0deg, 0%, 10%, 0.1);
-    border: 1px solid hsla(0deg, 0%, 100%, 0.1);
-    border-radius: 9999px;
-    padding: 8px 16px;
+  color: var(--pk-fg);
+  background: var(--pk-node-bg-2);
+  border: 1px solid var(--pk-node-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: 400 12px var(--pk-font-sans);
+  outline: none;
 }

@@ -3,14 +3,13 @@ import "./CommandPalette.css";
 import { useSearch } from "./useSearch";
 import { Group, Stack } from "@mantine/core";
 import { getHotkeyHandler, useClickOutside, useHotkeys } from "@mantine/hooks";
-import { useAtomValue } from "jotai";
-import { editorAtom } from "../state";
+import { useAtom } from "jotai";
+import { commandPaletteOpenAtom } from "../state";
 
 export const CommandPalette = () => {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useAtom(commandPaletteOpenAtom);
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
-  const editor = useAtomValue(editorAtom);
   const results = useSearch(query);
   const hideSearch = () => {
     setShow(false);
@@ -27,7 +26,7 @@ export const CommandPalette = () => {
     );
   };
 
-  if (!show || !editor) {
+  if (!show) {
     return null;
   }
 
@@ -47,7 +46,7 @@ export const CommandPalette = () => {
           [
             "Enter",
             () => {
-              results[cursor]?.onSelect(editor);
+              results[cursor]?.onSelect();
               hideSearch();
             },
           ],
@@ -68,7 +67,10 @@ export const CommandPalette = () => {
               <div
                 className={`result ${i === cursor ? "active" : ""}`}
                 key={i}
-                onClick={() => result.onSelect(editor)}
+                onClick={() => {
+                  result.onSelect();
+                  hideSearch();
+                }}
                 style={{ animationDelay: `${i * 0.05}s` }}
               >
                 <Group gap="sm" align="center">

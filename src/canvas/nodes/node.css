@@ -1,0 +1,593 @@
+/* ============================================================
+   Plock dark theme tokens (Theme A from prototype)
+   ============================================================ */
+:root,
+.react-flow,
+.react-flow.dark {
+  --pk-bg: #0e0d12;
+  --pk-bg-grid: #1a1822;
+  --pk-node-bg: #16141c;
+  --pk-node-bg-2: #1c1a24;
+  --pk-node-border: #2a2733;
+  --pk-node-border-strong: #3a3645;
+  --pk-node-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+
+  --pk-fg: #e8e5f0;
+  --pk-fg-muted: #9c97ab;
+  --pk-fg-subtle: #5e5a6b;
+
+  --pk-accent: #9354e0;
+  --pk-accent-soft: #dbcaf9;
+  --pk-accent-bg: rgba(147, 84, 224, 0.14);
+  --pk-accent-line: rgba(147, 84, 224, 0.5);
+
+  --pk-green: #4da660;
+  --pk-green-soft: rgba(77, 166, 96, 0.18);
+  --pk-yellow: #f6c944;
+  --pk-yellow-soft: rgba(246, 201, 68, 0.16);
+  --pk-blue: #6b8afd;
+  --pk-blue-soft: rgba(107, 138, 253, 0.16);
+  --pk-red: #e24a35;
+  --pk-red-soft: rgba(226, 74, 53, 0.16);
+
+  --pk-type-query: #9354e0;
+  --pk-type-ai: #6b8afd;
+  --pk-type-result: #4da660;
+  --pk-type-chart: #f6c944;
+  --pk-type-chat: #dbcaf9;
+  --pk-type-error: #e24a35;
+
+  --pk-radius-node: 10px;
+  --pk-radius-card: 10px;
+  --pk-radius-pill: 999px;
+
+  --pk-font-sans:
+    "Monaspace Krypton", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --pk-font-mono:
+    "Monaspace Krypton", "SF Mono", ui-monospace, Menlo, monospace;
+}
+
+/* ============================================================
+   xyflow overrides
+   ============================================================ */
+.react-flow {
+  background:
+    linear-gradient(rgba(147, 84, 224, 0.14), rgba(147, 84, 224, 0.14))
+      var(--pk-bg);
+  color: var(--pk-fg);
+  font-family: var(--pk-font-sans);
+  --xy-background-color-default: transparent;
+  --xy-background-pattern-color-default: var(--pk-bg-grid);
+  --xy-edge-stroke-default: var(--pk-node-border-strong);
+  --xy-edge-stroke-selected-default: var(--pk-accent);
+  --xy-controls-bg-default: var(--pk-node-bg);
+  --xy-controls-bg-hover-default: var(--pk-node-bg-2);
+  --xy-controls-color-default: var(--pk-fg-muted);
+  --xy-controls-border-default: var(--pk-node-border);
+  --xy-selection-background-color-default: var(--pk-accent-bg);
+  --xy-selection-border-default: 1px dashed var(--pk-accent);
+  --xy-attribution-background-color-default: transparent;
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.react-flow__edge-path {
+  stroke: var(--pk-node-border-strong);
+  stroke-width: 1.25;
+  fill: none;
+}
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:focus .react-flow__edge-path {
+  stroke: var(--pk-accent);
+}
+
+/* xyflow's node wrapper: transparent so .app-node owns the visible card */
+.react-flow__node {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ============================================================
+   Node base
+   ============================================================ */
+.app-node {
+  background: var(--pk-node-bg) !important;
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-node);
+  box-shadow: var(--pk-node-shadow);
+  transition:
+    border-color 0.12s ease-out,
+    box-shadow 0.12s ease-out;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: var(--pk-fg);
+  font-family: var(--pk-font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.app-node.selected {
+  border-color: var(--pk-accent);
+  box-shadow:
+    0 0 0 1px var(--pk-accent),
+    0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+/* ============================================================
+   Node header (type dot + label + name + pin/close)
+   ============================================================ */
+.app-node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 12px;
+  border-bottom: 1px solid var(--pk-node-border);
+  background: var(--pk-node-bg);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--pk-fg);
+  user-select: none;
+  cursor: grab;
+  flex-shrink: 0;
+  min-height: 36px;
+}
+
+.app-node-header .type-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pk-accent);
+  flex-shrink: 0;
+}
+
+.app-node-header.type-query .type-dot {
+  background: var(--pk-type-query);
+}
+.app-node-header.type-result .type-dot {
+  background: var(--pk-type-result);
+}
+.app-node-header.type-ai-prompt .type-dot {
+  background: var(--pk-type-ai);
+}
+.app-node-header.type-chat .type-dot {
+  background: var(--pk-type-chat);
+}
+.app-node-header.type-barchart .type-dot {
+  background: var(--pk-type-chart);
+}
+.app-node-header.type-query-error .type-dot {
+  background: var(--pk-type-error);
+}
+
+.app-node-header .type-label {
+  font: 500 12px var(--pk-font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pk-fg);
+}
+
+.app-node-header .node-name {
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  letter-spacing: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.header-icon-btn {
+  background: transparent;
+  border: 0;
+  color: var(--pk-fg-subtle);
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.1s;
+}
+
+.header-icon-btn:hover {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+/* Body */
+.app-node-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--pk-node-bg);
+  position: relative;
+}
+
+/* Footer (inline action area) */
+.app-node-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--pk-node-border);
+  background: var(--pk-node-bg);
+  flex-shrink: 0;
+}
+
+.app-node-footer .meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-fg-muted);
+}
+
+.app-node-footer .ok {
+  color: var(--pk-green);
+}
+
+/* Sub-toolbar (inside body, at top) */
+.app-node-subtoolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--pk-node-border);
+  background: var(--pk-node-bg);
+  font: 400 11.5px var(--pk-font-mono);
+  color: var(--pk-fg-muted);
+  flex-shrink: 0;
+}
+
+.app-node-subtoolbar .meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-node-subtoolbar .meta .ok {
+  color: var(--pk-green);
+}
+.app-node-subtoolbar .actions {
+  display: flex;
+  gap: 2px;
+}
+.app-node-subtoolbar .icon-btn {
+  background: transparent;
+  border: 0;
+  color: var(--pk-fg-subtle);
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.app-node-subtoolbar .icon-btn:hover {
+  color: var(--pk-accent);
+  background: var(--pk-node-bg-2);
+}
+
+/* Buttons */
+.btn {
+  border: 1px solid var(--pk-node-border);
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font: 500 12px var(--pk-font-sans);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--pk-node-border);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--pk-fg-muted);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+.btn .kbd {
+  font: 500 10px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  background: transparent;
+  border: 1px solid var(--pk-node-border);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Inputs inside nodes */
+.app-node textarea,
+.app-node input[type="text"] {
+  font-family: var(--pk-font-sans);
+  font-size: 13px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--pk-fg);
+  width: 100%;
+  resize: none;
+  line-height: 1.55;
+}
+.app-node textarea::placeholder,
+.app-node input[type="text"]::placeholder {
+  color: var(--pk-fg-subtle);
+}
+
+/* Param chips */
+.param-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--pk-accent-bg);
+  border: 1px solid var(--pk-accent-line);
+  color: var(--pk-accent-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font: 500 10.5px var(--pk-font-mono);
+}
+
+/* Hidden xyflow handles */
+.handle-hidden {
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+
+/* ============================================================
+   Result table
+   ============================================================ */
+.app-node table {
+  font-family: var(--pk-font-mono);
+  font-size: 12px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.app-node table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--pk-node-bg) !important;
+  color: var(--pk-fg-muted) !important;
+  font-weight: 500;
+  font-size: 11px !important;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--pk-node-border) !important;
+  padding: 9px 14px !important;
+  text-align: left;
+  white-space: nowrap;
+  user-select: none;
+  z-index: 1;
+}
+
+.app-node table tbody td {
+  padding: 7px 14px !important;
+  color: var(--pk-fg);
+  border-bottom: 1px solid var(--pk-node-border) !important;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  vertical-align: top;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+.col-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  z-index: 2;
+}
+.col-resize-handle:hover,
+.col-resize-handle:active {
+  background: var(--pk-node-border);
+}
+
+.app-node table tbody tr:hover td {
+  background: var(--pk-node-bg-2);
+}
+
+.app-node table thead th.pk .col-name {
+  color: var(--pk-yellow);
+}
+.app-node table thead th.fk .col-name {
+  color: var(--pk-blue);
+}
+
+.app-node table tbody td.pk,
+.app-node table tbody td.pk .mantine-Text-root {
+  color: var(--pk-yellow) !important;
+}
+.app-node table tbody td.fk,
+.app-node table tbody td.fk .mantine-Text-root {
+  color: var(--pk-blue) !important;
+}
+
+.app-node table tbody td.pk:hover,
+.app-node table tbody td.fk:hover {
+  background: var(--pk-accent-bg);
+  cursor: pointer;
+}
+
+/* Column type tags (PK / FK / TEXT / UUID) */
+.col-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.col-meta .col-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pk-fg);
+  font: 500 11px var(--pk-font-mono);
+}
+.col-meta .col-type {
+  font: 400 9.5px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.col-tag {
+  font: 500 9px var(--pk-font-mono);
+  padding: 1px 4px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+}
+.col-tag.pk {
+  color: var(--pk-yellow);
+  background: var(--pk-yellow-soft);
+}
+.col-tag.fk {
+  color: var(--pk-blue);
+  background: var(--pk-blue-soft);
+}
+
+/* ============================================================
+   AI prompt body
+   ============================================================ */
+.ai-prompt-body {
+  flex: 1;
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.ai-prompt-body textarea {
+  flex: 1;
+  font: 400 13px/1.55 var(--pk-font-sans);
+  color: var(--pk-fg);
+  letter-spacing: -0.005em;
+}
+
+.ai-status {
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ============================================================
+   Chart body
+   ============================================================ */
+.chart-body {
+  flex: 1;
+  padding: 14px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+}
+.chart-body .chart-title {
+  font: 500 14px var(--pk-font-sans);
+  color: var(--pk-fg);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.chart-body .chart-tag {
+  font: 400 10px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  text-transform: uppercase;
+}
+.chart-body .chart-sub {
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-fg-muted);
+  margin-bottom: 8px;
+}
+
+/* ============================================================
+   Edge animation
+   ============================================================ */
+.react-flow__edge.flowing .react-flow__edge-path {
+  stroke: var(--pk-accent);
+  stroke-dasharray: 4 6;
+  animation: pk-flow 1.4s linear infinite;
+}
+@keyframes pk-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.running-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    var(--pk-accent-bg) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: pk-shimmer 1.4s infinite;
+  pointer-events: none;
+}
+@keyframes pk-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+/* Resize handles (xyflow NodeResizer) */
+.react-flow__resize-control.handle {
+  background: transparent;
+  border-color: transparent;
+  width: 8px;
+  height: 8px;
+}
+.react-flow__node.selected .react-flow__resize-control.handle {
+  background: var(--pk-accent);
+}

@@ -1,56 +1,62 @@
 .error-shape {
-    background: linear-gradient(
-        to bottom right,
-        hsla(0deg, 100%, 80%, 0.4) 0%,
-        hsla(20deg, 100%, 70%, 0.2) 100%
-    );
-    border: 1px solid hsla(20deg, 80%, 10%, 0.2);
-    .dark & {
-        background: linear-gradient(
-            to bottom right,
-            hsla(20deg, 80%, 20%, 0.3) 0%,
-            hsla(40deg, 80%, 10%, 0.1) 100%
-        );
-        border: 1px solid hsla(20deg, 80%, 80%, 0.1);
-    }
-    color: #fffaf3;
-    border-radius: 16px;
-    padding: 16px;
-    width: 100%;
-    height: 100%;
-    &.loading {
-        animation: pulseGlow 1.5s ease-in-out infinite;
-    }
+  background: var(--pk-red-soft);
+  border-top: 2px solid var(--pk-red);
+  color: var(--pk-fg);
+  padding: 16px;
+  width: 100%;
+  height: 100%;
+  font-family: var(--pk-font-sans);
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 
-@keyframes pulseGlow {
-    0%,
-    100% {
-        box-shadow:
-            0 0 0 3px rgba(139, 69, 195, 0.2),
-            0 0 20px rgba(139, 69, 195, 0.1),
-            0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    50% {
-        box-shadow:
-            0 0 8px 14px rgba(139, 69, 195, 0.3),
-            0 0 40px 30px rgba(139, 69, 195, 0.2),
-            0 6px 40px 20px rgba(0, 0, 0, 0.2);
-    }
+.error-shape.loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    var(--pk-red-soft) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: pk-shimmer 1.4s infinite;
+  pointer-events: none;
 }
 
 .suggest-fix-button {
-    padding: 8px;
-    border-radius: 8px;
-    border: none;
-    width: 120px;
-    align-self: flex-end;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--pk-node-border);
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+  font: 500 12px var(--pk-font-sans);
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background 0.12s;
+}
+.suggest-fix-button:hover:not(:disabled) {
+  background: var(--pk-accent);
+  color: #14111b;
+  border-color: var(--pk-accent);
+}
+.suggest-fix-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .query-suggestion {
-    padding: 8px;
-    margin: 16px;
-    background: hsla(0deg, 0%, 90%, 0.1);
-    border-radius: 8px;
-    overflow-x: hidden;
+  padding: 10px 12px;
+  background: var(--pk-node-bg-2);
+  border: 1px solid var(--pk-node-border);
+  border-radius: 6px;
+  overflow-x: auto;
+  font: 400 11.5px var(--pk-font-mono);
+  color: var(--pk-fg);
+}
+.query-suggestion pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-all;
 }

@@ -9,14 +9,29 @@ pub async fn get_schema(state: State<'_, Mutex<AppData>>) -> Result<String, Stri
         return Err("error getting connection".to_string());
     };
 
-    let (tables, references) = connection.get_schema().await?;
+    let (tables, references, primary_keys) = connection.get_schema().await?;
 
     let full_schema = serde_json::json!({
         "tables": tables,
         "references": references,
+        "primaryKeys": primary_keys,
     });
 
     serde_json::to_string(&full_schema).map_err(|_| "JSON serialization failed".to_string())
+}
+
+#[tauri::command]
+pub async fn execute_statement(
+    state: State<'_, Mutex<AppData>>,
+    query: String,
+) -> Result<String, String> {
+    let mut state = state.lock().await;
+
+    let Some(connection) = state.connection.as_mut() else {
+        return Err("error getting connection".to_string());
+    };
+
+    connection.execute(&query).await
 }
 
 #[tauri::command]

@@ -175,6 +175,7 @@ impl Database for MysqlDatabase {
         (
             HashMap<String, Vec<(String, String)>>,
             HashMap<String, Vec<String>>,
+            HashMap<String, Vec<String>>,
         ),
         String,
     > {
@@ -216,7 +217,30 @@ impl Database for MysqlDatabase {
                 .push(column_name.clone());
         }
 
-        Ok((schema_map, column_map))
+        let pk_rows = sqlx::query(
+            "SELECT tc.table_name, kcu.column_name, kcu.ordinal_position
+             FROM information_schema.table_constraints tc
+             JOIN information_schema.key_column_usage kcu
+                 ON tc.constraint_name = kcu.constraint_name
+                AND tc.table_schema   = kcu.table_schema
+                AND tc.table_name     = kcu.table_name
+             WHERE tc.constraint_type = 'PRIMARY KEY'
+               AND tc.table_schema    = ?
+             ORDER BY tc.table_name, kcu.ordinal_position",
+        )
+        .bind(db_name)
+        .fetch_all(&mut conn)
+        .await
+        .map_err(|_| "Could not get primary key info".to_string())?;
+
+        let mut pk_map: HashMap<String, Vec<String>> = HashMap::new();
+        for row in pk_rows {
+            let table_name: String = row.get(0);
+            let column_name: String = row.get(1);
+            pk_map.entry(table_name).or_default().push(column_name);
+        }
+
+        Ok((schema_map, column_map, pk_map))
     }
 
     async fn import_data(&mut self, _data: ImportedData) -> Result<(), String> {

@@ -1,9 +1,7 @@
 import { atom, WritableAtom } from "jotai";
 import { indexedDBService } from "./IndexedDBService";
-import { TLEditorSnapshot } from "tldraw";
 import { Connection } from "../Connection/types";
 
-// Helper to create an atom with IndexedDB persistence
 export function atomWithIndexedDB<T, V = any>(
   key: string,
   initialValue: T,
@@ -65,64 +63,6 @@ export function atomWithIndexedDB<T, V = any>(
         }
       } catch (error) {
         console.error(`Failed to load ${key} from IndexedDB:`, error);
-      }
-    };
-
-    loadData();
-  };
-
-  return derivedAtom;
-}
-
-// Special atom for snapshots that handles individual document operations
-export function atomWithIndexedDBSnapshots() {
-  const baseAtom = atom<Record<string, TLEditorSnapshot>>({});
-
-  const derivedAtom = atom(
-    (get) => get(baseAtom),
-    (
-      get,
-      set,
-      update:
-        | Record<string, TLEditorSnapshot>
-        | ((
-            prev: Record<string, TLEditorSnapshot>,
-          ) => Record<string, TLEditorSnapshot>),
-    ) => {
-      const prevValue = get(baseAtom);
-      const nextValue =
-        typeof update === "function" ? update(prevValue) : update;
-
-      set(baseAtom, nextValue);
-
-      // Find changed documents and save them individually
-      Object.keys(nextValue).forEach((url) => {
-        if (JSON.stringify(nextValue[url]) !== JSON.stringify(prevValue[url])) {
-          indexedDBService
-            .saveDocument(url, nextValue[url])
-            .catch(console.error);
-        }
-      });
-
-      // Delete removed documents
-      Object.keys(prevValue).forEach((url) => {
-        if (!(url in nextValue)) {
-          indexedDBService.deleteDocument(url).catch(console.error);
-        }
-      });
-    },
-  );
-
-  // Initialize from IndexedDB
-  derivedAtom.onMount = (setAtom) => {
-    const loadData = async () => {
-      try {
-        const snapshots = await indexedDBService.getAllDocuments();
-        if (snapshots && Object.keys(snapshots).length > 0) {
-          setAtom(snapshots);
-        }
-      } catch (error) {
-        console.error("Failed to load snapshots from IndexedDB:", error);
       }
     };
 

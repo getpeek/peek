@@ -1,11 +1,10 @@
 .popover {
-    width: 500px;
-    padding: 24px;
-    border-radius: 16px;
-    background-color: var(--ui-glass-color);
-    border: 1px solid hsla(20deg, 20%, 10%, 0.1);
-    .dark & {
-        border: 1px solid hsla(20deg, 20%, 90%, 0.1);
-    }
-    backdrop-filter: blur(30px);
+  width: 500px;
+  padding: 20px;
+  border-radius: var(--pk-radius-card, 10px);
+  background: var(--pk-node-bg, #16141c);
+  border: 1px solid var(--pk-node-border, #2a2733);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  color: var(--pk-fg, #e8e5f0);
+  font-family: var(--pk-font-sans, "Inter", sans-serif);
 }

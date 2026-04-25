@@ -1,25 +1,14 @@
-import { TLEditorSnapshot } from "tldraw";
 import { Connection } from "../Connection/types";
 
 const DB_NAME = "PeekDatabase";
 const DB_VERSION = 1;
 
-// Store names
 const WORKSPACES_STORE = "workspaces";
 const CONNECTIONS_STORE = "connections";
-const DOCUMENTS_STORE = "documents";
 const SETTINGS_STORE = "settings";
 
-export interface DocumentRecord {
-  id: string; // Composite key: `${workspaceName}:${connectionUrl}`
-  workspaceName: string;
-  connectionUrl: string;
-  document: TLEditorSnapshot;
-  updatedAt: number;
-}
-
 export interface ConnectionRecord {
-  id: string; // Same as connection URL
+  id: string;
   workspaceName: string;
   connection: Connection;
 }
@@ -53,7 +42,6 @@ class IndexedDBService {
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
 
-        // Create workspaces store
         if (!db.objectStoreNames.contains(WORKSPACES_STORE)) {
           db.createObjectStore(WORKSPACES_STORE, {
             keyPath: "id",
@@ -61,7 +49,6 @@ class IndexedDBService {
           });
         }
 
-        // Create connections store (for active connection)
         if (!db.objectStoreNames.contains(CONNECTIONS_STORE)) {
           const connectionsStore = db.createObjectStore(CONNECTIONS_STORE, {
             keyPath: "id",
@@ -71,23 +58,6 @@ class IndexedDBService {
           });
         }
 
-        // Create documents store with composite key
-        if (!db.objectStoreNames.contains(DOCUMENTS_STORE)) {
-          const documentsStore = db.createObjectStore(DOCUMENTS_STORE, {
-            keyPath: "id",
-          });
-          documentsStore.createIndex("workspaceName", "workspaceName", {
-            unique: false,
-          });
-          documentsStore.createIndex("connectionUrl", "connectionUrl", {
-            unique: false,
-          });
-          documentsStore.createIndex("updatedAt", "updatedAt", {
-            unique: false,
-          });
-        }
-
-        // Create settings store for misc settings
         if (!db.objectStoreNames.contains(SETTINGS_STORE)) {
           db.createObjectStore(SETTINGS_STORE, { keyPath: "key" });
         }
@@ -107,7 +77,6 @@ class IndexedDBService {
     return this.db;
   }
 
-  // Active connection operations
   async getActiveConnection(): Promise<
     { connection: Connection; workspaceName: string } | undefined
   > {
@@ -140,99 +109,6 @@ class IndexedDBService {
 
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
-    });
-  }
-
-  // Document (snapshot) operations
-  async getDocument(
-    connectionUrl: string,
-    workspaceName?: string,
-  ): Promise<TLEditorSnapshot | undefined> {
-    const db = await this.ensureDB();
-    const id = workspaceName
-      ? `${workspaceName}:${connectionUrl}`
-      : connectionUrl;
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([DOCUMENTS_STORE], "readonly");
-      const store = transaction.objectStore(DOCUMENTS_STORE);
-      const request = store.get(id);
-
-      request.onsuccess = () => {
-        const record = request.result as DocumentRecord | undefined;
-        resolve(record?.document);
-      };
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async saveDocument(
-    connectionUrl: string,
-    document: TLEditorSnapshot,
-    workspaceName?: string,
-  ): Promise<void> {
-    const db = await this.ensureDB();
-    const id = workspaceName
-      ? `${workspaceName}:${connectionUrl}`
-      : connectionUrl;
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([DOCUMENTS_STORE], "readwrite");
-      const store = transaction.objectStore(DOCUMENTS_STORE);
-
-      const record: DocumentRecord = {
-        id,
-        workspaceName: workspaceName || "",
-        connectionUrl,
-        document,
-        updatedAt: Date.now(),
-      };
-
-      const request = store.put(record);
-
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async getAllDocuments(): Promise<Record<string, TLEditorSnapshot>> {
-    const db = await this.ensureDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([DOCUMENTS_STORE], "readonly");
-      const store = transaction.objectStore(DOCUMENTS_STORE);
-      const request = store.getAll();
-
-      request.onsuccess = () => {
-        const records = request.result as DocumentRecord[];
-        const snapshots: Record<string, TLEditorSnapshot> = {};
-
-        records.forEach((record) => {
-          // Use the connection URL as the key for backward compatibility
-          snapshots[record.connectionUrl] = record.document;
-        });
-
-        resolve(snapshots);
-      };
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async deleteDocument(
-    connectionUrl: string,
-    workspaceName?: string,
-  ): Promise<void> {
-    const db = await this.ensureDB();
-    const id = workspaceName
-      ? `${workspaceName}:${connectionUrl}`
-      : connectionUrl;
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([DOCUMENTS_STORE], "readwrite");
-      const store = transaction.objectStore(DOCUMENTS_STORE);
-      const request = store.delete(id);
-
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
     });
   }
 }

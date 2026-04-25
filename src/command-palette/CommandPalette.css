@@ -68,13 +68,6 @@
     cursor: pointer;
     &.active,
     &:hover {
-        background: hsla(0deg, 0%, 0%, 0.05);
-    }
-
-    .dark & {
-        &.active,
-        &:hover {
-            background: hsla(0deg, 0%, 90%, 0.05);
-        }
+        background: hsla(0deg, 0%, 90%, 0.1);
     }
 }

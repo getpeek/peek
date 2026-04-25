@@ -1,0 +1,219 @@
+/* ============================================================
+   Bottom toolbar (place-mode + extras)
+   ============================================================ */
+.canvas-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-card);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+  font-family: var(--pk-font-sans);
+}
+
+.canvas-toolbar .toolbar-btn {
+  background: transparent;
+  border: 0;
+  color: var(--pk-fg-muted);
+  padding: 7px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: 500 12px var(--pk-font-sans);
+  transition:
+    color 0.12s,
+    background 0.12s;
+}
+
+.canvas-toolbar .toolbar-btn:hover {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+.canvas-toolbar .toolbar-btn.active {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+.canvas-toolbar .toolbar-btn .swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.canvas-toolbar .toolbar-btn .kbd {
+  font: 500 10px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  background: transparent;
+  padding: 1px 4px;
+  border: 1px solid var(--pk-node-border);
+  border-radius: 3px;
+}
+
+.canvas-toolbar .sep {
+  width: 1px;
+  height: 18px;
+  background: var(--pk-node-border);
+  margin: 0 2px;
+}
+
+/* ============================================================
+   Zoom indicator (bottom-left)
+   ============================================================ */
+.zoom-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-card);
+  padding: 3px;
+  font-variant-numeric: tabular-nums;
+  font: 500 12px var(--pk-font-mono);
+  color: var(--pk-fg-muted);
+  pointer-events: auto;
+  user-select: none;
+}
+
+.zoom-indicator button {
+  background: transparent;
+  border: 0;
+  color: var(--pk-fg-muted);
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.1s;
+}
+
+.zoom-indicator button:hover {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+.zoom-indicator .lvl {
+  min-width: 44px;
+  text-align: center;
+  color: var(--pk-fg);
+  cursor: pointer;
+}
+
+/* ============================================================
+   Page menu (top-left tabs)
+   ============================================================ */
+.page-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-card);
+  font-size: 12px;
+  pointer-events: auto;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  font-family: var(--pk-font-sans);
+}
+
+.page-tab {
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--pk-fg-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font: 500 12px var(--pk-font-sans);
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+
+.page-tab .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pk-fg-subtle);
+  flex-shrink: 0;
+}
+
+.page-tab.active .dot {
+  background: var(--pk-green);
+  box-shadow: 0 0 8px var(--pk-green);
+}
+
+.page-tab:hover {
+  color: var(--pk-fg);
+  background: var(--pk-node-bg-2);
+}
+
+.page-tab.active {
+  color: var(--pk-fg);
+  background: var(--pk-node-bg-2);
+}
+
+.page-tab .close {
+  margin-left: 4px;
+  color: var(--pk-fg-subtle);
+  font-size: 14px;
+  line-height: 1;
+  width: 14px;
+  text-align: center;
+}
+
+.page-tab:hover .close {
+  color: var(--pk-fg);
+}
+
+.page-tab.add-btn {
+  padding: 5px 8px;
+  color: var(--pk-fg-subtle);
+}
+.page-tab.add-btn .dot {
+  display: none;
+}
+
+.page-tab-input {
+  background: transparent;
+  border: 1px solid var(--pk-accent-line);
+  outline: none;
+  color: var(--pk-fg);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font: 500 12px var(--pk-font-sans);
+}
+
+/* ============================================================
+   Pane cursor when in place mode
+   ============================================================ */
+.react-flow.place-mode-active,
+.react-flow.place-mode-active .react-flow__pane,
+.react-flow.place-mode-active .react-flow__background {
+  cursor: crosshair;
+}
+
+/* ============================================================
+   Bottom-right hint (decorative)
+   ============================================================ */
+.canvas-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-card);
+  color: var(--pk-fg-muted);
+  font: 400 11px var(--pk-font-sans);
+  pointer-events: auto;
+}

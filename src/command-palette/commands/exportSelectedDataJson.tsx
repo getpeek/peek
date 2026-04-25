@@ -1,64 +1,63 @@
 import { Text } from "@mantine/core";
 import { IconTableExport } from "@tabler/icons-react";
-import { Editor } from "tldraw";
-import { CommandPaletteResult } from ".";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
-import { ResultShape } from "../../shapes/Result/ResultShape";
 import { join } from "@tauri-apps/api/path";
 import { ChatOllama } from "@langchain/ollama";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { useAtomValue } from "jotai";
 import { toJson } from "../../tools/export/json";
+import { canvasApiAtom } from "../../canvas/state";
+import type { CommandPaletteResult } from ".";
+import type { ResultNode } from "../../canvas/types";
 
-export const exportSelectedDataJson: CommandPaletteResult = {
-  searchAgainst: "Export selected data as JSON",
-  label: <Text size="xs">Export selected data (JSON)</Text>,
-  icon: <IconTableExport size={16} />,
-  onSelect: async (editor: Editor) => {
-    const shapes = editor
-      .getSelectedShapes()
-      .filter((shape) => shape.type === "result");
+export const useExportSelectedDataJsonCommand = (): CommandPaletteResult => {
+  const canvas = useAtomValue(canvasApiAtom);
 
-    if (shapes.length === 0) {
-      return;
-    }
+  return {
+    searchAgainst: "Export selected data as JSON",
+    label: <Text size="xs">Export selected data (JSON)</Text>,
+    icon: <IconTableExport size={16} />,
+    onSelect: async () => {
+      if (!canvas) return;
+      const nodes = canvas
+        .getSelectedNodes()
+        .filter((n): n is ResultNode => n.type === "result");
+      if (nodes.length === 0) return;
 
-    const model = new ChatOllama({
-      model: "qwen3:14b",
-      baseUrl: "http://localhost:11434",
-      streaming: false,
-      numThread: 32,
-      keepAlive: "10m",
-      think: false,
-    });
+      const model = new ChatOllama({
+        model: "qwen3:14b",
+        baseUrl: "http://localhost:11434",
+        streaming: false,
+        numThread: 32,
+        keepAlive: "10m",
+        think: false,
+      });
 
-    const path = await open({ directory: true, multiple: false });
-    if (!path) {
-      return;
-    }
-    for (const shape of shapes) {
-      const output = JSON.stringify(toJson((shape as ResultShape).props.data));
+      const path = await open({ directory: true, multiple: false });
+      if (!path) return;
 
-      model
-        .invoke([
-          new SystemMessage(
-            `/no_think Your job is to create short, descriptive file names
+      for (const node of nodes) {
+        const output = JSON.stringify(toJson(node.data.data));
+        model
+          .invoke([
+            new SystemMessage(
+              `/no_think Your job is to create short, descriptive file names
 for sql queries that have been exported to json. Focus on the semantics of the query and convey that.
 Use only English characters, numbers and underscores and append .json to the end of the filename`,
-          ),
-          new HumanMessage(
-            `The query is: ${(shape as ResultShape).props.query}`,
-          ),
-        ])
-        .then((response) =>
-          response.text.replace(/<think>[\s]+<\/think>/gi, "").trim(),
-        )
-        .then((filename) => join(path, filename))
-        .then((filepath) =>
-          writeTextFile(filepath, output, {
-            baseDir: BaseDirectory.AppConfig,
-          }),
-        );
-    }
-  },
+            ),
+            new HumanMessage(`The query is: ${node.data.query}`),
+          ])
+          .then((response) =>
+            response.text.replace(/<think>[\s]+<\/think>/gi, "").trim(),
+          )
+          .then((filename) => join(path, filename))
+          .then((filepath) =>
+            writeTextFile(filepath, output, {
+              baseDir: BaseDirectory.AppConfig,
+            }),
+          );
+      }
+    },
+  };
 };

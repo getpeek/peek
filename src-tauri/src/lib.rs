@@ -49,6 +49,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             database_commands::get_results,
             database_commands::get_schema,
+            database_commands::execute_statement,
             database_commands::import_file,
             storage_commands::load,
             storage_commands::save,

@@ -121,6 +121,7 @@ impl Database for PostgresDatabase {
         (
             HashMap<String, Vec<(String, String)>>,
             HashMap<String, Vec<String>>,
+            HashMap<String, Vec<String>>,
         ),
         String,
     > {
@@ -210,7 +211,33 @@ impl Database for PostgresDatabase {
                 .push(referencing_key);
         }
 
-        Ok((schema_map, fk_map))
+        let pk_rows = sqlx::query(
+            r#"
+                SELECT
+                    tc.table_name,
+                    kcu.column_name,
+                    kcu.ordinal_position
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                    ON tc.constraint_name = kcu.constraint_name
+                    AND tc.table_schema   = kcu.table_schema
+                WHERE tc.constraint_type = 'PRIMARY KEY'
+                  AND tc.table_schema    = 'public'
+                ORDER BY tc.table_name, kcu.ordinal_position;
+                "#,
+        )
+        .fetch_all(&mut self.connection)
+        .await
+        .map_err(|_| "Could not get primary key info".to_string())?;
+
+        let mut pk_map: HashMap<String, Vec<String>> = HashMap::new();
+        for row in pk_rows {
+            let table_name: String = row.get("table_name");
+            let column_name: String = row.get("column_name");
+            pk_map.entry(table_name).or_default().push(column_name);
+        }
+
+        Ok((schema_map, fk_map, pk_map))
     }
 
     async fn import_data(&mut self, data: ImportedData) -> Result<(), String> {

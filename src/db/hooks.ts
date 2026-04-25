@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { indexedDBService } from "./IndexedDBService";
-import { TLEditorSnapshot } from "tldraw";
 import { Connection } from "../Connection/types";
 
 export function useIndexedDB() {
@@ -18,97 +17,6 @@ export function useIndexedDB() {
   }, []);
 
   return { isReady, error };
-}
-
-export const useGetAllDocuments = () => {
-  const [documents, setDocuments] = useState<TLEditorSnapshot[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    indexedDBService
-      .getAllDocuments()
-      .then((docs) => {
-        if (docs) {
-          setDocuments(Object.values(docs));
-        }
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        setError(err);
-        setIsLoading(false);
-      });
-  }, []);
-
-  return { documents, isLoading, error };
-};
-
-export function useDocument(
-  connectionUrl: string | undefined,
-  workspaceName?: string,
-) {
-  const [document, setDocument] = useState<TLEditorSnapshot | undefined>();
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    if (!connectionUrl) {
-      setDocument(undefined);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    indexedDBService
-      .getDocument(connectionUrl, workspaceName)
-      .then((doc) => {
-        setDocument(doc);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        setError(err);
-        setIsLoading(false);
-      });
-  }, [connectionUrl, workspaceName]);
-
-  const saveDocument = useCallback(
-    async (snapshot: TLEditorSnapshot) => {
-      if (!connectionUrl) return;
-
-      try {
-        await indexedDBService.saveDocument(
-          connectionUrl,
-          snapshot,
-          workspaceName,
-        );
-        setDocument(snapshot);
-      } catch (err) {
-        setError(err as Error);
-        throw err;
-      }
-    },
-    [connectionUrl, workspaceName],
-  );
-
-  const deleteDocument = useCallback(async () => {
-    if (!connectionUrl) return;
-
-    try {
-      await indexedDBService.deleteDocument(connectionUrl, workspaceName);
-      setDocument(undefined);
-    } catch (err) {
-      setError(err as Error);
-      throw err;
-    }
-  }, [connectionUrl, workspaceName]);
-
-  return {
-    document,
-    isLoading,
-    error,
-    saveDocument,
-    deleteDocument,
-  };
 }
 
 export function useActiveConnection() {

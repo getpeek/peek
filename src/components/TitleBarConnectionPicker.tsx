@@ -43,19 +43,17 @@ export const TitleBarConnectionPicker: React.FC = () => {
       <Popover.Target>
         <div className="titlebar-connection-picker">
           {activeConnection ? (
-            <button
-              className="connection-button"
-              style={{
-                backgroundColor: `color-mix(in srgb, ${activeConnection.connection.color} 40%, 100% transparent)`,
-              }}
-            >
+            <button className="connection-button">
               <div
                 className="connection-indicator"
                 style={{ backgroundColor: activeConnection.connection.color }}
               />
               <Text size="xs" className="connection-text">
-                {activeConnection.connection.name} (
-                {activeConnection.workspaceName})
+                {activeConnection.workspaceName}
+                <span style={{ color: "var(--pk-fg-muted)", fontWeight: 400 }}>
+                  {" · "}
+                  {activeConnection.connection.name}
+                </span>
               </Text>
             </button>
           ) : (
