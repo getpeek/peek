@@ -6,6 +6,10 @@ interface MessageListProps {
 }
 export const MessageList = ({ messages }: MessageListProps) => {
   return messages.map((message, i) => (
-    <MessageItem key={i} message={message} index={i} />
+    <MessageItem
+      key={`${message.timestamp}-${message.type}-${i}`}
+      message={message}
+      index={i}
+    />
   ));
 };

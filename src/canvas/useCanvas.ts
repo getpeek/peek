@@ -88,18 +88,58 @@ export function useCanvas(): CanvasApi {
         ),
 
       zoomToNode: (id, opts = {}) => {
+        const center = () => {
+          const node = rf.getNode(id);
+          if (!node) return;
+          const w = node.measured?.width ?? node.width ?? 0;
+          const h = node.measured?.height ?? node.height ?? 0;
+          rf.setCenter(node.position.x + w / 2, node.position.y + h / 2, {
+            zoom: 1,
+            duration: opts.duration ?? 300,
+          });
+        };
+        if (rf.getNode(id)) {
+          center();
+        } else {
+          requestAnimationFrame(center);
+        }
+      },
+
+      zoomToNodes: (nodeIds, opts = {}) => {
+        if (nodeIds.length === 0) return;
+        if (nodeIds.length === 1) {
+          const node = rf.getNode(nodeIds[0]);
+          if (!node) {
+            requestAnimationFrame(() => {
+              const n = rf.getNode(nodeIds[0]);
+              if (!n) return;
+              const w = n.measured?.width ?? n.width ?? 0;
+              const h = n.measured?.height ?? n.height ?? 0;
+              rf.setCenter(n.position.x + w / 2, n.position.y + h / 2, {
+                zoom: 1,
+                duration: opts.duration ?? 300,
+              });
+            });
+            return;
+          }
+          const w = node.measured?.width ?? node.width ?? 0;
+          const h = node.measured?.height ?? node.height ?? 0;
+          rf.setCenter(node.position.x + w / 2, node.position.y + h / 2, {
+            zoom: 1,
+            duration: opts.duration ?? 300,
+          });
+          return;
+        }
         const fit = () =>
           rf.fitView({
-            nodes: [{ id }],
+            nodes: nodeIds.map((id) => ({ id })),
             duration: opts.duration ?? 300,
             padding: opts.padding ?? 0.2,
           });
-        if (rf.getNode(id)) {
+        if (nodeIds.every((id) => rf.getNode(id))) {
           fit();
         } else {
-          requestAnimationFrame(() => {
-            if (rf.getNode(id)) fit();
-          });
+          requestAnimationFrame(fit);
         }
       },
 

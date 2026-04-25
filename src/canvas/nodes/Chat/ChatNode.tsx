@@ -169,6 +169,8 @@ export function ChatNode({
                   };
                   canvas.addNode(newResult);
                   canvas.connect(id, resultId);
+                  canvas.selectOnly(resultId);
+                  canvas.zoomToNode(resultId, { duration: 300 });
                 }
                 const csv = toCsv(toolResult.data);
                 contextMessage = {

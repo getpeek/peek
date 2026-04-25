@@ -36,7 +36,7 @@ export function createChart(canvas: CanvasApi, resultNode: ResultNode) {
       },
       width: w,
       height: h,
-      data: { data: fields },
+      data: { data: fields, chartType: "bar" },
     };
     canvas.addNode(chartNode);
     canvas.connect(resultNode.id, chartNodeId);

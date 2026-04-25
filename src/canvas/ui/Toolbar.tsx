@@ -1,5 +1,12 @@
+import {
+  IconCode,
+  IconLetterT,
+  IconMouse,
+  IconSparkles,
+} from "@tabler/icons-react";
 import { Panel } from "@xyflow/react";
 import { useAtom } from "jotai";
+import type { ComponentType } from "react";
 import { placeModeAtom } from "../state";
 import type { AppNodeType } from "../types";
 import "./Toolbar.css";
@@ -8,7 +15,7 @@ interface ToolDef {
   label: string;
   hotkey: string;
   mode: AppNodeType | null;
-  swatchColor: string;
+  Icon: ComponentType<{ size?: number; stroke?: number }>;
 }
 
 const tools: ToolDef[] = [
@@ -16,13 +23,19 @@ const tools: ToolDef[] = [
     label: "Query",
     hotkey: "Q",
     mode: "query",
-    swatchColor: "var(--pk-type-query)",
+    Icon: IconCode,
   },
   {
     label: "AI prompt",
     hotkey: "A",
     mode: "ai-prompt",
-    swatchColor: "var(--pk-type-ai)",
+    Icon: IconSparkles,
+  },
+  {
+    label: "Text",
+    hotkey: "T",
+    mode: "text",
+    Icon: IconLetterT,
   },
 ];
 
@@ -37,12 +50,13 @@ export function Toolbar() {
           title="Select (Esc)"
           onClick={() => setPlaceMode(null)}
         >
-          Select
+          <IconMouse size={16} stroke={1.75} />
           <span className="kbd">Esc</span>
         </button>
         <span className="sep" />
         {tools.map((t) => {
           const active = placeMode === t.mode;
+          const { Icon } = t;
           return (
             <button
               key={t.label}
@@ -50,8 +64,7 @@ export function Toolbar() {
               title={`${t.label} (${t.hotkey})`}
               onClick={() => setPlaceMode(t.mode)}
             >
-              <span className="swatch" style={{ background: t.swatchColor }} />
-              {t.label}
+              <Icon size={16} stroke={1.75} />
               <span className="kbd">{t.hotkey}</span>
             </button>
           );

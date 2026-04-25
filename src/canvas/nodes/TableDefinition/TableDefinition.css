@@ -1,0 +1,71 @@
+.table-definition {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--pk-font-mono);
+  font-size: 12px;
+}
+
+.table-definition td {
+  padding: 6px 14px !important;
+  border-bottom: 1px solid var(--pk-node-border) !important;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.table-definition tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+.table-definition tr:hover td {
+  background: var(--pk-node-bg-2);
+}
+
+.table-definition .col-name {
+  color: var(--pk-fg);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-definition td.col-name-cell.pk .col-name {
+  color: var(--pk-yellow);
+}
+.table-definition td.col-name-cell.fk .col-name {
+  color: var(--pk-blue);
+}
+
+.table-definition .col-type {
+  text-align: right;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--pk-fg-subtle);
+}
+
+.table-definition .col-type.type-numeric {
+  color: var(--pk-blue);
+}
+.table-definition .col-type.type-text {
+  color: var(--pk-green);
+}
+.table-definition .col-type.type-boolean {
+  color: var(--pk-accent-soft);
+}
+.table-definition .col-type.type-datetime {
+  color: var(--pk-yellow);
+}
+.table-definition .col-type.type-json {
+  color: #e57bb1;
+}
+.table-definition .col-type.type-uuid {
+  color: #4dc3c0;
+}
+.table-definition .col-type.type-binary,
+.table-definition .col-type.type-other {
+  color: var(--pk-fg-muted);
+}
+
+.app-node-header.type-table-definition .type-dot {
+  background: var(--pk-type-result);
+}

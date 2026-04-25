@@ -74,6 +74,15 @@ export const viewportAtom = atom(
 
 export const placeModeAtom = atom<AppNodeType | null>(null);
 
+export const clipboardAtom = atom<AppNode[]>([]);
+
+export type HistorySnapshot = { nodes: AppNode[]; edges: AppEdge[] };
+export type PageHistory = { past: HistorySnapshot[]; future: HistorySnapshot[] };
+
+export const historyAtom = atom<Record<string, PageHistory>>({});
+
+export const loadEpochAtom = atom(0);
+
 export interface CanvasApi {
   addNode: (node: AppNode) => void;
   updateNode: (
@@ -97,6 +106,10 @@ export interface CanvasApi {
 
   zoomToNode: (
     id: string,
+    opts?: { duration?: number },
+  ) => void;
+  zoomToNodes: (
+    ids: string[],
     opts?: { duration?: number; padding?: number },
   ) => void;
   panToNode: (id: string, opts?: { duration?: number; zoom?: number }) => void;

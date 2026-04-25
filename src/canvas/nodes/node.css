@@ -165,6 +165,9 @@
 .app-node-header.type-query-error .type-dot {
   background: var(--pk-type-error);
 }
+.app-node-header.type-text .type-dot {
+  background: var(--pk-fg-muted);
+}
 
 .app-node-header .type-label {
   font: 500 12px var(--pk-font-sans);
@@ -517,6 +520,72 @@
 }
 
 /* ============================================================
+   Text annotation (whiteboard-style typography, no card)
+   ============================================================ */
+.text-node {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 1px dashed transparent;
+  border-radius: 4px;
+  color: var(--pk-fg);
+  font-family: var(--pk-font-sans);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  cursor: grab;
+  transition: border-color 0.12s ease-out;
+}
+
+.text-node.selected {
+  border-color: var(--pk-accent);
+}
+
+.text-node.editing {
+  cursor: text;
+}
+
+.text-node-display {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  padding: 4px 6px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow: hidden;
+  user-select: none;
+}
+
+.text-node-placeholder {
+  color: var(--pk-fg-subtle);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.text-node-input {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  padding: 4px 6px;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
+.text-node-input::placeholder {
+  color: var(--pk-fg-subtle);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ============================================================
    Chart body
    ============================================================ */
 .chart-body {
@@ -545,6 +614,41 @@
   margin-bottom: 8px;
 }
 
+.chart-type-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--pk-node-border);
+  border-radius: 6px;
+  background: var(--pk-node-bg-2);
+}
+
+.chart-type-btn {
+  background: transparent;
+  border: 0;
+  color: var(--pk-fg-subtle);
+  width: 24px;
+  height: 22px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background 0.1s,
+    color 0.1s;
+}
+
+.chart-type-btn:hover {
+  color: var(--pk-fg);
+  background: var(--pk-node-bg);
+}
+
+.chart-type-btn.active {
+  color: var(--pk-fg);
+  background: var(--pk-accent-bg);
+}
+
 /* ============================================================
    Edge animation
    ============================================================ */
@@ -556,6 +660,25 @@
 @keyframes pk-flow {
   to {
     stroke-dashoffset: -20;
+  }
+}
+
+.react-flow__edge.query-active .react-flow__edge-path {
+  stroke: var(--pk-accent);
+  stroke-width: 1.75;
+  animation: pk-edge-pulse 1.6s ease-in-out infinite;
+}
+@keyframes pk-edge-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 1px var(--pk-accent))
+      drop-shadow(0 0 3px var(--pk-accent));
+    opacity: 0.85;
+  }
+  50% {
+    filter: drop-shadow(0 0 3px var(--pk-accent))
+      drop-shadow(0 0 8px var(--pk-accent));
+    opacity: 1;
   }
 }
 

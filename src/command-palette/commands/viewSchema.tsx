@@ -2,16 +2,36 @@ import { CommandPaletteResult } from "./index";
 import { IconSchema } from "@tabler/icons-react";
 import { Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import { DatabaseResult, schemaAtom } from "../../state";
+import { schemaAtom } from "../../state";
 import { canvasApiAtom, documentAtom } from "../../canvas/state";
-import { calculateLayout } from "./calculateSchemaLayout";
-import type { ResultNode } from "../../canvas/types";
+import type { TableDefinitionNode } from "../../canvas/types";
+
+const NODE_WIDTH = 450;
+const INITIAL_SPREAD = 400;
+
+/**
+ * Initial positions are spread on a circle around the origin so the live
+ * d3-force simulation in `useSchemaForceLayout` has somewhere to start
+ * pushing/pulling nodes from. The simulation does the actual layout work.
+ */
+function initialPositions(tableNames: string[]) {
+  const n = tableNames.length;
+  const radius = INITIAL_SPREAD + n * 30;
+  const positions: Record<string, { x: number; y: number }> = {};
+  tableNames.forEach((name, i) => {
+    const angle = (i / Math.max(n, 1)) * Math.PI * 2;
+    positions[name] = {
+      x: Math.cos(angle) * radius - NODE_WIDTH / 2,
+      y: Math.sin(angle) * radius,
+    };
+  });
+  return positions;
+}
 
 export const useViewSchemaCommand = (): CommandPaletteResult => {
   const schema = useAtomValue(schemaAtom);
   const doc = useAtomValue(documentAtom);
   const canvas = useAtomValue(canvasApiAtom);
-  const positions = calculateLayout(schema);
 
   return {
     icon: <IconSchema size={16} />,
@@ -39,49 +59,33 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
         }
       }
 
+      const tableNames = Object.keys(schema.tables);
+      const positions = initialPositions(tableNames);
+      const createdIds: string[] = [];
+
       Object.entries(schema.tables).forEach(([table, columns]) => {
         const { x, y } = positions[table];
-        const header: DatabaseResult = [
-          [
-            [table, "", ""],
-            ["", "", ""],
-          ],
-        ];
-        const data: DatabaseResult = columns.map(([col, kind]) => [
-          ["column", col, "string"],
-          ["type", kind, kind],
-        ]);
         const id = `schema-table-${table}`;
-        const newNode: ResultNode = {
+        const newNode: TableDefinitionNode = {
           id,
-          type: "result",
+          type: "table-definition",
           position: { x, y },
-          width: 450,
-          height: columns.length * 60 + 100,
-          data: {
-            query: `describe ${table}`,
-            data: [...header, ...data],
-          },
+          width: NODE_WIDTH,
+          height: columns.length * 28 + 60,
+          data: { table, columns },
         };
         canvas.addNode(newNode);
+        createdIds.push(id);
       });
 
-      const references: Record<string, string[]> = {};
-      Object.entries(schema.references).forEach(([from, to]) => {
-        const fromTable = from.split(".")[0];
-        const toTables = to.map((table) => table.split(".")[0]);
-        references[fromTable] = toTables;
-      });
-
-      for (const [fromTable, toTables] of Object.entries(references)) {
-        const fromId = `schema-table-${fromTable}`;
-        if (!canvas.getNode(fromId)) continue;
-        for (const toTable of toTables) {
-          const toId = `schema-table-${toTable}`;
-          if (!canvas.getNode(toId)) continue;
-          canvas.connect(fromId, toId);
-        }
+      if (createdIds.length === 1) {
+        canvas.zoomToNode(createdIds[0], { duration: 300 });
+      } else if (createdIds.length > 1) {
+        canvas.zoomToNodes(createdIds, { duration: 300 });
       }
+
+      // Edges between tables are derived from the schema atom by
+      // `useSchemaForceLayout`, so we don't need to create them here.
     },
   };
 };

@@ -2,7 +2,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { activeConnectionAtom } from "../Connection/state";
-import { documentAtom } from "./state";
+import { documentAtom, loadEpochAtom } from "./state";
 import { emptyDocument } from "./emptyDocument";
 import type { CanvasDocument } from "./types";
 
@@ -19,6 +19,7 @@ function isValidDocument(value: unknown): value is CanvasDocument {
 export function useLoadDocument() {
   const conn = useAtomValue(activeConnectionAtom);
   const setDoc = useSetAtom(documentAtom);
+  const setLoadEpoch = useSetAtom(loadEpochAtom);
 
   useEffect(() => {
     if (!conn) return;
@@ -35,19 +36,24 @@ export function useLoadDocument() {
           const parsed = JSON.parse(result);
           if (isValidDocument(parsed)) {
             setDoc(parsed);
+            setLoadEpoch((n) => n + 1);
             return;
           }
         } catch {
           // fall through to empty
         }
         setDoc(emptyDocument());
+        setLoadEpoch((n) => n + 1);
       })
       .catch(() => {
-        if (!cancelled) setDoc(emptyDocument());
+        if (!cancelled) {
+          setDoc(emptyDocument());
+          setLoadEpoch((n) => n + 1);
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [conn, setDoc]);
+  }, [conn, setDoc, setLoadEpoch]);
 }

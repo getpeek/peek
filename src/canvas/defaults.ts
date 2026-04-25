@@ -29,6 +29,8 @@ export const defaultDimensions: Record<
   chat: { w: 540, h: 400 },
   barchart: { w: 460, h: 290 },
   "query-error": { w: 400, h: 300 },
+  "table-definition": { w: 450, h: 280 },
+  text: { w: 280, h: 140 },
 };
 
 export function makeNode(
@@ -84,7 +86,7 @@ export function makeNode(
         ...base,
         id: ids.chart(ids.query()),
         type: "barchart",
-        data: { data: [] },
+        data: { data: [], chartType: "bar" },
       };
     case "query-error":
       return {
@@ -92,6 +94,20 @@ export function makeNode(
         id: ids.error(ids.query()),
         type: "query-error",
         data: { queryNodeId: "", query: "", message: "" },
+      };
+    case "table-definition":
+      return {
+        ...base,
+        id: ids.query(),
+        type: "table-definition",
+        data: { table: "", columns: [] },
+      };
+    case "text":
+      return {
+        ...base,
+        id: ids.text(),
+        type: "text",
+        data: { text: "" },
       };
   }
 }

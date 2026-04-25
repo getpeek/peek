@@ -89,6 +89,8 @@ Respond ONLY with the sql in text format, no backticks, markdown, formatting, co
         };
         canvas.addNode(newQueryNode);
         canvas.connect(id, outputId);
+        canvas.selectOnly(outputId);
+        canvas.zoomToNode(outputId, { duration: 300 });
       }
 
       for await (const chunk of stream) {

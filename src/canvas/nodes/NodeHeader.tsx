@@ -18,6 +18,8 @@ const TYPE_LABELS: Record<AppNodeType, string> = {
   chat: "CHAT",
   barchart: "CHART",
   "query-error": "ERROR",
+  "table-definition": "TABLE",
+  text: "TEXT",
 };
 
 export function NodeHeader({

@@ -148,7 +148,7 @@ export function ResultTable({
         setDraftWidth(null);
         canvas.updateNodeData<ResultData>(nodeId, (d) => ({
           ...d,
-          columnWidths: { ...(d.columnWidths ?? {}), [column]: finalWidth },
+          columnWidths: { ...d.columnWidths, [column]: finalWidth },
         }));
       };
 

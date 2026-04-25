@@ -16,29 +16,22 @@ import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { ids } from "../../ids";
-import type {
-  ChatNode,
-  QueryNode,
-  ResultNode as ResultNodeT,
-} from "../../types";
+import type { ChatNode, QueryNode, ResultNode as ResultNodeT } from "../../types";
 import "../node.css";
 
 const DEFAULT_W = 620;
-const DEFAULT_H = 440;
+const DEFAULT_H = 640;
 
 function firstLineOfQuery(query: string): string {
   const line = query.split("\n").find((l) => l.trim().length > 0);
   if (!line) return "";
-  return line.replace(/^--\s*/, "").trim().slice(0, 60);
+  return line
+    .replace(/^--\s*/, "")
+    .trim()
+    .slice(0, 60);
 }
 
-export function ResultNode({
-  id,
-  data,
-  selected,
-  width,
-  height,
-}: NodeProps<ResultNodeT>) {
+export function ResultNode({ id, data, selected, width, height }: NodeProps<ResultNodeT>) {
   const canvas = useCanvas();
   const createChart = useCreateChart();
   const schema = useAtomValue(schemaAtom);
@@ -50,8 +43,7 @@ export function ResultNode({
   const canChart =
     data.data.length > 0 &&
     !!data.data[0].find(
-      ([key, value]) =>
-        typeof value === "number" && key !== "id" && !key.endsWith("_id"),
+      ([key, value]) => typeof value === "number" && key !== "id" && !key.endsWith("_id"),
     );
 
   const runCreateChart = () => {
@@ -109,10 +101,7 @@ export function ResultNode({
           result: data.data,
           schema: {
             tables: Object.fromEntries(
-              Object.entries(schema.tables).map(([k, cols]) => [
-                k,
-                cols.map(([col]) => col),
-              ]),
+              Object.entries(schema.tables).map(([k, cols]) => [k, cols.map(([col]) => col)]),
             ),
             references: schema.references,
           },
@@ -132,10 +121,7 @@ export function ResultNode({
     <>
       <NodeResizer isVisible={!!selected} minWidth={400} minHeight={260} />
       <HiddenHandles />
-      <div
-        className={`app-node ${selected ? "selected" : ""}`}
-        style={{ width: w, height: h }}
-      >
+      <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader
           nodeId={id}
           type="result"
@@ -149,19 +135,11 @@ export function ResultNode({
           </div>
           <div className="actions">
             {canChart && (
-              <button
-                className="icon-btn"
-                title="Create chart"
-                onClick={runCreateChart}
-              >
+              <button className="icon-btn" title="Create chart" onClick={runCreateChart}>
                 <IconChartBar size={14} />
               </button>
             )}
-            <button
-              className="icon-btn"
-              title="Ask about this result"
-              onClick={ask}
-            >
+            <button className="icon-btn" title="Ask about this result" onClick={ask}>
               <IconMessageChatbot size={14} />
             </button>
             <button className="icon-btn" title="Fork query" onClick={fork}>

@@ -8,7 +8,9 @@ export type AppNodeType =
   | "ai-prompt"
   | "chat"
   | "barchart"
-  | "query-error";
+  | "query-error"
+  | "table-definition"
+  | "text";
 
 export type QueryData = { query: string };
 
@@ -36,8 +38,11 @@ export type ChatData = {
   messages: Message[];
 };
 
+export type ChartType = "bar" | "line" | "area";
+
 export type BarChartData = {
   data: Record<string, string | number>[];
+  chartType?: ChartType;
 };
 
 export type ErrorData = {
@@ -46,12 +51,23 @@ export type ErrorData = {
   message: string;
 };
 
+export type TableDefinitionData = {
+  table: string;
+  columns: [string, string][];
+};
+
+export type TextData = {
+  text: string;
+};
+
 export type QueryNode = Node<QueryData, "query">;
 export type ResultNode = Node<ResultData, "result">;
 export type AiPromptNode = Node<AiPromptData, "ai-prompt">;
 export type ChatNode = Node<ChatData, "chat">;
 export type BarChartNode = Node<BarChartData, "barchart">;
 export type QueryErrorNode = Node<ErrorData, "query-error">;
+export type TableDefinitionNode = Node<TableDefinitionData, "table-definition">;
+export type TextNode = Node<TextData, "text">;
 
 export type AppNode =
   | QueryNode
@@ -59,7 +75,9 @@ export type AppNode =
   | AiPromptNode
   | ChatNode
   | BarChartNode
-  | QueryErrorNode;
+  | QueryErrorNode
+  | TableDefinitionNode
+  | TextNode;
 
 export type AppEdge = Edge;
 

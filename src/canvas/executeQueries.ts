@@ -14,6 +14,7 @@ export async function executeQueries(
   queries: string[],
 ) {
   let lastCreatedId: string | null = null;
+  const createdIds: string[] = [];
 
   for (let i = 0; i < queries.length; i++) {
     const query = queries[i];
@@ -36,8 +37,8 @@ export async function executeQueries(
       }
 
       const columnCount = result[0]?.length ?? 0;
-      const w = Math.max(columnCount * 250, 200);
-      const h = Math.min(result.length * 50 + 50, 1500);
+      const w = result.length === 0 ? 400 : Math.max(columnCount * 250, 200);
+      const h = result.length === 0 ? 600 : Math.min(result.length * 50 + 50, 1500);
 
       const resultNodeId = ids.result(sourceNode.id, i);
       const errorNodeId = ids.error(sourceNode.id);
@@ -64,15 +65,13 @@ export async function executeQueries(
         canvas.addNode(resultNode);
         canvas.connect(sourceNode.id, resultNodeId);
         lastCreatedId = resultNodeId;
+        createdIds.push(resultNodeId);
       }
 
       const existingError = canvas.getNode(errorNodeId);
       if (existingError) {
         canvas.deleteNode(errorNodeId);
       }
-
-      canvas.selectOnly(resultNodeId);
-      canvas.zoomToNode(resultNodeId, { duration: 300 });
     } catch (e) {
       const errorNodeId = ids.error(sourceNode.id);
       const errorY = sourceNode.position.y + (sourceNode.height ?? 240) + 50;
@@ -99,10 +98,16 @@ export async function executeQueries(
         };
         canvas.addNode(errorNode);
         canvas.connect(errorNodeId, sourceNode.id);
+        createdIds.push(errorNodeId);
       }
-
-      canvas.selectOnly(errorNodeId);
-      canvas.zoomToNode(errorNodeId, { duration: 300 });
     }
+  }
+
+  if (createdIds.length === 1) {
+    canvas.selectOnly(createdIds[0]);
+    canvas.zoomToNode(createdIds[0], { duration: 300 });
+  } else if (createdIds.length > 1) {
+    canvas.selectOnly(createdIds);
+    canvas.zoomToNodes(createdIds, { duration: 300 });
   }
 }

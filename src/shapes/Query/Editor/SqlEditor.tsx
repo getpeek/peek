@@ -5,6 +5,20 @@ import { useEffect, useRef } from "react";
 import { useAtomValue } from "jotai";
 import { darkModeAtom } from "../../../state";
 
+let overflowWidgetsDomNode: HTMLElement | null = null;
+const getOverflowWidgetsDomNode = () => {
+  if (overflowWidgetsDomNode) return overflowWidgetsDomNode;
+  const node = document.createElement("div");
+  node.className = "monaco-editor monaco-overflow-widgets-root";
+  node.style.position = "absolute";
+  node.style.top = "0";
+  node.style.left = "0";
+  node.style.zIndex = "10000";
+  document.body.appendChild(node);
+  overflowWidgetsDomNode = node;
+  return node;
+};
+
 export const SqlEditor = ({
   query,
   onQueryChange,
@@ -79,6 +93,8 @@ export const SqlEditor = ({
               showSnippets: true,
               insertMode: "replace",
             },
+            fixedOverflowWidgets: true,
+            overflowWidgetsDomNode: getOverflowWidgetsDomNode(),
             quickSuggestions: {
               other: true,
               comments: false,
