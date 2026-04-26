@@ -19,12 +19,38 @@ export function getEditableTableName(ast: AST | null | undefined): string | null
   return entry.table;
 }
 
+const NUMERIC_TYPES = new Set([
+  "INT2",
+  "INT4",
+  "INT8",
+  "INT",
+  "SMALLINT",
+  "MEDIUMINT",
+  "BIGINT",
+  "TINYINT",
+  "FLOAT4",
+  "FLOAT8",
+  "FLOAT",
+  "DOUBLE",
+  "DECIMAL",
+  "NUMERIC",
+]);
+
+export function isBooleanType(sqlType: string): boolean {
+  const upper = sqlType.toUpperCase();
+  return upper === "BOOL" || upper === "BOOLEAN";
+}
+
+export function isNumericType(sqlType: string): boolean {
+  return NUMERIC_TYPES.has(sqlType.toUpperCase());
+}
+
 export function formatSqlLiteral(value: unknown, sqlType: string): string {
   if (value === null || value === undefined) return "NULL";
 
   const upper = sqlType.toUpperCase();
 
-  if (upper === "BOOL" || upper === "BOOLEAN") {
+  if (isBooleanType(upper)) {
     if (typeof value === "boolean") return value ? "TRUE" : "FALSE";
     const s = String(value).toLowerCase();
     if (s === "true" || s === "t" || s === "1") return "TRUE";
@@ -38,22 +64,7 @@ export function formatSqlLiteral(value: unknown, sqlType: string): string {
     return upper === "JSONB" ? `'${escaped}'::jsonb` : `'${escaped}'::json`;
   }
 
-  if (
-    upper === "INT2" ||
-    upper === "INT4" ||
-    upper === "INT8" ||
-    upper === "INT" ||
-    upper === "SMALLINT" ||
-    upper === "MEDIUMINT" ||
-    upper === "BIGINT" ||
-    upper === "TINYINT" ||
-    upper === "FLOAT4" ||
-    upper === "FLOAT8" ||
-    upper === "FLOAT" ||
-    upper === "DOUBLE" ||
-    upper === "DECIMAL" ||
-    upper === "NUMERIC"
-  ) {
+  if (isNumericType(upper)) {
     const n = typeof value === "number" ? value : Number(value);
     if (!Number.isFinite(n)) {
       throw new Error(`"${String(value)}" is not a valid ${sqlType} value`);

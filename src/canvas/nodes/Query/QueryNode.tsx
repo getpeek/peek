@@ -134,10 +134,14 @@ export function QueryNode({
             variables={variableNames}
             onMount={(editor, monaco) => {
               editorRef.current = editor;
-              editor.addCommand(
-                monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-                runQuery,
-              );
+              editor.onKeyDown((e) => {
+                const isMod = e.metaKey || e.ctrlKey;
+                if (isMod && e.keyCode === monaco.KeyCode.Enter) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  runQuery();
+                }
+              });
             }}
             onQueryChange={(query) =>
               canvas.updateNodeData<QueryNodeT["data"]>(id, { query })

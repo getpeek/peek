@@ -21,11 +21,14 @@ import type { DatabaseResult } from "../../../state";
 import type { ResultData } from "../../types";
 import { useCanvas } from "../../useCanvas";
 import { useExecuteQueries } from "../../useExecuteQueries";
+import { collectVariablesFor, substituteVariables } from "../../variables";
 import {
   buildPkAssignments,
   buildUpdateSql,
   formatSqlLiteral,
   getEditableTableName,
+  isBooleanType,
+  isNumericType,
 } from "./inlineEdit";
 import "../../../shapes/Result/ResultShape.css";
 
@@ -266,11 +269,38 @@ export function ResultTable({
       return;
     }
 
+    const sourceQueryId = canvas
+      .getEdges()
+      .find((edge) => edge.target === nodeId)?.source;
+    const vars = sourceQueryId ? collectVariablesFor(canvas, sourceQueryId) : {};
+
+    let resolvedUpdateSql: string;
+    let resolvedRefreshQuery: string;
+    try {
+      const update = substituteVariables(updateSql, vars);
+      if (update.missing.length > 0) {
+        throw new Error(
+          `Undefined variables: ${update.missing.map((m) => "@" + m).join(", ")}`,
+        );
+      }
+      const refresh = substituteVariables(query, vars);
+      if (refresh.missing.length > 0) {
+        throw new Error(
+          `Undefined variables: ${refresh.missing.map((m) => "@" + m).join(", ")}`,
+        );
+      }
+      resolvedUpdateSql = update.resolved;
+      resolvedRefreshQuery = refresh.resolved;
+    } catch (err) {
+      setEditing((e) => (e ? { ...e, error: String(err) } : e));
+      return;
+    }
+
     setEditing((e) => (e ? { ...e, saving: true, error: null } : e));
     try {
-      await invoke("execute_statement", { query: updateSql });
+      await invoke("execute_statement", { query: resolvedUpdateSql });
       const refreshed = JSON.parse(
-        (await invoke("get_results", { query })) as string,
+        (await invoke("get_results", { query: resolvedRefreshQuery })) as string,
       ) as DatabaseResult;
       canvas.updateNodeData<ResultData>(nodeId, (d) => ({
         ...d,
@@ -539,28 +569,91 @@ function EditCell({
   onCommit: () => void;
   onCancel: () => void;
 }) {
-  const ref = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+  const selectRef = useRef<HTMLSelectElement | null>(null);
   const isMultiline = type === "JSON" || type === "JSONB";
+  const isBoolean = isBooleanType(type);
+  const isNumeric = isNumericType(type);
 
   useLayoutEffect(() => {
-    const el = ref.current;
+    if (isBoolean) {
+      const el = selectRef.current;
+      if (!el) return;
+      el.focus();
+      try {
+        el.showPicker?.();
+      } catch {
+        // showPicker can throw if the element is not in a user-gesture context;
+        // focus alone is fine in that case.
+      }
+      return;
+    }
+    const el = inputRef.current;
     if (!el) return;
     el.focus();
     if (el instanceof HTMLInputElement) el.select();
-  }, []);
+  }, [isBoolean]);
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    e.stopPropagation();
+  const handleCommitKeys = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       e.preventDefault();
       onCancel();
-      return;
+      return true;
     }
     if (e.metaKey && e.key.toLowerCase() === "s") {
       e.preventDefault();
       onCommit();
+      return true;
     }
+    return false;
   };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    e.stopPropagation();
+    handleCommitKeys(e);
+  };
+
+  if (isBoolean) {
+    const draftLower = draft.toLowerCase();
+    const current: "true" | "false" | "null" =
+      draftLower === "true" || draftLower === "t" || draftLower === "1"
+        ? "true"
+        : draftLower === "false" || draftLower === "f" || draftLower === "0"
+          ? "false"
+          : "null";
+
+    const onSelectKeyDown = (e: React.KeyboardEvent<HTMLSelectElement>) => {
+      e.stopPropagation();
+      if (handleCommitKeys(e)) return;
+      if (e.key === "Enter") {
+        e.preventDefault();
+        onCommit();
+      }
+    };
+
+    return (
+      <div className="edit-wrapper">
+        <select
+          ref={selectRef}
+          className="bool-select"
+          disabled={saving}
+          value={current}
+          onChange={(e) => {
+            const v = e.target.value as "true" | "false" | "null";
+            onChange(v === "null" ? "" : v);
+          }}
+          onKeyDown={onSelectKeyDown}
+          onClick={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+        >
+          <option value="true">TRUE</option>
+          <option value="false">FALSE</option>
+          <option value="null">NULL</option>
+        </select>
+        {error && <div className="edit-error">{error}</div>}
+      </div>
+    );
+  }
 
   const common = {
     value: draft,
@@ -574,13 +667,41 @@ function EditCell({
     spellCheck: false,
   };
 
+  const clearToNull = () => {
+    onChange("");
+    onCommit();
+  };
+
   return (
     <div className="edit-wrapper">
-      {isMultiline ? (
-        <textarea ref={ref as React.RefObject<HTMLTextAreaElement>} rows={3} {...common} />
-      ) : (
-        <input ref={ref as React.RefObject<HTMLInputElement>} type="text" {...common} />
-      )}
+      <div className="edit-row">
+        {isMultiline ? (
+          <textarea ref={inputRef as React.RefObject<HTMLTextAreaElement>} rows={3} {...common} />
+        ) : isNumeric ? (
+          <input
+            ref={inputRef as React.RefObject<HTMLInputElement>}
+            type="number"
+            inputMode="decimal"
+            step="any"
+            {...common}
+          />
+        ) : (
+          <input ref={inputRef as React.RefObject<HTMLInputElement>} type="text" {...common} />
+        )}
+        <button
+          type="button"
+          className="edit-clear-null"
+          disabled={saving}
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={(e) => {
+            e.stopPropagation();
+            clearToNull();
+          }}
+          title="Set value to NULL"
+        >
+          NULL
+        </button>
+      </div>
       {error && <div className="edit-error">{error}</div>}
     </div>
   );

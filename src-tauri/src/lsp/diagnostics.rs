@@ -80,6 +80,10 @@ fn check_field(
     if column.is_empty() || column == "*" {
         return;
     }
+    // `@name` is a Peek variable, not a column — handled by the variable provider.
+    if column.starts_with('@') {
+        return;
+    }
 
     let qualifier_ref = field
         .children(&mut field.walk())
@@ -327,6 +331,20 @@ mod tests {
         let diags = diagnose_for("update users set naem = 'x'", &schema);
         assert_eq!(diags.len(), 1);
         assert!(diags[0].message.contains("naem"));
+    }
+
+    #[test]
+    fn peek_variable_reference_is_not_flagged() {
+        let schema = fixture_schema();
+        let diags = diagnose_for("select * from users where id = @foo", &schema);
+        assert!(diags.is_empty(), "expected none, got {diags:?}");
+    }
+
+    #[test]
+    fn peek_variable_in_select_is_not_flagged() {
+        let schema = fixture_schema();
+        let diags = diagnose_for("select @foo from users", &schema);
+        assert!(diags.is_empty(), "expected none, got {diags:?}");
     }
 
     #[test]
