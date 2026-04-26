@@ -26,19 +26,21 @@ const LIVE_POLL_MS = 10_000;
 function firstLine(query: string): string {
   const line = query.split("\n").find((l) => l.trim().length > 0);
   if (!line) return "";
-  return line.replace(/^--\s*/, "").trim().slice(0, 60);
+  return line
+    .replace(/^--\s*/, "")
+    .trim()
+    .slice(0, 60);
 }
 
-export function QueryNode({
-  id,
-  data,
-  selected,
-  width,
-  height,
-}: NodeProps<QueryNodeT>) {
+function isSelectOnly(query: string): boolean {
+  return query.trim().toLowerCase().startsWith("select");
+}
+
+export function QueryNode({ id, data, selected, width, height }: NodeProps<QueryNodeT>) {
   const canvas = useCanvas();
   const executeQueries = useExecuteQueries();
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
+  const editorFocusedRef = useRef(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   useScrollFallthrough(bodyRef);
   const allNodes = useAtomValue(nodesAtom);
@@ -54,25 +56,27 @@ export function QueryNode({
     const merged: Record<string, true> = {};
     for (const edge of incoming) {
       const source = allNodes.find(
-        (n): n is VariableNodeT =>
-          n.id === edge.source && n.type === "variable",
+        (n): n is VariableNodeT => n.id === edge.source && n.type === "variable",
       );
-      if (!source) continue;
+      if (!source) {
+        continue;
+      }
       for (const row of (source.data as VariableData).rows) {
-        if (row.name) merged[row.name] = true;
+        if (row.name) {
+          merged[row.name] = true;
+        }
       }
     }
     return Object.keys(merged);
   }, [id, allNodes, allEdges]);
 
-  useEffect(
-    () => registerQueryEditorFocus(id, () => editorRef.current?.focus()),
-    [id],
-  );
+  useEffect(() => registerQueryEditorFocus(id, () => editorRef.current?.focus()), [id]);
 
   const runQuery = () => {
     const node = canvas.getNode(id);
-    if (!node || node.type !== "query") return;
+    if (!node || node.type !== "query") {
+      return;
+    }
     executeQueries(node, [(node.data as QueryNodeT["data"]).query]);
   };
 
@@ -86,11 +90,22 @@ export function QueryNode({
 
   useEffect(() => {
     const interval = data.liveIntervalMs;
-    if (interval == null) return;
+    if (interval == null) {
+      return;
+    }
     const tick = () => {
+      if (editorFocusedRef.current) {
+        return;
+      }
       const node = canvas.getNode(id);
-      if (!node || node.type !== "query") return;
-      executeQueries(node, [(node.data as QueryNodeT["data"]).query]);
+      if (!node || node.type !== "query") {
+        return;
+      }
+      const query = (node.data as QueryNodeT["data"]).query;
+      if (!isSelectOnly(query)) {
+        return;
+      }
+      executeQueries(node, [query]);
     };
     tick();
     const handle = window.setInterval(tick, interval);
@@ -99,7 +114,9 @@ export function QueryNode({
 
   const formatQuery = () => {
     const node = canvas.getNode(id);
-    if (!node || node.type !== "query") return;
+    if (!node || node.type !== "query") {
+      return;
+    }
     const current = (node.data as QueryNodeT["data"]).query;
     try {
       const formatted = formatPreservingVars(current, {
@@ -134,6 +151,12 @@ export function QueryNode({
             variables={variableNames}
             onMount={(editor, monaco) => {
               editorRef.current = editor;
+              editor.onDidFocusEditorWidget(() => {
+                editorFocusedRef.current = true;
+              });
+              editor.onDidBlurEditorWidget(() => {
+                editorFocusedRef.current = false;
+              });
               editor.onKeyDown((e) => {
                 const isMod = e.metaKey || e.ctrlKey;
                 if (isMod && e.keyCode === monaco.KeyCode.Enter) {
@@ -143,25 +166,15 @@ export function QueryNode({
                 }
               });
             }}
-            onQueryChange={(query) =>
-              canvas.updateNodeData<QueryNodeT["data"]>(id, { query })
-            }
+            onQueryChange={(query) => canvas.updateNodeData<QueryNodeT["data"]>(id, { query })}
           />
         </div>
         <div className="app-node-footer nodrag">
-          <button
-            className="btn btn-ghost"
-            onClick={formatQuery}
-            title="Format query (⌘⇧I)"
-          >
+          <button className="btn btn-ghost" onClick={formatQuery} title="Format query (⌘⇧I)">
             <IconIndentIncrease size={13} />
             Format
           </button>
-<button
-            className="btn"
-            onClick={runQuery}
-            title="Run query (⌘↵)"
-          >
+          <button className="btn" onClick={runQuery} title="Run query (⌘↵)">
             <IconPlayerPlay size={13} />
             Run
             <span className="kbd">⌘↵</span>
