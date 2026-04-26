@@ -69,3 +69,18 @@
 .app-node-header.type-table-definition .type-dot {
   background: var(--pk-type-result);
 }
+
+.react-flow__edge.schema-edge-glow .react-flow__edge-path {
+  stroke: var(--pk-accent);
+  stroke-width: 2;
+  stroke-dasharray: 6 8;
+  filter: drop-shadow(0 0 4px var(--pk-accent))
+    drop-shadow(0 0 8px var(--pk-accent-line));
+  animation: schema-edge-flow 1.4s linear infinite;
+}
+
+@keyframes schema-edge-flow {
+  to {
+    stroke-dashoffset: -28;
+  }
+}

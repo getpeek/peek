@@ -152,6 +152,19 @@ export function useSchemaForceLayout() {
     [referencePairs],
   );
 
+  // IDs of currently-selected schema-table nodes. Used to highlight
+  // their connected edges so the user can see which other tables a
+  // selected table relates to.
+  const selectedSchemaIdsKey = useMemo(
+    () =>
+      schemaNodes
+        .filter((n) => n.selected)
+        .map((n) => n.id)
+        .sort()
+        .join("|"),
+    [schemaNodes],
+  );
+
   // Sync rendered edges on the schema page with the schema atom. We only
   // touch edges whose endpoints are both schema-table nodes, so other
   // edges on the page are left alone (and edges on other pages are not
@@ -204,6 +217,31 @@ export function useSchemaForceLayout() {
       return merged;
     });
   }, [isSchemaPage, schemaNodeKey, referenceKey, setEdges, schemaNodes, referencePairs]);
+
+  // Highlight schema edges connected to a selected schema-table node by
+  // tagging them with a `schema-edge-glow` className. Runs after the
+  // sync effect above, which preserves edge object references (and thus
+  // any className we set).
+  useEffect(() => {
+    if (!isSchemaPage) return;
+    const selected = new Set(
+      selectedSchemaIdsKey ? selectedSchemaIdsKey.split("|") : [],
+    );
+    setEdges((es) => {
+      let mutated = false;
+      const next = es.map((e) => {
+        if (!isSchemaNode(e.source) || !isSchemaNode(e.target)) return e;
+        const shouldGlow =
+          selected.size > 0 &&
+          (selected.has(e.source) || selected.has(e.target));
+        const desired = shouldGlow ? "schema-edge-glow" : undefined;
+        if (e.className === desired) return e;
+        mutated = true;
+        return { ...e, className: desired };
+      });
+      return mutated ? next : es;
+    });
+  }, [isSchemaPage, selectedSchemaIdsKey, setEdges]);
 
   const draggingRef = useRef<Set<string>>(new Set());
   const simRef = useRef<Simulation<SimNode, SimLink> | null>(null);
