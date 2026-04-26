@@ -34,6 +34,7 @@ import type {
   AppEdge,
   AppNode,
   ChatNode as ChatNodeT,
+  QueryData,
   ResultNode as ResultNodeT,
 } from "./types";
 import { useCanvas } from "./useCanvas";
@@ -101,18 +102,34 @@ function ReactFlowCanvasInner() {
     const selectedQueryIds = new Set(
       nodes.filter((n) => n.type === "query" && n.selected).map((n) => n.id),
     );
-    if (selectedQueryIds.size === 0) return edges;
+    const liveQueryIds = new Set(
+      nodes
+        .filter(
+          (n) =>
+            n.type === "query" &&
+            (n.data as QueryData).liveIntervalMs != null,
+        )
+        .map((n) => n.id),
+    );
+    if (selectedQueryIds.size === 0 && liveQueryIds.size === 0) return edges;
     const resultIds = new Set(
       nodes.filter((n) => n.type === "result").map((n) => n.id),
     );
     return edges.map((e) => {
-      const isLiveResultLink =
-        selectedQueryIds.has(e.source) && resultIds.has(e.target);
-      if (!isLiveResultLink) return e;
+      if (!resultIds.has(e.target)) return e;
       const existing = e.className ?? "";
-      return existing.includes("query-active")
-        ? e
-        : { ...e, className: `${existing} query-active`.trim() };
+      const parts: string[] = existing ? [existing] : [];
+      if (
+        selectedQueryIds.has(e.source) &&
+        !existing.includes("query-active")
+      ) {
+        parts.push("query-active");
+      }
+      if (liveQueryIds.has(e.source) && !existing.includes("query-live")) {
+        parts.push("query-live");
+      }
+      if (parts.length === (existing ? 1 : 0)) return e;
+      return { ...e, className: parts.join(" ").trim() };
     });
   }, [nodes, edges]);
 

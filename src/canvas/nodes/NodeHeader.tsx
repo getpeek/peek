@@ -9,6 +9,8 @@ interface NodeHeaderProps {
   name?: string;
   pinned?: boolean;
   onPinToggle?: () => void;
+  isLive?: boolean;
+  onLiveToggle?: () => void;
 }
 
 const TYPE_LABELS: Record<AppNodeType, string> = {
@@ -29,6 +31,8 @@ export function NodeHeader({
   name,
   pinned,
   onPinToggle,
+  isLive,
+  onLiveToggle,
 }: NodeHeaderProps) {
   const canvas = useCanvas();
 
@@ -43,6 +47,18 @@ export function NodeHeader({
       <span className="type-label">{label ?? TYPE_LABELS[type]}</span>
       {name && <span className="node-name">{name}</span>}
       <div className="header-actions nodrag">
+        {onLiveToggle && (
+          <button
+            className={`header-icon-btn ${isLive ? "is-live" : ""}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onLiveToggle();
+            }}
+            title={isLive ? "Stop live polling" : "Poll every 10s"}
+          >
+            <span className="live-dot" />
+          </button>
+        )}
         {onPinToggle && (
           <button
             className="header-icon-btn"

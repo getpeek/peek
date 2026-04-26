@@ -212,6 +212,7 @@
   color: var(--pk-fg);
 }
 
+
 /* Body */
 .app-node-body {
   flex: 1 1 auto;
@@ -675,6 +676,82 @@
 @keyframes pk-flow {
   to {
     stroke-dashoffset: -20;
+  }
+}
+
+.react-flow__edge.query-live .react-flow__edge-path {
+  stroke: var(--pk-accent);
+  stroke-dasharray: 4 6;
+  animation: pk-flow 1.4s linear infinite;
+}
+
+/* Rainbow animated border for live query nodes */
+.app-node.is-live,
+.app-node.is-live.selected {
+  position: relative;
+  border-color: transparent;
+}
+.app-node.is-live::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    90deg,
+    #ff5e5e,
+    #ffb24c,
+    #f5e85c,
+    #6fea7a,
+    #5cd6e8,
+    #6c8cff,
+    #c87cff,
+    #ff5e5e
+  );
+  background-size: 200% 100%;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.45;
+  pointer-events: none;
+  animation: pk-rainbow-slide 3s linear infinite;
+  z-index: 2;
+}
+@keyframes pk-rainbow-slide {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pk-fg-muted);
+  border: 1px solid var(--pk-node-border-strong, var(--pk-node-border));
+  display: inline-block;
+  flex-shrink: 0;
+}
+.is-live .live-dot {
+  background: var(--pk-accent);
+  border-color: var(--pk-accent);
+  animation: pk-live-pulse 1.2s ease-in-out infinite;
+}
+@keyframes pk-live-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 var(--pk-accent),
+      0 0 4px var(--pk-accent);
+    opacity: 1;
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px transparent,
+      0 0 8px var(--pk-accent);
+    opacity: 0.7;
   }
 }
 
