@@ -8,6 +8,13 @@ import { useRerunAllQueriesOnPageCommand } from "./commands/rerunAllQueriesOnPag
 import { useRerunSelectedQueriesCommand } from "./commands/rerunSelectedQueries";
 import { useExportSelectedDataCsvCommand } from "./commands/exportSelectedDataCsv";
 import { useExportSelectedDataJsonCommand } from "./commands/exportSelectedDataJson";
+import { useNewPageCommand } from "./commands/newPage";
+import { useClosePageCommand } from "./commands/closePage";
+import {
+  useNextPageCommand,
+  usePreviousPageCommand,
+} from "./commands/nextPage";
+import { useGoToPageCommands } from "./commands/useGoToPageCommands";
 
 export const useSearch = (query: string): CommandPaletteResult[] => {
   const queryCommands = useGoToQueryCommands();
@@ -18,6 +25,11 @@ export const useSearch = (query: string): CommandPaletteResult[] => {
   const rerunSelected = useRerunSelectedQueriesCommand();
   const exportCsv = useExportSelectedDataCsvCommand();
   const exportJson = useExportSelectedDataJsonCommand();
+  const newPageCommand = useNewPageCommand();
+  const closePageCommand = useClosePageCommand();
+  const nextPageCommand = useNextPageCommand();
+  const previousPageCommand = usePreviousPageCommand();
+  const goToPageCommands = useGoToPageCommands();
 
   if (query.trim().length === 0) {
     return [];
@@ -32,6 +44,11 @@ export const useSearch = (query: string): CommandPaletteResult[] => {
     ...connectionCommands,
     toggleDarkModeCommand,
     viewSchemaCommand,
+    newPageCommand,
+    ...(closePageCommand ? [closePageCommand] : []),
+    ...(nextPageCommand ? [nextPageCommand] : []),
+    ...(previousPageCommand ? [previousPageCommand] : []),
+    ...goToPageCommands,
   ];
   return fuzzysort
     .go(query, searchSpace, { key: "searchAgainst" })

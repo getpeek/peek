@@ -210,13 +210,15 @@ export function useCanvas(): CanvasApi {
         setDoc((d) => {
           if (!d.pages[pageId] || d.pageOrder.length <= 1) return d;
           const { [pageId]: _removed, ...rest } = d.pages;
+          const oldIdx = d.pageOrder.indexOf(pageId);
           const order = d.pageOrder.filter((id) => id !== pageId);
+          const fallbackIdx = Math.max(0, oldIdx - 1);
           return {
             ...d,
             pages: rest,
             pageOrder: order,
             activePageId:
-              d.activePageId === pageId ? order[0] : d.activePageId,
+              d.activePageId === pageId ? order[fallbackIdx] : d.activePageId,
           };
         }),
     }),

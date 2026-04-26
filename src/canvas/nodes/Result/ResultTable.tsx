@@ -1,8 +1,14 @@
-import { Table, Text } from "@mantine/core";
+import { Menu, Table, Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { invoke } from "@tauri-apps/api/core";
+import { save } from "@tauri-apps/plugin-dialog";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
+import { IconFileTypeCsv, IconJson } from "@tabler/icons-react";
+import { toCsv } from "../../../tools/export/csv";
+import { toJson } from "../../../tools/export/json";
 import { schemaAtom } from "../../../state";
 import {
   getInboundReferences,
@@ -68,6 +74,12 @@ export function ResultTable({
     error: string | null;
     saving: boolean;
   } | null>(null);
+  const [headerMenu, setHeaderMenu] = useState<{
+    x: number;
+    y: number;
+    columnIdx: number;
+    header: string;
+  } | null>(null);
 
   useLayoutEffect(() => {
     const el = scrollContainerRef.current;
@@ -121,6 +133,27 @@ export function ResultTable({
 
   const widthFor = (col: string): number => naturalWidthFor(col) * scale;
   const totalWidth = shouldExpand ? containerWidth : naturalTotalWidth;
+
+  const exportColumn = useCallback(
+    async (columnIdx: number, header: string, format: "csv" | "json") => {
+      const single: DatabaseResult = data
+        .map((row) => (row[columnIdx] ? [row[columnIdx]] : []))
+        .filter((row) => row.length > 0);
+      if (single.length === 0) return;
+
+      const defaultName = `${header}.${format}`;
+      const path = await save({
+        defaultPath: defaultName,
+        filters: [{ name: format.toUpperCase(), extensions: [format] }],
+      });
+      if (!path) return;
+
+      const output =
+        format === "csv" ? toCsv(single) : JSON.stringify(toJson(single), null, 2);
+      await writeTextFile(path, output);
+    },
+    [data],
+  );
 
   const startResize = useCallback(
     (e: React.PointerEvent<HTMLDivElement>, column: string) => {
@@ -303,7 +336,20 @@ export function ResultTable({
               else if (isFk) headerClasses.push("fk");
               const colType = (headerTypes[i] || "").toUpperCase();
               return (
-                <Table.Th key={i} className={headerClasses.join(" ")}>
+                <Table.Th
+                  key={i}
+                  className={headerClasses.join(" ")}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setHeaderMenu({
+                      x: e.clientX,
+                      y: e.clientY,
+                      columnIdx: i,
+                      header,
+                    });
+                  }}
+                >
                   <div className="col-meta">
                     <span className="col-name">
                       {header}
@@ -409,9 +455,72 @@ export function ResultTable({
           )}
         </Table.Tbody>
       </Table>
+      {headerMenu && (
+        <Menu
+          opened
+          onClose={() => setHeaderMenu(null)}
+          position="bottom-start"
+          withinPortal
+          width={220}
+          offset={4}
+          radius="md"
+          classNames={{
+            dropdown: "column-menu-dropdown",
+            item: "column-menu-item",
+            label: "column-menu-label",
+            itemSection: "column-menu-item-section",
+          }}
+        >
+          <Menu.Target>
+            <PortalAnchor x={headerMenu.x} y={headerMenu.y} />
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Label>{headerMenu.header}</Menu.Label>
+            <Menu.Item
+              leftSection={<IconFileTypeCsv size={14} />}
+              onClick={() => {
+                const { columnIdx, header } = headerMenu;
+                setHeaderMenu(null);
+                exportColumn(columnIdx, header, "csv");
+              }}
+            >
+              Export column as CSV
+            </Menu.Item>
+            <Menu.Item
+              leftSection={<IconJson size={14} />}
+              onClick={() => {
+                const { columnIdx, header } = headerMenu;
+                setHeaderMenu(null);
+                exportColumn(columnIdx, header, "json");
+              }}
+            >
+              Export column as JSON
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      )}
     </div>
   );
 }
+
+const PortalAnchor = forwardRef<HTMLDivElement, { x: number; y: number }>(
+  function PortalAnchor({ x, y }, ref) {
+    return createPortal(
+      <div
+        ref={ref}
+        style={{
+          position: "fixed",
+          left: x,
+          top: y,
+          width: 1,
+          height: 1,
+          pointerEvents: "none",
+        }}
+      />,
+      document.body,
+    );
+  },
+);
 
 function EditCell({
   type,

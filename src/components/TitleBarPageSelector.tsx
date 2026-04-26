@@ -1,81 +1,36 @@
-import { useAtom } from "jotai";
 import { useState } from "react";
 import { IconPlus } from "@tabler/icons-react";
-import { documentAtom } from "../canvas/state";
-import { ids } from "../canvas/ids";
+import { usePageActions } from "../canvas/usePageActions";
 
 export function TitleBarPageSelector() {
-  const [doc, setDoc] = useAtom(documentAtom);
+  const {
+    pages,
+    activePageId,
+    canClose,
+    newPage,
+    closePage,
+    switchPage,
+    renamePage,
+  } = usePageActions();
   const [renameId, setRenameId] = useState<string | null>(null);
-
-  const switchPage = (pageId: string) =>
-    setDoc((d) => (d.pages[pageId] ? { ...d, activePageId: pageId } : d));
-
-  const addPage = () => {
-    const pageId = ids.page();
-    setDoc((d) => ({
-      ...d,
-      pages: {
-        ...d.pages,
-        [pageId]: {
-          id: pageId,
-          name: `Page ${d.pageOrder.length + 1}`,
-          nodes: [],
-          edges: [],
-          viewport: { x: 0, y: 0, zoom: 1 },
-        },
-      },
-      pageOrder: [...d.pageOrder, pageId],
-      activePageId: pageId,
-    }));
-  };
-
-  const renamePage = (pageId: string, name: string) =>
-    setDoc((d) =>
-      d.pages[pageId]
-        ? {
-            ...d,
-            pages: {
-              ...d.pages,
-              [pageId]: { ...d.pages[pageId], name },
-            },
-          }
-        : d,
-    );
-
-  const deletePage = (pageId: string) =>
-    setDoc((d) => {
-      if (!d.pages[pageId] || d.pageOrder.length <= 1) return d;
-      const { [pageId]: _removed, ...rest } = d.pages;
-      const order = d.pageOrder.filter((id) => id !== pageId);
-      return {
-        ...d,
-        pages: rest,
-        pageOrder: order,
-        activePageId:
-          d.activePageId === pageId ? order[0] : d.activePageId,
-      };
-    });
 
   return (
     <div className="titlebar-page-selector">
-      {doc.pageOrder.map((pageId) => {
-        const page = doc.pages[pageId];
-        if (!page) return null;
-        const active = pageId === doc.activePageId;
-        if (renameId === pageId) {
+      {pages.map((page) => {
+        const active = page.id === activePageId;
+        if (renameId === page.id) {
           return (
             <input
-              key={pageId}
+              key={page.id}
               autoFocus
               defaultValue={page.name}
               onBlur={(e) => {
-                renamePage(pageId, e.target.value || page.name);
+                renamePage(page.id, e.target.value || page.name);
                 setRenameId(null);
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  renamePage(pageId, e.currentTarget.value || page.name);
+                  renamePage(page.id, e.currentTarget.value || page.name);
                   setRenameId(null);
                 }
                 if (e.key === "Escape") setRenameId(null);
@@ -87,19 +42,19 @@ export function TitleBarPageSelector() {
         }
         return (
           <button
-            key={pageId}
+            key={page.id}
             className={`page-tab ${active ? "active" : ""}`}
-            onClick={() => switchPage(pageId)}
-            onDoubleClick={() => setRenameId(pageId)}
+            onClick={() => switchPage(page.id)}
+            onDoubleClick={() => setRenameId(page.id)}
           >
             <span className="dot" />
             {page.name}
-            {active && doc.pageOrder.length > 1 && (
+            {active && canClose && (
               <span
                 className="close"
                 onClick={(e) => {
                   e.stopPropagation();
-                  deletePage(pageId);
+                  closePage(page.id);
                 }}
                 title="Delete page"
               >
@@ -111,7 +66,7 @@ export function TitleBarPageSelector() {
       })}
       <button
         className="page-tab add-btn"
-        onClick={addPage}
+        onClick={() => newPage()}
         title="New page"
       >
         <IconPlus size={13} />

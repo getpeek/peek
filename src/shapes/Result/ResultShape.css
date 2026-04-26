@@ -90,3 +90,48 @@ td.editing.error {
   white-space: pre-wrap;
   pointer-events: none;
 }
+
+.column-menu-dropdown {
+  background: var(--pk-node-bg) !important;
+  border: 1px solid var(--pk-node-border) !important;
+  border-radius: var(--pk-radius-card, 10px) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5) !important;
+  padding: 4px !important;
+  font-family: var(--pk-font-sans) !important;
+}
+
+.column-menu-label {
+  padding: 6px 10px 4px !important;
+  color: var(--pk-fg-subtle) !important;
+  font-family: var(--pk-font-mono) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  text-transform: lowercase !important;
+  letter-spacing: 0.02em !important;
+}
+
+.column-menu-item {
+  padding: 6px 10px !important;
+  border-radius: 6px !important;
+  color: var(--pk-fg) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  transition:
+    background 0.12s ease-out,
+    color 0.12s ease-out !important;
+}
+
+.column-menu-item:hover,
+.column-menu-item[data-hovered] {
+  background: var(--pk-node-bg-2) !important;
+  color: var(--pk-fg) !important;
+}
+
+.column-menu-item-section {
+  color: var(--pk-fg-muted) !important;
+}
+
+.column-menu-item:hover .column-menu-item-section,
+.column-menu-item[data-hovered] .column-menu-item-section {
+  color: var(--pk-accent-soft) !important;
+}

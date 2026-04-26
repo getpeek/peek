@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { format } from "sql-formatter";
-import { clipboardAtom, documentAtom, nodesAtom, placeModeAtom } from "../state";
+import { clipboardAtom, nodesAtom, placeModeAtom } from "../state";
 import { useCanvas } from "../useCanvas";
+import { usePageActions } from "../usePageActions";
 import { focusQueryEditor } from "../nodes/Query/editorFocusRegistry";
 import { ids } from "../ids";
 import { useUndoHistory } from "../useUndoHistory";
@@ -54,7 +55,7 @@ export function KeyboardShortcuts() {
   const setPlaceMode = useSetAtom(placeModeAtom);
   const [clipboard, setClipboard] = useAtom(clipboardAtom);
   const setNodes = useSetAtom(nodesAtom);
-  const doc = useAtomValue(documentAtom);
+  const pageActions = usePageActions();
   const { undo, redo } = useUndoHistory();
 
   useEffect(() => {
@@ -162,16 +163,30 @@ export function KeyboardShortcuts() {
         return;
       }
 
+      if (meta && !shift && e.key === "t") {
+        e.preventDefault();
+        pageActions.newPage();
+        return;
+      }
+
+      if (meta && !shift && e.key === "w") {
+        e.preventDefault();
+        pageActions.closeActivePage();
+        return;
+      }
+
+      if (meta && !shift && /^[1-9]$/.test(e.key)) {
+        const targetIdx = Number(e.key) - 1;
+        if (targetIdx >= pageActions.pages.length) return;
+        e.preventDefault();
+        pageActions.goToPageByIndex(targetIdx);
+        return;
+      }
+
       if (meta && shift && (e.code === "BracketLeft" || e.code === "BracketRight")) {
         e.preventDefault();
-        const order = doc.pageOrder;
-        if (order.length <= 1) return;
-        const currentIdx = order.indexOf(doc.activePageId);
-        const nextIdx =
-          e.code === "BracketRight"
-            ? (currentIdx + 1 + order.length) % order.length
-            : (currentIdx - 1 + order.length) % order.length;
-        canvas.switchPage(order[nextIdx]);
+        if (e.code === "BracketRight") pageActions.nextPage();
+        else pageActions.previousPage();
         return;
       }
 
@@ -201,7 +216,7 @@ export function KeyboardShortcuts() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [canvas, setPlaceMode, clipboard, setClipboard, setNodes, doc, undo, redo]);
+  }, [canvas, setPlaceMode, clipboard, setClipboard, setNodes, pageActions, undo, redo]);
 
   return null;
 }

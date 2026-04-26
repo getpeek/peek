@@ -523,6 +523,7 @@
    Text annotation (whiteboard-style typography, no card)
    ============================================================ */
 .text-node {
+  position: relative;
   display: flex;
   width: 100%;
   height: 100%;
@@ -531,9 +532,8 @@
   border-radius: 4px;
   color: var(--pk-fg);
   font-family: var(--pk-font-sans);
-  font-size: 28px;
   font-weight: 500;
-  line-height: 1.25;
+  line-height: 1;
   letter-spacing: -0.01em;
   cursor: grab;
   transition: border-color 0.12s ease-out;
@@ -552,8 +552,7 @@
   width: 100%;
   height: 100%;
   padding: 4px 6px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  white-space: pre;
   overflow: hidden;
   user-select: none;
 }
@@ -574,6 +573,22 @@
   outline: none;
   background: transparent;
   color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.text-node-measure {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  padding: 4px 6px;
+  width: max-content;
+  white-space: pre;
   font: inherit;
   letter-spacing: inherit;
   line-height: inherit;
