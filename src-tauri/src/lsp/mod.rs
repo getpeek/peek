@@ -3,6 +3,7 @@ mod _dump_tree;
 mod backend;
 mod completion;
 mod context;
+mod diagnostics;
 mod documents;
 mod parser;
 mod position;

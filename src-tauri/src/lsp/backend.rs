@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
-use lsp_types::{CompletionItem, Position, Uri};
+use lsp_types::{CompletionItem, Diagnostic, Position, Uri};
 use parking_lot::RwLock;
 
 use super::completion::complete;
 use super::context::analyze_cursor;
+use super::diagnostics::diagnose;
 use super::documents::DocumentStore;
 use super::position::position_to_byte_offset;
 use super::schema::SchemaIndex;
@@ -33,6 +34,20 @@ impl Backend {
     #[allow(dead_code)] // wired up in a follow-up when Monaco model disposal is hooked
     pub fn did_close(&self, uri: &Uri) {
         self.documents.remove(uri);
+    }
+
+    /// Walk the cached parse tree and report unknown table / column references.
+    /// Returns an empty list if the document isn't tracked or the schema is empty.
+    #[must_use]
+    pub fn diagnostics(&self, uri: &Uri) -> Vec<Diagnostic> {
+        let schema = self.schema.read();
+        self.documents
+            .with(uri, |doc| {
+                let source = doc.text.as_bytes();
+                let scope = Scope::collect(&doc.tree, source);
+                diagnose(&doc.tree, source, &scope, &schema)
+            })
+            .unwrap_or_default()
     }
 
     /// Compute completions at the given LSP position. Returns an empty list if

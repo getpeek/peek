@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use std::sync::Arc;
 
-use lsp_types::{CompletionItem, Position, Uri};
+use lsp_types::{CompletionItem, Diagnostic, Position, Uri};
 use tauri::State;
 
 use crate::lsp::Backend;
@@ -11,10 +11,10 @@ pub fn lsp_did_change(
     backend: State<'_, Arc<Backend>>,
     uri: String,
     text: String,
-) -> Result<(), String> {
+) -> Result<Vec<Diagnostic>, String> {
     let parsed = Uri::from_str(&uri).map_err(|e| e.to_string())?;
-    backend.did_change(parsed, text);
-    Ok(())
+    backend.did_change(parsed.clone(), text);
+    Ok(backend.diagnostics(&parsed))
 }
 
 #[tauri::command]

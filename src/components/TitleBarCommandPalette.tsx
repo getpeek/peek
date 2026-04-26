@@ -13,8 +13,8 @@ export const TitleBarCommandPalette = () => {
       aria-label="Open command palette"
     >
       <IconSearch size={12} stroke={2} />
-      <span>Search</span>
-      <kbd>⌘P</kbd>
+      <span>Command</span>
+      <kbd>⌘ P</kbd>
     </button>
   );
 };

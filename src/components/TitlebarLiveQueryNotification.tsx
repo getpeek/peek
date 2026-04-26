@@ -11,8 +11,7 @@ export const TitlebarLiveQueryNotification = () => {
     return null;
   }
 
-  const liveNodes =
-    nodes.filter((node) => node.type === "query" && node.data.liveIntervalMs !== null) ?? [];
+  const liveNodes = nodes.filter((node) => node.type === "query" && node.data.liveIntervalMs) ?? [];
 
   if (liveNodes.length === 0) {
     return null;

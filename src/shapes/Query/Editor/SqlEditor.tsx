@@ -161,7 +161,7 @@ export const SqlEditor = ({
             const contentSub = editor.onDidChangeModelContent(() => {
               redrawDecorations();
             });
-            const lspSubs = attachLspDocumentSync(editor);
+            const lspSubs = attachLspDocumentSync(monaco, editor);
             const disposeSub = editor.onDidDispose(() => {
               contentSub.dispose();
               lspSubs.forEach((s) => s.dispose());

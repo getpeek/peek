@@ -53,3 +53,17 @@ export interface LspCompletionItem {
   insertTextFormat?: number;
   sortText?: string;
 }
+
+export const LspDiagnosticSeverity = {
+  Error: 1,
+  Warning: 2,
+  Information: 3,
+  Hint: 4,
+} as const;
+
+export interface LspDiagnostic {
+  range: LspRange;
+  severity?: number;
+  message: string;
+  source?: string;
+}
