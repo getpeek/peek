@@ -219,14 +219,27 @@ export function useSchemaForceLayout() {
   }, [isSchemaPage, schemaNodeKey, referenceKey, setEdges, schemaNodes, referencePairs]);
 
   // Highlight schema edges connected to a selected schema-table node by
-  // tagging them with a `schema-edge-glow` className. Runs after the
-  // sync effect above, which preserves edge object references (and thus
-  // any className we set).
+  // tagging them with a `schema-edge-glow` className, and the schema
+  // nodes on the *other* end of those edges with `schema-node-connected`.
+  // Runs after the sync effect above, which preserves edge object
+  // references (and thus any className we set).
   useEffect(() => {
     if (!isSchemaPage) return;
     const selected = new Set(
       selectedSchemaIdsKey ? selectedSchemaIdsKey.split("|") : [],
     );
+    const connected = new Set<string>();
+    if (selected.size > 0) {
+      for (const pair of referencePairs) {
+        if (selected.has(pair.source) && !selected.has(pair.target)) {
+          connected.add(pair.target);
+        }
+        if (selected.has(pair.target) && !selected.has(pair.source)) {
+          connected.add(pair.source);
+        }
+      }
+    }
+
     setEdges((es) => {
       let mutated = false;
       const next = es.map((e) => {
@@ -241,7 +254,28 @@ export function useSchemaForceLayout() {
       });
       return mutated ? next : es;
     });
-  }, [isSchemaPage, selectedSchemaIdsKey, setEdges]);
+
+    setNodes((ns) => {
+      let mutated = false;
+      const next = ns.map((n) => {
+        if (!isSchemaNode(n.id)) return n;
+        const desired = connected.has(n.id)
+          ? "schema-node-connected"
+          : undefined;
+        if (n.className === desired) return n;
+        mutated = true;
+        return { ...n, className: desired };
+      });
+      return mutated ? next : ns;
+    });
+  }, [
+    isSchemaPage,
+    selectedSchemaIdsKey,
+    referenceKey,
+    referencePairs,
+    setEdges,
+    setNodes,
+  ]);
 
   const draggingRef = useRef<Set<string>>(new Set());
   const simRef = useRef<Simulation<SimNode, SimLink> | null>(null);

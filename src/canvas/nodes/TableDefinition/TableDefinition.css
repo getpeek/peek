@@ -84,3 +84,10 @@
     stroke-dashoffset: -28;
   }
 }
+
+.react-flow__node.schema-node-connected .app-node {
+  border-color: var(--pk-accent-line);
+  box-shadow:
+    0 0 0 1px var(--pk-accent-line),
+    0 0 12px rgba(147, 84, 224, 0.15);
+}
