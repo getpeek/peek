@@ -3,15 +3,8 @@ import { IconPlus } from "@tabler/icons-react";
 import { usePageActions } from "../canvas/usePageActions";
 
 export function TitleBarPageSelector() {
-  const {
-    pages,
-    activePageId,
-    canClose,
-    newPage,
-    closePage,
-    switchPage,
-    renamePage,
-  } = usePageActions();
+  const { pages, activePageId, canClose, newPage, closePage, switchPage, renamePage } =
+    usePageActions();
   const [renameId, setRenameId] = useState<string | null>(null);
 
   return (
@@ -47,7 +40,7 @@ export function TitleBarPageSelector() {
             onClick={() => switchPage(page.id)}
             onDoubleClick={() => setRenameId(page.id)}
           >
-            <span className="dot" />
+            {active && <span className="dot" />}
             {page.name}
             {active && canClose && (
               <span
@@ -64,11 +57,7 @@ export function TitleBarPageSelector() {
           </button>
         );
       })}
-      <button
-        className="page-tab add-btn"
-        onClick={() => newPage()}
-        title="New page"
-      >
+      <button className="page-tab add-btn" onClick={() => newPage()} title="New page">
         <IconPlus size={13} />
       </button>
     </div>

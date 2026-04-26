@@ -1,7 +1,7 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { IconIndentIncrease, IconPlayerPlay } from "@tabler/icons-react";
-import { format } from "sql-formatter";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useAtomValue } from "jotai";
 import type { editor as MonacoEditor } from "monaco-editor";
 import { SqlEditor } from "../../../shapes/Query/Editor/SqlEditor";
 import { useCanvas } from "../../useCanvas";
@@ -9,7 +9,13 @@ import { useExecuteQueries } from "../../useExecuteQueries";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
-import type { QueryNode as QueryNodeT } from "../../types";
+import { edgesAtom, nodesAtom } from "../../state";
+import { formatPreservingVars } from "../../variables";
+import type {
+  QueryNode as QueryNodeT,
+  VariableData,
+  VariableNode as VariableNodeT,
+} from "../../types";
 import { registerQueryEditorFocus } from "./editorFocusRegistry";
 import "../node.css";
 
@@ -35,8 +41,29 @@ export function QueryNode({
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   useScrollFallthrough(bodyRef);
+  const allNodes = useAtomValue(nodesAtom);
+  const allEdges = useAtomValue(edgesAtom);
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
+
+  const variableNames = useMemo(() => {
+    const incoming = allEdges
+      .filter((e) => e.target === id)
+      .slice()
+      .sort((a, b) => a.id.localeCompare(b.id));
+    const merged: Record<string, true> = {};
+    for (const edge of incoming) {
+      const source = allNodes.find(
+        (n): n is VariableNodeT =>
+          n.id === edge.source && n.type === "variable",
+      );
+      if (!source) continue;
+      for (const row of (source.data as VariableData).rows) {
+        if (row.name) merged[row.name] = true;
+      }
+    }
+    return Object.keys(merged);
+  }, [id, allNodes, allEdges]);
 
   useEffect(
     () => registerQueryEditorFocus(id, () => editorRef.current?.focus()),
@@ -75,7 +102,7 @@ export function QueryNode({
     if (!node || node.type !== "query") return;
     const current = (node.data as QueryNodeT["data"]).query;
     try {
-      const formatted = format(current, {
+      const formatted = formatPreservingVars(current, {
         keywordCase: "upper",
         functionCase: "upper",
         language: "postgresql",
@@ -89,7 +116,7 @@ export function QueryNode({
   return (
     <>
       <NodeResizer isVisible={!!selected} minWidth={320} minHeight={200} />
-      <HiddenHandles />
+      <HiddenHandles connectableTarget />
       <div
         className={`app-node ${selected ? "selected" : ""} ${isLive ? "is-live" : ""}`}
         style={{ width: w, height: h }}
@@ -104,6 +131,7 @@ export function QueryNode({
         <div className="app-node-body nodrag" ref={bodyRef}>
           <SqlEditor
             query={data.query}
+            variables={variableNames}
             onMount={(editor, monaco) => {
               editorRef.current = editor;
               editor.addCommand(

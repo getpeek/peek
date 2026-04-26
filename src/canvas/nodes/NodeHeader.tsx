@@ -22,6 +22,7 @@ const TYPE_LABELS: Record<AppNodeType, string> = {
   "query-error": "ERROR",
   "table-definition": "TABLE",
   text: "TEXT",
+  variable: "VARS",
 };
 
 export function NodeHeader({

@@ -31,6 +31,7 @@ export const defaultDimensions: Record<
   "query-error": { w: 400, h: 300 },
   "table-definition": { w: 450, h: 280 },
   text: { w: 280, h: 140 },
+  variable: { w: 280, h: 220 },
 };
 
 export function makeNode(
@@ -108,6 +109,13 @@ export function makeNode(
         id: ids.text(),
         type: "text",
         data: { text: "" },
+      };
+    case "variable":
+      return {
+        ...base,
+        id: ids.variable(),
+        type: "variable",
+        data: { rows: [{ name: "", value: "" }] },
       };
   }
 }

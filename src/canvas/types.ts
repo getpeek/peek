@@ -10,7 +10,8 @@ export type AppNodeType =
   | "barchart"
   | "query-error"
   | "table-definition"
-  | "text";
+  | "text"
+  | "variable";
 
 export type QueryData = {
   query: string;
@@ -63,6 +64,12 @@ export type TextData = {
   text: string;
 };
 
+export type VariableRow = { name: string; value: string };
+
+export type VariableData = {
+  rows: VariableRow[];
+};
+
 export type QueryNode = Node<QueryData, "query">;
 export type ResultNode = Node<ResultData, "result">;
 export type AiPromptNode = Node<AiPromptData, "ai-prompt">;
@@ -71,6 +78,7 @@ export type BarChartNode = Node<BarChartData, "barchart">;
 export type QueryErrorNode = Node<ErrorData, "query-error">;
 export type TableDefinitionNode = Node<TableDefinitionData, "table-definition">;
 export type TextNode = Node<TextData, "text">;
+export type VariableNode = Node<VariableData, "variable">;
 
 export type AppNode =
   | QueryNode
@@ -80,7 +88,8 @@ export type AppNode =
   | BarChartNode
   | QueryErrorNode
   | TableDefinitionNode
-  | TextNode;
+  | TextNode
+  | VariableNode;
 
 export type AppEdge = Edge;
 

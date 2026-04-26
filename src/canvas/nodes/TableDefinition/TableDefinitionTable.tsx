@@ -20,9 +20,15 @@ export function TableDefinitionTable({ table, columns }: Props) {
       if (fromTable === table && fromCol) fkSet.add(fromCol);
     }
     const isPk = (col: string, index: number) => {
-      if (declaredPks.has(col)) return true;
-      if (/^id$/i.test(col)) return true;
-      if (index === 0 && /_id$/i.test(col)) return true;
+      if (declaredPks.has(col)) {
+        return true;
+      }
+      if (/^id$/i.test(col)) {
+        return true;
+      }
+      if (index === 0 && /_id$/i.test(col)) {
+        return true;
+      }
       return false;
     };
     const isFk = (col: string, index: number) =>
@@ -39,9 +45,7 @@ export function TableDefinitionTable({ table, columns }: Props) {
           const category = categorizeType(type);
           return (
             <tr key={name}>
-              <td
-                className={`col-name-cell ${pk ? "pk" : ""} ${fk ? "fk" : ""}`}
-              >
+              <td className={`col-name-cell ${pk ? "pk" : ""} ${fk ? "fk" : ""}`}>
                 <span className="col-name">
                   {name}
                   {pk && <span className="col-tag pk">PK</span>}

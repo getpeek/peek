@@ -1,4 +1,5 @@
 import {
+  IconAt,
   IconCode,
   IconLetterT,
   IconMouse,
@@ -36,6 +37,12 @@ const tools: ToolDef[] = [
     hotkey: "T",
     mode: "text",
     Icon: IconLetterT,
+  },
+  {
+    label: "Variable",
+    hotkey: "V",
+    mode: "variable",
+    Icon: IconAt,
   },
 ];
 

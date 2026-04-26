@@ -56,3 +56,21 @@
 .monaco-editor .suggest-widget .monaco-list .monaco-list-row:hover {
   background: var(--pk-node-bg) !important;
 }
+
+.monaco-editor .sql-var-chip {
+  background: var(--pk-accent-bg);
+  color: var(--pk-accent-soft) !important;
+  border-radius: 4px;
+  padding: 1px 2px;
+  border: 1px solid var(--pk-accent-line);
+  font-weight: 500;
+}
+
+.monaco-editor .sql-var-chip-missing {
+  background: var(--pk-red-soft);
+  color: var(--pk-red) !important;
+  border-radius: 4px;
+  padding: 1px 2px;
+  border: 1px solid var(--pk-red);
+  font-weight: 500;
+}

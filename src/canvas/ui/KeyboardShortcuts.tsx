@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAtom, useSetAtom } from "jotai";
-import { format } from "sql-formatter";
 import { clipboardAtom, nodesAtom, placeModeAtom } from "../state";
+import { formatPreservingVars } from "../variables";
 import { useCanvas } from "../useCanvas";
 import { usePageActions } from "../usePageActions";
 import { focusQueryEditor } from "../nodes/Query/editorFocusRegistry";
@@ -27,6 +27,8 @@ function newIdForType(type: AppNodeType): string {
       return ids.query();
     case "text":
       return ids.text();
+    case "variable":
+      return ids.variable();
   }
 }
 
@@ -74,7 +76,7 @@ export function KeyboardShortcuts() {
         if (!target) return;
         e.preventDefault();
         try {
-          const formatted = format(target.data.query, {
+          const formatted = formatPreservingVars(target.data.query, {
             keywordCase: "upper",
             functionCase: "upper",
             language: "postgresql",
@@ -147,6 +149,12 @@ export function KeyboardShortcuts() {
       if (e.key.toLowerCase() === "t" && !meta) {
         e.preventDefault();
         setPlaceMode("text");
+        return;
+      }
+
+      if (e.key.toLowerCase() === "v" && !meta) {
+        e.preventDefault();
+        setPlaceMode("variable");
         return;
       }
 

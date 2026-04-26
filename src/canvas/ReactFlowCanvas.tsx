@@ -7,7 +7,9 @@ import {
   applyEdgeChanges,
   applyNodeChanges,
   useReactFlow,
+  type Connection,
   type EdgeChange,
+  type IsValidConnection,
   type NodeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -24,6 +26,7 @@ import { QueryNode } from "./nodes/Query/QueryNode";
 import { ResultNode } from "./nodes/Result/ResultNode";
 import { TableDefinitionNode } from "./nodes/TableDefinition/TableDefinitionNode";
 import { TextNode } from "./nodes/Text/TextNode";
+import { VariableNode } from "./nodes/Variable/VariableNode";
 import { Toolbar } from "./ui/Toolbar";
 import { ZoomIndicator } from "./ui/ZoomIndicator";
 import { KeyboardShortcuts } from "./ui/KeyboardShortcuts";
@@ -51,6 +54,7 @@ const nodeTypes = {
   "query-error": QueryErrorNode,
   "table-definition": TableDefinitionNode,
   text: TextNode,
+  variable: VariableNode,
 };
 
 const edgeTypes = {
@@ -96,6 +100,27 @@ function ReactFlowCanvasInner() {
       setEdges((es) => applyEdgeChanges(changes, es));
     },
     [setEdges],
+  );
+
+  const isValidVariableConnection = useCallback<IsValidConnection<AppEdge>>(
+    (connection) => {
+      if (!connection.source || !connection.target) return false;
+      if (connection.source === connection.target) return false;
+      const source = rf.getNode(connection.source);
+      const target = rf.getNode(connection.target);
+      if (!source || !target) return false;
+      return source.type === "variable" && target.type === "query";
+    },
+    [rf],
+  );
+
+  const onConnect = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return;
+      if (!isValidVariableConnection(connection)) return;
+      canvas.connect(connection.source, connection.target);
+    },
+    [canvas, isValidVariableConnection],
   );
 
   const styledEdges = useMemo(() => {
@@ -228,6 +253,8 @@ function ReactFlowCanvasInner() {
         defaultEdgeOptions={defaultEdgeOptions}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        isValidConnection={isValidVariableConnection}
         onPaneClick={onPaneClick}
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}

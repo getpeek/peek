@@ -7,6 +7,7 @@ import type {
   QueryErrorNode,
   ResultNode,
 } from "./types";
+import { collectVariablesFor, substituteVariables } from "./variables";
 
 export async function executeQueries(
   canvas: CanvasApi,
@@ -16,10 +17,20 @@ export async function executeQueries(
   let lastCreatedId: string | null = null;
   const createdIds: string[] = [];
 
+  const vars = collectVariablesFor(canvas, sourceNode.id);
+
   for (let i = 0; i < queries.length; i++) {
     const query = queries[i];
     try {
-      const response = (await invoke("get_results", { query })) as string;
+      const { resolved, missing } = substituteVariables(query, vars);
+      if (missing.length > 0) {
+        throw new Error(
+          `Undefined variables: ${missing.map((m) => "@" + m).join(", ")}`,
+        );
+      }
+      const response = (await invoke("get_results", {
+        query: resolved,
+      })) as string;
       const result = JSON.parse(response) as [string, unknown, string][][];
 
       if (queries.length > 1 && result.length === 0) {
@@ -48,8 +59,6 @@ export async function executeQueries(
         canvas.updateNode(resultNodeId, (n) =>
           ({
             ...n,
-            width: w,
-            height: h,
             data: { data: result, query },
           }) as AppNode,
         );

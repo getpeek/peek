@@ -131,7 +131,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
           <div className="meta">
             <span className="ok">●</span>
             <span>{data.data.length} rows</span>
-            {queryName && <span>{queryName}</span>}
+            {queryName && <span>{queryName.substring(0, 20)}...</span>}
           </div>
           <div className="actions">
             {canChart && (
