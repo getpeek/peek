@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { useAtomValue } from "jotai";
 import { darkModeAtom } from "../../../state";
 import { scanVariableSites } from "../../../canvas/variables";
+import { attachLspDocumentSync } from "./lspProvider";
 
 let overflowWidgetsDomNode: HTMLElement | null = null;
 const getOverflowWidgetsDomNode = () => {
@@ -160,8 +161,10 @@ export const SqlEditor = ({
             const contentSub = editor.onDidChangeModelContent(() => {
               redrawDecorations();
             });
+            const lspSubs = attachLspDocumentSync(editor);
             const disposeSub = editor.onDidDispose(() => {
               contentSub.dispose();
+              lspSubs.forEach((s) => s.dispose());
               if (model) variablesByModelUri.delete(model.uri.toString());
               disposeSub.dispose();
             });

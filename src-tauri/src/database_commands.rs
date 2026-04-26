@@ -1,8 +1,12 @@
-use crate::{import::FileImporter, AppData};
+use crate::lsp::SchemaIndex;
+use crate::{import::FileImporter, AppData, SchemaCache};
 use tauri::{async_runtime::Mutex, State};
 
 #[tauri::command]
-pub async fn get_schema(state: State<'_, Mutex<AppData>>) -> Result<String, String> {
+pub async fn get_schema(
+    state: State<'_, Mutex<AppData>>,
+    schema_cache: State<'_, SchemaCache>,
+) -> Result<String, String> {
     let mut state = state.lock().await;
 
     let Some(connection) = state.connection.as_mut() else {
@@ -16,6 +20,9 @@ pub async fn get_schema(state: State<'_, Mutex<AppData>>) -> Result<String, Stri
         "references": references,
         "primaryKeys": primary_keys,
     });
+
+    *schema_cache.write() =
+        SchemaIndex::from_raw(tables.clone(), references.clone(), primary_keys.clone());
 
     serde_json::to_string(&full_schema).map_err(|_| "JSON serialization failed".to_string())
 }

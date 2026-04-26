@@ -5,7 +5,6 @@ import { CustomTitleBar } from "./components/CustomTitleBar";
 import { CommandPalette } from "./command-palette/CommandPalette";
 import { DropZone } from "./drop-zone/DropZone";
 import { useGetConfig } from "./app/useGetConfig";
-import { useTreesitter } from "./app/useInitTreesitter";
 import { ReactFlowCanvas } from "./canvas/ReactFlowCanvas";
 import { useAutoSaveDocument } from "./canvas/useAutoSaveDocument";
 import { useLoadDocument } from "./canvas/useLoadDocument";
@@ -21,7 +20,6 @@ function App() {
   const isDarkMode = useAtomValue(darkModeAtom);
 
   useGetConfig();
-  useTreesitter();
   useAutoSaveDocument();
   useLoadDocument();
 

@@ -16,6 +16,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
+cc = "1"
 
 [dependencies]
 tauri = { version = "2", features = ["macos-private-api"] }
@@ -44,6 +45,11 @@ toml = { version = "0.9.5", features = ["serde"] }
 csv = "1.3.1"
 qsv-sniffer = "0.11.0"
 tiberius = { version = "0.12.3", features = ["chrono", "rust_decimal"] }
+tree-sitter = "0.25"
+tree-sitter-language = "0.1"
+lsp-types = "0.97"
+dashmap = "6"
+parking_lot = "0.12"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 objc2 = "0.6"

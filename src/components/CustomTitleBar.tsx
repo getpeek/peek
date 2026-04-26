@@ -4,6 +4,7 @@ import { TitleBarPageSelector } from "./TitleBarPageSelector";
 import { TitleBarCommandPalette } from "./TitleBarCommandPalette";
 import "./CustomTitleBar.css";
 import { IconArrowsDiagonal2, IconMinus, IconX } from "@tabler/icons-react";
+import { TitlebarLiveQueryNotification } from "./TitlebarLiveQueryNotification";
 
 export const CustomTitleBar = () => {
   const handleMinimize = async () => {
@@ -48,17 +49,13 @@ export const CustomTitleBar = () => {
               aria-label="Maximize"
               tabIndex={-1}
             >
-              <IconArrowsDiagonal2
-                size={9}
-                color="#333"
-                className="icon"
-                stroke={3}
-              />
+              <IconArrowsDiagonal2 size={9} color="#333" className="icon" stroke={3} />
             </button>
           </div>
           <TitleBarPageSelector />
         </div>
         <div className="titlebar-right">
+          <TitlebarLiveQueryNotification />
           <TitleBarCommandPalette />
           <TitleBarConnectionPicker />
         </div>

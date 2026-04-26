@@ -30,6 +30,4 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
   },
-  optimizeDeps: { exclude: ["web-tree-sitter"] },
-  assetsInclude: ["**/*.wasm"],
 }));

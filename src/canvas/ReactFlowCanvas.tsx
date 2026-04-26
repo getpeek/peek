@@ -171,9 +171,7 @@ function ReactFlowCanvasInner() {
         y: flowPos.y - dims.h / 2,
       });
       setNodes((ns) => [...ns, node]);
-      if (placeMode === "query") {
-        rf.setCenter(flowPos.x, flowPos.y, { zoom: 1, duration: 300 });
-      }
+      rf.setCenter(flowPos.x, flowPos.y, { zoom: 1, duration: 300 });
       setPlaceMode(null);
     },
     [placeMode, rf, setNodes, setPlaceMode],

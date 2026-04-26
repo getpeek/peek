@@ -30,8 +30,6 @@
     "active": true,
     "targets": "all",
     "macOS": {
-      "signingIdentity": "Developer ID Application: Damoon Rashidi (93JGDXCC8N)",
-      "providerShortName": "93JGDXCC8N",
       "dmg": {
         "appPosition": {
           "x": 180,
