@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 
 #[tauri::command]
@@ -51,17 +53,39 @@ pub struct Workspace {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct DatabaseConnection {
-    name: String,
-    color: String,
-    url: String,
-    ssh: Option<SSHConfig>,
+    pub name: String,
+    pub color: String,
+    pub url: String,
+    #[serde(default)]
+    pub ssh_tunnel: Option<SshTunnelConfig>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
-pub struct SSHConfig {
-    host: String,
-    port: u16,
-    username: String,
-    password: Option<String>,
-    ssh_key: Option<String>,
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SshTunnelConfig {
+    /// SSH bastion host (e.g. `13.60.11.197`)
+    pub ssh_host: String,
+
+    /// SSH username
+    pub ssh_user: String,
+
+    /// Path to the SSH private key (`.pem` file)
+    pub key_path: PathBuf,
+
+    /// SSH port (defaults to 22)
+    #[serde(default = "SshTunnelConfig::default_ssh_port")]
+    pub ssh_port: u16,
+
+    /// Local port for the tunnel (defaults to 15432). Set to 0 to let the OS pick a free port.
+    #[serde(default = "SshTunnelConfig::default_local_port")]
+    pub local_port: u16,
+}
+
+impl SshTunnelConfig {
+    fn default_ssh_port() -> u16 {
+        22
+    }
+
+    fn default_local_port() -> u16 {
+        15432
+    }
 }

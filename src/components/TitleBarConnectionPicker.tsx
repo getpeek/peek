@@ -6,6 +6,7 @@ import { schemaAtom } from "../state";
 import { invoke } from "@tauri-apps/api/core";
 import "./TitleBarConnectionPicker.css";
 import { WorkspacePopover } from "../Connection/WorkspacePopover";
+import type { Connection } from "../Connection/types";
 
 export const TitleBarConnectionPicker: React.FC = () => {
   const [, setSchema] = useAtom(schemaAtom);
@@ -19,16 +20,19 @@ export const TitleBarConnectionPicker: React.FC = () => {
 
   useEffect(() => {
     if (activeConnection) {
-      setConnection(activeConnection.connection.url);
+      setConnection(activeConnection.connection);
     }
     fetchSchema().then(setSchema);
   }, [activeConnection]);
 
-  const setConnection = async (url: string) => {
+  const setConnection = async (connection: Connection) => {
     setIsConnecting(true);
 
     try {
-      await invoke("set_connection", { connectionString: url });
+      await invoke("set_connection", {
+        connectionString: connection.url,
+        sshTunnel: connection.ssh_tunnel ?? null,
+      });
 
       const schema = await fetchSchema();
       setSchema(schema);

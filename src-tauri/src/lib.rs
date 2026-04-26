@@ -4,45 +4,102 @@ mod database_commands;
 mod import;
 mod lsp;
 mod lsp_commands;
+mod ssh_tunnel;
 mod storage_commands;
 
 use std::sync::Arc;
 
+use config::SshTunnelConfig;
 use database::{mysql::MysqlDatabase, postgres::PostgresDatabase, Database};
 use lsp::{Backend, SchemaIndex};
 use parking_lot::RwLock;
 use sqlx::Connection;
+use ssh_tunnel::SshTunnel;
 use tauri::{async_runtime::Mutex, State};
+use url::Url;
 
 #[derive(Default)]
 pub struct AppData {
     connection: Option<Box<dyn Database>>,
+    tunnel: Option<SshTunnel>,
+}
+
+impl std::fmt::Debug for AppData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AppData")
+            .field("connection", &self.connection.as_ref().map(|_| "<dyn Database>"))
+            .field("tunnel", &self.tunnel)
+            .finish()
+    }
 }
 
 pub type SchemaCache = Arc<RwLock<SchemaIndex>>;
+
+fn default_port_for_scheme(scheme: &str) -> Option<u16> {
+    match scheme {
+        "postgres" | "postgresql" => Some(5432),
+        "mysql" | "mariadb" => Some(3306),
+        _ => None,
+    }
+}
 
 #[tauri::command]
 async fn set_connection(
     state: State<'_, Mutex<AppData>>,
     schema_cache: State<'_, SchemaCache>,
     connection_string: String,
+    ssh_tunnel: Option<SshTunnelConfig>,
 ) -> Result<(), String> {
     let mut state = state.lock().await;
 
-    if connection_string.starts_with("postgres://")
-        || connection_string.starts_with("postgresql://")
-    {
-        let connection = sqlx::PgConnection::connect(&connection_string)
+    // Drop the existing connection and tunnel before opening a new one — avoids local-port
+    // collision when reconnecting and ensures clean teardown order.
+    state.connection.take();
+    state.tunnel.take();
+
+    let mut url = Url::parse(&connection_string)
+        .map_err(|e| format!("Invalid connection string: {e}"))?;
+
+    let tunnel = if let Some(cfg) = ssh_tunnel {
+        let remote_host = url
+            .host_str()
+            .ok_or_else(|| "Connection string missing host".to_string())?
+            .to_string();
+        let remote_port = url
+            .port()
+            .or_else(|| default_port_for_scheme(url.scheme()))
+            .ok_or_else(|| format!("Cannot infer port for scheme {}", url.scheme()))?;
+
+        let tunnel = SshTunnel::open(&cfg, &remote_host, remote_port).await?;
+        let local_port = tunnel.local_port();
+
+        url.set_host(Some("127.0.0.1"))
+            .map_err(|e| format!("Failed to rewrite host: {e}"))?;
+        url.set_port(Some(local_port))
+            .map_err(|()| "Failed to rewrite port".to_string())?;
+
+        Some(tunnel)
+    } else {
+        None
+    };
+
+    let rewritten = url.as_str().to_string();
+    let scheme = url.scheme();
+
+    if scheme == "postgres" || scheme == "postgresql" {
+        let connection = sqlx::PgConnection::connect(&rewritten)
             .await
             .map_err(|e| e.to_string())?;
         let db = PostgresDatabase::new(connection);
         state.connection = Some(Box::new(db));
+        state.tunnel = tunnel;
         *schema_cache.write() = SchemaIndex::default();
         return Ok(());
     }
-    if connection_string.starts_with("mysql://") || connection_string.starts_with("mariadb://") {
-        let db = MysqlDatabase::new(&connection_string);
+    if scheme == "mysql" || scheme == "mariadb" {
+        let db = MysqlDatabase::new(&rewritten);
         state.connection = Some(Box::new(db));
+        state.tunnel = tunnel;
         *schema_cache.write() = SchemaIndex::default();
     }
 

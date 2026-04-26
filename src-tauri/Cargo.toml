@@ -50,6 +50,9 @@ tree-sitter-language = "0.1"
 lsp-types = "0.97"
 dashmap = "6"
 parking_lot = "0.12"
+russh = "0.54"
+tokio = { version = "1", features = ["net", "io-util", "macros", "sync", "rt"] }
+url = "2"
 
 [target."cfg(target_os = \"macos\")".dependencies]
 objc2 = "0.6"
