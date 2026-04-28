@@ -1,10 +1,4 @@
-import {
-  IconAt,
-  IconCode,
-  IconLetterT,
-  IconMouse,
-  IconSparkles,
-} from "@tabler/icons-react";
+import { IconAt, IconCode, IconLetterT, IconMouse, IconSparkles } from "@tabler/icons-react";
 import { Panel } from "@xyflow/react";
 import { useAtom } from "jotai";
 import type { ComponentType } from "react";

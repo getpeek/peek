@@ -68,9 +68,31 @@ export function VariableNode({
     <>
       <NodeResizer isVisible={!!selected} minWidth={220} minHeight={140} />
       <Handle
+        id="top"
+        type="source"
+        position={Position.Top}
+        className="variable-edge-handle variable-edge-handle--top"
+        isConnectable
+      />
+      <Handle
+        id="right"
         type="source"
         position={Position.Right}
-        className="variable-source-handle"
+        className="variable-edge-handle variable-edge-handle--right"
+        isConnectable
+      />
+      <Handle
+        id="bottom"
+        type="source"
+        position={Position.Bottom}
+        className="variable-edge-handle variable-edge-handle--bottom"
+        isConnectable
+      />
+      <Handle
+        id="left"
+        type="source"
+        position={Position.Left}
+        className="variable-edge-handle variable-edge-handle--left"
         isConnectable
       />
       <div

@@ -36,11 +36,11 @@ export function CellContextMenu({
         <PortalAnchor x={cellMenu.x} y={cellMenu.y} />
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item leftSection={<IconAt size={14} />} onClick={onUseAsVariable}>
-          Use as variable
-        </Menu.Item>
         <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyValue}>
           Copy value
+        </Menu.Item>
+        <Menu.Item leftSection={<IconAt size={14} />} onClick={onUseAsVariable}>
+          Use as variable
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

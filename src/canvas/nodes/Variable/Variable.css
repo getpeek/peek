@@ -1,144 +1,181 @@
 .variable-body {
-  overflow: auto;
+    overflow: auto;
 }
 
 .variable-table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-family: var(--pk-font-mono);
-  font-size: 12px;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: var(--pk-font-mono);
+    font-size: 12px;
 }
 
 .variable-col-name {
-  width: 40%;
+    width: 40%;
 }
 .variable-col-value {
-  width: auto;
+    width: auto;
 }
 .variable-col-actions {
-  width: 28px;
+    width: 28px;
 }
 
 .app-node .variable-table tbody td {
-  padding: 0 !important;
-  border-bottom: 1px solid var(--pk-node-border) !important;
-  vertical-align: middle;
+    padding: 0 !important;
+    border-bottom: 1px solid var(--pk-node-border) !important;
+    vertical-align: middle;
 }
 
 .variable-table tbody tr:last-child td {
-  border-bottom: none !important;
+    border-bottom: none !important;
 }
 
 .variable-name-wrap {
-  display: flex;
-  align-items: center;
-  padding-left: 10px;
-  gap: 4px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    gap: 4px;
 }
 
 .at-sigil {
-  color: var(--pk-accent-soft);
-  font: 500 12px var(--pk-font-mono);
-  user-select: none;
-  flex-shrink: 0;
+    color: var(--pk-accent-soft);
+    font: 500 12px var(--pk-font-mono);
+    user-select: none;
+    flex-shrink: 0;
 }
 
 .variable-input {
-  width: 100%;
-  min-width: 0;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--pk-fg);
-  font: 400 12px var(--pk-font-mono);
-  padding: 8px 6px;
-  letter-spacing: 0;
-  text-align: left;
+    width: 100%;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--pk-fg);
+    font: 400 12px var(--pk-font-mono);
+    padding: 8px 6px;
+    letter-spacing: 0;
+    text-align: left;
 }
 
 .variable-name-wrap .variable-input {
-  padding-left: 0;
+    padding-left: 0;
 }
 
 .variable-input::placeholder {
-  color: var(--pk-fg-subtle);
+    color: var(--pk-fg-subtle);
 }
 
 .variable-input.invalid {
-  color: var(--pk-red);
+    color: var(--pk-red);
 }
 
 .variable-actions-cell {
-  text-align: right;
-  padding-right: 6px !important;
+    text-align: right;
+    padding-right: 6px !important;
 }
 
 .variable-row-delete {
-  background: transparent;
-  border: 0;
-  color: var(--pk-fg-subtle);
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.1s, background 0.1s, color 0.1s;
+    background: transparent;
+    border: 0;
+    color: var(--pk-fg-subtle);
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    opacity: 0;
+    transition:
+        opacity 0.1s,
+        background 0.1s,
+        color 0.1s;
 }
 
 .variable-table tbody tr:hover .variable-row-delete {
-  opacity: 1;
+    opacity: 1;
 }
 
 .variable-row-delete:hover {
-  background: var(--pk-node-bg-2);
-  color: var(--pk-red);
+    background: var(--pk-node-bg-2);
+    color: var(--pk-red);
 }
 
 .app-node-header.type-variable .type-dot {
-  background: var(--pk-accent-soft);
+    background: var(--pk-accent-soft);
 }
 
 .variable-global-toggle {
-  background: transparent;
-  border: 0;
-  color: var(--pk-fg-subtle);
-  width: 24px;
-  height: 22px;
-  border-radius: 4px;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  padding: 0;
-  transition: background 0.1s, color 0.1s;
+    background: transparent;
+    border: 0;
+    color: var(--pk-fg-subtle);
+    width: 24px;
+    height: 22px;
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    padding: 0;
+    transition:
+        background 0.1s,
+        color 0.1s;
 }
 
 .variable-global-toggle:hover {
-  color: var(--pk-fg);
-  background: var(--pk-node-bg-2);
+    color: var(--pk-fg);
+    background: var(--pk-node-bg-2);
 }
 
 .variable-global-toggle.active {
-  color: var(--pk-accent);
-  background: var(--pk-accent-bg);
+    color: var(--pk-accent);
+    background: var(--pk-accent-bg);
 }
 
-.variable-source-handle {
-  width: 16px !important;
-  height: 16px !important;
-  border-radius: 50% !important;
-  background: var(--pk-accent) !important;
-  border: 2px solid var(--pk-node-bg) !important;
-  right: -8px !important;
-  cursor: crosshair;
-  transform-origin: left center;
-  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+.variable-edge-handle {
+    background: var(--pk-accent-soft);
+    border: 0;
+    border-radius: 2px;
+    cursor: crosshair;
+    transform: none;
+    min-width: 0;
+    min-height: 0;
+    opacity: 0.05;
+    transition:
+        background 0.12s ease-out,
+        opacity 0.12s ease-out;
+    z-index: 1;
 }
 
-.variable-source-handle:hover {
-  transform: translate(0, -50%) scale(1.35);
-  box-shadow: 0 0 0 4px var(--pk-accent-bg);
+.variable-edge-handle--top,
+.variable-edge-handle--bottom {
+    width: 50%;
+    height: 4px;
+    left: 25%;
+    right: auto;
+}
+
+.variable-edge-handle--left,
+.variable-edge-handle--right {
+    width: 4px;
+    height: 50%;
+    top: 25%;
+    bottom: auto;
+}
+
+.variable-edge-handle--top {
+    top: -12px;
+}
+.variable-edge-handle--bottom {
+    bottom: -12px;
+}
+.variable-edge-handle--left {
+    left: -12px;
+}
+.variable-edge-handle--right {
+    right: -12px;
+}
+
+.variable-edge-handle:hover {
+    background: var(--pk-accent);
+    opacity: 1;
 }
