@@ -14,15 +14,19 @@ export interface Config {
 
 export const configAtom = atom<Config>();
 
-export const schemaAtom = atom<{
+export interface Schema {
   tables: Record<string, [string, string][]>;
   references: Record<string, string[]>;
   primaryKeys: Record<string, string[]>;
-}>({
+}
+
+export const emptySchema = (): Schema => ({
   tables: {},
   references: {},
   primaryKeys: {},
 });
+
+export const schemaAtom = atom<Schema>(emptySchema());
 
 export const persistanceAtom = atomWithStorage<string>(
   "persistance",

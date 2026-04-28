@@ -132,8 +132,20 @@ impl MultiplayerSession {
             .await
             .context("set download policy")?;
 
+        // `RelayAndAddresses` is critical for cross-machine sessions. The
+        // default (`Id`) puts only our endpoint id in the ticket and relies on
+        // the joiner discovering our addr via the n0 pkarr/dns service the
+        // `N0` endpoint preset configures. iroh-docs' single sync connection
+        // can tolerate that latency, but iroh-gossip dials each swarm
+        // neighbor through the endpoint's address book — and
+        // `iroh_docs::engine::live::join_peers` only populates that book from
+        // the ticket when the addr info is non-empty (line 472:
+        // `if !peer.is_empty() { memory_lookup.add_endpoint_info(peer) }`).
+        // Result on Id-only tickets: doc sync connects, gossip never finds a
+        // route, and both our app gossip (cursors / presence) and iroh-docs'
+        // *live* gossip-driven entry propagation silently fail across NATs.
         let ticket = doc
-            .share(ShareMode::Write, AddrInfoOptions::default())
+            .share(ShareMode::Write, AddrInfoOptions::RelayAndAddresses)
             .await
             .context("share doc")?;
         let namespace_id = doc.id();

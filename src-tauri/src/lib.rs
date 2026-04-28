@@ -138,6 +138,8 @@ pub fn run() {
             config::get_config,
             lsp_commands::lsp_did_change,
             lsp_commands::lsp_completion,
+            lsp_commands::lsp_set_schema_cache,
+            lsp_commands::lsp_clear_schema_cache,
             multiplayer_commands::mp_host_session,
             multiplayer_commands::mp_join_session,
             multiplayer_commands::mp_end_session,

@@ -16,12 +16,28 @@ P2P collaborative editing built on [iroh](https://docs.iroh.computer/quickstart)
 
 - **`IrohNode`** (`node.rs`): process-wide singleton lazily created on the first session. Owns `Endpoint`, `MemStore` (blobs), `Gossip`, `Docs`, and a `Router` that wires the three protocols at their respective ALPNs.
 - **`MultiplayerSession`** (`session.rs`): per-session struct. Holds the iroh `Doc` handle, the local `AuthorId`, the ticket string, the namespace id, the gossip `Sender`, an `Arc<Notify>` shutdown signal, and join handles for the doc-subscribe / gossip-receive / reconnect loops.
-  - On `host()`: creates a doc, sets `DownloadPolicy::EverythingExcept(vec![])` (eager blob fetching — without this, blob bytes don't sync), shares as a `DocTicket`, spawns subscribe + gossip loops. No reconnect task — peers come to the host via the ticket.
+  - On `host()`: creates a doc, sets `DownloadPolicy::EverythingExcept(vec![])` (eager blob fetching — without this, blob bytes don't sync), shares as a `DocTicket` with `AddrInfoOptions::RelayAndAddresses` (see "Cross-machine gotcha" below), spawns subscribe + gossip loops. No reconnect task — peers come to the host via the ticket.
   - On `join(ticket)`: parses the `DocTicket`, keeps the full `Vec<EndpointAddr>` (used by the reconnect loop) **and** extracts host endpoint ids for gossip bootstrap, imports the doc, sets eager download policy, spawns subscribe + gossip + reconnect + a one-shot enumerator (covers entries already present at import time, which the live event stream doesn't replay).
   - The doc-subscribe loop keeps a `pending: HashMap<Hash, Vec<(key, author)>>`. If `get_bytes(content_hash)` fails on `InsertRemote` (blob not yet local), the entry is parked. `LiveEvent::ContentReady` drains the pending list once the bytes arrive.
   - The doc-subscribe loop also owns the `NeighborTracker` and translates `LiveEvent::NeighborUp/NeighborDown` into `multiplayer:peer-disconnected` / `multiplayer:peer-reconnected` events (only when the count crosses 0 — the first ever NeighborUp on initial connect is silenced via a `pending_disconnect` flag).
   - The reconnect loop (joiner only) polls the neighbor count on a 3 → 6 → 12 → 30 s backoff. While disconnected, it re-calls `doc.start_sync(bootstrap.clone())` — idempotent and harmless when peers are already connected. iroh-docs only calls `start_sync` once, on `import` (`iroh_docs::api.rs:223`); without this loop, a host endpoint change after laptop sleep / network switch leaves the joiner permanently wedged.
 - **Tauri commands** (`multiplayer_commands.rs`): `mp_host_session`, `mp_join_session`, `mp_end_session`, `mp_doc_put`, `mp_doc_del`, `mp_gossip_send`. Eager singleton init via `ensure_node`. State stored on `AppData.iroh: Option<IrohNode>` and `AppData.session: Option<MultiplayerSession>`.
+
+### Cross-machine gotcha: ticket `AddrInfoOptions`
+
+Same-machine sessions tolerate any `AddrInfoOptions`; cross-machine ones don't. We **must** share with `AddrInfoOptions::RelayAndAddresses`.
+
+The trap: `AddrInfoOptions::default()` is `Id`, which strips all addrs from the ticket and leaves only the host's `EndpointId`. iroh-docs handles that — its single sync connection goes through `endpoint.connect(host_id, DOCS_ALPN)`, which the `N0` preset's `PkarrPublisher`/`DnsAddressLookup` resolves via n0 DNS. iroh-gossip dials the same way for swarm neighbors, but `iroh_docs::engine::live::join_peers` (line 472) only seeds the endpoint's address book from the ticket when the ticket actually carries addrs:
+
+```rust
+if !peer.is_empty() {
+    self.memory_lookup.add_endpoint_info(peer);
+}
+```
+
+With `Id`-only tickets, that branch is skipped, gossip falls back to id-only dials, and across NATs the connection never establishes. The symptom is: initial doc reconciliation works (joiner gets all pages and entries), but **live updates and cursors/presence both stop**. iroh-docs' live entry propagation is gossip-driven, so the moment gossip can't reach a neighbor, edits silently stop syncing — exactly mirroring what app-level cursors do.
+
+`RelayAndAddresses` makes the ticket fully self-describing (relay URL + direct addrs). The address book gets seeded on `import()` and gossip can immediately route through whatever path is reachable.
 
 Tauri events emitted from Rust to JS:
 - `multiplayer:doc-update` `{key, valueB64, author}`
@@ -60,6 +76,7 @@ Cursor rendering and broadcast are mounted *inside* `<ReactFlowProvider>` becaus
 | `pages/<pageId>/edges/<edgeId>` | JSON edge | stripped of `selected` |
 | `results/<nodeId>` | JSON `DatabaseResult` | rows for a result node, lifted out of the document |
 | `exec-requests/<requestId>` | JSON `{nodeId, queries}` | joiner→host RPC; host deletes after running |
+| `schema/index` | JSON `{tables, references, primaryKeys}` | host's DB schema; joiners feed this into `schemaAtom` and `lsp_set_schema_cache` so the LSP works without a local DB |
 
 Viewport is **not** synced — each peer has its own pan/zoom.
 
@@ -89,9 +106,10 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 1. `controls.host()` → `invoke("mp_host_session")` → returns `{ticket, author, namespaceId}`.
 2. `setSession({role: 'host', status: 'active', ...})`.
 3. `documentToPuts(documentAtom)` and `resultsToPuts(resultsAtom)` push the existing canvas state as `mp_doc_put` operations — without this, the joiner imports an empty doc and only sees future edits.
+4. The `useEffect([schema, session])` watcher pushes `schema/index` automatically once `session.role === "host"` is observed (and re-pushes whenever `schemaAtom` changes — e.g., the host reconnects to a different DB mid-session).
 
 ### Joining
-1. `controls.join(ticket)` → snapshots `{document, results}` to `preSessionSnapshotAtom`.
+1. `controls.join(ticket)` → snapshots `{document, results, schema}` to `preSessionSnapshotAtom`. The `schema` capture is what the LSP cache gets restored from on `end()` — joiners don't have a DB to re-introspect.
 2. Force-flush autosave (`save` + `save_results` invoked synchronously) so the joiner's last edits land on disk.
 3. Swap `documentAtom` to `emptyDocument()` and clear `resultsAtom` (with `isApplyingRemoteRef.current = true` to suppress outbound emissions).
 4. `invoke("mp_join_session", {ticket})` — Rust imports the doc, sets eager download policy, spawns subscribe + gossip + enumerator.
@@ -101,7 +119,7 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 ### Ending
 1. `controls.end()` captures the snapshot up front, then sends a `{type: 'leave'}` gossip message so peers can drop us instantly (best-effort; the gossip task is still alive because `mp_end_session` hasn't run yet).
 2. `invoke("mp_end_session")` → Rust drops `MultiplayerSession`; `Drop` aborts subscribe / gossip / reconnect tasks. Errors here are logged and ignored — the JS-side restore must run regardless.
-3. If joiner: restore `preSessionSnapshotAtom` (with `isApplyingRemoteRef.current = true`). Document and results return to pre-session state.
+3. If joiner: restore `preSessionSnapshotAtom` (with `isApplyingRemoteRef.current = true`). Document, results, **and `schemaAtom`** return to pre-session state. The schema restore also calls `pushSchemaToLspCache` to re-sync the Rust-side `SchemaCache` — without this the LSP would keep firing diagnostics against the host's tables after the session ended.
 4. Clear `sessionStateAtom`, `remoteCursorsAtom`, `participantsAtom`, **then** `preSessionSnapshotAtom` last. Order matters:
    - Clearing `sessionStateAtom` flips `useLoadDocument`'s role check from "joiner: skip" to "no session: load from disk" — but `useLoadDocument` *also* checks `preSessionSnapshotAtom` and bails while it's non-null. That gate is what prevents an async disk-reload from clobbering the snapshot restore in step 3.
    - Clearing `preSessionSnapshotAtom` last is the explicit handoff to disk-load. After this, `useLoadDocument` re-runs and is allowed to read from disk (which by construction matches the snapshot, since `join()` force-flushed disk before swapping).

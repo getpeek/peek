@@ -25,6 +25,7 @@ import {
   execRequestKey,
   keyKind,
   resultsToPuts,
+  SCHEMA_INDEX_KEY,
 } from "./diff";
 import {
   preSessionSnapshotAtom,
@@ -32,7 +33,12 @@ import {
   sessionStateAtom,
 } from "./state";
 import type { AppNode } from "../canvas/types";
-import { configAtom, type DatabaseResult } from "../state";
+import {
+  configAtom,
+  schemaAtom,
+  type DatabaseResult,
+  type Schema,
+} from "../state";
 import type { Operation, SessionState } from "./types";
 import { colorFromName } from "./identity";
 
@@ -82,6 +88,46 @@ function pushOperation(op: Operation): void {
 interface ExecRequestPayload {
   nodeId: string;
   queries: string[];
+}
+
+function isSchemaShape(v: unknown): v is Schema {
+  if (!v || typeof v !== "object") return false;
+  const s = v as Record<string, unknown>;
+  return (
+    typeof s.tables === "object" &&
+    s.tables !== null &&
+    typeof s.references === "object" &&
+    s.references !== null &&
+    typeof s.primaryKeys === "object" &&
+    s.primaryKeys !== null
+  );
+}
+
+/**
+ * Refresh the Rust-side LSP schema cache from a JS-side `Schema`. Joiners
+ * never call `get_schema` (no DB connection), so without this the LSP
+ * backend's `SchemaCache` stays empty and completions / diagnostics return
+ * nothing. We push the host's schema to `schema/index` over the iroh-doc;
+ * the inbound listener for that key both updates `schemaAtom` (for canvas
+ * UI) and calls this to feed the LSP. Empty-schema calls route through
+ * `lsp_clear_schema_cache` to keep the Rust side tidy.
+ */
+function pushSchemaToLspCache(schema: Schema): void {
+  const isEmpty =
+    Object.keys(schema.tables).length === 0 &&
+    Object.keys(schema.references).length === 0 &&
+    Object.keys(schema.primaryKeys).length === 0;
+  if (isEmpty) {
+    invoke("lsp_clear_schema_cache").catch((e) =>
+      console.error("lsp_clear_schema_cache failed:", e),
+    );
+    return;
+  }
+  invoke("lsp_set_schema_cache", {
+    tables: schema.tables,
+    references: schema.references,
+    primaryKeys: schema.primaryKeys,
+  }).catch((e) => console.error("lsp_set_schema_cache failed:", e));
 }
 
 /**
@@ -284,6 +330,7 @@ function useGossipBridge(): void {
 
 function useSyncBridge(): void {
   const session = useAtomValue(sessionStateAtom);
+  const schema = useAtomValue(schemaAtom);
   const setDoc = useSetAtom(documentAtom);
   const setSession = useSetAtom(sessionStateAtom);
   const setRemoteCursors = useSetAtom(remoteCursorsAtom);
@@ -309,6 +356,20 @@ function useSyncBridge(): void {
       for (const op of ops) pushOperation(op);
     });
   }, [session]);
+
+  // Outbound (schema): the host pushes its DB schema as a single
+  // `schema/index` JSON blob so joiners — who have no DB connection — can
+  // populate `schemaAtom` (canvas UI) and the Rust-side `SchemaCache` (LSP)
+  // and get working completions/diagnostics. Re-runs on every schema
+  // change so reconnecting to a different host-side DB also propagates.
+  useEffect(() => {
+    if (!session || session.role !== "host") return;
+    pushOperation({
+      kind: "put",
+      key: SCHEMA_INDEX_KEY,
+      value: new TextEncoder().encode(JSON.stringify(schema)),
+    });
+  }, [schema, session]);
 
   // Inbound: doc-update / doc-delete / sync-finished / session-ended /
   // peer-disconnected / peer-reconnected. Mounted once at startup so we never
@@ -351,6 +412,17 @@ function useSyncBridge(): void {
       } else if (kind === "exec-request" && session.role === "host") {
         // Joiner asked us to run a query; do it and then clear the request.
         void handleExecRequest(key, value);
+      } else if (kind === "schema" && session.role === "joiner") {
+        // Host pushed its schema. Update the canvas-side atom and feed the
+        // Rust LSP cache so completions/diagnostics work for the joiner.
+        try {
+          const parsed: unknown = JSON.parse(new TextDecoder().decode(value));
+          if (!isSchemaShape(parsed)) return;
+          store.set(schemaAtom, parsed);
+          pushSchemaToLspCache(parsed);
+        } catch (e) {
+          console.error("multiplayer: bad schema/index payload:", e);
+        }
       }
     }).then((u) => {
       unlistenUpdate = u;
@@ -429,6 +501,8 @@ function useSyncBridge(): void {
         } finally {
           isApplyingRemoteRef.current = false;
         }
+        store.set(schemaAtom, snap.schema);
+        pushSchemaToLspCache(snap.schema);
       }
       store.set(preSessionSnapshotAtom, null);
       store.set(sessionStateAtom, null);
@@ -466,6 +540,7 @@ function useMultiplayerControls(): MultiplayerControls {
   const setSnapshot = useSetAtom(preSessionSnapshotAtom);
   const setRemoteCursors = useSetAtom(remoteCursorsAtom);
   const setParticipants = useSetAtom(participantsAtom);
+  const setSchema = useSetAtom(schemaAtom);
 
   const host = useCallback(async () => {
     const store = getDefaultStore();
@@ -503,6 +578,7 @@ function useMultiplayerControls(): MultiplayerControls {
 
       const document = store.get(documentAtom);
       const results = store.get(resultsAtom);
+      const schema = store.get(schemaAtom);
       const conn = store.get(activeConnectionAtom);
 
       // Force-flush before swapping so the joiner's last edits land on disk.
@@ -523,7 +599,7 @@ function useMultiplayerControls(): MultiplayerControls {
         }
       }
 
-      setSnapshot({ document, results });
+      setSnapshot({ document, results, schema });
 
       // Swap to a fresh empty document; host's replica will stream in.
       isApplyingRemoteRef.current = true;
@@ -588,6 +664,12 @@ function useMultiplayerControls(): MultiplayerControls {
       } finally {
         isApplyingRemoteRef.current = false;
       }
+      // Restore the joiner's own DB schema (the host's was written to
+      // `schemaAtom` and the Rust LSP cache during the session — both need
+      // to flip back). `pushSchemaToLspCache` clears the cache when the
+      // restored schema is empty (joiner had no DB connection).
+      setSchema(snapshot.schema);
+      pushSchemaToLspCache(snapshot.schema);
     }
 
     // Order matters here:
@@ -612,6 +694,7 @@ function useMultiplayerControls(): MultiplayerControls {
     setResults,
     setRemoteCursors,
     setParticipants,
+    setSchema,
   ]);
 
   const controls = useMemo<MultiplayerControls>(

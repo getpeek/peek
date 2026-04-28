@@ -15,11 +15,16 @@ export const collaboratePopoverOpenAtom = atom<boolean>(false);
 // is replaced by the host's replica. Restored on session end so the joiner
 // returns to their pre-session state without losing unsaved work.
 import type { CanvasDocument } from "../canvas/types";
-import type { DatabaseResult } from "../state";
+import type { DatabaseResult, Schema } from "../state";
 
 export interface PreSessionSnapshot {
   document: CanvasDocument;
   results: Record<string, DatabaseResult>;
+  // The joiner's pre-session schema (their own DB's). The host's schema
+  // overwrites `schemaAtom` during the session so the LSP and canvas show
+  // host-side tables; we restore this on end so the joiner is back on
+  // their own DB context.
+  schema: Schema;
 }
 
 export const preSessionSnapshotAtom = atom<PreSessionSnapshot | null>(null);
