@@ -1,8 +1,12 @@
+import { useAtomValue } from "jotai";
 import { useCanvas } from "./useCanvas";
 import { createChart } from "./createChart";
+import { resultsAtom } from "./state";
 import type { ResultNode } from "./types";
 
 export const useCreateChart = () => {
   const canvas = useCanvas();
-  return (resultNode: ResultNode) => createChart(canvas, resultNode);
+  const results = useAtomValue(resultsAtom);
+  return (resultNode: ResultNode) =>
+    createChart(canvas, resultNode, results[resultNode.id] ?? []);
 };

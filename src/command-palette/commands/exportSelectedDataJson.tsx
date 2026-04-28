@@ -7,12 +7,13 @@ import { ChatOllama } from "@langchain/ollama";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { useAtomValue } from "jotai";
 import { toJson } from "../../tools/export/json";
-import { canvasApiAtom } from "../../canvas/state";
+import { canvasApiAtom, resultsAtom } from "../../canvas/state";
 import type { CommandPaletteResult } from ".";
 import type { ResultNode } from "../../canvas/types";
 
 export const useExportSelectedDataJsonCommand = (): CommandPaletteResult => {
   const canvas = useAtomValue(canvasApiAtom);
+  const results = useAtomValue(resultsAtom);
 
   return {
     searchAgainst: "Export selected data as JSON",
@@ -38,7 +39,7 @@ export const useExportSelectedDataJsonCommand = (): CommandPaletteResult => {
       if (!path) return;
 
       for (const node of nodes) {
-        const output = JSON.stringify(toJson(node.data.data));
+        const output = JSON.stringify(toJson(results[node.id] ?? []));
         model
           .invoke([
             new SystemMessage(

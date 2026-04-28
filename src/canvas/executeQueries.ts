@@ -1,16 +1,27 @@
 import { invoke } from "@tauri-apps/api/core";
 import { ids } from "./ids";
 import type { CanvasApi } from "./state";
+import type { DatabaseResult } from "../state";
 import type {
   AppNode,
   ErrorData,
   QueryErrorNode,
+  ResultData,
   ResultNode,
 } from "./types";
 import { collectVariablesFor, substituteVariables } from "./variables";
 
+export type SetResults = (
+  updater:
+    | Record<string, DatabaseResult>
+    | ((
+        prev: Record<string, DatabaseResult>,
+      ) => Record<string, DatabaseResult>),
+) => void;
+
 export async function executeQueries(
   canvas: CanvasApi,
+  setResults: SetResults,
   sourceNode: AppNode,
   queries: string[],
 ) {
@@ -31,7 +42,7 @@ export async function executeQueries(
       const response = (await invoke("get_results", {
         query: resolved,
       })) as string;
-      const result = JSON.parse(response) as [string, unknown, string][][];
+      const result = JSON.parse(response) as DatabaseResult;
 
       if (queries.length > 1 && result.length === 0) {
         continue;
@@ -55,11 +66,13 @@ export async function executeQueries(
       const errorNodeId = ids.error(sourceNode.id);
       const existing = canvas.getNode(resultNodeId);
 
+      setResults((prev) => ({ ...prev, [resultNodeId]: result }));
+
       if (existing) {
         canvas.updateNode(resultNodeId, (n) =>
           ({
             ...n,
-            data: { data: result, query },
+            data: { ...(n.data as ResultData), query },
           }) as AppNode,
         );
       } else {
@@ -69,7 +82,7 @@ export async function executeQueries(
           position: { x, y },
           width: w,
           height: h,
-          data: { data: result, query },
+          data: { query },
         };
         canvas.addNode(resultNode);
         canvas.connect(sourceNode.id, resultNodeId);

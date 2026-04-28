@@ -2,6 +2,7 @@ import { NodeProps, NodeResizer } from "@xyflow/react";
 import { useEffect, useRef, useState } from "react";
 import { format } from "sql-formatter";
 import { sha1 } from "object-hash";
+import { useSetAtom } from "jotai";
 import { IconPlayerStop, IconSend } from "@tabler/icons-react";
 import { ChatEmptyState } from "../../../shapes/Chat/EmptyState";
 import { MessageItem } from "../../../shapes/Chat/MessageItem";
@@ -15,6 +16,7 @@ import {
 import { toCsv } from "../../../tools/export/csv";
 import { useCanvas } from "../../useCanvas";
 import { ids } from "../../ids";
+import { resultsAtom } from "../../state";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
@@ -42,6 +44,7 @@ export function ChatNode({
   height,
 }: NodeProps<ChatNodeT>) {
   const canvas = useCanvas();
+  const setResults = useSetAtom(resultsAtom);
   const runPrompt = useExecutePrompt("advanced");
   const [question, setQuestion] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -164,9 +167,12 @@ export function ChatNode({
                     height: 300,
                     data: {
                       query: toolResult.query,
-                      data: toolResult.data,
                     },
                   };
+                  setResults((prev) => ({
+                    ...prev,
+                    [resultId]: toolResult.data,
+                  }));
                   canvas.addNode(newResult);
                   canvas.connect(id, resultId);
                   canvas.selectOnly(resultId);

@@ -16,6 +16,7 @@ import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { ids } from "../../ids";
+import { resultsAtom } from "../../state";
 import type { ChatNode, QueryNode, ResultNode as ResultNodeT } from "../../types";
 import "../node.css";
 
@@ -35,14 +36,16 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
   const canvas = useCanvas();
   const createChart = useCreateChart();
   const schema = useAtomValue(schemaAtom);
+  const results = useAtomValue(resultsAtom);
+  const rows = results[id] ?? [];
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
   const bodyRef = useRef<HTMLDivElement>(null);
   useScrollFallthrough(bodyRef);
 
   const canChart =
-    data.data.length > 0 &&
-    !!data.data[0].find(
+    rows.length > 0 &&
+    !!rows[0].find(
       ([key, value]) => typeof value === "number" && key !== "id" && !key.endsWith("_id"),
     );
 
@@ -98,7 +101,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
         height: 400,
         data: {
           query: data.query,
-          result: data.data,
+          result: rows,
           schema: {
             tables: Object.fromEntries(
               Object.entries(schema.tables).map(([k, cols]) => [k, cols.map(([col]) => col)]),
@@ -130,7 +133,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
         <div className="app-node-subtoolbar nodrag">
           <div className="meta">
             <span className="ok">●</span>
-            <span>{data.data.length} rows</span>
+            <span>{rows.length} rows</span>
             {queryName && <span>{queryName.substring(0, 20)}...</span>}
           </div>
           <div className="actions">
@@ -156,7 +159,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
         <div className="app-node-body nodrag" ref={bodyRef}>
           <ResultTable
             nodeId={id}
-            data={data.data}
+            data={rows}
             query={data.query}
             columnWidths={data.columnWidths}
           />

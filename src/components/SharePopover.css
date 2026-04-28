@@ -1,0 +1,48 @@
+.share-popover {
+  width: 320px;
+  padding: 16px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: 12px;
+  color: var(--pk-fg);
+}
+
+.share-ticket-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.share-ticket {
+  flex: 1;
+  font: 500 11px var(--pk-font-mono, ui-monospace, monospace);
+  color: var(--pk-fg);
+  background: var(--pk-node-bg-2);
+  border: 1px solid var(--pk-node-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.participants {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.participants-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.participant-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+}

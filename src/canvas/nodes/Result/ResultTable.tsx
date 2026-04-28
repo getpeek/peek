@@ -1,5 +1,5 @@
 import { Menu, Table, Text } from "@mantine/core";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { forwardRef, useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -21,6 +21,7 @@ import type { DatabaseResult } from "../../../state";
 import type { ResultData } from "../../types";
 import { useCanvas } from "../../useCanvas";
 import { useExecuteQueries } from "../../useExecuteQueries";
+import { resultsAtom } from "../../state";
 import { collectVariablesFor, substituteVariables } from "../../variables";
 import {
   buildPkAssignments,
@@ -64,6 +65,7 @@ export function ResultTable({
   const schema = useAtomValue(schemaAtom);
   const canvas = useCanvas();
   const executeQueries = useExecuteQueries();
+  const setResults = useSetAtom(resultsAtom);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [draftWidth, setDraftWidth] = useState<{
@@ -302,10 +304,7 @@ export function ResultTable({
       const refreshed = JSON.parse(
         (await invoke("get_results", { query: resolvedRefreshQuery })) as string,
       ) as DatabaseResult;
-      canvas.updateNodeData<ResultData>(nodeId, (d) => ({
-        ...d,
-        data: refreshed,
-      }));
+      setResults((prev) => ({ ...prev, [nodeId]: refreshed }));
       setEditing(null);
     } catch (err) {
       setEditing((e) => (e ? { ...e, saving: false, error: String(err) } : e));

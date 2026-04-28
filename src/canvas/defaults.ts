@@ -61,7 +61,7 @@ export function makeNode(
         ...base,
         id: ids.result(ids.query()),
         type: "result",
-        data: { data: [], query: "" },
+        data: { query: "" },
       };
     case "chat":
       return {

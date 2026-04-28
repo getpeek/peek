@@ -7,7 +7,10 @@ import { DropZone } from "./drop-zone/DropZone";
 import { useGetConfig } from "./app/useGetConfig";
 import { ReactFlowCanvas } from "./canvas/ReactFlowCanvas";
 import { useAutoSaveDocument } from "./canvas/useAutoSaveDocument";
+import { useAutoSaveResults } from "./canvas/useAutoSaveResults";
 import { useLoadDocument } from "./canvas/useLoadDocument";
+import { useMultiplayer } from "./multiplayer/syncBridge";
+import { JoinSessionDialog } from "./components/JoinSessionDialog";
 import { darkModeAtom } from "./state";
 import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
@@ -21,7 +24,9 @@ function App() {
 
   useGetConfig();
   useAutoSaveDocument();
+  useAutoSaveResults();
   useLoadDocument();
+  useMultiplayer();
 
   return (
     <MantineProvider
@@ -33,6 +38,7 @@ function App() {
       <MonacoManager />
       <ReactFlowCanvas />
       <CommandPalette />
+      <JoinSessionDialog />
     </MantineProvider>
   );
 }

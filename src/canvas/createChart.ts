@@ -1,15 +1,20 @@
 import { ids } from "./ids";
 import type { CanvasApi } from "./state";
+import type { DatabaseResult } from "../state";
 import type { BarChartNode, ResultNode } from "./types";
 
-export function createChart(canvas: CanvasApi, resultNode: ResultNode) {
-  if (resultNode.data.data.length === 0) {
+export function createChart(
+  canvas: CanvasApi,
+  resultNode: ResultNode,
+  rows: DatabaseResult,
+) {
+  if (rows.length === 0) {
     return;
   }
 
   const fields: Record<string, string | number>[] = [];
 
-  for (const row of resultNode.data.data) {
+  for (const row of rows) {
     const chartRow: Record<string, string | number> = {};
     for (const [key, value] of row) {
       if (typeof value === "number" || typeof value === "string") {

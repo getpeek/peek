@@ -16,6 +16,8 @@ import {
 } from "./commands/nextPage";
 import { useGoToPageCommands } from "./commands/useGoToPageCommands";
 import { useGoToTableCommands } from "./commands/useGoToTableCommands";
+import { useHostSessionCommand } from "./commands/hostSession";
+import { useJoinSessionCommand } from "./commands/joinSession";
 
 export const useSearch = (query: string): CommandPaletteResult[] => {
   const queryCommands = useGoToQueryCommands();
@@ -32,6 +34,8 @@ export const useSearch = (query: string): CommandPaletteResult[] => {
   const previousPageCommand = usePreviousPageCommand();
   const goToPageCommands = useGoToPageCommands();
   const goToTableCommands = useGoToTableCommands();
+  const hostSessionCommand = useHostSessionCommand();
+  const joinSessionCommand = useJoinSessionCommand();
 
   if (query.trim().length === 0) {
     return [];
@@ -52,6 +56,8 @@ export const useSearch = (query: string): CommandPaletteResult[] => {
     ...(previousPageCommand ? [previousPageCommand] : []),
     ...goToPageCommands,
     ...goToTableCommands,
+    hostSessionCommand,
+    ...(joinSessionCommand ? [joinSessionCommand] : []),
   ];
   return fuzzysort
     .go(query, searchSpace, { key: "searchAgainst" })

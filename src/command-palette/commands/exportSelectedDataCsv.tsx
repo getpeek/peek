@@ -7,12 +7,13 @@ import { ChatOllama } from "@langchain/ollama";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { useAtomValue } from "jotai";
 import { toCsv } from "../../tools/export/csv";
-import { canvasApiAtom } from "../../canvas/state";
+import { canvasApiAtom, resultsAtom } from "../../canvas/state";
 import type { CommandPaletteResult } from ".";
 import type { ResultNode } from "../../canvas/types";
 
 export const useExportSelectedDataCsvCommand = (): CommandPaletteResult => {
   const canvas = useAtomValue(canvasApiAtom);
+  const results = useAtomValue(resultsAtom);
 
   return {
     searchAgainst: "Export selected data as CSV",
@@ -36,7 +37,7 @@ export const useExportSelectedDataCsvCommand = (): CommandPaletteResult => {
       if (!path) return;
 
       for (const node of nodes) {
-        const output = toCsv(node.data.data);
+        const output = toCsv(results[node.id] ?? []);
         model
           .invoke([
             new SystemMessage(

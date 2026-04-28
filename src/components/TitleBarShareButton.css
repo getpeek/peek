@@ -1,0 +1,41 @@
+.titlebar-share-button {
+  -webkit-app-region: no-drag;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-pill, 9999px);
+  color: var(--pk-fg-muted);
+  font: 500 12px var(--pk-font-sans);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.titlebar-share-button:hover {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+.titlebar-share-button.active {
+  border-color: var(--pk-accent-line, var(--pk-node-border));
+  color: var(--pk-fg);
+}
+
+.share-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.share-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}

@@ -10,6 +10,7 @@ import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { edgesAtom, nodesAtom } from "../../state";
+import { sessionStateAtom } from "../../../multiplayer/state";
 import { formatPreservingVars } from "../../variables";
 import type {
   QueryNode as QueryNodeT,
@@ -45,6 +46,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   useScrollFallthrough(bodyRef);
   const allNodes = useAtomValue(nodesAtom);
   const allEdges = useAtomValue(edgesAtom);
+  const session = useAtomValue(sessionStateAtom);
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
 
@@ -93,6 +95,11 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
     if (interval == null) {
       return;
     }
+    // Only the host runs the query executor in a session; joiners observe
+    // streamed results.
+    if (session?.role === "joiner") {
+      return;
+    }
     const tick = () => {
       if (editorFocusedRef.current) {
         return;
@@ -110,7 +117,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
     tick();
     const handle = window.setInterval(tick, interval);
     return () => window.clearInterval(handle);
-  }, [id, data.liveIntervalMs, canvas, executeQueries]);
+  }, [id, data.liveIntervalMs, canvas, executeQueries, session]);
 
   const formatQuery = () => {
     const node = canvas.getNode(id);

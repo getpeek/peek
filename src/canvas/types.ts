@@ -19,7 +19,6 @@ export type QueryData = {
 };
 
 export type ResultData = {
-  data: DatabaseResult;
   query: string;
   columnWidths?: Record<string, number>;
 };

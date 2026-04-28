@@ -1,12 +1,18 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { useAtomValue } from "jotai";
 import { TitleBarConnectionPicker } from "./TitleBarConnectionPicker";
 import { TitleBarPageSelector } from "./TitleBarPageSelector";
 import { TitleBarCommandPalette } from "./TitleBarCommandPalette";
+import { TitleBarShareButton } from "./TitleBarShareButton";
 import "./CustomTitleBar.css";
 import { IconArrowsDiagonal2, IconMinus, IconX } from "@tabler/icons-react";
 import { TitlebarLiveQueryNotification } from "./TitlebarLiveQueryNotification";
+import { sessionStateAtom } from "../multiplayer/state";
 
 export const CustomTitleBar = () => {
+  const session = useAtomValue(sessionStateAtom);
+  const isJoiner = session?.role === "joiner";
+
   const handleMinimize = async () => {
     const window = getCurrentWindow();
     await window.minimize();
@@ -57,7 +63,8 @@ export const CustomTitleBar = () => {
         <div className="titlebar-right">
           <TitlebarLiveQueryNotification />
           <TitleBarCommandPalette />
-          <TitleBarConnectionPicker />
+          <TitleBarShareButton />
+          {!isJoiner && <TitleBarConnectionPicker />}
         </div>
       </div>
     </div>

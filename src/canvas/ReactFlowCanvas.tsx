@@ -16,7 +16,7 @@ import "@xyflow/react/dist/style.css";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useMemo } from "react";
 import { darkModeAtom } from "../state";
-import { edgesAtom, nodesAtom, placeModeAtom, viewportAtom } from "./state";
+import { edgesAtom, nodesAtom, placeModeAtom, resultsAtom, viewportAtom } from "./state";
 import { CanvasApiPublisher } from "./CanvasApiPublisher";
 import { AiPromptNode } from "./nodes/AiPrompt/AiPromptNode";
 import { BarChartNode } from "./nodes/BarChart/BarChartNode";
@@ -30,6 +30,8 @@ import { VariableNode } from "./nodes/Variable/VariableNode";
 import { Toolbar } from "./ui/Toolbar";
 import { ZoomIndicator } from "./ui/ZoomIndicator";
 import { KeyboardShortcuts } from "./ui/KeyboardShortcuts";
+import { RemoteCursorsLayer } from "../multiplayer/RemoteCursorsLayer";
+import { useCursorBroadcast } from "../multiplayer/useCursorBroadcast";
 import { defaultDimensions, makeNode } from "./defaults";
 import { toCsv } from "../tools/export/csv";
 import type { Message } from "../shapes/Ai/useExecutePrompt";
@@ -80,8 +82,10 @@ function ReactFlowCanvasInner() {
   const setViewport = useSetAtom(viewportAtom);
   const isDarkMode = useAtomValue(darkModeAtom);
   const [placeMode, setPlaceMode] = useAtom(placeModeAtom);
+  const results = useAtomValue(resultsAtom);
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
+  useCursorBroadcast();
   const {
     onSchemaNodeDragStart,
     onSchemaNodeDrag,
@@ -225,7 +229,8 @@ function ReactFlowCanvasInner() {
         );
         if (!overlap) continue;
 
-        const csv = toCsv(result.data.data);
+        const rows = results[result.id] ?? [];
+        const csv = toCsv(rows);
         const message: Message = {
           type: "context",
           message: `The user ran an additional query ${result.data.query} which resulted in this data:\n${csv}`,
@@ -238,7 +243,7 @@ function ReactFlowCanvasInner() {
         return;
       }
     },
-    [canvas, onSchemaNodeDragStop],
+    [canvas, onSchemaNodeDragStop, results],
   );
 
   return (
@@ -284,6 +289,7 @@ function ReactFlowCanvasInner() {
         />
         <Toolbar />
         <ZoomIndicator />
+        <RemoteCursorsLayer />
       </ReactFlow>
       <CanvasApiPublisher />
       <KeyboardShortcuts />

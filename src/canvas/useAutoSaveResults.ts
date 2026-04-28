@@ -3,10 +3,10 @@ import { useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { activeConnectionAtom } from "../Connection/state";
 import { sessionStateAtom } from "../multiplayer/state";
-import { documentAtom } from "./state";
+import { resultsAtom } from "./state";
 
-export function useAutoSaveDocument() {
-  const doc = useAtomValue(documentAtom);
+export function useAutoSaveResults() {
+  const results = useAtomValue(resultsAtom);
   const conn = useAtomValue(activeConnectionAtom);
   const session = useAtomValue(sessionStateAtom);
   const hasObservedInitialRef = useRef(false);
@@ -15,11 +15,9 @@ export function useAutoSaveDocument() {
 
   useEffect(() => {
     if (!conn) return;
-    // Joiner observes the host's replica; their local doc shouldn't overwrite
-    // their own on-disk state. session.end restores from snapshot.
     if (session?.role === "joiner") return;
 
-    const json = JSON.stringify(doc);
+    const json = JSON.stringify(results);
 
     if (!hasObservedInitialRef.current) {
       hasObservedInitialRef.current = true;
@@ -32,24 +30,22 @@ export function useAutoSaveDocument() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
-        await invoke("save", {
+        await invoke("save_results", {
           workspace: conn.workspaceName,
           connectionName: conn.connection.name,
           contents: json,
         });
         lastSavedJsonRef.current = json;
       } catch (e) {
-        console.error("Failed to save canvas:", e);
+        console.error("Failed to save results:", e);
       }
     }, 3000);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [doc, conn, session]);
+  }, [results, conn, session]);
 
-  // Reset observation flag on connection change so the next load doesn't
-  // get re-saved as a "user change".
   useEffect(() => {
     hasObservedInitialRef.current = false;
     lastSavedJsonRef.current = "";

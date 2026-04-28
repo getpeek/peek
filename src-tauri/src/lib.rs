@@ -4,6 +4,8 @@ mod database_commands;
 mod import;
 mod lsp;
 mod lsp_commands;
+mod multiplayer;
+mod multiplayer_commands;
 mod ssh_tunnel;
 mod storage_commands;
 
@@ -12,6 +14,7 @@ use std::sync::Arc;
 use config::SshTunnelConfig;
 use database::{mysql::MysqlDatabase, postgres::PostgresDatabase, Database};
 use lsp::{Backend, SchemaIndex};
+use multiplayer::{IrohNode, MultiplayerSession};
 use parking_lot::RwLock;
 use sqlx::Connection;
 use ssh_tunnel::SshTunnel;
@@ -22,6 +25,8 @@ use url::Url;
 pub struct AppData {
     connection: Option<Box<dyn Database>>,
     tunnel: Option<SshTunnel>,
+    pub iroh: Option<IrohNode>,
+    pub session: Option<MultiplayerSession>,
 }
 
 impl std::fmt::Debug for AppData {
@@ -29,6 +34,8 @@ impl std::fmt::Debug for AppData {
         f.debug_struct("AppData")
             .field("connection", &self.connection.as_ref().map(|_| "<dyn Database>"))
             .field("tunnel", &self.tunnel)
+            .field("iroh", &self.iroh)
+            .field("session", &self.session)
             .finish()
     }
 }
@@ -126,9 +133,17 @@ pub fn run() {
             database_commands::import_file,
             storage_commands::load,
             storage_commands::save,
+            storage_commands::load_results,
+            storage_commands::save_results,
             config::get_config,
             lsp_commands::lsp_did_change,
             lsp_commands::lsp_completion,
+            multiplayer_commands::mp_host_session,
+            multiplayer_commands::mp_join_session,
+            multiplayer_commands::mp_end_session,
+            multiplayer_commands::mp_doc_put,
+            multiplayer_commands::mp_doc_del,
+            multiplayer_commands::mp_gossip_send,
             set_connection
         ])
         .run(tauri::generate_context!())
