@@ -86,11 +86,7 @@ function ReactFlowCanvasInner() {
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
   useCursorBroadcast();
-  const {
-    onSchemaNodeDragStart,
-    onSchemaNodeDrag,
-    onSchemaNodeDragStop,
-  } = useSchemaForceLayout();
+  const { onSchemaNodeDragStart, onSchemaNodeDrag, onSchemaNodeDragStop } = useSchemaForceLayout();
 
   const onNodesChange = useCallback(
     (changes: NodeChange<AppNode>[]) => {
@@ -108,11 +104,14 @@ function ReactFlowCanvasInner() {
 
   const isValidVariableConnection = useCallback<IsValidConnection<AppEdge>>(
     (connection) => {
-      if (!connection.source || !connection.target) return false;
-      if (connection.source === connection.target) return false;
+      if (!connection.source || !connection.target || connection.source === connection.target) {
+        return false;
+      }
       const source = rf.getNode(connection.source);
       const target = rf.getNode(connection.target);
-      if (!source || !target) return false;
+      if (!source || !target) {
+        return false;
+      }
       return source.type === "variable" && target.type === "query";
     },
     [rf],
@@ -120,8 +119,12 @@ function ReactFlowCanvasInner() {
 
   const onConnect = useCallback(
     (connection: Connection) => {
-      if (!connection.source || !connection.target) return;
-      if (!isValidVariableConnection(connection)) return;
+      if (!connection.source || !connection.target) {
+        return;
+      }
+      if (!isValidVariableConnection(connection)) {
+        return;
+      }
       canvas.connect(connection.source, connection.target);
     },
     [canvas, isValidVariableConnection],
@@ -133,38 +136,37 @@ function ReactFlowCanvasInner() {
     );
     const liveQueryIds = new Set(
       nodes
-        .filter(
-          (n) =>
-            n.type === "query" &&
-            (n.data as QueryData).liveIntervalMs != null,
-        )
+        .filter((n) => n.type === "query" && (n.data as QueryData).liveIntervalMs != null)
         .map((n) => n.id),
     );
-    if (selectedQueryIds.size === 0 && liveQueryIds.size === 0) return edges;
-    const resultIds = new Set(
-      nodes.filter((n) => n.type === "result").map((n) => n.id),
-    );
+    if (selectedQueryIds.size === 0 && liveQueryIds.size === 0) {
+      return edges;
+    }
+    const resultIds = new Set(nodes.filter((n) => n.type === "result").map((n) => n.id));
     return edges.map((e) => {
-      if (!resultIds.has(e.target)) return e;
+      if (!resultIds.has(e.target)) {
+        return e;
+      }
       const existing = e.className ?? "";
       const parts: string[] = existing ? [existing] : [];
-      if (
-        selectedQueryIds.has(e.source) &&
-        !existing.includes("query-active")
-      ) {
+      if (selectedQueryIds.has(e.source) && !existing.includes("query-active")) {
         parts.push("query-active");
       }
       if (liveQueryIds.has(e.source) && !existing.includes("query-live")) {
         parts.push("query-live");
       }
-      if (parts.length === (existing ? 1 : 0)) return e;
+      if (parts.length === (existing ? 1 : 0)) {
+        return e;
+      }
       return { ...e, className: parts.join(" ").trim() };
     });
   }, [nodes, edges]);
 
   const onPaneClick = useCallback(
     (e: React.MouseEvent) => {
-      if (!placeMode) return;
+      if (!placeMode) {
+        return;
+      }
       const flowPos = rf.screenToFlowPosition({
         x: e.clientX,
         y: e.clientY,
@@ -199,9 +201,13 @@ function ReactFlowCanvasInner() {
     (_e: React.MouseEvent | MouseEvent | TouchEvent, dragged: AppNode) => {
       onSchemaNodeDragStop(dragged);
 
-      if (dragged.type !== "result") return;
+      if (dragged.type !== "result") {
+        return;
+      }
       const result = canvas.getNode(dragged.id) as ResultNodeT | undefined;
-      if (!result || result.type !== "result") return;
+      if (!result || result.type !== "result") {
+        return;
+      }
 
       const r = {
         x: result.position.x,
@@ -210,9 +216,7 @@ function ReactFlowCanvasInner() {
         h: result.height ?? defaultDimensions.result.h,
       };
 
-      const chats = canvas
-        .getNodes()
-        .filter((n): n is ChatNodeT => n.type === "chat");
+      const chats = canvas.getNodes().filter((n): n is ChatNodeT => n.type === "chat");
 
       for (const chat of chats) {
         const c = {
@@ -221,12 +225,7 @@ function ReactFlowCanvasInner() {
           w: chat.width ?? defaultDimensions.chat.w,
           h: chat.height ?? defaultDimensions.chat.h,
         };
-        const overlap = !(
-          r.x + r.w < c.x ||
-          r.x > c.x + c.w ||
-          r.y + r.h < c.y ||
-          r.y > c.y + c.h
-        );
+        const overlap = !(r.x + r.w < c.x || r.x > c.x + c.w || r.y + r.h < c.y || r.y > c.y + c.h);
         if (!overlap) continue;
 
         const rows = results[result.id] ?? [];

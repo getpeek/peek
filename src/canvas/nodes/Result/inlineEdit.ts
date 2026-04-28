@@ -7,15 +7,27 @@ type FromEntry = {
   join?: string | null;
 };
 
-export function getEditableTableName(ast: AST | null | undefined): string | null {
-  if (!ast || typeof ast !== "object") return null;
+export function getEditableTableName(
+  ast: AST | null | undefined,
+): string | null {
+  if (!ast || typeof ast !== "object") {
+    return null;
+  }
   const a = ast as { type?: string; from?: FromEntry[] | null };
-  if (a.type !== "select") return null;
+  if (a.type !== "select") {
+    return null;
+  }
   const from = a.from;
-  if (!Array.isArray(from) || from.length !== 1) return null;
+  if (!Array.isArray(from) || from.length !== 1) {
+    return null;
+  }
   const entry = from[0];
-  if (!entry || !entry.table) return null;
-  if (entry.join) return null;
+  if (!entry || !entry.table) {
+    return null;
+  }
+  if (entry.join) {
+    return null;
+  }
   return entry.table;
 }
 
@@ -51,10 +63,16 @@ export function formatSqlLiteral(value: unknown, sqlType: string): string {
   const upper = sqlType.toUpperCase();
 
   if (isBooleanType(upper)) {
-    if (typeof value === "boolean") return value ? "TRUE" : "FALSE";
+    if (typeof value === "boolean") {
+      return value ? "TRUE" : "FALSE";
+    }
     const s = String(value).toLowerCase();
-    if (s === "true" || s === "t" || s === "1") return "TRUE";
-    if (s === "false" || s === "f" || s === "0") return "FALSE";
+    if (s === "true" || s === "t" || s === "1") {
+      return "TRUE";
+    }
+    if (s === "false" || s === "f" || s === "0") {
+      return "FALSE";
+    }
     return "NULL";
   }
 
@@ -88,9 +106,7 @@ export function buildUpdateSql(
   if (pks.length === 0) {
     throw new Error("buildUpdateSql requires at least one primary key column");
   }
-  const where = pks
-    .map((pk) => `"${pk.column}" = ${pk.literal}`)
-    .join(" AND ");
+  const where = pks.map((pk) => `"${pk.column}" = ${pk.literal}`).join(" AND ");
   return `UPDATE "${table}" SET "${column}" = ${newLiteral} WHERE ${where}`;
 }
 

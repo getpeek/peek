@@ -165,6 +165,12 @@ export function KeyboardShortcuts() {
         return;
       }
 
+      if (meta && shift && e.key === "0") {
+        e.preventDefault();
+        canvas.fitView();
+        return;
+      }
+
       if (meta && e.key === "0") {
         e.preventDefault();
         canvas.resetZoom();

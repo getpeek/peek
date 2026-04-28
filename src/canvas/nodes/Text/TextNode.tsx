@@ -11,13 +11,7 @@ const FONT_SIZE_RATIO = 0.62;
 const MIN_FONT_SIZE = 12;
 const WIDTH_PADDING = 16;
 
-export function TextNode({
-  id,
-  data,
-  selected,
-  width,
-  height,
-}: NodeProps<TextNodeT>) {
+export function TextNode({ id, data, selected, width, height }: NodeProps<TextNodeT>) {
   const canvas = useCanvas();
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
@@ -25,39 +19,40 @@ export function TextNode({
   const measureRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isEditing, setIsEditing] = useState(data.text.length === 0);
-  const [fontSize, setFontSize] = useState(
-    Math.max(MIN_FONT_SIZE, h * FONT_SIZE_RATIO),
-  );
+  const [fontSize, setFontSize] = useState(Math.max(MIN_FONT_SIZE, h * FONT_SIZE_RATIO));
 
   useLayoutEffect(() => {
-    const el = wrapperRef.current;
-    if (!el) return;
+    const element = wrapperRef.current;
+    if (!element) {
+      return;
+    }
     const update = () => {
-      setFontSize(Math.max(MIN_FONT_SIZE, el.clientHeight * FONT_SIZE_RATIO));
+      setFontSize(Math.max(MIN_FONT_SIZE, element.clientHeight * FONT_SIZE_RATIO));
     };
     update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
   }, []);
 
   useLayoutEffect(() => {
-    const m = measureRef.current;
-    if (!m) return;
-    const required = Math.ceil(m.offsetWidth) + WIDTH_PADDING;
+    const measure = measureRef.current;
+    if (!measure) {
+      return;
+    }
+    const required = Math.ceil(measure.offsetWidth) + WIDTH_PADDING;
     if (required > w) {
       canvas.updateNode(id, (n) => ({ ...n, width: required }));
     }
   }, [data.text, fontSize, w, canvas, id]);
 
   useEffect(() => {
-    if (isEditing) {
-      const ta = textareaRef.current;
-      if (!ta) return;
-      ta.focus();
-      const len = ta.value.length;
-      ta.setSelectionRange(len, len);
+    const textarea = textareaRef.current;
+    if (!isEditing || !textarea) {
+      return;
     }
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
   }, [isEditing]);
 
   const lines = (data.text.length > 0 ? data.text : " ").split("\n");
