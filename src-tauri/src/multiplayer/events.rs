@@ -38,3 +38,9 @@ pub struct SyncFinishedEvent {}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SessionEndedEvent {}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct PeerDisconnectedEvent {}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct PeerReconnectedEvent {}

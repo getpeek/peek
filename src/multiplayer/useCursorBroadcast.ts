@@ -1,7 +1,8 @@
 import { useReactFlow } from "@xyflow/react";
 import { invoke } from "@tauri-apps/api/core";
-import { useAtomValue } from "jotai";
+import { getDefaultStore, useAtomValue } from "jotai";
 import { useEffect, useRef } from "react";
+import { documentAtom } from "../canvas/state";
 import { sessionStateAtom } from "./state";
 
 const CURSOR_BROADCAST_MS = 66; // ~15 Hz
@@ -30,9 +31,13 @@ export function useCursorBroadcast(): void {
       const pos = lastPosRef.current;
       if (!pos) return;
       const flow = rf.screenToFlowPosition({ x: pos.x, y: pos.y });
+      // Read the active page synchronously at flush time — using a Jotai
+      // subscription would re-run this whole effect on every page switch and
+      // tear down the mousemove listener for no reason.
+      const pageId = getDefaultStore().get(documentAtom).activePageId;
       lastSentRef.current = Date.now();
       invoke("mp_gossip_send", {
-        payload: { type: "cursor", flowX: flow.x, flowY: flow.y },
+        payload: { type: "cursor", flowX: flow.x, flowY: flow.y, pageId },
       }).catch(() => {});
     };
 

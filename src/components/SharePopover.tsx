@@ -154,12 +154,23 @@ export function SharePopover({ onClose }: Props) {
   );
   const collaboratorCount = 1 + peerEntries.length;
   const isHost = session.role === "host";
+  const isTransient =
+    session.status === "connecting" || session.status === "reconnecting";
   const headline = isHost ? "Sharing canvas" : "In session";
   const subhead = session.status === "connecting"
     ? "Connecting to host…"
-    : isHost
-      ? "Anyone with the ticket can edit this canvas in real-time."
-      : "Connected to host. Edits sync live.";
+    : session.status === "reconnecting"
+      ? isHost
+        ? "Lost contact with peers. Trying to reconnect…"
+        : "Lost contact with host. Trying to reconnect…"
+      : isHost
+        ? "Anyone with the ticket can edit this canvas in real-time."
+        : "Connected to host. Edits sync live.";
+  const pillLabel = session.status === "connecting"
+    ? "SYNC"
+    : session.status === "reconnecting"
+      ? "RECONNECTING"
+      : "LIVE";
 
   return (
     <div className="collab-panel">
@@ -171,9 +182,9 @@ export function SharePopover({ onClose }: Props) {
           <h2>{headline}</h2>
           <p>{subhead}</p>
         </div>
-        <div className={`collab-live-pill ${session.status === "connecting" ? "is-connecting" : ""}`}>
+        <div className={`collab-live-pill ${isTransient ? "is-connecting" : ""}`}>
           <span className="collab-live-dot" />
-          {session.status === "connecting" ? "SYNC" : "LIVE"}
+          {pillLabel}
         </div>
       </header>
 

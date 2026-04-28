@@ -15,10 +15,12 @@ P2P collaborative editing built on [iroh](https://docs.iroh.computer/quickstart)
 ## Transport (Rust, `src-tauri/src/multiplayer/`)
 
 - **`IrohNode`** (`node.rs`): process-wide singleton lazily created on the first session. Owns `Endpoint`, `MemStore` (blobs), `Gossip`, `Docs`, and a `Router` that wires the three protocols at their respective ALPNs.
-- **`MultiplayerSession`** (`session.rs`): per-session struct. Holds the iroh `Doc` handle, the local `AuthorId`, the ticket string, the namespace id, the gossip `Sender`, an `Arc<Notify>` shutdown signal, and join handles for the doc-subscribe and gossip-receive loops.
-  - On `host()`: creates a doc, sets `DownloadPolicy::EverythingExcept(vec![])` (eager blob fetching — without this, blob bytes don't sync), shares as a `DocTicket`, spawns subscribe + gossip loops.
-  - On `join(ticket)`: parses the `DocTicket`, extracts host endpoint ids for gossip bootstrap, imports the doc, sets eager download policy, spawns subscribe + gossip + a one-shot enumerator (covers entries already present at import time, which the live event stream doesn't replay).
+- **`MultiplayerSession`** (`session.rs`): per-session struct. Holds the iroh `Doc` handle, the local `AuthorId`, the ticket string, the namespace id, the gossip `Sender`, an `Arc<Notify>` shutdown signal, and join handles for the doc-subscribe / gossip-receive / reconnect loops.
+  - On `host()`: creates a doc, sets `DownloadPolicy::EverythingExcept(vec![])` (eager blob fetching — without this, blob bytes don't sync), shares as a `DocTicket`, spawns subscribe + gossip loops. No reconnect task — peers come to the host via the ticket.
+  - On `join(ticket)`: parses the `DocTicket`, keeps the full `Vec<EndpointAddr>` (used by the reconnect loop) **and** extracts host endpoint ids for gossip bootstrap, imports the doc, sets eager download policy, spawns subscribe + gossip + reconnect + a one-shot enumerator (covers entries already present at import time, which the live event stream doesn't replay).
   - The doc-subscribe loop keeps a `pending: HashMap<Hash, Vec<(key, author)>>`. If `get_bytes(content_hash)` fails on `InsertRemote` (blob not yet local), the entry is parked. `LiveEvent::ContentReady` drains the pending list once the bytes arrive.
+  - The doc-subscribe loop also owns the `NeighborTracker` and translates `LiveEvent::NeighborUp/NeighborDown` into `multiplayer:peer-disconnected` / `multiplayer:peer-reconnected` events (only when the count crosses 0 — the first ever NeighborUp on initial connect is silenced via a `pending_disconnect` flag).
+  - The reconnect loop (joiner only) polls the neighbor count on a 3 → 6 → 12 → 30 s backoff. While disconnected, it re-calls `doc.start_sync(bootstrap.clone())` — idempotent and harmless when peers are already connected. iroh-docs only calls `start_sync` once, on `import` (`iroh_docs::api.rs:223`); without this loop, a host endpoint change after laptop sleep / network switch leaves the joiner permanently wedged.
 - **Tauri commands** (`multiplayer_commands.rs`): `mp_host_session`, `mp_join_session`, `mp_end_session`, `mp_doc_put`, `mp_doc_del`, `mp_gossip_send`. Eager singleton init via `ensure_node`. State stored on `AppData.iroh: Option<IrohNode>` and `AppData.session: Option<MultiplayerSession>`.
 
 Tauri events emitted from Rust to JS:
@@ -26,6 +28,8 @@ Tauri events emitted from Rust to JS:
 - `multiplayer:doc-delete` `{key, author}`
 - `multiplayer:gossip-recv` `{payload, author}`
 - `multiplayer:sync-finished` `{}` (flips joiner from `connecting` → `active`)
+- `multiplayer:peer-disconnected` `{}` (last doc-sync neighbor went away — flips status to `reconnecting`)
+- `multiplayer:peer-reconnected` `{}` (a doc-sync neighbor came back after a disconnect — flips status to `active`)
 - `multiplayer:session-ended` `{}`
 
 ## Sync bridge (TypeScript, `src/multiplayer/`)
@@ -67,10 +71,17 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 
 | `payload.type` | Fields | Cadence |
 | --- | --- | --- |
-| `cursor` | `flowX`, `flowY` | ~15 Hz on mouse move |
+| `cursor` | `flowX`, `flowY`, `pageId` | ~15 Hz on mouse move |
 | `presence` | `name`, `color`, `isHost` | every 5 s |
+| `leave` | (none) | once on `controls.end()` before `mp_end_session` |
 
-`useGossipBridge` filters out events with `author === session.myAuthor`. Peers and remote cursors that haven't been seen in 15 s are pruned.
+`useGossipBridge` filters out events with `author === session.myAuthor`. Peers and remote cursors that haven't been seen in 15 s are pruned. A `leave` message drops the sender from `participantsAtom` and `remoteCursorsAtom` immediately so the UI reflects a clean disconnect without waiting for the prune.
+
+**Liveness signal.** `participantsAtom[author].lastSeen` is bumped on **both** presence (5 s) and cursor (15 Hz, throttled to once per peer per 2 s) receipts. Without the cursor path, presence is the only liveness signal — and gossip is best-effort, so three dropped presence packets in a row cause spurious 5–10 s prune windows where the participants pill flickers off.
+
+**Per-page cursor filtering.** The cursor payload carries the sender's `documentAtom.activePageId`. `RemoteCursorsLayer` filters cursors whose `pageId` doesn't match the local active page, so peers viewing different pages don't see each other's pointers as ghosts. (Today active page propagates via `doc/active-page` so peers usually converge anyway, but switches have a brief race window where stale cursor positions leak across.)
+
+**Topic isolation.** `app_gossip_topic()` in `session.rs` derives our gossip `TopicId` as `blake3("peek/multiplayer:" || namespace_id)`. Do **not** use `namespace_id.into()` directly — that's the same topic iroh-docs subscribes to internally for live entry propagation, and our JSON payloads would land in iroh-docs' `receive_loop` where `postcard::from_bytes::<Op>(...)?` fails and `?`-s out, killing live sync. Initial reconciliation still works in that broken state (it goes over the docs ALPN), which is why the symptom presents as "first sync OK, edits don't propagate."
 
 ## Lifecycle
 
@@ -88,9 +99,16 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 6. `multiplayer:sync-finished` fires → status flips to `active`.
 
 ### Ending
-1. `controls.end()` → `invoke("mp_end_session")` → Rust drops `MultiplayerSession`; `Drop` aborts both subscribe and gossip tasks.
-2. If joiner: restore `preSessionSnapshotAtom` (with `isApplyingRemoteRef.current = true`). Document and results return to pre-session state.
-3. Clear `sessionStateAtom`, `participantsAtom`, `remoteCursorsAtom`, `preSessionSnapshotAtom`.
+1. `controls.end()` captures the snapshot up front, then sends a `{type: 'leave'}` gossip message so peers can drop us instantly (best-effort; the gossip task is still alive because `mp_end_session` hasn't run yet).
+2. `invoke("mp_end_session")` → Rust drops `MultiplayerSession`; `Drop` aborts subscribe / gossip / reconnect tasks. Errors here are logged and ignored — the JS-side restore must run regardless.
+3. If joiner: restore `preSessionSnapshotAtom` (with `isApplyingRemoteRef.current = true`). Document and results return to pre-session state.
+4. Clear `sessionStateAtom`, `remoteCursorsAtom`, `participantsAtom`, **then** `preSessionSnapshotAtom` last. Order matters:
+   - Clearing `sessionStateAtom` flips `useLoadDocument`'s role check from "joiner: skip" to "no session: load from disk" — but `useLoadDocument` *also* checks `preSessionSnapshotAtom` and bails while it's non-null. That gate is what prevents an async disk-reload from clobbering the snapshot restore in step 3.
+   - Clearing `preSessionSnapshotAtom` last is the explicit handoff to disk-load. After this, `useLoadDocument` re-runs and is allowed to read from disk (which by construction matches the snapshot, since `join()` force-flushed disk before swapping).
+   The `multiplayer:session-ended` listener clears the same atoms — both paths matter because the Rust side may emit that event independently in the future.
+
+### Reconnecting (joiner)
+`useEffect` listeners on `multiplayer:peer-disconnected` / `multiplayer:peer-reconnected` flip `sessionStateAtom.status` between `"active"` and `"reconnecting"`. The Rust reconnect loop is the source of truth — it keeps trying `start_sync` forever until either the neighbor count climbs back above zero or the user clicks End session. There's no auto-give-up: a user who walks away and comes back finds either a healed session or a still-spinning "Reconnecting…" pill that they can manually end. `SharePopover` reuses the existing `is-connecting` CSS class for the pill in the `reconnecting` state and shows a "Lost contact with host. Trying to reconnect…" subhead.
 
 ### Query execution
 - **Standalone or host**: `useExecuteQueries` calls the regular `executeQueries(canvas, setResults, sourceNode, queries)` — runs against the local DB, creates the result node and updates `resultsAtom`. Both side-effects propagate via the regular outbound listeners.

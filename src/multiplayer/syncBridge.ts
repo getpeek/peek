@@ -178,11 +178,24 @@ function useGossipBridge(): void {
       if (payload.type === "cursor") {
         const flowX = Number(payload.flowX);
         const flowY = Number(payload.flowY);
-        if (!Number.isFinite(flowX) || !Number.isFinite(flowY)) return;
+        const pageId =
+          typeof payload.pageId === "string" ? payload.pageId : "";
+        if (!Number.isFinite(flowX) || !Number.isFinite(flowY) || !pageId)
+          return;
         store.set(remoteCursorsAtom, (prev) => ({
           ...prev,
-          [author]: { flowX, flowY, updatedAt: now },
+          [author]: { flowX, flowY, pageId, updatedAt: now },
         }));
+        // Cursor traffic counts as liveness — without this, presence-only
+        // updates (every 5s) get pruned at 15s after just three dropped
+        // gossip packets even though cursors are flowing fine. Throttle to
+        // once per peer per 2s so SharePopover doesn't re-render at 15Hz.
+        store.set(participantsAtom, (prev) => {
+          const peer = prev[author];
+          if (!peer) return prev;
+          if (now - peer.lastSeen < 2000) return prev;
+          return { ...prev, [author]: { ...peer, lastSeen: now } };
+        });
       } else if (payload.type === "presence") {
         const name = typeof payload.name === "string" ? payload.name : "Peer";
         const color = typeof payload.color === "string" ? payload.color : "#888";
@@ -197,6 +210,19 @@ function useGossipBridge(): void {
             lastSeen: now,
           } satisfies Peer,
         }));
+      } else if (payload.type === "leave") {
+        // Peer is shutting down cleanly; drop them immediately rather than
+        // waiting for the 15s prune timeout.
+        store.set(participantsAtom, (prev) => {
+          if (!(author in prev)) return prev;
+          const { [author]: _gone, ...rest } = prev;
+          return rest;
+        });
+        store.set(remoteCursorsAtom, (prev) => {
+          if (!(author in prev)) return prev;
+          const { [author]: _gone, ...rest } = prev;
+          return rest;
+        });
       }
     }).then((u) => {
       unlistenRecv = u;
@@ -284,15 +310,18 @@ function useSyncBridge(): void {
     });
   }, [session]);
 
-  // Inbound: doc-update / doc-delete / sync-finished / session-ended. Mounted
-  // once at startup so we never miss events fired between the JS join() call
-  // returning and the [session]-effect re-running. The handlers gate on the
-  // session by reading from the store at event time.
+  // Inbound: doc-update / doc-delete / sync-finished / session-ended /
+  // peer-disconnected / peer-reconnected. Mounted once at startup so we never
+  // miss events fired between the JS join() call returning and the
+  // [session]-effect re-running. The handlers gate on the session by reading
+  // from the store at event time.
   useEffect(() => {
     let unlistenUpdate: UnlistenFn | undefined;
     let unlistenDelete: UnlistenFn | undefined;
     let unlistenSync: UnlistenFn | undefined;
     let unlistenEnded: UnlistenFn | undefined;
+    let unlistenDisconnected: UnlistenFn | undefined;
+    let unlistenReconnected: UnlistenFn | undefined;
 
     listen<DocUpdatePayload>("multiplayer:doc-update", (event) => {
       const store = getDefaultStore();
@@ -366,6 +395,29 @@ function useSyncBridge(): void {
       unlistenSync = u;
     });
 
+    listen("multiplayer:peer-disconnected", () => {
+      const store = getDefaultStore();
+      const s = store.get(sessionStateAtom);
+      if (!s) return;
+      // Only flip from "active" → "reconnecting"; if we're still in
+      // "connecting" the initial sync hasn't finished and the disconnect
+      // signal would be misleading. (Joiner already shows "SYNC".)
+      if (s.status !== "active") return;
+      store.set(sessionStateAtom, { ...s, status: "reconnecting" });
+    }).then((u) => {
+      unlistenDisconnected = u;
+    });
+
+    listen("multiplayer:peer-reconnected", () => {
+      const store = getDefaultStore();
+      const s = store.get(sessionStateAtom);
+      if (!s) return;
+      if (s.status !== "reconnecting") return;
+      store.set(sessionStateAtom, { ...s, status: "active" });
+    }).then((u) => {
+      unlistenReconnected = u;
+    });
+
     listen("multiplayer:session-ended", () => {
       const store = getDefaultStore();
       const snap = store.get(preSessionSnapshotAtom);
@@ -381,6 +433,7 @@ function useSyncBridge(): void {
       store.set(preSessionSnapshotAtom, null);
       store.set(sessionStateAtom, null);
       store.set(remoteCursorsAtom, {});
+      store.set(participantsAtom, {});
     }).then((u) => {
       unlistenEnded = u;
     });
@@ -390,6 +443,8 @@ function useSyncBridge(): void {
       unlistenDelete?.();
       unlistenSync?.();
       unlistenEnded?.();
+      unlistenDisconnected?.();
+      unlistenReconnected?.();
     };
     // Mount once for the lifetime of the app; never resubscribe.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -410,6 +465,7 @@ function useMultiplayerControls(): MultiplayerControls {
   const setResults = useSetAtom(resultsAtom);
   const setSnapshot = useSetAtom(preSessionSnapshotAtom);
   const setRemoteCursors = useSetAtom(remoteCursorsAtom);
+  const setParticipants = useSetAtom(participantsAtom);
 
   const host = useCallback(async () => {
     const store = getDefaultStore();
@@ -499,14 +555,31 @@ function useMultiplayerControls(): MultiplayerControls {
     const store = getDefaultStore();
     const session = store.get(sessionStateAtom);
     if (!session) return;
+    // Capture the snapshot up front so it can't be cleared out from under us
+    // (e.g. by the `multiplayer:session-ended` listener firing concurrently).
+    const snapshot = store.get(preSessionSnapshotAtom);
 
+    // Notify peers we're leaving so they drop us from the participants list
+    // immediately instead of waiting for the 15s prune. Best-effort — the
+    // gossip task may already be unreachable if the network dropped.
+    try {
+      await invoke("mp_gossip_send", { payload: { type: "leave" } });
+    } catch {
+      // ignore — we're tearing down anyway
+    }
+
+    // Tear down the Rust session. mp_end_session is infallible today, but
+    // wrap it defensively so a failure here doesn't skip the JS-side restore.
     try {
       await invoke("mp_end_session");
     } catch (e) {
       console.error("mp_end_session failed:", e);
     }
 
-    const snapshot = store.get(preSessionSnapshotAtom);
+    // Restore the joiner's pre-session canvas. Done synchronously inside an
+    // `isApplyingRemoteRef` guard so the outbound mutation listeners (still
+    // subscribed until `setSession(null)` below) don't try to push these
+    // writes to a dead session.
     if (session.role === "joiner" && snapshot) {
       isApplyingRemoteRef.current = true;
       try {
@@ -516,10 +589,30 @@ function useMultiplayerControls(): MultiplayerControls {
         isApplyingRemoteRef.current = false;
       }
     }
-    setSnapshot(null);
+
+    // Order matters here:
+    //   1. setSession(null) — flips the role check in `useLoadDocument` from
+    //      "joiner: skip" to "no session: would normally load", but the
+    //      snapshot gate added there prevents the disk reload from racing
+    //      with our restore above. Also flips status atoms so the popover
+    //      starts hiding session UI on the next render.
+    //   2. setRemoteCursors / setParticipants — UI cleanup.
+    //   3. setSnapshot(null) LAST — this is the explicit handoff to
+    //      `useLoadDocument`. Clearing it re-enables disk-load (which is now
+    //      a no-op for the joiner since the snapshot we just restored is the
+    //      same content that was force-flushed at join() time).
     setSession(null);
     setRemoteCursors({});
-  }, [setSession, setSnapshot, setDoc, setResults, setRemoteCursors]);
+    setParticipants({});
+    setSnapshot(null);
+  }, [
+    setSession,
+    setSnapshot,
+    setDoc,
+    setResults,
+    setRemoteCursors,
+    setParticipants,
+  ]);
 
   const controls = useMemo<MultiplayerControls>(
     () => ({ host, join, end }),

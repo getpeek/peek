@@ -2,7 +2,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { activeConnectionAtom } from "../Connection/state";
-import { sessionStateAtom } from "../multiplayer/state";
+import { preSessionSnapshotAtom, sessionStateAtom } from "../multiplayer/state";
 import { documentAtom, loadEpochAtom, resultsAtom } from "./state";
 import { emptyDocument } from "./emptyDocument";
 import type { DatabaseResult } from "../state";
@@ -58,6 +58,7 @@ function migrateAndHydrate(doc: CanvasDocument): {
 export function useLoadDocument() {
   const conn = useAtomValue(activeConnectionAtom);
   const session = useAtomValue(sessionStateAtom);
+  const snapshot = useAtomValue(preSessionSnapshotAtom);
   const setDoc = useSetAtom(documentAtom);
   const setResults = useSetAtom(resultsAtom);
   const setLoadEpoch = useSetAtom(loadEpochAtom);
@@ -67,6 +68,13 @@ export function useLoadDocument() {
     // Joiner views the host's replica; reading from disk would clobber it.
     // session.end restores from snapshot, so loads only resume in standalone/host.
     if (session?.role === "joiner") return;
+    // End-of-session handoff: while `preSessionSnapshotAtom` is non-null and
+    // `sessionStateAtom` has been cleared, `controls.end()` is mid-restore and
+    // is about to write the snapshot back into `documentAtom`. An async
+    // disk-reload here would land *after* the snapshot write and clobber it.
+    // Wait until the snapshot is cleared — which `end()` does last — before
+    // re-loading from disk.
+    if (!session && snapshot) return;
 
     let cancelled = false;
 
@@ -123,5 +131,5 @@ export function useLoadDocument() {
     return () => {
       cancelled = true;
     };
-  }, [conn, session, setDoc, setResults, setLoadEpoch]);
+  }, [conn, session, snapshot, setDoc, setResults, setLoadEpoch]);
 }

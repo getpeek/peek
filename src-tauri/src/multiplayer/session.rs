@@ -1,11 +1,14 @@
 use std::collections::HashMap;
 use std::fmt;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::Context;
 use base64::{engine::general_purpose::STANDARD as B64, Engine as _};
 use bytes::Bytes;
 use futures_lite::StreamExt;
+use iroh::EndpointAddr;
 use iroh_blobs::{store::mem::MemStore, Hash};
 use iroh_docs::{
     api::{
@@ -27,9 +30,65 @@ use tokio::sync::{Mutex as TokioMutex, Notify};
 use tokio::task::JoinHandle;
 
 use super::events::{
-    DocDeleteEvent, DocUpdateEvent, GossipRecvEvent, SyncFinishedEvent,
+    DocDeleteEvent, DocUpdateEvent, GossipRecvEvent, PeerDisconnectedEvent,
+    PeerReconnectedEvent, SyncFinishedEvent,
 };
 use super::IrohNode;
+
+/// Tracks how many doc-sync neighbors the local replica is currently connected
+/// to. The subscribe loop is the single mutator (via `LiveEvent::NeighborUp`/
+/// `NeighborDown`); the reconnect loop reads `count` to decide whether to
+/// re-trigger `start_sync`. `pending_disconnect` exists so we don't fire a
+/// `peer-reconnected` event on the *initial* sync — only on actual recoveries.
+#[derive(Clone)]
+struct NeighborTracker {
+    count: Arc<AtomicUsize>,
+    pending_disconnect: Arc<AtomicBool>,
+}
+
+impl NeighborTracker {
+    fn new() -> Self {
+        Self {
+            count: Arc::new(AtomicUsize::new(0)),
+            pending_disconnect: Arc::new(AtomicBool::new(false)),
+        }
+    }
+
+    fn neighbor_up(&self, app: &AppHandle) {
+        let prev = self.count.fetch_add(1, Ordering::SeqCst);
+        // Only emit a "reconnected" event if we previously emitted a
+        // "disconnected" — the first ever NeighborUp on join is just the
+        // initial connection, not a recovery.
+        if prev == 0
+            && self
+                .pending_disconnect
+                .swap(false, Ordering::SeqCst)
+        {
+            let _ = app.emit("multiplayer:peer-reconnected", PeerReconnectedEvent {});
+        }
+    }
+
+    fn neighbor_down(&self, app: &AppHandle) {
+        // Saturating sub: if iroh emits an unbalanced NeighborDown (shouldn't
+        // happen, but defensive), don't underflow.
+        let prev = self.count.load(Ordering::SeqCst);
+        if prev == 0 {
+            return;
+        }
+        self.count.store(prev - 1, Ordering::SeqCst);
+        if prev == 1 {
+            self.pending_disconnect.store(true, Ordering::SeqCst);
+            let _ = app.emit(
+                "multiplayer:peer-disconnected",
+                PeerDisconnectedEvent {},
+            );
+        }
+    }
+
+    fn is_connected(&self) -> bool {
+        self.count.load(Ordering::SeqCst) > 0
+    }
+}
 
 /// Per-session state: a live iroh-doc replica, the author identity used for
 /// our writes, and the spawned subscribe loop that ferries remote changes back
@@ -43,6 +102,7 @@ pub struct MultiplayerSession {
     shutdown: Arc<Notify>,
     subscribe_task: Option<JoinHandle<()>>,
     gossip_task: Option<JoinHandle<()>>,
+    reconnect_task: Option<JoinHandle<()>>,
 }
 
 impl fmt::Debug for MultiplayerSession {
@@ -80,18 +140,28 @@ impl MultiplayerSession {
         let ticket_str = ticket.to_string();
 
         let shutdown = Arc::new(Notify::new());
+        let tracker = NeighborTracker::new();
         let subscribe_task = spawn_subscribe_loop(
             doc.clone(),
             node.blobs.clone(),
             app.clone(),
             Arc::clone(&shutdown),
+            tracker.clone(),
         )
         .await?;
 
-        let (gossip_sender, gossip_task) =
-            spawn_gossip(&node.gossip, &namespace_id, vec![], app, Arc::clone(&shutdown))
-                .await?;
+        let (gossip_sender, gossip_task) = spawn_gossip(
+            &node.gossip,
+            &namespace_id,
+            vec![],
+            app,
+            Arc::clone(&shutdown),
+        )
+        .await?;
 
+        // Host has no bootstrap peers — peers come to it via the ticket — so
+        // there's nothing to call start_sync against. We still skip spawning
+        // the reconnect task entirely for hosts.
         Ok(Self {
             doc,
             author_id,
@@ -101,6 +171,7 @@ impl MultiplayerSession {
             shutdown,
             subscribe_task: Some(subscribe_task),
             gossip_task: Some(gossip_task),
+            reconnect_task: None,
         })
     }
 
@@ -117,13 +188,13 @@ impl MultiplayerSession {
         let ticket = ticket_str
             .parse::<DocTicket>()
             .context("parse doc ticket")?;
-        // Bootstrap peers for gossip — pull the host's node id(s) out of the
-        // ticket before it's consumed by import().
-        let bootstrap_peers: Vec<_> = ticket
-            .nodes
-            .iter()
-            .map(|addr| addr.id)
-            .collect();
+        // Keep two views of the ticket nodes:
+        //   - `bootstrap_node_ids` for the gossip subscribe (peer ids only).
+        //   - `bootstrap_node_addrs` for `Doc::start_sync`, which needs full
+        //     EndpointAddrs and is what the reconnect task re-calls when the
+        //     connection drops.
+        let bootstrap_node_addrs: Vec<EndpointAddr> = ticket.nodes.clone();
+        let bootstrap_node_ids: Vec<_> = ticket.nodes.iter().map(|addr| addr.id).collect();
         let doc = node.docs.import(ticket).await.context("import doc")?;
         let author_id = node.docs.author_create().await.context("create author")?;
         let namespace_id = doc.id();
@@ -133,22 +204,31 @@ impl MultiplayerSession {
             .context("set download policy")?;
 
         let shutdown = Arc::new(Notify::new());
+        let tracker = NeighborTracker::new();
         let subscribe_task = spawn_subscribe_loop(
             doc.clone(),
             node.blobs.clone(),
             app.clone(),
             Arc::clone(&shutdown),
+            tracker.clone(),
         )
         .await?;
 
         let (gossip_sender, gossip_task) = spawn_gossip(
             &node.gossip,
             &namespace_id,
-            bootstrap_peers,
+            bootstrap_node_ids,
             app.clone(),
             Arc::clone(&shutdown),
         )
         .await?;
+
+        let reconnect_task = spawn_reconnect_loop(
+            doc.clone(),
+            bootstrap_node_addrs,
+            tracker,
+            Arc::clone(&shutdown),
+        );
 
         // Joining a doc transfers entries via reconciliation rather than the
         // live event stream, so subscribe alone misses anything already
@@ -158,7 +238,7 @@ impl MultiplayerSession {
         let enumerate_blobs = node.blobs.clone();
         let enumerate_app = app;
         tokio::spawn(async move {
-            tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+            tokio::time::sleep(Duration::from_millis(300)).await;
             enumerate_doc_entries(enumerate_doc, enumerate_blobs, enumerate_app).await;
         });
 
@@ -171,6 +251,7 @@ impl MultiplayerSession {
             shutdown,
             subscribe_task: Some(subscribe_task),
             gossip_task: Some(gossip_task),
+            reconnect_task: Some(reconnect_task),
         })
     }
 
@@ -223,7 +304,25 @@ impl Drop for MultiplayerSession {
         if let Some(handle) = self.gossip_task.take() {
             handle.abort();
         }
+        if let Some(handle) = self.reconnect_task.take() {
+            handle.abort();
+        }
     }
+}
+
+/// Derive a gossip topic that's distinct from iroh-docs' internal sync topic.
+///
+/// iroh-docs subscribes to a gossip topic equal to the namespace id (see
+/// `iroh_docs::engine::gossip::GossipState::join` → `subscribe_with_opts(namespace.into(), ...)`).
+/// If we shared that topic for our app messages (cursors, presence), our JSON
+/// payloads would land in iroh-docs' `receive_loop`, where `postcard::from_bytes::<Op>(&msg.content)?`
+/// would fail-and-`?` out of the loop — silently killing live entry propagation.
+/// We blake3-hash a prefix + the namespace bytes to get a topic only this app uses.
+fn app_gossip_topic(namespace_id: &NamespaceId) -> TopicId {
+    let mut buf = Vec::with_capacity(32 + 16);
+    buf.extend_from_slice(b"peek/multiplayer:");
+    buf.extend_from_slice(namespace_id.as_bytes());
+    TopicId::from_bytes(*Hash::new(&buf).as_bytes())
 }
 
 async fn spawn_gossip(
@@ -233,7 +332,7 @@ async fn spawn_gossip(
     app: AppHandle,
     shutdown: Arc<Notify>,
 ) -> anyhow::Result<(Arc<TokioMutex<GossipSender>>, JoinHandle<()>)> {
-    let topic = TopicId::from_bytes(*namespace_id.as_bytes());
+    let topic = app_gossip_topic(namespace_id);
     let topic_handle = gossip
         .subscribe(topic, bootstrap)
         .await
@@ -298,6 +397,7 @@ async fn spawn_subscribe_loop(
     blobs: MemStore,
     app: AppHandle,
     shutdown: Arc<Notify>,
+    tracker: NeighborTracker,
 ) -> anyhow::Result<JoinHandle<()>> {
     let stream = doc.subscribe().await.context("subscribe to doc")?;
     Ok(tokio::spawn(async move {
@@ -375,15 +475,76 @@ async fn spawn_subscribe_loop(
                         Some(Ok(LiveEvent::SyncFinished(_))) => {
                             let _ = app.emit("multiplayer:sync-finished", SyncFinishedEvent {});
                         }
+                        Some(Ok(LiveEvent::NeighborUp(_peer))) => {
+                            tracker.neighbor_up(&app);
+                        }
+                        Some(Ok(LiveEvent::NeighborDown(_peer))) => {
+                            tracker.neighbor_down(&app);
+                        }
                         Some(Ok(_)) => {
-                            // Ignore InsertLocal (we wrote it), NeighborUp/Down,
-                            // PendingContentReady.
+                            // Ignore InsertLocal (we wrote it) and
+                            // PendingContentReady (initial-batch flush signal).
                         }
                     }
                 }
             }
         }
     }))
+}
+
+/// Joiner-only reconnect loop. iroh-docs' `Doc::import` calls `start_sync`
+/// once with the ticket's bootstrap peers (`iroh_docs::api.rs` line 220-225),
+/// and the gossip layer auto-reconnects via its membership protocol when a
+/// neighbor reappears (`iroh_docs::engine::live.rs:305-317`). But if the host
+/// rebinds its endpoint (laptop sleep, network switch), the original
+/// bootstrap addresses go stale and iroh-docs has nothing to fall back to.
+/// This loop polls the neighbor count and, while it's zero, periodically
+/// calls `start_sync(bootstrap.clone())` again — which is idempotent and
+/// harmless when peers are already connected. Backoff caps at 30 s.
+fn spawn_reconnect_loop(
+    doc: Doc,
+    bootstrap: Vec<EndpointAddr>,
+    tracker: NeighborTracker,
+    shutdown: Arc<Notify>,
+) -> JoinHandle<()> {
+    tokio::spawn(async move {
+        if bootstrap.is_empty() {
+            // Should not happen for joiners, but guard against an empty
+            // bootstrap list anyway — we have nobody to call start_sync against.
+            return;
+        }
+
+        const BACKOFF_STEPS_SECS: [u64; 4] = [3, 6, 12, 30];
+        let mut step: usize = 0;
+
+        loop {
+            let wait = Duration::from_secs(BACKOFF_STEPS_SECS[step]);
+            tokio::select! {
+                () = shutdown.notified() => break,
+                _ = tokio::time::sleep(wait) => {}
+            }
+
+            if tracker.is_connected() {
+                // Doc-sync neighbors are present; reset backoff and keep
+                // watching. We don't need to do anything — iroh-docs handles
+                // live updates on its own once a neighbor is up.
+                step = 0;
+                continue;
+            }
+
+            match doc.start_sync(bootstrap.clone()).await {
+                Ok(()) => {
+                    eprintln!(
+                        "multiplayer: reconnect start_sync issued (still no neighbors after {wait:?})"
+                    );
+                }
+                Err(e) => {
+                    eprintln!("multiplayer: reconnect start_sync failed: {e}");
+                }
+            }
+            step = (step + 1).min(BACKOFF_STEPS_SECS.len() - 1);
+        }
+    })
 }
 
 /// One-shot enumeration of all entries currently in the doc. Used after a

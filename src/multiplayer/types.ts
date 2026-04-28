@@ -1,6 +1,6 @@
 export type Role = "host" | "joiner";
 
-export type SessionStatus = "connecting" | "active" | "ending";
+export type SessionStatus = "connecting" | "active" | "reconnecting" | "ending";
 
 export interface SessionState {
   role: Role;
@@ -23,6 +23,10 @@ export interface Peer {
 export interface RemoteCursor {
   flowX: number;
   flowY: number;
+  // Page the sender was on when the cursor was emitted. The renderer hides
+  // cursors whose pageId doesn't match the local active page so peers on
+  // different pages don't see ghosts of each other's pointers.
+  pageId: string;
   updatedAt: number;
 }
 

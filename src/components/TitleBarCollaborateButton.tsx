@@ -59,14 +59,11 @@ export function TitleBarCollaborateButton() {
                   {initialFromName(a.name)}
                 </span>
               ))}
-              {overflow > 0 && (
-                <span className="collab-avatar overflow">+{overflow}</span>
-              )}
+              {overflow > 0 && <span className="collab-avatar overflow">+{overflow}</span>}
             </span>
           ) : (
             <>
               <IconUsers size={12} stroke={2} />
-              <span>Collaborate</span>
             </>
           )}
         </button>

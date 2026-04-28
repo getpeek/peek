@@ -1,5 +1,6 @@
 import { Panel, useStore } from "@xyflow/react";
 import { useAtomValue } from "jotai";
+import { documentAtom } from "../canvas/state";
 import {
   participantsAtom,
   remoteCursorsAtom,
@@ -16,6 +17,7 @@ export function RemoteCursorsLayer() {
   const session = useAtomValue(sessionStateAtom);
   const cursors = useAtomValue(remoteCursorsAtom);
   const participants = useAtomValue(participantsAtom);
+  const activePageId = useAtomValue(documentAtom).activePageId;
   // Subscribe to viewport so we re-render on pan/zoom.
   const transform = useStore((s) => s.transform);
 
@@ -23,7 +25,8 @@ export function RemoteCursorsLayer() {
   const [tx, ty, tz] = transform;
 
   const entries = Object.entries(cursors).filter(
-    ([author]) => author !== session.myAuthor,
+    ([author, cur]) =>
+      author !== session.myAuthor && cur.pageId === activePageId,
   );
   if (entries.length === 0) return null;
 
