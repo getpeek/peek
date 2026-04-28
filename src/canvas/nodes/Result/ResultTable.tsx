@@ -16,9 +16,11 @@ import {
 } from "../../../shapes/Result/ResultTable/findReferences";
 import { useCanvas } from "../../useCanvas";
 import { useExecuteQueries } from "../../useExecuteQueries";
+import { CellContextMenu } from "./CellContextMenu";
 import { PortalAnchor } from "./PortalAnchor";
 import { ResultTableHeader } from "./ResultTableHeader";
 import { ResultTableRow } from "./ResultTableRow";
+import { useCellContextMenu } from "./useCellContextMenu";
 import { useColumnWidths } from "./useColumnWidths";
 import { useCommitEdit, type EditingState } from "./useCommitEdit";
 import type { Reference } from "./columnRoles";
@@ -48,6 +50,7 @@ export function ResultTable({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState<EditingState | null>(null);
   const [headerMenu, setHeaderMenu] = useState<HeaderMenuState | null>(null);
+  const cellContextMenu = useCellContextMenu(nodeId);
 
   const firstRow = data[0] ?? [];
   const headers = firstRow.map(([key]) => key);
@@ -199,6 +202,7 @@ export function ResultTable({
               inbound={inbound}
               outbound={outbound}
               onFollowReferences={followReferences}
+              onCellContextMenu={cellContextMenu.openCellMenu}
             />
           ))}
           {paddingBottom > 0 && (
@@ -255,6 +259,12 @@ export function ResultTable({
           </Menu.Dropdown>
         </Menu>
       )}
+      <CellContextMenu
+        cellMenu={cellContextMenu.cellMenu}
+        onClose={cellContextMenu.closeCellMenu}
+        onUseAsVariable={cellContextMenu.createVariableFromCell}
+        onCopyValue={cellContextMenu.copyCellValue}
+      />
     </div>
   );
 }

@@ -72,7 +72,17 @@ impl Database for PostgresDatabase {
                         .map(|v| json!(v))
                         .unwrap_or(Value::Null),
 
-                    "FLOAT4" | "FLOAT8" | "NUMERIC" => row
+                    "FLOAT4" => row
+                        .try_get::<f32, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "FLOAT8" => row
+                        .try_get::<f64, _>(i)
+                        .map(|v| json!(v))
+                        .unwrap_or(Value::Null),
+
+                    "NUMERIC" => row
                         .try_get::<rust_decimal::Decimal, _>(i)
                         .map(|v| json!(v))
                         .unwrap_or(Value::Null),

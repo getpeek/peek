@@ -21,9 +21,24 @@ export const ResultTableRow = forwardRef<
     inbound: Record<string, Reference[]>;
     outbound: Record<string, Reference[]>;
     onFollowReferences: (refs: CellReference[], value: unknown) => void;
+    onCellContextMenu: (
+      e: React.MouseEvent,
+      value: unknown,
+      column: string,
+    ) => void;
   }
 >(function ResultTableRow(
-  { row, rowIndex, editing, setEditing, commitEdit, inbound, outbound, onFollowReferences },
+  {
+    row,
+    rowIndex,
+    editing,
+    setEditing,
+    commitEdit,
+    inbound,
+    outbound,
+    onFollowReferences,
+    onCellContextMenu,
+  },
   ref,
 ) {
   const isEvenRow = rowIndex % 2 === 0;
@@ -68,6 +83,10 @@ export const ResultTableRow = forwardRef<
                 error: null,
                 saving: false,
               });
+            }}
+            onContextMenu={(e) => {
+              e.stopPropagation();
+              onCellContextMenu(e, value, column);
             }}
           >
             {isEditing && editing ? (
