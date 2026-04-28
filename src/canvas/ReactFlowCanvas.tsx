@@ -174,11 +174,11 @@ function ReactFlowCanvasInner() {
         x: flowPos.x - dims.w / 2,
         y: flowPos.y - dims.h / 2,
       });
-      setNodes((ns) => [...ns, node]);
+      canvas.addNode(node);
       rf.setCenter(flowPos.x, flowPos.y, { zoom: 1, duration: 300 });
       setPlaceMode(null);
     },
-    [placeMode, rf, setNodes, setPlaceMode],
+    [placeMode, rf, canvas, setPlaceMode],
   );
 
   const onNodeDragStart = useCallback(

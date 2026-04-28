@@ -9,7 +9,7 @@ import {
   type CanvasApi,
 } from "./state";
 import { ids } from "./ids";
-import type { AppEdge, AppNode } from "./types";
+import type { AppEdge, AppNode, VariableData, VariableNode } from "./types";
 
 export function useCanvas(): CanvasApi {
   const rf = useReactFlow<AppNode, AppEdge>();
@@ -19,7 +19,27 @@ export function useCanvas(): CanvasApi {
 
   return useMemo<CanvasApi>(
     () => ({
-      addNode: (node) => setNodes((ns) => [...ns, node]),
+      addNode: (node) => {
+        const globals =
+          node.type === "query"
+            ? (rf.getNodes() as AppNode[]).filter(
+                (n): n is VariableNode =>
+                  n.type === "variable" &&
+                  (n.data as VariableData).isGlobal === true,
+              )
+            : [];
+        setNodes((ns) => [...ns, node]);
+        if (globals.length === 0) return;
+        setEdges((es) => {
+          let acc = es;
+          for (const g of globals) {
+            const edgeId = ids.edge(g.id, node.id);
+            if (acc.some((e) => e.id === edgeId)) continue;
+            acc = [...acc, { id: edgeId, source: g.id, target: node.id }];
+          }
+          return acc;
+        });
+      },
 
       updateNode: (id, patch) =>
         setNodes((ns) =>

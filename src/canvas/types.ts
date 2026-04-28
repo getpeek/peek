@@ -67,6 +67,7 @@ export type VariableRow = { name: string; value: string };
 
 export type VariableData = {
   rows: VariableRow[];
+  isGlobal?: boolean;
 };
 
 export type QueryNode = Node<QueryData, "query">;

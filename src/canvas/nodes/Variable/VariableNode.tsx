@@ -1,5 +1,5 @@
 import { Handle, NodeProps, NodeResizer, Position } from "@xyflow/react";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconPlus, IconTrash, IconWorld } from "@tabler/icons-react";
 import { useMemo, useRef } from "react";
 import { useCanvas } from "../../useCanvas";
 import { useScrollFallthrough } from "../useScrollFallthrough";
@@ -138,6 +138,24 @@ export function VariableNode({
           <button className="btn btn-ghost" onClick={addRow}>
             <IconPlus size={13} />
             Add variable
+          </button>
+          <button
+            type="button"
+            className={`variable-global-toggle ${data.isGlobal ? "active" : ""}`}
+            title="Make this variable node global"
+            onClick={() => {
+              const next = !data.isGlobal;
+              canvas.updateNodeData<VariableNodeT["data"]>(id, {
+                isGlobal: next,
+              });
+              if (next) {
+                for (const n of canvas.getNodes()) {
+                  if (n.type === "query") canvas.connect(id, n.id);
+                }
+              }
+            }}
+          >
+            <IconWorld size={14} />
           </button>
         </div>
       </div>

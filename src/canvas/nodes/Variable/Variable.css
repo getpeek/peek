@@ -102,6 +102,30 @@
   background: var(--pk-accent-soft);
 }
 
+.variable-global-toggle {
+  background: transparent;
+  border: 0;
+  color: var(--pk-fg-subtle);
+  width: 24px;
+  height: 22px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.1s, color 0.1s;
+}
+
+.variable-global-toggle:hover {
+  color: var(--pk-fg);
+  background: var(--pk-node-bg-2);
+}
+
+.variable-global-toggle.active {
+  color: var(--pk-accent);
+  background: var(--pk-accent-bg);
+}
+
 .variable-source-handle {
   width: 16px !important;
   height: 16px !important;
