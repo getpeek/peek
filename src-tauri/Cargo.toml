@@ -1,6 +1,6 @@
 [package]
 name = "peek"
-version = "0.1.0"
+version = "2.0.0"
 description = "A Database GUI"
 authors = ["you"]
 edition = "2021"
@@ -28,13 +28,13 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 async-trait = "0.1"
 sqlx = { version = "0.8.6", features = [
-    "postgres",
-    "mysql",
-    "uuid",
-    "chrono",
-    "rust_decimal",
-    "runtime-tokio",
-    "tls-rustls",
+  "postgres",
+  "mysql",
+  "uuid",
+  "chrono",
+  "rust_decimal",
+  "runtime-tokio",
+  "tls-rustls",
 ] }
 uuid = "1.17.0"
 chrono = { version = "0.4.41", features = ["serde"] }
@@ -51,7 +51,16 @@ lsp-types = "0.97"
 dashmap = "6"
 parking_lot = "0.12"
 russh = "0.54"
-tokio = { version = "1", features = ["net", "io-util", "macros", "sync", "rt", "rt-multi-thread", "time", "fs"] }
+tokio = { version = "1", features = [
+  "net",
+  "io-util",
+  "macros",
+  "sync",
+  "rt",
+  "rt-multi-thread",
+  "time",
+  "fs",
+] }
 url = "2"
 iroh = "0.98"
 iroh-docs = "0.98"

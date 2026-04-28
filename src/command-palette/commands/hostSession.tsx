@@ -1,7 +1,10 @@
 import { IconBroadcast, IconBroadcastOff } from "@tabler/icons-react";
 import { Text } from "@mantine/core";
-import { useAtomValue } from "jotai";
-import { sessionStateAtom } from "../../multiplayer/state";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  collaboratePopoverOpenAtom,
+  sessionStateAtom,
+} from "../../multiplayer/state";
 import type { MultiplayerControls } from "../../multiplayer/syncBridge";
 import type { CommandPaletteResult } from ".";
 
@@ -15,6 +18,7 @@ function controls(): MultiplayerControls | undefined {
 
 export const useHostSessionCommand = (): CommandPaletteResult => {
   const session = useAtomValue(sessionStateAtom);
+  const setOpen = useSetAtom(collaboratePopoverOpenAtom);
   const isInSession = session != null;
   const isHost = session?.role === "host";
 
@@ -35,7 +39,7 @@ export const useHostSessionCommand = (): CommandPaletteResult => {
       if (isInSession) {
         await controls()?.end();
       } else {
-        await controls()?.host();
+        setOpen(true);
       }
     },
   };

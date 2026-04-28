@@ -1,0 +1,89 @@
+.titlebar-collab-button {
+  position: relative;
+  -webkit-app-region: no-drag;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-pill, 9999px);
+  color: var(--pk-fg-muted);
+  font: 500 12px var(--pk-font-sans);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.titlebar-collab-button:hover {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+.titlebar-collab-button.active {
+  border-color: transparent;
+  color: var(--pk-fg);
+  padding: 3px 6px;
+}
+
+.titlebar-collab-button.active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    90deg,
+    #ff5e5e,
+    #ffb24c,
+    #f5e85c,
+    #6fea7a,
+    #5cd6e8,
+    #6c8cff,
+    #c87cff,
+    #ff5e5e
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: xor;
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.collab-avatars {
+  display: inline-flex;
+  align-items: center;
+}
+
+.collab-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--pk-node-bg);
+  margin-left: -6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 10px var(--pk-font-sans);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.titlebar-collab-button:hover .collab-avatar {
+  border-color: var(--pk-node-bg-2);
+}
+
+.collab-avatar:first-child {
+  margin-left: 0;
+}
+
+.collab-avatar.overflow {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg-muted);
+}

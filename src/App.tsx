@@ -10,7 +10,6 @@ import { useAutoSaveDocument } from "./canvas/useAutoSaveDocument";
 import { useAutoSaveResults } from "./canvas/useAutoSaveResults";
 import { useLoadDocument } from "./canvas/useLoadDocument";
 import { useMultiplayer } from "./multiplayer/syncBridge";
-import { JoinSessionDialog } from "./components/JoinSessionDialog";
 import { darkModeAtom } from "./state";
 import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
@@ -38,7 +37,6 @@ function App() {
       <MonacoManager />
       <ReactFlowCanvas />
       <CommandPalette />
-      <JoinSessionDialog />
     </MantineProvider>
   );
 }

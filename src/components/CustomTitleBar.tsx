@@ -3,7 +3,7 @@ import { useAtomValue } from "jotai";
 import { TitleBarConnectionPicker } from "./TitleBarConnectionPicker";
 import { TitleBarPageSelector } from "./TitleBarPageSelector";
 import { TitleBarCommandPalette } from "./TitleBarCommandPalette";
-import { TitleBarShareButton } from "./TitleBarShareButton";
+import { TitleBarCollaborateButton } from "./TitleBarCollaborateButton";
 import "./CustomTitleBar.css";
 import { IconArrowsDiagonal2, IconMinus, IconX } from "@tabler/icons-react";
 import { TitlebarLiveQueryNotification } from "./TitlebarLiveQueryNotification";
@@ -63,7 +63,7 @@ export const CustomTitleBar = () => {
         <div className="titlebar-right">
           <TitlebarLiveQueryNotification />
           <TitleBarCommandPalette />
-          <TitleBarShareButton />
+          <TitleBarCollaborateButton />
           {!isJoiner && <TitleBarConnectionPicker />}
         </div>
       </div>

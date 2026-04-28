@@ -32,8 +32,9 @@ import {
   sessionStateAtom,
 } from "./state";
 import type { AppNode } from "../canvas/types";
-import type { DatabaseResult } from "../state";
+import { configAtom, type DatabaseResult } from "../state";
 import type { Operation, SessionState } from "./types";
+import { colorFromName } from "./identity";
 
 interface HostSessionInfo {
   ticket: string;
@@ -45,9 +46,6 @@ interface JoinSessionInfo {
   author: string;
   namespaceId: string;
 }
-
-const HOST_COLOR = "#7AC0FF";
-const JOINER_COLOR = "#FFB347";
 
 interface DocUpdatePayload {
   key: string;
@@ -419,13 +417,14 @@ function useMultiplayerControls(): MultiplayerControls {
       throw new Error("session already active");
     }
     const info = await invoke<HostSessionInfo>("mp_host_session");
+    const name = store.get(configAtom)?.name ?? "Anonymous";
     const next: SessionState = {
       role: "host",
       status: "active",
       ticket: info.ticket,
       myAuthor: info.author,
-      myColor: HOST_COLOR,
-      myName: "Host",
+      myColor: colorFromName(name),
+      myName: name,
       namespaceId: info.namespaceId,
     };
     // Set the session BEFORE pushing the initial state so the outbound
@@ -480,13 +479,14 @@ function useMultiplayerControls(): MultiplayerControls {
       }
 
       const info = await invoke<JoinSessionInfo>("mp_join_session", { ticket });
+      const name = store.get(configAtom)?.name ?? "Anonymous";
       const next: SessionState = {
         role: "joiner",
         status: "connecting",
         ticket,
         myAuthor: info.author,
-        myColor: JOINER_COLOR,
-        myName: "Joiner",
+        myColor: colorFromName(name),
+        myName: name,
         namespaceId: info.namespaceId,
       };
       setSession(next);

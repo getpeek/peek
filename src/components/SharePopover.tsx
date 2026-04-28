@@ -1,11 +1,19 @@
-import { Button, CopyButton, Stack, Text } from "@mantine/core";
-import { IconCheck, IconCopy } from "@tabler/icons-react";
+import { CopyButton } from "@mantine/core";
+import {
+  IconBroadcast,
+  IconCheck,
+  IconCopy,
+  IconShieldLock,
+  IconUser,
+  IconX,
+} from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useCallback, useState } from "react";
 import {
   participantsAtom,
   sessionStateAtom,
 } from "../multiplayer/state";
+import { initialFromName } from "../multiplayer/identity";
 import type { MultiplayerControls } from "../multiplayer/syncBridge";
 import "./SharePopover.css";
 
@@ -25,6 +33,8 @@ export function SharePopover({ onClose }: Props) {
   const session = useAtomValue(sessionStateAtom);
   const participants = useAtomValue(participantsAtom);
   const [busy, setBusy] = useState(false);
+  const [ticket, setTicket] = useState("");
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   const startSession = useCallback(async () => {
     setBusy(true);
@@ -36,6 +46,25 @@ export function SharePopover({ onClose }: Props) {
       setBusy(false);
     }
   }, []);
+
+  const joinSession = useCallback(async () => {
+    const trimmed = ticket.trim();
+    if (!trimmed) {
+      setJoinError("Paste a ticket to join.");
+      return;
+    }
+    setBusy(true);
+    setJoinError(null);
+    try {
+      await controls()?.join(trimmed);
+      setTicket("");
+      onClose?.();
+    } catch (e) {
+      setJoinError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  }, [ticket, onClose]);
 
   const endSession = useCallback(async () => {
     setBusy(true);
@@ -51,102 +80,168 @@ export function SharePopover({ onClose }: Props) {
 
   if (!session) {
     return (
-      <Stack gap="sm" className="share-popover">
-        <div>
-          <Text size="sm" fw={600}>Share this canvas</Text>
-          <Text size="xs" c="var(--pk-fg-muted)">
-            Start a session to get a join ticket. Anyone with the ticket can
-            mirror this canvas and edit alongside you.
-          </Text>
+      <div className="collab-panel">
+        <header className="collab-header">
+          <div className="collab-header-icon">
+            <IconUser size={18} stroke={1.75} />
+          </div>
+          <div className="collab-header-text">
+            <h2>Collaborate</h2>
+            <p>Host a session to share this canvas, or paste a ticket to join one.</p>
+          </div>
+        </header>
+
+        <section className="collab-section">
+          <div className="collab-label">Start a session</div>
+          <button
+            type="button"
+            className="collab-host-button"
+            onClick={startSession}
+            disabled={busy}
+          >
+            <IconBroadcast size={16} stroke={2} />
+            <span>Start hosting</span>
+          </button>
+        </section>
+
+        <div className="collab-or">
+          <span>or</span>
         </div>
-        <Button
-          loading={busy}
-          onClick={startSession}
-          variant="filled"
-          radius="md"
-          size="sm"
-        >
-          Start session
-        </Button>
-      </Stack>
+
+        <section className="collab-section">
+          <div className="collab-label">Join a session</div>
+          <div className="collab-join-row">
+            <input
+              type="text"
+              className="collab-input"
+              placeholder="Paste a ticket…"
+              value={ticket}
+              onChange={(e) => {
+                setTicket(e.currentTarget.value);
+                if (joinError) setJoinError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void joinSession();
+                }
+              }}
+              disabled={busy}
+              autoFocus
+            />
+            <button
+              type="button"
+              className="collab-join-button"
+              onClick={joinSession}
+              disabled={busy || !ticket.trim()}
+            >
+              Join
+            </button>
+          </div>
+          {joinError && <div className="collab-error">{joinError}</div>}
+        </section>
+
+        <footer className="collab-footer">
+          <IconShieldLock size={13} stroke={1.75} />
+          <span>End-to-end encrypted · tickets expire in 24h</span>
+        </footer>
+      </div>
     );
   }
 
-  const myDot = (
-    <span
-      className="participant-dot"
-      style={{ backgroundColor: session.myColor }}
-      title={`${session.myName} (you)`}
-    />
-  );
   const peerEntries = Object.values(participants).filter(
     (p) => p.author !== session.myAuthor,
   );
+  const collaboratorCount = 1 + peerEntries.length;
+  const isHost = session.role === "host";
+  const headline = isHost ? "Sharing canvas" : "In session";
+  const subhead = session.status === "connecting"
+    ? "Connecting to host…"
+    : isHost
+      ? "Anyone with the ticket can edit this canvas in real-time."
+      : "Connected to host. Edits sync live.";
 
   return (
-    <Stack gap="sm" className="share-popover">
-      <div>
-        <Text size="sm" fw={600}>
-          {session.role === "host" ? "Hosting session" : "In session"}
-        </Text>
-        <Text size="xs" c="var(--pk-fg-muted)">
-          {session.status === "connecting"
-            ? "Connecting…"
-            : session.role === "host"
-              ? "Share the ticket below to invite a peer."
-              : "Connected to host."}
-        </Text>
-      </div>
-
-      <div className="share-ticket-row">
-        <code className="share-ticket">{session.ticket}</code>
-        <CopyButton value={session.ticket} timeout={1500}>
-          {({ copied, copy }) => (
-            <Button
-              size="compact-sm"
-              variant="light"
-              color={copied ? "teal" : "gray"}
-              onClick={copy}
-              leftSection={
-                copied ? <IconCheck size={12} /> : <IconCopy size={12} />
-              }
-            >
-              {copied ? "Copied" : "Copy"}
-            </Button>
-          )}
-        </CopyButton>
-      </div>
-
-      <div className="participants">
-        <Text size="xs" c="var(--pk-fg-muted)">
-          Participants
-        </Text>
-        <div className="participants-row">
-          {myDot}
-          <Text size="xs">{session.myName} (you)</Text>
+    <div className="collab-panel">
+      <header className="collab-header">
+        <div className="collab-header-icon collab-header-icon--live">
+          <IconBroadcast size={18} stroke={1.75} />
         </div>
-        {peerEntries.map((p) => (
-          <div className="participants-row" key={p.author}>
-            <span
-              className="participant-dot"
-              style={{ backgroundColor: p.color }}
-              title={p.name}
-            />
-            <Text size="xs">{p.name}</Text>
-          </div>
-        ))}
-      </div>
+        <div className="collab-header-text">
+          <h2>{headline}</h2>
+          <p>{subhead}</p>
+        </div>
+        <div className={`collab-live-pill ${session.status === "connecting" ? "is-connecting" : ""}`}>
+          <span className="collab-live-dot" />
+          {session.status === "connecting" ? "SYNC" : "LIVE"}
+        </div>
+      </header>
 
-      <Button
-        loading={busy}
+      <section className="collab-section">
+        <div className="collab-label">Invite ticket</div>
+        <div className="collab-ticket-row">
+          <code className="collab-ticket">{session.ticket}</code>
+          <CopyButton value={session.ticket} timeout={1500}>
+            {({ copied, copy }) => (
+              <button
+                type="button"
+                className="collab-copy-button"
+                onClick={copy}
+              >
+                {copied ? <IconCheck size={13} stroke={2} /> : <IconCopy size={13} stroke={1.75} />}
+                <span>{copied ? "Copied" : "Copy"}</span>
+              </button>
+            )}
+          </CopyButton>
+        </div>
+      </section>
+
+      <div className="collab-divider" />
+
+      <section className="collab-section">
+        <div className="collab-label">
+          Collaborators · <span className="collab-count">{collaboratorCount}</span>
+        </div>
+
+        <ul className="collab-list">
+          <li className="collab-row">
+            <span
+              className="collab-avatar"
+              style={{ backgroundColor: session.myColor }}
+            >
+              {initialFromName(session.myName)}
+              <span className="collab-presence" />
+            </span>
+            <span className="collab-name">
+              {session.myName} <span className="collab-you">(you)</span>
+            </span>
+            <span className="collab-role">{isHost ? "HOST" : "EDITOR"}</span>
+          </li>
+          {peerEntries.map((p) => (
+            <li className="collab-row" key={p.author}>
+              <span
+                className="collab-avatar"
+                style={{ backgroundColor: p.color }}
+              >
+                {initialFromName(p.name)}
+                <span className="collab-presence" />
+              </span>
+              <span className="collab-name">{p.name}</span>
+              <span className="collab-role">{p.isHost ? "HOST" : "EDITOR"}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <button
+        type="button"
+        className="collab-end-button"
         onClick={endSession}
-        variant="light"
-        color="red"
-        radius="md"
-        size="sm"
+        disabled={busy}
       >
-        End session
-      </Button>
-    </Stack>
+        <IconX size={14} stroke={2} />
+        <span>End session</span>
+      </button>
+    </div>
   );
 }

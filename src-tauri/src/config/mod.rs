@@ -13,6 +13,8 @@ pub fn get_config() -> Result<String, String> {
 pub struct PeekConfig {
     workspaces: Vec<Workspace>,
     ai: AIConfig,
+    #[serde(default)]
+    name: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -32,6 +34,18 @@ impl Default for AIConfig {
 
 impl PeekConfig {
     pub fn get_or_default() -> Self {
+        let mut config = Self::load_from_disk();
+        if config.name.is_none() {
+            config.name = Some(
+                std::env::var("USER")
+                    .or_else(|_| std::env::var("USERNAME"))
+                    .unwrap_or_else(|_| "Anonymous".to_string()),
+            );
+        }
+        config
+    }
+
+    fn load_from_disk() -> Self {
         let Ok(home_dir) = std::env::var("HOME") else {
             return PeekConfig::default();
         };

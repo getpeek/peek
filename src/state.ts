@@ -9,6 +9,7 @@ export interface Config {
     url: string;
   };
   workspaces: Workspace[];
+  name: string;
 }
 
 export const configAtom = atom<Config>();

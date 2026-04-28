@@ -7,8 +7,9 @@ export const participantsAtom = atom<Record<string, Peer>>({});
 
 export const remoteCursorsAtom = atom<Record<string, RemoteCursor>>({});
 
-// Whether the "Join session" modal is open. Set by the command palette entry.
-export const joinDialogOpenAtom = atom<boolean>(false);
+// Whether the collaborate popover in the titlebar is open. Toggled by the
+// titlebar button itself and by the command palette host/join entries.
+export const collaboratePopoverOpenAtom = atom<boolean>(false);
 
 // Snapshot of the canvas document captured before a joiner's local document
 // is replaced by the host's replica. Restored on session end so the joiner
