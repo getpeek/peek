@@ -175,6 +175,8 @@ export const viewportAtom = atom(
 
 export const placeModeAtom = atom<AppNodeType | null>(null);
 
+export const pendingPageCloseAtom = atom<{ pageId: string } | null>(null);
+
 export const clipboardAtom = atom<AppNode[]>([]);
 
 export type HistorySnapshot = { nodes: AppNode[]; edges: AppEdge[] };

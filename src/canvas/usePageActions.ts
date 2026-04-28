@@ -1,5 +1,5 @@
-import { useAtomValue } from "jotai";
-import { canvasApiAtom, documentAtom } from "./state";
+import { useAtomValue, useSetAtom } from "jotai";
+import { canvasApiAtom, documentAtom, pendingPageCloseAtom } from "./state";
 import type { PageState } from "./types";
 
 export interface PageActions {
@@ -19,6 +19,7 @@ export interface PageActions {
 export function usePageActions(): PageActions {
   const canvas = useAtomValue(canvasApiAtom);
   const doc = useAtomValue(documentAtom);
+  const setPendingClose = useSetAtom(pendingPageCloseAtom);
 
   const pages = doc.pageOrder
     .map((id) => doc.pages[id])
@@ -33,19 +34,24 @@ export function usePageActions(): PageActions {
     canvas.switchPage(doc.pageOrder[next]);
   };
 
+  const requestClose = (pageId: string) => {
+    if (!canvas || doc.pageOrder.length <= 1) return;
+    const page = doc.pages[pageId];
+    if (!page) return;
+    if (page.nodes.length === 0) {
+      canvas.deletePage(pageId);
+      return;
+    }
+    setPendingClose({ pageId });
+  };
+
   return {
     pages,
     activePageId: doc.activePageId,
     canClose: doc.pageOrder.length > 1,
     newPage: (name) => canvas?.addPage(name),
-    closePage: (pageId) => {
-      if (!canvas || doc.pageOrder.length <= 1) return;
-      canvas.deletePage(pageId);
-    },
-    closeActivePage: () => {
-      if (!canvas || doc.pageOrder.length <= 1) return;
-      canvas.deletePage(doc.activePageId);
-    },
+    closePage: requestClose,
+    closeActivePage: () => requestClose(doc.activePageId),
     switchPage: (pageId) => canvas?.switchPage(pageId),
     goToPageByIndex: (index) => {
       if (!canvas) return;

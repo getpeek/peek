@@ -5,6 +5,7 @@ import { CustomTitleBar } from "./components/CustomTitleBar";
 import { CommandPalette } from "./command-palette/CommandPalette";
 import { DropZone } from "./drop-zone/DropZone";
 import { useGetConfig } from "./app/useGetConfig";
+import { ClosePageConfirmModal } from "./canvas/ClosePageConfirmModal";
 import { ReactFlowCanvas } from "./canvas/ReactFlowCanvas";
 import { useAutoSaveDocument } from "./canvas/useAutoSaveDocument";
 import { useAutoSaveResults } from "./canvas/useAutoSaveResults";
@@ -37,6 +38,7 @@ function App() {
       <MonacoManager />
       <ReactFlowCanvas />
       <CommandPalette />
+      <ClosePageConfirmModal />
     </MantineProvider>
   );
 }
