@@ -16,6 +16,7 @@ export type AppNodeType =
 export type QueryData = {
   query: string;
   liveIntervalMs?: number | null;
+  isRunning?: boolean;
 };
 
 export type ResultData = {

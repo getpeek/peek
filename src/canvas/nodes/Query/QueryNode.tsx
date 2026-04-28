@@ -1,5 +1,5 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
-import { IconIndentIncrease, IconPlayerPlay } from "@tabler/icons-react";
+import { IconIndentIncrease, IconLoader2, IconPlayerPlay } from "@tabler/icons-react";
 import { useEffect, useMemo, useRef } from "react";
 import { useAtomValue } from "jotai";
 import type { editor as MonacoEditor } from "monaco-editor";
@@ -49,6 +49,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   const session = useAtomValue(sessionStateAtom);
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
+  const isRunning = data.isRunning ?? false;
 
   const variableNames = useMemo(() => {
     const incoming = allEdges
@@ -77,6 +78,9 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   const runQuery = () => {
     const node = canvas.getNode(id);
     if (!node || node.type !== "query") {
+      return;
+    }
+    if ((node.data as QueryNodeT["data"]).isRunning) {
       return;
     }
     executeQueries(node, [(node.data as QueryNodeT["data"]).query]);
@@ -108,11 +112,14 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
       if (!node || node.type !== "query") {
         return;
       }
-      const query = (node.data as QueryNodeT["data"]).query;
-      if (!isSelectOnly(query)) {
+      const queryData = node.data as QueryNodeT["data"];
+      if (queryData.isRunning) {
         return;
       }
-      executeQueries(node, [query]);
+      if (!isSelectOnly(queryData.query)) {
+        return;
+      }
+      executeQueries(node, [queryData.query]);
     };
     tick();
     const handle = window.setInterval(tick, interval);
@@ -181,9 +188,18 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
             <IconIndentIncrease size={13} />
             Format
           </button>
-          <button className="btn" onClick={runQuery} title="Run query (⌘↵)">
-            <IconPlayerPlay size={13} />
-            Run
+          <button
+            className="btn"
+            onClick={runQuery}
+            disabled={isRunning}
+            title="Run query (⌘↵)"
+          >
+            {isRunning ? (
+              <IconLoader2 size={13} className="btn-spinner" />
+            ) : (
+              <IconPlayerPlay size={13} />
+            )}
+            {isRunning ? "Running…" : "Run"}
             <span className="kbd">⌘↵</span>
           </button>
         </div>

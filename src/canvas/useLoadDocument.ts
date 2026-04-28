@@ -32,6 +32,11 @@ function migrateAndHydrate(doc: CanvasDocument): {
       {
         ...page,
         nodes: page.nodes.map((n) => {
+          if (n.type === "query" && (n.data as { isRunning?: boolean }).isRunning) {
+            // A persisted `isRunning: true` means the previous session
+            // crashed mid-execution — clear it so the run button is usable.
+            return { ...n, data: { ...n.data, isRunning: false } } as AppNode;
+          }
           if (n.type !== "result") return n;
           const legacy = n.data as {
             data?: DatabaseResult;

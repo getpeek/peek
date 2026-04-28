@@ -336,6 +336,21 @@
   border-radius: 3px;
 }
 
+.btn-spinner {
+  transform-origin: center;
+  transform-box: fill-box;
+  animation: btn-spin 0.8s linear infinite;
+}
+
+@keyframes btn-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Inputs inside nodes */
 .app-node textarea,
 .app-node input[type="text"] {
