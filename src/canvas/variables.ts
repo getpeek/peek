@@ -18,7 +18,9 @@ export function scanVariableSites(query: string): VariableSite[] {
 
 export function extractVariableRefs(query: string): string[] {
   const seen = new Set<string>();
-  for (const site of scanVariableSites(query)) seen.add(site.name);
+  for (const site of scanVariableSites(query)) {
+    seen.add(site.name);
+  }
   return Array.from(seen);
 }
 
@@ -57,22 +59,25 @@ export function collectVariablesFor(
   const merged: Record<string, string> = {};
   for (const edge of edges) {
     const source = canvas.getNode(edge.source);
-    if (!source || source.type !== "variable") continue;
+    if (!source || source.type !== "variable") {
+      continue;
+    }
     const data = source.data as VariableData;
     for (const row of data.rows) {
-      if (!row.name) continue;
+      if (!row.name) {
+        continue;
+      }
       merged[row.name] = row.value;
     }
   }
   return merged;
 }
 
-export function formatPreservingVars(
-  query: string,
-  options: FormatOptionsWithLanguage,
-): string {
+export function formatPreservingVars(query: string, options: FormatOptionsWithLanguage): string {
   const sites = scanVariableSites(query);
-  if (sites.length === 0) return format(query, options);
+  if (sites.length === 0) {
+    return format(query, options);
+  }
 
   const placeholderFor = new Map<string, string>();
   let next = 0;

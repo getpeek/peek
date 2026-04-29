@@ -14,12 +14,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    110deg,
-    transparent 30%,
-    var(--pk-red-soft) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(110deg, transparent 30%, var(--pk-red-soft) 50%, transparent 70%);
   background-size: 200% 100%;
   animation: pk-shimmer 1.4s infinite;
   pointer-events: none;

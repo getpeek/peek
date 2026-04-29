@@ -14,6 +14,8 @@ export function colorFromName(name: string): string {
 
 export function initialFromName(name: string): string {
   const trimmed = name.trim();
-  if (!trimmed) return "?";
+  if (!trimmed) {
+    return "?";
+  }
   return trimmed[0].toUpperCase();
 }

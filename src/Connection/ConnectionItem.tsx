@@ -9,31 +9,15 @@ interface ConnectionItemProps {
   onActivate: () => void;
 }
 
-export const ConnectionItem = ({
-  isActive,
-  connection,
-  onActivate,
-}: ConnectionItemProps) => {
-  const redactedUrl = connection.url.replace(
-    /(postgres:\/\/[^:]+:)[^@]+(@)/,
-    "$1*****$2",
-  );
+export const ConnectionItem = ({ isActive, connection, onActivate }: ConnectionItemProps) => {
+  const redactedUrl = connection.url.replace(/(postgres:\/\/[^:]+:)[^@]+(@)/, "$1*****$2");
 
   return (
     <div onClick={onActivate} className="connection" data-is-active={isActive}>
       <Group align="center" justify="space-between" h={30}>
         <Group align="center">
-          <div
-            className="color"
-            style={{ backgroundColor: connection.color }}
-          />
-          <Text
-            size="xs"
-            fw="bold"
-            truncate="end"
-            maw={80}
-            className="connection-name"
-          >
+          <div className="color" style={{ backgroundColor: connection.color }} />
+          <Text size="xs" fw="bold" truncate="end" maw={80} className="connection-name">
             {connection.name}
           </Text>
           <Text size="xs" maw={250} truncate="end" className="connection-url">

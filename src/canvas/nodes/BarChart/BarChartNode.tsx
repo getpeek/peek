@@ -1,18 +1,10 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { AreaChart, BarChart, LineChart } from "@mantine/charts";
-import {
-  IconChartArea,
-  IconChartBar,
-  IconChartLine,
-} from "@tabler/icons-react";
+import { IconChartArea, IconChartBar, IconChartLine } from "@tabler/icons-react";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { useCanvas } from "../../useCanvas";
-import type {
-  BarChartData,
-  BarChartNode as BarChartNodeT,
-  ChartType,
-} from "../../types";
+import type { BarChartData, BarChartNode as BarChartNodeT, ChartType } from "../../types";
 import "../node.css";
 
 const DEFAULT_W = 460;
@@ -36,20 +28,16 @@ const CHART_TYPE_OPTIONS: {
   { type: "area", label: "Area", Icon: IconChartArea },
 ];
 
-export function BarChartNode({
-  id,
-  data,
-  selected,
-  width,
-  height,
-}: NodeProps<BarChartNodeT>) {
+export function BarChartNode({ id, data, selected, width, height }: NodeProps<BarChartNodeT>) {
   const canvas = useCanvas();
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
   const chartType: ChartType = data.chartType ?? "bar";
 
   const setChartType = (next: ChartType) => {
-    if (next === chartType) return;
+    if (next === chartType) {
+      return;
+    }
     canvas.updateNodeData<BarChartData>(id, { chartType: next });
   };
 
@@ -58,10 +46,7 @@ export function BarChartNode({
       <>
         <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
         <HiddenHandles />
-        <div
-          className={`app-node ${selected ? "selected" : ""}`}
-          style={{ width: w, height: h }}
-        >
+        <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
           <NodeHeader nodeId={id} type="barchart" name="empty" />
           <div className="chart-body">No results</div>
         </div>
@@ -69,15 +54,12 @@ export function BarChartNode({
     );
   }
 
-  const [dataKey] = Object.entries(data.data[0]).find(
-    ([, value]) => typeof value === "string",
-  ) ?? ["name"];
+  const [dataKey] = Object.entries(data.data[0]).find(([, value]) => typeof value === "string") ?? [
+    "name",
+  ];
 
   const series = Object.entries(data.data[0])
-    .filter(
-      ([key, value]) =>
-        typeof value === "number" && key !== "id" && !key.endsWith("_id"),
-    )
+    .filter(([key, value]) => typeof value === "number" && key !== "id" && !key.endsWith("_id"))
     .map(([key], i) => ({
       name: key,
       color: seriesColors[i % seriesColors.length],
@@ -89,15 +71,8 @@ export function BarChartNode({
     <>
       <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
       <HiddenHandles />
-      <div
-        className={`app-node ${selected ? "selected" : ""}`}
-        style={{ width: w, height: h }}
-      >
-        <NodeHeader
-          nodeId={id}
-          type="barchart"
-          name={`${seriesName} by ${dataKey}`}
-        />
+      <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
+        <NodeHeader nodeId={id} type="barchart" name={`${seriesName} by ${dataKey}`} />
         <div className="chart-body nodrag">
           <div className="chart-title">
             <span>{seriesName}</span>

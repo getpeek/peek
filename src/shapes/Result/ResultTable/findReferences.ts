@@ -15,9 +15,7 @@ export function getInboundReferences(
     return [];
   }
 
-  const tables = ast.from
-    .filter((from) => "table" in from)
-    .map((from) => from.table);
+  const tables = ast.from.filter((from) => "table" in from).map((from) => from.table);
 
   return tables.flatMap((table) => {
     return (schema[`${table}.${column}`] ?? []).map((ref) => {
@@ -40,9 +38,7 @@ export function getOutboundReferences(
     return [];
   }
 
-  const tables = ast.from
-    .filter((from) => "table" in from)
-    .map((from) => from.table);
+  const tables = ast.from.filter((from) => "table" in from).map((from) => from.table);
 
   const currentTableColumn = tables.map((table) => `${table}.${column}`);
 

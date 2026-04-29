@@ -28,15 +28,15 @@ export const DropZone = () => {
       setShowDropZone(true);
     }).then((cb) => (enter = cb));
 
-    listen(TauriEvent.DRAG_LEAVE, () => setShowDropZone(false)).then(
-      (cb) => (leave = cb),
-    );
+    listen(TauriEvent.DRAG_LEAVE, () => setShowDropZone(false)).then((cb) => (leave = cb));
 
     listen(TauriEvent.DRAG_DROP, async (event) => {
       const payload = event.payload as Record<string, unknown>;
       const { x, y } = payload.position as { x: number; y: number };
       setShowDropZone(false);
-      if (!("paths" in payload) || !canvas) return;
+      if (!("paths" in payload) || !canvas) {
+        return;
+      }
 
       for (const path of payload.paths as string[]) {
         const tableName = await invoke("import_file", { path });

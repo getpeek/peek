@@ -19,10 +19,7 @@ You can help guide the user by suggesting deeper analysis by factoring in the da
 
 Only call a tool **once per request**, unless the user specifies otherwise.`;
 
-export const defaultDimensions: Record<
-  AppNodeType,
-  { w: number; h: number }
-> = {
+export const defaultDimensions: Record<AppNodeType, { w: number; h: number }> = {
   query: { w: 350, h: 240 },
   result: { w: 600, h: 440 },
   "ai-prompt": { w: 350, h: 240 },
@@ -35,10 +32,7 @@ export const defaultDimensions: Record<
   draw: { w: 100, h: 100 },
 };
 
-export function makeNode(
-  type: AppNodeType,
-  position: { x: number; y: number },
-): AppNode {
+export function makeNode(type: AppNodeType, position: { x: number; y: number }): AppNode {
   const { w, h } = defaultDimensions[type];
   const base = { position, width: w, height: h };
 

@@ -20,11 +20,7 @@ import { resultsAtom } from "../../state";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
-import type {
-  ChatNode as ChatNodeT,
-  QueryNode,
-  ResultNode,
-} from "../../types";
+import type { ChatNode as ChatNodeT, QueryNode, ResultNode } from "../../types";
 import "../../../shapes/Chat/Chat.css";
 import "../node.css";
 
@@ -36,13 +32,7 @@ function firstLine(text: string): string {
   return line ? line.trim().slice(0, 40) : "";
 }
 
-export function ChatNode({
-  id,
-  data,
-  selected,
-  width,
-  height,
-}: NodeProps<ChatNodeT>) {
+export function ChatNode({ id, data, selected, width, height }: NodeProps<ChatNodeT>) {
   const canvas = useCanvas();
   const setResults = useSetAtom(resultsAtom);
   const runPrompt = useExecutePrompt("advanced");
@@ -62,23 +52,21 @@ export function ChatNode({
 
   // Sync upstream result data into context messages
   useEffect(() => {
-    if (data.result.length === 0) return;
+    if (data.result.length === 0) {
+      return;
+    }
     const contextKey = sha1({
       query: data.query,
       data: data.result,
       schema: data.schema,
     });
-    const exists = data.messages.some(
-      (m) => m.type === "context" && m.contextKey === contextKey,
-    );
-    if (exists) return;
+    const exists = data.messages.some((m) => m.type === "context" && m.contextKey === contextKey);
+    if (exists) {
+      return;
+    }
 
-    const headers = (data.result.at(0) ?? [])
-      .map(([h]) => h)
-      .join(";");
-    const rows = data.result
-      .map((row) => row.map(([, v]) => v))
-      .join(";");
+    const headers = (data.result.at(0) ?? []).map(([h]) => h).join(";");
+    const rows = data.result.map((row) => row.map(([, v]) => v)).join(";");
     const contextMessage: Message = {
       type: "context",
       message: `\n      Query: ${data.query}\n\n      schema: ${JSON.stringify(data.schema)}\n\n      result:\n      ${headers}\n      ${rows}\n      `,
@@ -110,7 +98,9 @@ export function ChatNode({
 
   const ask = async () => {
     const node = canvas.getNode(id);
-    if (!node || node.type !== "chat" || !question.trim()) return;
+    if (!node || node.type !== "chat" || !question.trim()) {
+      return;
+    }
     const currentMessages = (node.data as ChatNodeT["data"]).messages;
 
     const userMessage: Message = {
@@ -132,8 +122,12 @@ export function ChatNode({
     let queryCreated = false;
     try {
       for await (const chunk of stream) {
-        if (streamAbortRef.current) break;
-        if (chunk.text === "<think>" || chunk.text === "</think>") continue;
+        if (streamAbortRef.current) {
+          break;
+        }
+        if (chunk.text === "<think>" || chunk.text === "</think>") {
+          continue;
+        }
 
         if (chunk.tool_calls?.length) {
           for (const call of chunk.tool_calls) {
@@ -146,22 +140,13 @@ export function ChatNode({
               if (toolResult.success) {
                 const sourceNode = canvas.getNode(id);
                 if (sourceNode) {
-                  const resultId = ids.result(
-                    `${id}-tool`,
-                    Date.now(),
-                  );
+                  const resultId = ids.result(`${id}-tool`, Date.now());
                   const newResult: ResultNode = {
                     id: resultId,
                     type: "result",
                     position: {
-                      x:
-                        sourceNode.position.x +
-                        (sourceNode.width ?? DEFAULT_W) +
-                        100,
-                      y:
-                        sourceNode.position.y +
-                        (sourceNode.height ?? DEFAULT_H) +
-                        50,
+                      x: sourceNode.position.x + (sourceNode.width ?? DEFAULT_W) + 100,
+                      y: sourceNode.position.y + (sourceNode.height ?? DEFAULT_H) + 50,
                     },
                     width: 400,
                     height: 300,
@@ -209,12 +194,12 @@ export function ChatNode({
                   summarizeMessage,
                 ]);
                 for await (const cont of continueStream) {
-                  if (streamAbortRef.current) break;
-                  if (
-                    cont.text === "<think>" ||
-                    cont.text === "</think>"
-                  )
+                  if (streamAbortRef.current) {
+                    break;
+                  }
+                  if (cont.text === "<think>" || cont.text === "</think>") {
                     continue;
+                  }
                   completeMessage += cont.text;
                   setIncomingMessage(completeMessage);
                 }
@@ -232,10 +217,7 @@ export function ChatNode({
                   id: queryId,
                   type: "query",
                   position: {
-                    x:
-                      sourceNode.position.x +
-                      (sourceNode.width ?? DEFAULT_W) +
-                      100,
+                    x: sourceNode.position.x + (sourceNode.width ?? DEFAULT_W) + 100,
                     y: sourceNode.position.y,
                   },
                   width: 400,
@@ -301,11 +283,7 @@ export function ChatNode({
         <NodeHeader
           nodeId={id}
           type="chat"
-          name={
-            data.query
-              ? `chat · ${firstLine(data.query)}`
-              : "new conversation"
-          }
+          name={data.query ? `chat · ${firstLine(data.query)}` : "new conversation"}
         />
         <div className="app-node-body nodrag" ref={bodyRef}>
           <div className="chat-container">
@@ -347,18 +325,12 @@ export function ChatNode({
                 />
                 <button
                   onClick={() =>
-                    isLoading
-                      ? stopStream()
-                      : ask().finally(() => setIsLoading(false))
+                    isLoading ? stopStream() : ask().finally(() => setIsLoading(false))
                   }
                   disabled={!isLoading && !question.trim()}
                   className={`send-button ${isLoading ? "loading" : ""}`}
                 >
-                  {isLoading ? (
-                    <IconPlayerStop size={20} />
-                  ) : (
-                    <IconSend size={20} />
-                  )}
+                  {isLoading ? <IconPlayerStop size={20} /> : <IconSend size={20} />}
                 </button>
               </div>
             </div>

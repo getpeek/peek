@@ -120,5 +120,15 @@ export function useCommitEdit({
         current ? { ...current, saving: false, error: String(err) } : current,
       );
     }
-  }, [editing, setEditing, data, editableTable, schema.primaryKeys, canvas, nodeId, query, setResults]);
+  }, [
+    editing,
+    setEditing,
+    data,
+    editableTable,
+    schema.primaryKeys,
+    canvas,
+    nodeId,
+    query,
+    setResults,
+  ]);
 }

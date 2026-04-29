@@ -14,7 +14,9 @@ export function CellContextMenu({
   onUseAsVariable: () => void;
   onCopyValue: () => void;
 }) {
-  if (!cellMenu) return null;
+  if (!cellMenu) {
+    return null;
+  }
 
   return (
     <Menu

@@ -25,9 +25,7 @@ export const Workspace = ({ name, connections }: WorkspaceProps) => {
             key={connection.url}
             connection={connection}
             isActive={connection.url === activeConnection?.connection.url}
-            onActivate={() =>
-              setActiveConnection({ workspaceName: name, connection })
-            }
+            onActivate={() => setActiveConnection({ workspaceName: name, connection })}
           />
         ))}
       </Stack>

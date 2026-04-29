@@ -25,9 +25,7 @@ export const MessageItem = ({ message, index }: MessageItemProps) => {
         >
           <IconRobot size={20} color="var(--context-message)" />
           <Stack gap={2}>
-            <Text fw="bold">
-              {index === 0 ? "Context inserted" : "Context updated"}!
-            </Text>
+            <Text fw="bold">{index === 0 ? "Context inserted" : "Context updated"}!</Text>
             <Text size="xs" c="var(--context-message-subtle)">
               {index === 0 ? "Query and result" : "Updated query and result"}
             </Text>

@@ -5,23 +5,14 @@ import { useCanvas } from "../../useCanvas";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { NodeHeader } from "../NodeHeader";
 import { VARIABLE_NAME_RE } from "../../variables";
-import type {
-  VariableNode as VariableNodeT,
-  VariableRow,
-} from "../../types";
+import type { VariableNode as VariableNodeT, VariableRow } from "../../types";
 import "../node.css";
 import "./Variable.css";
 
 const DEFAULT_W = 280;
 const DEFAULT_H = 220;
 
-export function VariableNode({
-  id,
-  data,
-  selected,
-  width,
-  height,
-}: NodeProps<VariableNodeT>) {
+export function VariableNode({ id, data, selected, width, height }: NodeProps<VariableNodeT>) {
   const canvas = useCanvas();
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
@@ -32,14 +23,8 @@ export function VariableNode({
     canvas.updateNodeData<VariableNodeT["data"]>(id, { rows: next });
   };
 
-  const setField = (
-    index: number,
-    field: "name" | "value",
-    next: string,
-  ) => {
-    const rows = data.rows.map((r, i) =>
-      i === index ? { ...r, [field]: next } : r,
-    );
+  const setField = (index: number, field: "name" | "value", next: string) => {
+    const rows = data.rows.map((r, i) => (i === index ? { ...r, [field]: next } : r));
     updateRows(rows);
   };
 
@@ -53,7 +38,9 @@ export function VariableNode({
   const nameCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const r of data.rows) {
-      if (!r.name) continue;
+      if (!r.name) {
+        continue;
+      }
       counts[r.name] = (counts[r.name] ?? 0) + 1;
     }
     return counts;
@@ -95,10 +82,7 @@ export function VariableNode({
         className="variable-edge-handle variable-edge-handle--left"
         isConnectable
       />
-      <div
-        className={`app-node ${selected ? "selected" : ""}`}
-        style={{ width: w, height: h }}
-      >
+      <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader nodeId={id} type="variable" name={headerName} />
         <div className="app-node-body nodrag variable-body" ref={bodyRef}>
           <table className="variable-table">
@@ -111,8 +95,7 @@ export function VariableNode({
               {data.rows.map((row, i) => {
                 const nameInvalid =
                   row.name.length > 0 &&
-                  (!VARIABLE_NAME_RE.test(row.name) ||
-                    nameCounts[row.name] > 1);
+                  (!VARIABLE_NAME_RE.test(row.name) || nameCounts[row.name] > 1);
                 return (
                   <tr key={i}>
                     <td className="variable-name-cell">
@@ -172,7 +155,9 @@ export function VariableNode({
               });
               if (next) {
                 for (const n of canvas.getNodes()) {
-                  if (n.type === "query") canvas.connect(id, n.id);
+                  if (n.type === "query") {
+                    canvas.connect(id, n.id);
+                  }
                 }
               }
             }}

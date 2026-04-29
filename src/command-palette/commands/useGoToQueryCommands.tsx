@@ -14,16 +14,13 @@ export const useGoToQueryCommands = (): CommandPaletteResult[] => {
     .map((node) => ({
       icon: <IconSql />,
       label: (
-        <Text size="xs">
-          {node.data.query
-            .replace(/\s/g, " ")
-            .substring(0, 60)
-            .toString()}
-        </Text>
+        <Text size="xs">{node.data.query.replace(/\s/g, " ").substring(0, 60).toString()}</Text>
       ),
       searchAgainst: node.data.query.toLowerCase(),
       onSelect: () => {
-        if (!canvas) return;
+        if (!canvas) {
+          return;
+        }
         canvas.selectOnly(node.id);
         canvas.zoomToNode(node.id, { duration: 200 });
       },

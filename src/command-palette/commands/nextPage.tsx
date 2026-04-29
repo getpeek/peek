@@ -5,7 +5,9 @@ import type { CommandPaletteResult } from ".";
 
 export const useNextPageCommand = (): CommandPaletteResult | null => {
   const { pages, nextPage } = usePageActions();
-  if (pages.length <= 1) return null;
+  if (pages.length <= 1) {
+    return null;
+  }
   return {
     icon: <IconArrowRight size={16} />,
     label: <Text size="xs">Next Page</Text>,
@@ -18,7 +20,9 @@ export const useNextPageCommand = (): CommandPaletteResult | null => {
 
 export const usePreviousPageCommand = (): CommandPaletteResult | null => {
   const { pages, previousPage } = usePageActions();
-  if (pages.length <= 1) return null;
+  if (pages.length <= 1) {
+    return null;
+  }
   return {
     icon: <IconArrowLeft size={16} />,
     label: <Text size="xs">Previous Page</Text>,

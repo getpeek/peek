@@ -21,23 +21,29 @@ export function usePageActions(): PageActions {
   const doc = useAtomValue(documentAtom);
   const setPendingClose = useSetAtom(pendingPageCloseAtom);
 
-  const pages = doc.pageOrder
-    .map((id) => doc.pages[id])
-    .filter((p): p is PageState => !!p);
+  const pages = doc.pageOrder.map((id) => doc.pages[id]).filter((p): p is PageState => !!p);
 
   const cycle = (delta: number) => {
-    if (!canvas || doc.pageOrder.length <= 1) return;
+    if (!canvas || doc.pageOrder.length <= 1) {
+      return;
+    }
     const idx = doc.pageOrder.indexOf(doc.activePageId);
-    if (idx === -1) return;
+    if (idx === -1) {
+      return;
+    }
     const len = doc.pageOrder.length;
     const next = (idx + delta + len) % len;
     canvas.switchPage(doc.pageOrder[next]);
   };
 
   const requestClose = (pageId: string) => {
-    if (!canvas || doc.pageOrder.length <= 1) return;
+    if (!canvas || doc.pageOrder.length <= 1) {
+      return;
+    }
     const page = doc.pages[pageId];
-    if (!page) return;
+    if (!page) {
+      return;
+    }
     if (page.nodes.length === 0) {
       canvas.deletePage(pageId);
       return;
@@ -54,9 +60,13 @@ export function usePageActions(): PageActions {
     closeActivePage: () => requestClose(doc.activePageId),
     switchPage: (pageId) => canvas?.switchPage(pageId),
     goToPageByIndex: (index) => {
-      if (!canvas) return;
+      if (!canvas) {
+        return;
+      }
       const id = doc.pageOrder[index];
-      if (!id) return;
+      if (!id) {
+        return;
+      }
       canvas.switchPage(id);
     },
     nextPage: () => cycle(1),

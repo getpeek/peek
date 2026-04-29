@@ -10,10 +10,7 @@ import { ids } from "../../ids";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
-import type {
-  AiPromptNode as AiPromptNodeT,
-  QueryNode,
-} from "../../types";
+import type { AiPromptNode as AiPromptNodeT, QueryNode } from "../../types";
 import "../node.css";
 
 const DEFAULT_W = 350;
@@ -24,13 +21,7 @@ function firstLine(text: string): string {
   return line ? line.trim().slice(0, 60) : "";
 }
 
-export function AiPromptNode({
-  id,
-  data,
-  selected,
-  width,
-  height,
-}: NodeProps<AiPromptNodeT>) {
+export function AiPromptNode({ id, data, selected, width, height }: NodeProps<AiPromptNodeT>) {
   const canvas = useCanvas();
   const schema = useAtomValue(schemaAtom);
   const config = useAtomValue(configAtom);
@@ -44,9 +35,13 @@ export function AiPromptNode({
 
   const generate = async () => {
     const node = canvas.getNode(id);
-    if (!node || node.type !== "ai-prompt") return;
+    if (!node || node.type !== "ai-prompt") {
+      return;
+    }
     const prompt = (node.data as AiPromptNodeT["data"]).prompt;
-    if (prompt.length === 0) return;
+    if (prompt.length === 0) {
+      return;
+    }
 
     canvas.updateNodeData<AiPromptNodeT["data"]>(id, {
       isLoading: true,
@@ -95,12 +90,19 @@ Respond ONLY with the sql in text format, no backticks, markdown, formatting, co
 
       for await (const chunk of stream) {
         if (isFirstToken) {
-          if (chunk.text !== "<think>") isQuery = true;
+          if (chunk.text !== "<think>") {
+            isQuery = true;
+          }
           isFirstToken = false;
         }
-        if (isQuery) query += chunk.text;
-        else reason += chunk.text;
-        if (chunk.text.includes("</think>")) isQuery = true;
+        if (isQuery) {
+          query += chunk.text;
+        } else {
+          reason += chunk.text;
+        }
+        if (chunk.text.includes("</think>")) {
+          isQuery = true;
+        }
 
         canvas.updateNodeData<AiPromptNodeT["data"]>(id, { reason });
         canvas.updateNodeData<QueryNode["data"]>(outputId, { query });
@@ -129,15 +131,8 @@ Respond ONLY with the sql in text format, no backticks, markdown, formatting, co
     <>
       <NodeResizer isVisible={!!selected} minWidth={300} minHeight={180} />
       <HiddenHandles />
-      <div
-        className={`app-node ${selected ? "selected" : ""}`}
-        style={{ width: w, height: h }}
-      >
-        <NodeHeader
-          nodeId={id}
-          type="ai-prompt"
-          name={firstLine(data.prompt) || "new prompt"}
-        />
+      <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
+        <NodeHeader nodeId={id} type="ai-prompt" name={firstLine(data.prompt) || "new prompt"} />
         <div className="ai-prompt-body nodrag" ref={bodyRef}>
           {data.isLoading && <div className="running-shimmer" />}
           <textarea

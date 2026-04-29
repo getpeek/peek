@@ -13,25 +13,20 @@ export function ClosePageConfirmModal() {
   const close = () => setPending(null);
 
   const confirm = () => {
-    if (pending && canvas) canvas.deletePage(pending.pageId);
+    if (pending && canvas) {
+      canvas.deletePage(pending.pageId);
+    }
     setPending(null);
   };
 
   return (
-    <Modal
-      opened={opened}
-      onClose={close}
-      title="Close page?"
-      centered
-      size="sm"
-    >
+    <Modal opened={opened} onClose={close} title="Close page?" centered size="sm">
       <Stack gap="md">
         <Text size="sm">
           {page ? (
             <>
               <strong>{page.name}</strong> has {page.nodes.length}{" "}
-              {page.nodes.length === 1 ? "node" : "nodes"}. Closing it will
-              discard them.
+              {page.nodes.length === 1 ? "node" : "nodes"}. Closing it will discard them.
             </>
           ) : null}
         </Text>

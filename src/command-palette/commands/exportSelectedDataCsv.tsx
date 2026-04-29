@@ -20,11 +20,13 @@ export const useExportSelectedDataCsvCommand = (): CommandPaletteResult => {
     label: <Text size="xs">Export selected data (CSV)</Text>,
     icon: <IconTableExport size={16} />,
     onSelect: async () => {
-      if (!canvas) return;
-      const nodes = canvas
-        .getSelectedNodes()
-        .filter((n): n is ResultNode => n.type === "result");
-      if (nodes.length === 0) return;
+      if (!canvas) {
+        return;
+      }
+      const nodes = canvas.getSelectedNodes().filter((n): n is ResultNode => n.type === "result");
+      if (nodes.length === 0) {
+        return;
+      }
 
       const model = new ChatOllama({
         model: "qwen3:8b",
@@ -34,7 +36,9 @@ export const useExportSelectedDataCsvCommand = (): CommandPaletteResult => {
       });
 
       const path = await open({ directory: true, multiple: false });
-      if (!path) return;
+      if (!path) {
+        return;
+      }
 
       for (const node of nodes) {
         const output = toCsv(results[node.id] ?? []);
@@ -47,9 +51,7 @@ Use only English characters, numbers and underscores and append .csv to the end 
             ),
             new HumanMessage(`The query is: ${node.data.query}`),
           ])
-          .then((response) =>
-            response.text.replace(/<think>[\s]+<\/think>/gi, "").trim(),
-          )
+          .then((response) => response.text.replace(/<think>[\s]+<\/think>/gi, "").trim())
           .then((filename) => join(path, filename))
           .then((filepath) =>
             writeTextFile(filepath, output, {

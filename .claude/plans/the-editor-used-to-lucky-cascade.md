@@ -14,7 +14,8 @@ The infrastructure is intact — the breakage is one file.
 - The redundant `parser.setLanguage(language)` on line 13 is harmless — same call already runs in `useInitTreesitter.tsx:20`.
 - A leftover `console.log({ textBefore, range, word, matches, node })` on line 60 should not ship.
 
-What was *not* broken (verified):
+What was _not_ broken (verified):
+
 - `src/app/useInitTreesitter.tsx` — `Parser.init()` then `Language.load("/tree-sitter-sql.wasm")`, sets `sqlParserAtom` / `sqlLanguageAtom`. Wired in `App.tsx:24`.
 - `public/tree-sitter.wasm` (205 KB) and `public/tree-sitter-sql.wasm` (2.4 MB) both present. `package.json` postinstall copies the runtime.
 - `vite.config.ts` — `optimizeDeps: { exclude: ["web-tree-sitter"] }` and `assetsInclude: ["**/*.wasm"]`.
@@ -30,14 +31,14 @@ Restore `src/shapes/Query/Editor/languageProvider.ts` to the implementation from
 
 The previous implementation provides:
 
-| Helper | What it does |
-|---|---|
-| `findNodeAtPosition(node, line, column)` | Recursive AST descent to the cursor's node. |
-| `getTableAliases(rootNode)` | tree-sitter `Query` over `relation { object_reference, alias }` → `Map<alias, tableName>`. |
-| `getColumnsForTable(name)` | `tables[name] ?? []` lookup against the schema. |
-| `getAvailableTablesAndAliases(rootNode)` | Walks `from` and `join` nodes, returns `{ tables: Map<aliasOrName, tableName>, availableColumns: string[] }`. |
+| Helper                                              | What it does                                                                                                                                                                                                                                                     |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `findNodeAtPosition(node, line, column)`            | Recursive AST descent to the cursor's node.                                                                                                                                                                                                                      |
+| `getTableAliases(rootNode)`                         | tree-sitter `Query` over `relation { object_reference, alias }` → `Map<alias, tableName>`.                                                                                                                                                                       |
+| `getColumnsForTable(name)`                          | `tables[name] ?? []` lookup against the schema.                                                                                                                                                                                                                  |
+| `getAvailableTablesAndAliases(rootNode)`            | Walks `from` and `join` nodes, returns `{ tables: Map<aliasOrName, tableName>, availableColumns: string[] }`.                                                                                                                                                    |
 | `getCompletionContext(node, root, model, position)` | Returns one of `table \| column \| table_for_join \| where_clause \| join_on_clause \| general`, plus optional `tableContext`, by combining cursor-position regex (`/\bFROM\s*$/i`, `/\bJOIN\s*$/i`, `/\bWHERE\s*$/i`, `/(\w+)\.$/`) with AST node-type walking. |
-| `provideCompletionItems` | Switches on context type and emits `CompletionItem[]` (tables → `Class`, columns → `Field`, aliases → `Variable`, `=`/`AND`/`OR` for `join_on_clause` → `Operator`/`Keyword`). Wrapped in `try/catch` with `console.error`. |
+| `provideCompletionItems`                            | Switches on context type and emits `CompletionItem[]` (tables → `Class`, columns → `Field`, aliases → `Variable`, `=`/`AND`/`OR` for `join_on_clause` → `Operator`/`Keyword`). Wrapped in `try/catch` with `console.error`.                                      |
 
 Trigger characters: `[" ", ".", ",", "\n", "\t"]` (currently only `[" ", "."]`).
 

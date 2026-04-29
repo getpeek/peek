@@ -43,10 +43,10 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
       </Text>
     ),
     onSelect: () => {
-      if (!canvas) return;
-      let schemaPageId = doc.pageOrder.find(
-        (id) => doc.pages[id]?.name === "schema",
-      );
+      if (!canvas) {
+        return;
+      }
+      let schemaPageId = doc.pageOrder.find((id) => doc.pages[id]?.name === "schema");
       if (!schemaPageId) {
         schemaPageId = canvas.addPage("schema");
       } else {

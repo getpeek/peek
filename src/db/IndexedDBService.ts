@@ -23,8 +23,12 @@ class IndexedDBService {
   private initPromise: Promise<void> | null = null;
 
   async init(): Promise<void> {
-    if (this.db) return;
-    if (this.initPromise) return this.initPromise;
+    if (this.db) {
+      return;
+    }
+    if (this.initPromise) {
+      return this.initPromise;
+    }
 
     this.initPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -92,9 +96,7 @@ class IndexedDBService {
   }
 
   async saveActiveConnection(
-    activeConnection:
-      | { connection: Connection; workspaceName: string }
-      | undefined,
+    activeConnection: { connection: Connection; workspaceName: string } | undefined,
   ): Promise<void> {
     const db = await this.ensureDB();
     return new Promise((resolve, reject) => {

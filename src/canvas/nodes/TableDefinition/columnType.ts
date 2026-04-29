@@ -32,15 +32,7 @@ const NUMERIC = [
 
 const TEXT = ["text", "varchar", "char", "citext", "name", "bpchar", "string"];
 const BOOLEAN = ["bool", "boolean"];
-const DATETIME = [
-  "timestamp",
-  "timestamptz",
-  "date",
-  "time",
-  "timetz",
-  "interval",
-  "datetime",
-];
+const DATETIME = ["timestamp", "timestamptz", "date", "time", "timetz", "interval", "datetime"];
 const JSON_TYPES = ["json", "jsonb"];
 const UUID = ["uuid"];
 const BINARY = ["bytea", "blob"];
@@ -51,12 +43,26 @@ function matches(type: string, list: string[]): boolean {
 
 export function categorizeType(rawType: string): TypeCategory {
   const type = rawType.trim().toLowerCase();
-  if (matches(type, NUMERIC)) return "numeric";
-  if (matches(type, TEXT)) return "text";
-  if (matches(type, BOOLEAN)) return "boolean";
-  if (matches(type, DATETIME)) return "datetime";
-  if (matches(type, JSON_TYPES)) return "json";
-  if (matches(type, UUID)) return "uuid";
-  if (matches(type, BINARY)) return "binary";
+  if (matches(type, NUMERIC)) {
+    return "numeric";
+  }
+  if (matches(type, TEXT)) {
+    return "text";
+  }
+  if (matches(type, BOOLEAN)) {
+    return "boolean";
+  }
+  if (matches(type, DATETIME)) {
+    return "datetime";
+  }
+  if (matches(type, JSON_TYPES)) {
+    return "json";
+  }
+  if (matches(type, UUID)) {
+    return "uuid";
+  }
+  if (matches(type, BINARY)) {
+    return "binary";
+  }
   return "other";
 }

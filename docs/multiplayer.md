@@ -1,14 +1,14 @@
 # Multiplayer
 
-P2P collaborative editing built on [iroh](https://docs.iroh.computer/quickstart): one user *hosts* a session and shares a ticket; another user *joins* by pasting that ticket, mirrors the host's canvas, and edits alongside them in real time. The host's database is the only one queries run against — joiners observe the streamed results.
+P2P collaborative editing built on [iroh](https://docs.iroh.computer/quickstart): one user _hosts_ a session and shares a ticket; another user _joins_ by pasting that ticket, mirrors the host's canvas, and edits alongside them in real time. The host's database is the only one queries run against — joiners observe the streamed results.
 
 ## Roles
 
-| Role | DB connection | Autosave | Live query timer | Doc source of truth |
-| --- | --- | --- | --- | --- |
-| `standalone` (default) | yes | yes (3s debounce → file) | yes | local `documentAtom` |
-| `host` | yes | yes | yes | local `documentAtom` ↔ iroh-doc (mirrored) |
-| `joiner` | **no** | **no** (suspended) | **no** | iroh-doc ← replicated; restored from snapshot on session end |
+| Role                   | DB connection | Autosave                 | Live query timer | Doc source of truth                                          |
+| ---------------------- | ------------- | ------------------------ | ---------------- | ------------------------------------------------------------ |
+| `standalone` (default) | yes           | yes (3s debounce → file) | yes              | local `documentAtom`                                         |
+| `host`                 | yes           | yes                      | yes              | local `documentAtom` ↔ iroh-doc (mirrored)                   |
+| `joiner`               | **no**        | **no** (suspended)       | **no**           | iroh-doc ← replicated; restored from snapshot on session end |
 
 `session.role` lives at `src/multiplayer/state.ts:sessionStateAtom`. Role guards are sprinkled in `useAutoSaveDocument`, `useAutoSaveResults`, `useLoadDocument`, `useExecuteQueries`, `QueryNode`'s live-poll effect, and `CustomTitleBar` (which hides the connection picker for joiners).
 
@@ -40,6 +40,7 @@ With `Id`-only tickets, that branch is skipped, gossip falls back to id-only dia
 `RelayAndAddresses` makes the ticket fully self-describing (relay URL + direct addrs). The address book gets seeded on `import()` and gossip can immediately route through whatever path is reachable.
 
 Tauri events emitted from Rust to JS:
+
 - `multiplayer:doc-update` `{key, valueB64, author}`
 - `multiplayer:doc-delete` `{key, author}`
 - `multiplayer:gossip-recv` `{payload, author}`
@@ -57,26 +58,28 @@ The frontend keeps two atoms in sync with the iroh-doc through middleware funnel
 - `isApplyingRemoteRef` (a synchronous mutable ref, **not an atom**) gates listener notification while remote events are being applied. Atoms can't gate this reliably because React's render cycle isn't synchronous enough.
 
 `useMultiplayer()` (in `syncBridge.ts`, mounted from `App.tsx`) is the single entry point that wires everything:
+
 - `useSyncBridge()` — outbound listeners that diff and push, inbound `multiplayer:doc-update`/`doc-delete`/`sync-finished`/`session-ended` listeners (mounted **once** at app start so they never miss events fired during `mp_join_session`).
 - `useGossipBridge()` — handles `multiplayer:gossip-recv`, sends presence heartbeats, prunes stale peers.
 - `useMultiplayerControls()` — host/join/end controls; also surfaces them on `window.peekMultiplayer` for devtools testing.
 
-Cursor rendering and broadcast are mounted *inside* `<ReactFlowProvider>` because they need flow-coordinate conversion:
+Cursor rendering and broadcast are mounted _inside_ `<ReactFlowProvider>` because they need flow-coordinate conversion:
+
 - `useCursorBroadcast()` in `ReactFlowCanvas` — mouse move listener at ~15 Hz.
 - `<RemoteCursorsLayer />` — React Flow `Panel`, applies viewport transform manually so cursors track pan/zoom.
 
 ## Key scheme (iroh-doc)
 
-| Key | Value | Notes |
-| --- | --- | --- |
-| `doc/active-page` | UTF-8 page id | activePageId |
-| `doc/page-order` | JSON array | pageOrder |
-| `pages/<pageId>/name` | UTF-8 string | page name; deleting this key tombstones the page |
-| `pages/<pageId>/nodes/<nodeId>` | JSON node | stripped of `selected`/`dragging`/`resizing` |
-| `pages/<pageId>/edges/<edgeId>` | JSON edge | stripped of `selected` |
-| `results/<nodeId>` | JSON `DatabaseResult` | rows for a result node, lifted out of the document |
-| `exec-requests/<requestId>` | JSON `{nodeId, queries}` | joiner→host RPC; host deletes after running |
-| `schema/index` | JSON `{tables, references, primaryKeys}` | host's DB schema; joiners feed this into `schemaAtom` and `lsp_set_schema_cache` so the LSP works without a local DB |
+| Key                             | Value                                    | Notes                                                                                                                |
+| ------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `doc/active-page`               | UTF-8 page id                            | activePageId                                                                                                         |
+| `doc/page-order`                | JSON array                               | pageOrder                                                                                                            |
+| `pages/<pageId>/name`           | UTF-8 string                             | page name; deleting this key tombstones the page                                                                     |
+| `pages/<pageId>/nodes/<nodeId>` | JSON node                                | stripped of `selected`/`dragging`/`resizing`                                                                         |
+| `pages/<pageId>/edges/<edgeId>` | JSON edge                                | stripped of `selected`                                                                                               |
+| `results/<nodeId>`              | JSON `DatabaseResult`                    | rows for a result node, lifted out of the document                                                                   |
+| `exec-requests/<requestId>`     | JSON `{nodeId, queries}`                 | joiner→host RPC; host deletes after running                                                                          |
+| `schema/index`                  | JSON `{tables, references, primaryKeys}` | host's DB schema; joiners feed this into `schemaAtom` and `lsp_set_schema_cache` so the LSP works without a local DB |
 
 Viewport is **not** synced — each peer has its own pan/zoom.
 
@@ -86,11 +89,11 @@ Routing is centralized in `keyKind()` (`diff.ts`); all inbound handlers dispatch
 
 JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}` (where `author` is the sender's iroh `EndpointId`).
 
-| `payload.type` | Fields | Cadence |
-| --- | --- | --- |
-| `cursor` | `flowX`, `flowY`, `pageId` | ~15 Hz on mouse move |
-| `presence` | `name`, `color`, `isHost` | every 5 s |
-| `leave` | (none) | once on `controls.end()` before `mp_end_session` |
+| `payload.type` | Fields                     | Cadence                                          |
+| -------------- | -------------------------- | ------------------------------------------------ |
+| `cursor`       | `flowX`, `flowY`, `pageId` | ~15 Hz on mouse move                             |
+| `presence`     | `name`, `color`, `isHost`  | every 5 s                                        |
+| `leave`        | (none)                     | once on `controls.end()` before `mp_end_session` |
 
 `useGossipBridge` filters out events with `author === session.myAuthor`. Peers and remote cursors that haven't been seen in 15 s are pruned. A `leave` message drops the sender from `participantsAtom` and `remoteCursorsAtom` immediately so the UI reflects a clean disconnect without waiting for the prune.
 
@@ -103,12 +106,14 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 ## Lifecycle
 
 ### Hosting
+
 1. `controls.host()` → `invoke("mp_host_session")` → returns `{ticket, author, namespaceId}`.
 2. `setSession({role: 'host', status: 'active', ...})`.
 3. `documentToPuts(documentAtom)` and `resultsToPuts(resultsAtom)` push the existing canvas state as `mp_doc_put` operations — without this, the joiner imports an empty doc and only sees future edits.
 4. The `useEffect([schema, session])` watcher pushes `schema/index` automatically once `session.role === "host"` is observed (and re-pushes whenever `schemaAtom` changes — e.g., the host reconnects to a different DB mid-session).
 
 ### Joining
+
 1. `controls.join(ticket)` → snapshots `{document, results, schema}` to `preSessionSnapshotAtom`. The `schema` capture is what the LSP cache gets restored from on `end()` — joiners don't have a DB to re-introspect.
 2. Force-flush autosave (`save` + `save_results` invoked synchronously) so the joiner's last edits land on disk.
 3. Swap `documentAtom` to `emptyDocument()` and clear `resultsAtom` (with `isApplyingRemoteRef.current = true` to suppress outbound emissions).
@@ -117,26 +122,29 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 6. `multiplayer:sync-finished` fires → status flips to `active`.
 
 ### Ending
+
 1. `controls.end()` captures the snapshot up front, then sends a `{type: 'leave'}` gossip message so peers can drop us instantly (best-effort; the gossip task is still alive because `mp_end_session` hasn't run yet).
 2. `invoke("mp_end_session")` → Rust drops `MultiplayerSession`; `Drop` aborts subscribe / gossip / reconnect tasks. Errors here are logged and ignored — the JS-side restore must run regardless.
 3. If joiner: restore `preSessionSnapshotAtom` (with `isApplyingRemoteRef.current = true`). Document, results, **and `schemaAtom`** return to pre-session state. The schema restore also calls `pushSchemaToLspCache` to re-sync the Rust-side `SchemaCache` — without this the LSP would keep firing diagnostics against the host's tables after the session ended.
 4. Clear `sessionStateAtom`, `remoteCursorsAtom`, `participantsAtom`, **then** `preSessionSnapshotAtom` last. Order matters:
-   - Clearing `sessionStateAtom` flips `useLoadDocument`'s role check from "joiner: skip" to "no session: load from disk" — but `useLoadDocument` *also* checks `preSessionSnapshotAtom` and bails while it's non-null. That gate is what prevents an async disk-reload from clobbering the snapshot restore in step 3.
+   - Clearing `sessionStateAtom` flips `useLoadDocument`'s role check from "joiner: skip" to "no session: load from disk" — but `useLoadDocument` _also_ checks `preSessionSnapshotAtom` and bails while it's non-null. That gate is what prevents an async disk-reload from clobbering the snapshot restore in step 3.
    - Clearing `preSessionSnapshotAtom` last is the explicit handoff to disk-load. After this, `useLoadDocument` re-runs and is allowed to read from disk (which by construction matches the snapshot, since `join()` force-flushed disk before swapping).
-   The `multiplayer:session-ended` listener clears the same atoms — both paths matter because the Rust side may emit that event independently in the future.
+     The `multiplayer:session-ended` listener clears the same atoms — both paths matter because the Rust side may emit that event independently in the future.
 
 ### Reconnecting (joiner)
+
 `useEffect` listeners on `multiplayer:peer-disconnected` / `multiplayer:peer-reconnected` flip `sessionStateAtom.status` between `"active"` and `"reconnecting"`. The Rust reconnect loop is the source of truth — it keeps trying `start_sync` forever until either the neighbor count climbs back above zero or the user clicks End session. There's no auto-give-up: a user who walks away and comes back finds either a healed session or a still-spinning "Reconnecting…" pill that they can manually end. `SharePopover` reuses the existing `is-connecting` CSS class for the pill in the `reconnecting` state and shows a "Lost contact with host. Trying to reconnect…" subhead.
 
 ### Query execution
+
 - **Standalone or host**: `useExecuteQueries` calls the regular `executeQueries(canvas, setResults, sourceNode, queries)` — runs against the local DB, creates the result node and updates `resultsAtom`. Both side-effects propagate via the regular outbound listeners.
 - **Joiner**: `useExecuteQueries` calls `requestRemoteExecution(nodeId, queries)`, which writes `exec-requests/<requestId>` to the doc. The host's syncBridge sees the doc-update, looks up the source node via `canvasApiAtom`, calls `executeQueries` against the host's DB, then deletes the request entry. Results stream back to the joiner via `results/*` sync.
 
 ## Persistence
 
-| File | Owner | Contents |
-| --- | --- | --- |
-| `~/peek/<workspace>/<connection>.json` | host (and standalone) | `CanvasDocument` |
+| File                                           | Owner                 | Contents                               |
+| ---------------------------------------------- | --------------------- | -------------------------------------- |
+| `~/peek/<workspace>/<connection>.json`         | host (and standalone) | `CanvasDocument`                       |
 | `~/peek/<workspace>/<connection>.results.json` | host (and standalone) | `Record<resultNodeId, DatabaseResult>` |
 
 Joiners do not write either file during a session. The pre-session snapshot held in `preSessionSnapshotAtom` is what restores them on session end.
@@ -166,13 +174,13 @@ The legacy migration in `useLoadDocument` (`migrateAndHydrate`) lifts any pre-St
 
 ## Where to extend
 
-| Want to add | Edit |
-| --- | --- |
-| A new doc-level key (e.g., `theme/*`) | `diff.ts` — add to `keyKind()`, extend `diffDocs`/`applyOperation`, add `documentToPuts` lowering if it should land on host start |
+| Want to add                                      | Edit                                                                                                                                    |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| A new doc-level key (e.g., `theme/*`)            | `diff.ts` — add to `keyKind()`, extend `diffDocs`/`applyOperation`, add `documentToPuts` lowering if it should land on host start       |
 | A new ephemeral message type (e.g., `selection`) | `useGossipBridge` in `syncBridge.ts` — add a `payload.type === '...'` branch; sender side: `invoke('mp_gossip_send', {payload: {...}})` |
-| A new role-gated behavior | Read `useAtomValue(sessionStateAtom)` in the relevant hook and gate on `session?.role` |
-| Persist results across sessions | They already do (sidecar). To skip persisting, read `sessionStateAtom` in `useAutoSaveResults` and gate similarly |
-| Disable a feature on joiner | Pattern is everywhere — `if (session?.role === "joiner") return;` early in the effect/handler |
+| A new role-gated behavior                        | Read `useAtomValue(sessionStateAtom)` in the relevant hook and gate on `session?.role`                                                  |
+| Persist results across sessions                  | They already do (sidecar). To skip persisting, read `sessionStateAtom` in `useAutoSaveResults` and gate similarly                       |
+| Disable a feature on joiner                      | Pattern is everywhere — `if (session?.role === "joiner") return;` early in the effect/handler                                           |
 
 ## Stage history
 
@@ -182,5 +190,5 @@ The plan is in `~/.claude/plans/let-s-start-thinking-about-mutable-peach.md`. Im
 - **Stage 1** — Rust scaffolding: iroh dependencies, `IrohNode` lazy singleton, `MultiplayerSession`, six Tauri commands, doc subscribe loop emitting events.
 - **Stage 2** — Frontend sync bridge: diff/apply, `useMultiplayer`, role guards, joiner state takeover.
 - **Stage 3** — Sessions UI: title bar share button, popover with ticket + participants, join modal, command palette entries.
-- **Stage 5** *(landed before Stage 4 because the user hit it sooner)* — Results streaming via `results/*` keys, joiner-routed execution via `exec-requests/*` keys.
+- **Stage 5** _(landed before Stage 4 because the user hit it sooner)_ — Results streaming via `results/*` keys, joiner-routed execution via `exec-requests/*` keys.
 - **Stage 4** — Cursors and presence over iroh-gossip.

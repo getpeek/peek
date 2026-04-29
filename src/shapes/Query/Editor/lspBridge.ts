@@ -1,9 +1,5 @@
 import { languages } from "monaco-editor";
-import {
-  LspCompletionItemKind,
-  LspCompletionItemKindValue,
-  LspInsertTextFormat,
-} from "./lspTypes";
+import { LspCompletionItemKind, LspCompletionItemKindValue, LspInsertTextFormat } from "./lspTypes";
 
 const KIND_MAP: Record<LspCompletionItemKindValue, languages.CompletionItemKind> = {
   [LspCompletionItemKind.Text]: languages.CompletionItemKind.Text,
@@ -36,7 +32,9 @@ const KIND_MAP: Record<LspCompletionItemKindValue, languages.CompletionItemKind>
 export function lspKindToMonaco(
   kind: LspCompletionItemKindValue | undefined,
 ): languages.CompletionItemKind {
-  if (kind === undefined) return languages.CompletionItemKind.Text;
+  if (kind === undefined) {
+    return languages.CompletionItemKind.Text;
+  }
   return KIND_MAP[kind] ?? languages.CompletionItemKind.Text;
 }
 

@@ -9,7 +9,9 @@ export const useClosePageCommand = (): CommandPaletteResult | null => {
   const { canClose, closeActivePage, activePageId } = usePageActions();
   const doc = useAtomValue(documentAtom);
 
-  if (!canClose) return null;
+  if (!canClose) {
+    return null;
+  }
 
   const activeName = doc.pages[activePageId]?.name ?? "Page";
 

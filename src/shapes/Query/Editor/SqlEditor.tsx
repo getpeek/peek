@@ -9,7 +9,9 @@ import { attachLspDocumentSync } from "./lspProvider";
 
 let overflowWidgetsDomNode: HTMLElement | null = null;
 const getOverflowWidgetsDomNode = () => {
-  if (overflowWidgetsDomNode) return overflowWidgetsDomNode;
+  if (overflowWidgetsDomNode) {
+    return overflowWidgetsDomNode;
+  }
   const node = document.createElement("div");
   node.className = "monaco-editor monaco-overflow-widgets-root";
   node.style.position = "absolute";
@@ -25,19 +27,25 @@ const variablesByModelUri = new Map<string, string[]>();
 let variableProviderRegistered = false;
 
 function ensureVariableProvider(monaco: Monaco) {
-  if (variableProviderRegistered) return;
+  if (variableProviderRegistered) {
+    return;
+  }
   variableProviderRegistered = true;
   monaco.languages.registerCompletionItemProvider("sql", {
     triggerCharacters: ["@"],
     provideCompletionItems(model, position) {
       const uri = model.uri.toString();
       const variables = variablesByModelUri.get(uri) ?? [];
-      if (variables.length === 0) return { suggestions: [] };
+      if (variables.length === 0) {
+        return { suggestions: [] };
+      }
 
       const lineText = model.getLineContent(position.lineNumber);
       const before = lineText.substring(0, position.column - 1);
       const match = before.match(/@(\w*)$/);
-      if (!match) return { suggestions: [] };
+      if (!match) {
+        return { suggestions: [] };
+      }
 
       const word = model.getWordUntilPosition(position);
       const range = {
@@ -91,9 +99,13 @@ export const SqlEditor = ({
 
   const redrawDecorations = () => {
     const ed = editorRef.current;
-    if (!ed) return;
+    if (!ed) {
+      return;
+    }
     const model = ed.getModel();
-    if (!model) return;
+    if (!model) {
+      return;
+    }
 
     const text = model.getValue();
     const sites = scanVariableSites(text);
@@ -135,7 +147,9 @@ export const SqlEditor = ({
 
   useEffect(() => {
     const ed = editorRef.current;
-    if (!ed) return;
+    if (!ed) {
+      return;
+    }
     if (ed.getValue() !== query) {
       ed.setValue(query);
     }
@@ -165,7 +179,9 @@ export const SqlEditor = ({
             const disposeSub = editor.onDidDispose(() => {
               contentSub.dispose();
               lspSubs.forEach((s) => s.dispose());
-              if (model) variablesByModelUri.delete(model.uri.toString());
+              if (model) {
+                variablesByModelUri.delete(model.uri.toString());
+              }
               disposeSub.dispose();
             });
             redrawDecorations();

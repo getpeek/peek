@@ -1,11 +1,7 @@
 import { IconTable } from "@tabler/icons-react";
 import { Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import {
-  activePageAtom,
-  canvasApiAtom,
-  nodesAtom,
-} from "../../canvas/state";
+import { activePageAtom, canvasApiAtom, nodesAtom } from "../../canvas/state";
 import { CommandPaletteResult } from ".";
 import type { TableDefinitionNode } from "../../canvas/types";
 
@@ -14,7 +10,9 @@ export const useGoToTableCommands = (): CommandPaletteResult[] => {
   const nodes = useAtomValue(nodesAtom);
   const canvas = useAtomValue(canvasApiAtom);
 
-  if (activePage?.name !== "schema") return [];
+  if (activePage?.name !== "schema") {
+    return [];
+  }
 
   return nodes
     .filter((n): n is TableDefinitionNode => n.type === "table-definition")
@@ -23,7 +21,9 @@ export const useGoToTableCommands = (): CommandPaletteResult[] => {
       label: <Text size="xs">{node.data.table}</Text>,
       searchAgainst: `table ${node.data.table}`,
       onSelect: () => {
-        if (!canvas) return;
+        if (!canvas) {
+          return;
+        }
         canvas.selectOnly(node.id);
         canvas.zoomToNode(node.id, { duration: 200 });
       },

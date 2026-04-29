@@ -18,13 +18,15 @@ export const useRerunAllQueriesOnPageCommand = (): CommandPaletteResult => {
     label: <Text size="xs">Rerun all queries on page</Text>,
     icon: <IconPlayerPlay size={16} />,
     onSelect: async () => {
-      if (!canvas) return;
-      const queries = canvas
-        .getNodes()
-        .filter((n): n is QueryNode => n.type === "query");
+      if (!canvas) {
+        return;
+      }
+      const queries = canvas.getNodes().filter((n): n is QueryNode => n.type === "query");
       for (const node of queries) {
         const q = node.data.query.trim();
-        if (!q) continue;
+        if (!q) {
+          continue;
+        }
         if (session?.role === "joiner") {
           await requestRemoteExecution(node.id, [q]);
         } else {

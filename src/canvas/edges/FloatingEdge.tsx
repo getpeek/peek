@@ -1,9 +1,4 @@
-import {
-  BaseEdge,
-  getBezierPath,
-  useInternalNode,
-  type EdgeProps,
-} from "@xyflow/react";
+import { BaseEdge, getBezierPath, useInternalNode, type EdgeProps } from "@xyflow/react";
 import { getEdgeParams } from "./floatingEdgeUtils";
 
 // Custom edge that always connects to the closest sides of the source/target
@@ -15,12 +10,11 @@ export function FloatingEdge(props: EdgeProps) {
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
 
-  if (!sourceNode || !targetNode) return null;
+  if (!sourceNode || !targetNode) {
+    return null;
+  }
 
-  const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(
-    sourceNode,
-    targetNode,
-  );
+  const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(sourceNode, targetNode);
 
   const [path] = getBezierPath({
     sourceX: sx,
@@ -32,12 +26,6 @@ export function FloatingEdge(props: EdgeProps) {
   });
 
   return (
-    <BaseEdge
-      id={id}
-      path={path}
-      markerEnd={markerEnd}
-      markerStart={markerStart}
-      style={style}
-    />
+    <BaseEdge id={id} path={path} markerEnd={markerEnd} markerStart={markerStart} style={style} />
   );
 }

@@ -26,10 +26,7 @@ export function TableDefinitionNode({
     <>
       <NodeResizer isVisible={!!selected} minWidth={300} minHeight={140} />
       <HiddenHandles />
-      <div
-        className={`app-node ${selected ? "selected" : ""}`}
-        style={{ width: w, height: h }}
-      >
+      <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader nodeId={id} type="table-definition" name={data.table} />
         <div className="app-node-body nodrag" ref={bodyRef}>
           <TableDefinitionTable table={data.table} columns={data.columns} />

@@ -28,10 +28,7 @@ export const emptySchema = (): Schema => ({
 
 export const schemaAtom = atom<Schema>(emptySchema());
 
-export const persistanceAtom = atomWithStorage<string>(
-  "persistance",
-  "default",
-);
+export const persistanceAtom = atomWithStorage<string>("persistance", "default");
 
 // Dark mode atom that syncs with localStorage
 export const darkModeAtom = atomWithStorage<boolean>("darkMode", true);

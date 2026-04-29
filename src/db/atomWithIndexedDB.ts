@@ -16,23 +16,17 @@ export function atomWithIndexedDB<T, V = any>(
     (get) => get(baseAtom),
     (get, set, update: T | ((prev: T) => T)) => {
       const nextValue =
-        typeof update === "function"
-          ? (update as (prev: T) => T)(get(baseAtom))
-          : update;
+        typeof update === "function" ? (update as (prev: T) => T)(get(baseAtom)) : update;
 
       set(baseAtom, nextValue);
 
-      const valueToSave = options?.serialize
-        ? options.serialize(nextValue)
-        : nextValue;
+      const valueToSave = options?.serialize ? options.serialize(nextValue) : nextValue;
 
       switch (key) {
         case "activeConnection":
           indexedDBService
             .saveActiveConnection(
-              valueToSave as
-                | { connection: Connection; workspaceName: string }
-                | undefined,
+              valueToSave as { connection: Connection; workspaceName: string } | undefined,
             )
             .catch(console.error);
           break;
@@ -56,9 +50,7 @@ export function atomWithIndexedDB<T, V = any>(
         }
 
         if (value !== undefined && value !== null) {
-          const deserializedValue = options?.deserialize
-            ? options.deserialize(value)
-            : value;
+          const deserializedValue = options?.deserialize ? options.deserialize(value) : value;
           setAtom(deserializedValue);
         }
       } catch (error) {

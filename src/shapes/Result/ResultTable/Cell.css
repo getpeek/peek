@@ -1,66 +1,66 @@
 .reference {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .json {
-    .true,
-    .false {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 8px;
-    }
+  .true,
+  .false {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 8px;
+  }
 }
 
 .light .json {
-    .string {
-        color: hsla(60deg, 80%, 30%);
-    }
-    .number {
-        color: hsla(240deg, 80%, 60%);
-    }
-    .key {
-        color: hsla(0deg, 0%, 20%);
-    }
-    .true {
-        color: hsla(200deg, 100%, 20%, 1);
-        background: hsla(200deg, 100%, 80%, 1);
-    }
-    .false {
-        color: hsla(0deg, 100%, 20%, 1);
-        background: hsla(0deg, 100%, 80%, 1);
-    }
-    .null,
-    .undefined {
-        color: gray;
-    }
-    .punctuation {
-        color: hsla(0deg, 0%, 50%);
-    }
+  .string {
+    color: hsla(60deg, 80%, 30%);
+  }
+  .number {
+    color: hsla(240deg, 80%, 60%);
+  }
+  .key {
+    color: hsla(0deg, 0%, 20%);
+  }
+  .true {
+    color: hsla(200deg, 100%, 20%, 1);
+    background: hsla(200deg, 100%, 80%, 1);
+  }
+  .false {
+    color: hsla(0deg, 100%, 20%, 1);
+    background: hsla(0deg, 100%, 80%, 1);
+  }
+  .null,
+  .undefined {
+    color: gray;
+  }
+  .punctuation {
+    color: hsla(0deg, 0%, 50%);
+  }
 }
 
 .dark .json {
-    .string {
-        color: #f6c177;
-    }
-    .number {
-        color: hsla(200deg, 70%, 60%);
-    }
-    .key {
-        color: #e0def4;
-    }
-    .true {
-        color: hsla(200deg, 100%, 50%, 1);
-        background: hsla(200deg, 100%, 10%, 1);
-    }
-    .false {
-        color: hsla(0deg, 100%, 50%, 1);
-        background: hsla(0deg, 100%, 10%, 1);
-    }
-    .null,
-    .undefined {
-        color: gray;
-    }
-    .punctuation {
-        color: hsla(0deg, 0%, 30%);
-    }
+  .string {
+    color: #f6c177;
+  }
+  .number {
+    color: hsla(200deg, 70%, 60%);
+  }
+  .key {
+    color: #e0def4;
+  }
+  .true {
+    color: hsla(200deg, 100%, 50%, 1);
+    background: hsla(200deg, 100%, 10%, 1);
+  }
+  .false {
+    color: hsla(0deg, 100%, 50%, 1);
+    background: hsla(0deg, 100%, 10%, 1);
+  }
+  .null,
+  .undefined {
+    color: gray;
+  }
+  .punctuation {
+    color: hsla(0deg, 0%, 30%);
+  }
 }

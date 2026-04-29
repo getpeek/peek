@@ -10,10 +10,7 @@ import { useExportSelectedDataCsvCommand } from "./commands/exportSelectedDataCs
 import { useExportSelectedDataJsonCommand } from "./commands/exportSelectedDataJson";
 import { useNewPageCommand } from "./commands/newPage";
 import { useClosePageCommand } from "./commands/closePage";
-import {
-  useNextPageCommand,
-  usePreviousPageCommand,
-} from "./commands/nextPage";
+import { useNextPageCommand, usePreviousPageCommand } from "./commands/nextPage";
 import { useGoToPageCommands } from "./commands/useGoToPageCommands";
 import { useGoToTableCommands } from "./commands/useGoToTableCommands";
 import { useHostSessionCommand } from "./commands/hostSession";
@@ -59,7 +56,5 @@ export const useSearch = (query: string): CommandPaletteResult[] => {
     hostSessionCommand,
     ...(joinSessionCommand ? [joinSessionCommand] : []),
   ];
-  return fuzzysort
-    .go(query, searchSpace, { key: "searchAgainst" })
-    .map((result) => result.obj);
+  return fuzzysort.go(query, searchSpace, { key: "searchAgainst" }).map((result) => result.obj);
 };

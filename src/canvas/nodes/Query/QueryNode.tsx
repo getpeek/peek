@@ -26,7 +26,9 @@ const LIVE_POLL_MS = 10_000;
 
 function firstLine(query: string): string {
   const line = query.split("\n").find((l) => l.trim().length > 0);
-  if (!line) return "";
+  if (!line) {
+    return "";
+  }
   return line
     .replace(/^--\s*/, "")
     .trim()
@@ -188,12 +190,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
             <IconIndentIncrease size={13} />
             Format
           </button>
-          <button
-            className="btn"
-            onClick={runQuery}
-            disabled={isRunning}
-            title="Run query (⌘↵)"
-          >
+          <button className="btn" onClick={runQuery} disabled={isRunning} title="Run query (⌘↵)">
             {isRunning ? (
               <IconLoader2 size={13} className="btn-spinner" />
             ) : (

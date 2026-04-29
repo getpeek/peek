@@ -1,12 +1,5 @@
 import { atom } from "jotai";
-import type {
-  AppEdge,
-  AppNode,
-  AppNodeType,
-  CanvasDocument,
-  PageState,
-  Viewport,
-} from "./types";
+import type { AppEdge, AppNode, AppNodeType, CanvasDocument, PageState, Viewport } from "./types";
 import type { DatabaseResult } from "../state";
 import { emptyDocument } from "./emptyDocument";
 
@@ -18,16 +11,11 @@ const _documentBaseAtom = atom<CanvasDocument>(emptyDocument());
 // JS turn — atom propagation through React's render cycle isn't fast enough.
 export const isApplyingRemoteRef = { current: false };
 
-export type DocumentMutationListener = (
-  prev: CanvasDocument,
-  next: CanvasDocument,
-) => void;
+export type DocumentMutationListener = (prev: CanvasDocument, next: CanvasDocument) => void;
 
 const _documentMutationListeners = new Set<DocumentMutationListener>();
 
-export function subscribeDocumentMutations(
-  fn: DocumentMutationListener,
-): () => void {
+export function subscribeDocumentMutations(fn: DocumentMutationListener): () => void {
   _documentMutationListeners.add(fn);
   return () => {
     _documentMutationListeners.delete(fn);
@@ -36,11 +24,7 @@ export function subscribeDocumentMutations(
 
 export const documentAtom = atom(
   (get) => get(_documentBaseAtom),
-  (
-    get,
-    set,
-    updater: CanvasDocument | ((prev: CanvasDocument) => CanvasDocument),
-  ) => {
+  (get, set, updater: CanvasDocument | ((prev: CanvasDocument) => CanvasDocument)) => {
     const prev = get(_documentBaseAtom);
     const next =
       typeof updater === "function"
@@ -72,9 +56,7 @@ export type ResultsMutationListener = (
 
 const _resultsMutationListeners = new Set<ResultsMutationListener>();
 
-export function subscribeResultsMutations(
-  fn: ResultsMutationListener,
-): () => void {
+export function subscribeResultsMutations(fn: ResultsMutationListener): () => void {
   _resultsMutationListeners.add(fn);
   return () => {
     _resultsMutationListeners.delete(fn);
@@ -88,16 +70,12 @@ export const resultsAtom = atom(
     set,
     updater:
       | Record<string, DatabaseResult>
-      | ((
-          prev: Record<string, DatabaseResult>,
-        ) => Record<string, DatabaseResult>),
+      | ((prev: Record<string, DatabaseResult>) => Record<string, DatabaseResult>),
   ) => {
     const prev = get(_resultsBaseAtom);
     const next =
       typeof updater === "function"
-        ? (updater as (
-            p: Record<string, DatabaseResult>,
-          ) => Record<string, DatabaseResult>)(prev)
+        ? (updater as (p: Record<string, DatabaseResult>) => Record<string, DatabaseResult>)(prev)
         : updater;
     set(_resultsBaseAtom, next);
     if (!isApplyingRemoteRef.current && prev !== next) {
@@ -120,9 +98,7 @@ export const activePageAtom = atom<PageState>((get) => {
 type Updater<T> = T | ((prev: T) => T);
 
 function applyUpdater<T>(prev: T, updater: Updater<T>): T {
-  return typeof updater === "function"
-    ? (updater as (p: T) => T)(prev)
-    : updater;
+  return typeof updater === "function" ? (updater as (p: T) => T)(prev) : updater;
 }
 
 export const nodesAtom = atom(
@@ -188,10 +164,7 @@ export const loadEpochAtom = atom(0);
 
 export interface CanvasApi {
   addNode: (node: AppNode) => void;
-  updateNode: (
-    id: string,
-    patch: Partial<AppNode> | ((n: AppNode) => AppNode),
-  ) => void;
+  updateNode: (id: string, patch: Partial<AppNode> | ((n: AppNode) => AppNode)) => void;
   updateNodeData: <D extends object = Record<string, unknown>>(
     id: string,
     patch: Partial<D> | ((d: D) => D),
@@ -207,14 +180,8 @@ export interface CanvasApi {
   selectOnly: (idOrIds: string | string[]) => void;
   deselectAll: () => void;
 
-  zoomToNode: (
-    id: string,
-    opts?: { duration?: number },
-  ) => void;
-  zoomToNodes: (
-    ids: string[],
-    opts?: { duration?: number; padding?: number },
-  ) => void;
+  zoomToNode: (id: string, opts?: { duration?: number }) => void;
+  zoomToNodes: (ids: string[], opts?: { duration?: number; padding?: number }) => void;
   panToNode: (id: string, opts?: { duration?: number; zoom?: number }) => void;
   fitView: (opts?: { duration?: number }) => void;
   resetZoom: () => void;

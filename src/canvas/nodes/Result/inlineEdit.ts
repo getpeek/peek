@@ -7,9 +7,7 @@ type FromEntry = {
   join?: string | null;
 };
 
-export function getEditableTableName(
-  ast: AST | null | undefined,
-): string | null {
+export function getEditableTableName(ast: AST | null | undefined): string | null {
   if (!ast || typeof ast !== "object") {
     return null;
   }
@@ -58,7 +56,9 @@ export function isNumericType(sqlType: string): boolean {
 }
 
 export function formatSqlLiteral(value: unknown, sqlType: string): string {
-  if (value === null || value === undefined) return "NULL";
+  if (value === null || value === undefined) {
+    return "NULL";
+  }
 
   const upper = sqlType.toUpperCase();
 
@@ -115,11 +115,15 @@ export function buildPkAssignments(
   pkColumns: string[],
 ): PkAssignment[] | null {
   const byName = new Map<string, [unknown, string]>();
-  for (const [name, value, type] of row) byName.set(name, [value, type]);
+  for (const [name, value, type] of row) {
+    byName.set(name, [value, type]);
+  }
   const out: PkAssignment[] = [];
   for (const pk of pkColumns) {
     const cell = byName.get(pk);
-    if (!cell) return null;
+    if (!cell) {
+      return null;
+    }
     out.push({ column: pk, literal: formatSqlLiteral(cell[0], cell[1]) });
   }
   return out;

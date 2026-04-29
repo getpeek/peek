@@ -26,7 +26,9 @@ export function TitleBarPageSelector() {
                   renamePage(page.id, e.currentTarget.value || page.name);
                   setRenameId(null);
                 }
-                if (e.key === "Escape") setRenameId(null);
+                if (e.key === "Escape") {
+                  setRenameId(null);
+                }
               }}
               className="page-tab page-tab-input"
               style={{ width: 110 }}

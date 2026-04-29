@@ -14,8 +14,12 @@ export function useAutoSaveResults() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!conn) return;
-    if (session?.role === "joiner") return;
+    if (!conn) {
+      return;
+    }
+    if (session?.role === "joiner") {
+      return;
+    }
 
     const json = JSON.stringify(results);
 
@@ -25,9 +29,13 @@ export function useAutoSaveResults() {
       return;
     }
 
-    if (json === lastSavedJsonRef.current) return;
+    if (json === lastSavedJsonRef.current) {
+      return;
+    }
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
     debounceRef.current = setTimeout(async () => {
       try {
         await invoke("save_results", {
@@ -42,7 +50,9 @@ export function useAutoSaveResults() {
     }, 3000);
 
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
     };
   }, [results, conn, session]);
 

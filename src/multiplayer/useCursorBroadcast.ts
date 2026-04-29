@@ -22,14 +22,18 @@ export function useCursorBroadcast(): void {
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session) {
+      return;
+    }
 
     let frame: number | null = null;
 
     const flush = () => {
       frame = null;
       const pos = lastPosRef.current;
-      if (!pos) return;
+      if (!pos) {
+        return;
+      }
       const flow = rf.screenToFlowPosition({ x: pos.x, y: pos.y });
       // Read the active page synchronously at flush time — using a Jotai
       // subscription would re-run this whole effect on every page switch and
@@ -55,7 +59,9 @@ export function useCursorBroadcast(): void {
     window.addEventListener("mousemove", onMove);
     return () => {
       window.removeEventListener("mousemove", onMove);
-      if (frame !== null) window.clearTimeout(frame);
+      if (frame !== null) {
+        window.clearTimeout(frame);
+      }
     };
   }, [session, rf]);
 }

@@ -40,9 +40,7 @@ export function useActiveConnection() {
   }, []);
 
   const saveActiveConnection = useCallback(
-    async (
-      connection: { connection: Connection; workspaceName: string } | undefined,
-    ) => {
+    async (connection: { connection: Connection; workspaceName: string } | undefined) => {
       try {
         await indexedDBService.saveActiveConnection(connection);
         setActiveConnection(connection);

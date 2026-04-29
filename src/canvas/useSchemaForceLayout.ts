@@ -70,12 +70,20 @@ function rectCollide<T extends SimNode>(padding: number) {
         if (overlapX > 0 && overlapY > 0) {
           if (overlapX < overlapY) {
             const shift = (overlapX / 2) * alpha * (dx < 0 ? -1 : 1);
-            if (a.fx == null) a.x = ax - shift;
-            if (b.fx == null) b.x = bx + shift;
+            if (a.fx == null) {
+              a.x = ax - shift;
+            }
+            if (b.fx == null) {
+              b.x = bx + shift;
+            }
           } else {
             const shift = (overlapY / 2) * alpha * (dy < 0 ? -1 : 1);
-            if (a.fy == null) a.y = ay - shift;
-            if (b.fy == null) b.y = by + shift;
+            if (a.fy == null) {
+              a.y = ay - shift;
+            }
+            if (b.fy == null) {
+              b.y = by + shift;
+            }
           }
         }
       }
@@ -122,9 +130,13 @@ export function useSchemaForceLayout() {
       const fromId = tableIdFromRef(from);
       for (const ref of refs) {
         const toId = tableIdFromRef(ref);
-        if (fromId === toId) continue;
+        if (fromId === toId) {
+          continue;
+        }
         const key = `${fromId}->${toId}`;
-        if (seen.has(key)) continue;
+        if (seen.has(key)) {
+          continue;
+        }
         seen.add(key);
         out.push({ source: fromId, target: toId });
       }
@@ -170,15 +182,16 @@ export function useSchemaForceLayout() {
   // edges on the page are left alone (and edges on other pages are not
   // affected at all because the edges atom is page-scoped).
   useEffect(() => {
-    if (!isSchemaPage) return;
+    if (!isSchemaPage) {
+      return;
+    }
     const presentIds = new Set(schemaNodes.map((n) => n.id));
     const desired = referencePairs.filter(
       (p) => presentIds.has(p.source) && presentIds.has(p.target),
     );
 
     setEdges((es) => {
-      const isSchemaEdge = (e: AppEdge) =>
-        isSchemaNode(e.source) && isSchemaNode(e.target);
+      const isSchemaEdge = (e: AppEdge) => isSchemaNode(e.source) && isSchemaNode(e.target);
 
       const nonSchemaEdges = es.filter((e) => !isSchemaEdge(e));
       const desiredById = new Map<string, AppEdge>();
@@ -197,21 +210,22 @@ export function useSchemaForceLayout() {
       const merged: AppEdge[] = [...nonSchemaEdges];
       const seen = new Set<string>();
       for (const e of es) {
-        if (!isSchemaEdge(e)) continue;
+        if (!isSchemaEdge(e)) {
+          continue;
+        }
         if (desiredById.has(e.id)) {
           merged.push(e);
           seen.add(e.id);
         }
       }
       for (const [id, edge] of desiredById) {
-        if (!seen.has(id)) merged.push(edge);
+        if (!seen.has(id)) {
+          merged.push(edge);
+        }
       }
 
       // No-op if the result is structurally equivalent to the input.
-      if (
-        merged.length === es.length &&
-        merged.every((e, i) => e === es[i])
-      ) {
+      if (merged.length === es.length && merged.every((e, i) => e === es[i])) {
         return es;
       }
       return merged;
@@ -224,10 +238,10 @@ export function useSchemaForceLayout() {
   // Runs after the sync effect above, which preserves edge object
   // references (and thus any className we set).
   useEffect(() => {
-    if (!isSchemaPage) return;
-    const selected = new Set(
-      selectedSchemaIdsKey ? selectedSchemaIdsKey.split("|") : [],
-    );
+    if (!isSchemaPage) {
+      return;
+    }
+    const selected = new Set(selectedSchemaIdsKey ? selectedSchemaIdsKey.split("|") : []);
     const connected = new Set<string>();
     if (selected.size > 0) {
       for (const pair of referencePairs) {
@@ -243,12 +257,14 @@ export function useSchemaForceLayout() {
     setEdges((es) => {
       let mutated = false;
       const next = es.map((e) => {
-        if (!isSchemaNode(e.source) || !isSchemaNode(e.target)) return e;
-        const shouldGlow =
-          selected.size > 0 &&
-          (selected.has(e.source) || selected.has(e.target));
+        if (!isSchemaNode(e.source) || !isSchemaNode(e.target)) {
+          return e;
+        }
+        const shouldGlow = selected.size > 0 && (selected.has(e.source) || selected.has(e.target));
         const desired = shouldGlow ? "schema-edge-glow" : undefined;
-        if (e.className === desired) return e;
+        if (e.className === desired) {
+          return e;
+        }
         mutated = true;
         return { ...e, className: desired };
       });
@@ -258,24 +274,19 @@ export function useSchemaForceLayout() {
     setNodes((ns) => {
       let mutated = false;
       const next = ns.map((n) => {
-        if (!isSchemaNode(n.id)) return n;
-        const desired = connected.has(n.id)
-          ? "schema-node-connected"
-          : undefined;
-        if (n.className === desired) return n;
+        if (!isSchemaNode(n.id)) {
+          return n;
+        }
+        const desired = connected.has(n.id) ? "schema-node-connected" : undefined;
+        if (n.className === desired) {
+          return n;
+        }
         mutated = true;
         return { ...n, className: desired };
       });
       return mutated ? next : ns;
     });
-  }, [
-    isSchemaPage,
-    selectedSchemaIdsKey,
-    referenceKey,
-    referencePairs,
-    setEdges,
-    setNodes,
-  ]);
+  }, [isSchemaPage, selectedSchemaIdsKey, referenceKey, referencePairs, setEdges, setNodes]);
 
   const draggingRef = useRef<Set<string>>(new Set());
   const simRef = useRef<Simulation<SimNode, SimLink> | null>(null);
@@ -328,15 +339,23 @@ export function useSchemaForceLayout() {
       setNodes((ns) => {
         let mutated = false;
         const next = ns.map((n) => {
-          if (!isSchemaNode(n.id)) return n;
-          if (draggingRef.current.has(n.id)) return n;
+          if (!isSchemaNode(n.id)) {
+            return n;
+          }
+          if (draggingRef.current.has(n.id)) {
+            return n;
+          }
           const sn = simNodeById.get(n.id);
-          if (!sn) return n;
+          if (!sn) {
+            return n;
+          }
           const w = n.width ?? DEFAULT_W;
           const h = n.height ?? DEFAULT_H;
           const x = (sn.x ?? 0) - w / 2;
           const y = (sn.y ?? 0) - h / 2;
-          if (x === n.position.x && y === n.position.y) return n;
+          if (x === n.position.x && y === n.position.y) {
+            return n;
+          }
           mutated = true;
           return { ...n, position: { x, y } };
         });
@@ -356,12 +375,18 @@ export function useSchemaForceLayout() {
   }, [isSchemaPage, schemaNodeKey, referenceKey]);
 
   const onSchemaNodeDragStart = useCallback((node: AppNode) => {
-    if (!isSchemaNode(node.id)) return;
+    if (!isSchemaNode(node.id)) {
+      return;
+    }
     draggingRef.current.add(node.id);
     const sim = simRef.current;
-    if (!sim) return;
+    if (!sim) {
+      return;
+    }
     const sn = sim.nodes().find((s) => s.id === node.id);
-    if (!sn) return;
+    if (!sn) {
+      return;
+    }
     const w = node.width ?? DEFAULT_W;
     const h = node.height ?? DEFAULT_H;
     sn.fx = node.position.x + w / 2;
@@ -370,11 +395,17 @@ export function useSchemaForceLayout() {
   }, []);
 
   const onSchemaNodeDrag = useCallback((node: AppNode) => {
-    if (!isSchemaNode(node.id)) return;
+    if (!isSchemaNode(node.id)) {
+      return;
+    }
     const sim = simRef.current;
-    if (!sim) return;
+    if (!sim) {
+      return;
+    }
     const sn = sim.nodes().find((s) => s.id === node.id);
-    if (!sn) return;
+    if (!sn) {
+      return;
+    }
     const w = node.width ?? DEFAULT_W;
     const h = node.height ?? DEFAULT_H;
     sn.fx = node.position.x + w / 2;
@@ -382,10 +413,14 @@ export function useSchemaForceLayout() {
   }, []);
 
   const onSchemaNodeDragStop = useCallback((node: AppNode) => {
-    if (!isSchemaNode(node.id)) return;
+    if (!isSchemaNode(node.id)) {
+      return;
+    }
     draggingRef.current.delete(node.id);
     const sim = simRef.current;
-    if (!sim) return;
+    if (!sim) {
+      return;
+    }
     const sn = sim.nodes().find((s) => s.id === node.id);
     if (sn) {
       sn.fx = null;

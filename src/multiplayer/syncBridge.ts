@@ -27,18 +27,9 @@ import {
   resultsToPuts,
   SCHEMA_INDEX_KEY,
 } from "./diff";
-import {
-  preSessionSnapshotAtom,
-  remoteCursorsAtom,
-  sessionStateAtom,
-} from "./state";
+import { preSessionSnapshotAtom, remoteCursorsAtom, sessionStateAtom } from "./state";
 import type { AppNode } from "../canvas/types";
-import {
-  configAtom,
-  schemaAtom,
-  type DatabaseResult,
-  type Schema,
-} from "../state";
+import { configAtom, schemaAtom, type DatabaseResult, type Schema } from "../state";
 import type { Operation, SessionState } from "./types";
 import { colorFromName } from "./identity";
 
@@ -91,7 +82,9 @@ interface ExecRequestPayload {
 }
 
 function isSchemaShape(v: unknown): v is Schema {
-  if (!v || typeof v !== "object") return false;
+  if (!v || typeof v !== "object") {
+    return false;
+  }
   const s = v as Record<string, unknown>;
   return (
     typeof s.tables === "object" &&
@@ -136,10 +129,7 @@ function pushSchemaToLspCache(schema: Schema): void {
  * it up, runs against the host's DB, and propagates the result node + rows
  * back via the normal doc/results sync.
  */
-export async function requestRemoteExecution(
-  nodeId: string,
-  queries: string[],
-): Promise<void> {
+export async function requestRemoteExecution(nodeId: string, queries: string[]): Promise<void> {
   const requestId = nanoid(8);
   const payload: ExecRequestPayload = { nodeId, queries };
   await invoke("mp_doc_put", {
@@ -151,7 +141,9 @@ export async function requestRemoteExecution(
 async function handleExecRequest(key: string, value: Uint8Array): Promise<void> {
   const store = getDefaultStore();
   const canvas = store.get(canvasApiAtom);
-  if (!canvas) return;
+  if (!canvas) {
+    return;
+  }
 
   let payload: ExecRequestPayload;
   try {
@@ -172,9 +164,7 @@ async function handleExecRequest(key: string, value: Uint8Array): Promise<void> 
   const setResults = (
     updater:
       | Record<string, DatabaseResult>
-      | ((
-          prev: Record<string, DatabaseResult>,
-        ) => Record<string, DatabaseResult>),
+      | ((prev: Record<string, DatabaseResult>) => Record<string, DatabaseResult>),
   ) => {
     // Delegating directly to the store avoids needing a hook context here;
     // the wrapped resultsAtom still notifies our outbound listener.
@@ -216,18 +206,22 @@ function useGossipBridge(): void {
     listen<GossipRecvPayload>("multiplayer:gossip-recv", (event) => {
       const store = getDefaultStore();
       const session = store.get(sessionStateAtom);
-      if (!session) return;
+      if (!session) {
+        return;
+      }
       const { payload, author } = event.payload;
-      if (author === session.myAuthor) return;
+      if (author === session.myAuthor) {
+        return;
+      }
 
       const now = Date.now();
       if (payload.type === "cursor") {
         const flowX = Number(payload.flowX);
         const flowY = Number(payload.flowY);
-        const pageId =
-          typeof payload.pageId === "string" ? payload.pageId : "";
-        if (!Number.isFinite(flowX) || !Number.isFinite(flowY) || !pageId)
+        const pageId = typeof payload.pageId === "string" ? payload.pageId : "";
+        if (!Number.isFinite(flowX) || !Number.isFinite(flowY) || !pageId) {
           return;
+        }
         store.set(remoteCursorsAtom, (prev) => ({
           ...prev,
           [author]: { flowX, flowY, pageId, updatedAt: now },
@@ -238,8 +232,12 @@ function useGossipBridge(): void {
         // once per peer per 2s so SharePopover doesn't re-render at 15Hz.
         store.set(participantsAtom, (prev) => {
           const peer = prev[author];
-          if (!peer) return prev;
-          if (now - peer.lastSeen < 2000) return prev;
+          if (!peer) {
+            return prev;
+          }
+          if (now - peer.lastSeen < 2000) {
+            return prev;
+          }
           return { ...prev, [author]: { ...peer, lastSeen: now } };
         });
       } else if (payload.type === "presence") {
@@ -260,12 +258,16 @@ function useGossipBridge(): void {
         // Peer is shutting down cleanly; drop them immediately rather than
         // waiting for the 15s prune timeout.
         store.set(participantsAtom, (prev) => {
-          if (!(author in prev)) return prev;
+          if (!(author in prev)) {
+            return prev;
+          }
           const { [author]: _gone, ...rest } = prev;
           return rest;
         });
         store.set(remoteCursorsAtom, (prev) => {
-          if (!(author in prev)) return prev;
+          if (!(author in prev)) {
+            return prev;
+          }
           const { [author]: _gone, ...rest } = prev;
           return rest;
         });
@@ -283,7 +285,9 @@ function useGossipBridge(): void {
   // Presence heartbeat + stale-peer pruning (only while session active).
   const session = useAtomValue(sessionStateAtom);
   useEffect(() => {
-    if (!session) return;
+    if (!session) {
+      return;
+    }
 
     const sendPresence = () => {
       invoke("mp_gossip_send", {
@@ -305,8 +309,11 @@ function useGossipBridge(): void {
         let changed = false;
         const next: Record<string, Peer> = {};
         for (const [author, peer] of Object.entries(prev)) {
-          if (peer.lastSeen >= cutoff) next[author] = peer;
-          else changed = true;
+          if (peer.lastSeen >= cutoff) {
+            next[author] = peer;
+          } else {
+            changed = true;
+          }
         }
         return changed ? next : prev;
       });
@@ -314,8 +321,11 @@ function useGossipBridge(): void {
         let changed = false;
         const next: typeof prev = {};
         for (const [author, cur] of Object.entries(prev)) {
-          if (cur.updatedAt >= cutoff) next[author] = cur;
-          else changed = true;
+          if (cur.updatedAt >= cutoff) {
+            next[author] = cur;
+          } else {
+            changed = true;
+          }
         }
         return changed ? next : prev;
       });
@@ -341,19 +351,27 @@ function useSyncBridge(): void {
   // Active for both `connecting` and `active` so the host's initial-state push
   // lands before sync-finished flips status.
   useEffect(() => {
-    if (!session) return;
+    if (!session) {
+      return;
+    }
     return subscribeDocumentMutations((prev, next) => {
       const ops = diffDocs(prev, next);
-      for (const op of ops) pushOperation(op);
+      for (const op of ops) {
+        pushOperation(op);
+      }
     });
   }, [session]);
 
   // Outbound (results): per-result-node rows live in `results/<id>` entries.
   useEffect(() => {
-    if (!session) return;
+    if (!session) {
+      return;
+    }
     return subscribeResultsMutations((prev, next) => {
       const ops = diffResults(prev, next);
-      for (const op of ops) pushOperation(op);
+      for (const op of ops) {
+        pushOperation(op);
+      }
     });
   }, [session]);
 
@@ -363,7 +381,9 @@ function useSyncBridge(): void {
   // and get working completions/diagnostics. Re-runs on every schema
   // change so reconnecting to a different host-side DB also propagates.
   useEffect(() => {
-    if (!session || session.role !== "host") return;
+    if (!session || session.role !== "host") {
+      return;
+    }
     pushOperation({
       kind: "put",
       key: SCHEMA_INDEX_KEY,
@@ -387,25 +407,23 @@ function useSyncBridge(): void {
     listen<DocUpdatePayload>("multiplayer:doc-update", (event) => {
       const store = getDefaultStore();
       const session = store.get(sessionStateAtom);
-      if (!session) return;
+      if (!session) {
+        return;
+      }
       const { key, valueB64 } = event.payload;
       const value = b64ToBytes(valueB64);
       const kind = keyKind(key);
       if (kind === "doc") {
         isApplyingRemoteRef.current = true;
         try {
-          store.set(documentAtom, (d) =>
-            applyOperation(d, { kind: "put", key, value }),
-          );
+          store.set(documentAtom, (d) => applyOperation(d, { kind: "put", key, value }));
         } finally {
           isApplyingRemoteRef.current = false;
         }
       } else if (kind === "result") {
         isApplyingRemoteRef.current = true;
         try {
-          store.set(resultsAtom, (r) =>
-            applyResultOperation(r, { kind: "put", key, value }),
-          );
+          store.set(resultsAtom, (r) => applyResultOperation(r, { kind: "put", key, value }));
         } finally {
           isApplyingRemoteRef.current = false;
         }
@@ -417,7 +435,9 @@ function useSyncBridge(): void {
         // Rust LSP cache so completions/diagnostics work for the joiner.
         try {
           const parsed: unknown = JSON.parse(new TextDecoder().decode(value));
-          if (!isSchemaShape(parsed)) return;
+          if (!isSchemaShape(parsed)) {
+            return;
+          }
           store.set(schemaAtom, parsed);
           pushSchemaToLspCache(parsed);
         } catch (e) {
@@ -430,24 +450,22 @@ function useSyncBridge(): void {
 
     listen<DocDeletePayload>("multiplayer:doc-delete", (event) => {
       const store = getDefaultStore();
-      if (!store.get(sessionStateAtom)) return;
+      if (!store.get(sessionStateAtom)) {
+        return;
+      }
       const { key } = event.payload;
       const kind = keyKind(key);
       if (kind === "doc") {
         isApplyingRemoteRef.current = true;
         try {
-          store.set(documentAtom, (d) =>
-            applyOperation(d, { kind: "del", key }),
-          );
+          store.set(documentAtom, (d) => applyOperation(d, { kind: "del", key }));
         } finally {
           isApplyingRemoteRef.current = false;
         }
       } else if (kind === "result") {
         isApplyingRemoteRef.current = true;
         try {
-          store.set(resultsAtom, (r) =>
-            applyResultOperation(r, { kind: "del", key }),
-          );
+          store.set(resultsAtom, (r) => applyResultOperation(r, { kind: "del", key }));
         } finally {
           isApplyingRemoteRef.current = false;
         }
@@ -461,7 +479,9 @@ function useSyncBridge(): void {
     listen("multiplayer:sync-finished", () => {
       const store = getDefaultStore();
       const s = store.get(sessionStateAtom);
-      if (!s) return;
+      if (!s) {
+        return;
+      }
       store.set(sessionStateAtom, { ...s, status: "active" });
     }).then((u) => {
       unlistenSync = u;
@@ -470,11 +490,15 @@ function useSyncBridge(): void {
     listen("multiplayer:peer-disconnected", () => {
       const store = getDefaultStore();
       const s = store.get(sessionStateAtom);
-      if (!s) return;
+      if (!s) {
+        return;
+      }
       // Only flip from "active" → "reconnecting"; if we're still in
       // "connecting" the initial sync hasn't finished and the disconnect
       // signal would be misleading. (Joiner already shows "SYNC".)
-      if (s.status !== "active") return;
+      if (s.status !== "active") {
+        return;
+      }
       store.set(sessionStateAtom, { ...s, status: "reconnecting" });
     }).then((u) => {
       unlistenDisconnected = u;
@@ -483,8 +507,12 @@ function useSyncBridge(): void {
     listen("multiplayer:peer-reconnected", () => {
       const store = getDefaultStore();
       const s = store.get(sessionStateAtom);
-      if (!s) return;
-      if (s.status !== "reconnecting") return;
+      if (!s) {
+        return;
+      }
+      if (s.status !== "reconnecting") {
+        return;
+      }
       store.set(sessionStateAtom, { ...s, status: "active" });
     }).then((u) => {
       unlistenReconnected = u;
@@ -564,8 +592,12 @@ function useMultiplayerControls(): MultiplayerControls {
     setSession(next);
     const current = store.get(documentAtom);
     const currentResults = store.get(resultsAtom);
-    for (const op of documentToPuts(current)) pushOperation(op);
-    for (const op of resultsToPuts(currentResults)) pushOperation(op);
+    for (const op of documentToPuts(current)) {
+      pushOperation(op);
+    }
+    for (const op of resultsToPuts(currentResults)) {
+      pushOperation(op);
+    }
     return info;
   }, [setSession]);
 
@@ -630,7 +662,9 @@ function useMultiplayerControls(): MultiplayerControls {
   const end = useCallback(async () => {
     const store = getDefaultStore();
     const session = store.get(sessionStateAtom);
-    if (!session) return;
+    if (!session) {
+      return;
+    }
     // Capture the snapshot up front so it can't be cleared out from under us
     // (e.g. by the `multiplayer:session-ended` listener firing concurrently).
     const snapshot = store.get(preSessionSnapshotAtom);
@@ -687,20 +721,9 @@ function useMultiplayerControls(): MultiplayerControls {
     setRemoteCursors({});
     setParticipants({});
     setSnapshot(null);
-  }, [
-    setSession,
-    setSnapshot,
-    setDoc,
-    setResults,
-    setRemoteCursors,
-    setParticipants,
-    setSchema,
-  ]);
+  }, [setSession, setSnapshot, setDoc, setResults, setRemoteCursors, setParticipants, setSchema]);
 
-  const controls = useMemo<MultiplayerControls>(
-    () => ({ host, join, end }),
-    [host, join, end],
-  );
+  const controls = useMemo<MultiplayerControls>(() => ({ host, join, end }), [host, join, end]);
 
   // Stage 2 devtools surface: window.peekMultiplayer.host() / .join('<ticket>') / .end().
   useEffect(() => {
@@ -710,10 +733,11 @@ function useMultiplayerControls(): MultiplayerControls {
     const w = window as PeekMultiplayerWindow;
     w.peekMultiplayer = controls;
     return () => {
-      if (w.peekMultiplayer === controls) delete w.peekMultiplayer;
+      if (w.peekMultiplayer === controls) {
+        delete w.peekMultiplayer;
+      }
     };
   }, [controls]);
 
   return controls;
 }
-

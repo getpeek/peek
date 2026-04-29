@@ -1,12 +1,7 @@
 import { ChatOllama } from "@langchain/ollama";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
-import {
-  BaseMessage,
-  HumanMessage,
-  AIMessage,
-  SystemMessage,
-} from "@langchain/core/messages";
+import { BaseMessage, HumanMessage, AIMessage, SystemMessage } from "@langchain/core/messages";
 import { invoke } from "@tauri-apps/api/core";
 import { useAtomValue } from "jotai";
 import { configAtom } from "../../state";
@@ -23,9 +18,7 @@ export const branchToNewConversationTool = new DynamicStructuredTool({
   description:
     "Call this only when the user explicitly asks you to write a new PostgreSQL query which branches out to a new conversation. Do not use this for explaining or analyzing data.",
   schema: z.object({
-    query: z
-      .string()
-      .describe("A valid postgres sql query to create a query node for"),
+    query: z.string().describe("A valid postgres sql query to create a query node for"),
   }),
   func: async ({ query }: { query: string }): Promise<string> => {
     return query;
@@ -74,24 +67,15 @@ export const useExecutePrompt = (modelType: "fast" | "advanced") => {
   return async (messages: Message[] = []) => {
     const model =
       modelType === "advanced"
-        ? baseModel.bindTools([
-            branchToNewConversationTool,
-            getAdditionalContextTool,
-          ])
+        ? baseModel.bindTools([branchToNewConversationTool, getAdditionalContextTool])
         : baseModel;
 
     const conversation: BaseMessage[] = [];
 
     for (const message of messages) {
       if (message.type === "context") {
-        conversation.push(
-          new HumanMessage(
-            `Here is a fresh query and data:\n${message.message}`,
-          ),
-        );
-        conversation.push(
-          new AIMessage(`Ok! I've received the new query and data`),
-        );
+        conversation.push(new HumanMessage(`Here is a fresh query and data:\n${message.message}`));
+        conversation.push(new AIMessage(`Ok! I've received the new query and data`));
       } else if (message.type === "user") {
         conversation.push(new HumanMessage(message.message));
       } else if (message.type === "assistant") {

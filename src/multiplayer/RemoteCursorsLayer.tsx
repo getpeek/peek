@@ -1,11 +1,7 @@
 import { Panel, useStore } from "@xyflow/react";
 import { useAtomValue } from "jotai";
 import { documentAtom } from "../canvas/state";
-import {
-  participantsAtom,
-  remoteCursorsAtom,
-  sessionStateAtom,
-} from "./state";
+import { participantsAtom, remoteCursorsAtom, sessionStateAtom } from "./state";
 import "./RemoteCursorsLayer.css";
 
 /**
@@ -21,14 +17,17 @@ export function RemoteCursorsLayer() {
   // Subscribe to viewport so we re-render on pan/zoom.
   const transform = useStore((s) => s.transform);
 
-  if (!session) return null;
+  if (!session) {
+    return null;
+  }
   const [tx, ty, tz] = transform;
 
   const entries = Object.entries(cursors).filter(
-    ([author, cur]) =>
-      author !== session.myAuthor && cur.pageId === activePageId,
+    ([author, cur]) => author !== session.myAuthor && cur.pageId === activePageId,
   );
-  if (entries.length === 0) return null;
+  if (entries.length === 0) {
+    return null;
+  }
 
   return (
     <Panel position="top-left" className="remote-cursors-panel">
@@ -58,10 +57,7 @@ export function RemoteCursorsLayer() {
                 strokeWidth="1"
               />
             </svg>
-            <span
-              className="remote-cursor-label"
-              style={{ backgroundColor: color }}
-            >
+            <span className="remote-cursor-label" style={{ backgroundColor: color }}>
               {name}
             </span>
           </div>

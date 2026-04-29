@@ -17,7 +17,9 @@ export function TableDefinitionTable({ table, columns }: Props) {
     const fkSet = new Set<string>();
     for (const [from] of Object.entries(schema.references)) {
       const [fromTable, fromCol] = from.split(".");
-      if (fromTable === table && fromCol) fkSet.add(fromCol);
+      if (fromTable === table && fromCol) {
+        fkSet.add(fromCol);
+      }
     }
     const isPk = (col: string, index: number) => {
       if (declaredPks.has(col)) {

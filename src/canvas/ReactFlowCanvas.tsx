@@ -234,7 +234,9 @@ function ReactFlowCanvasInner() {
           h: chat.height ?? defaultDimensions.chat.h,
         };
         const overlap = !(r.x + r.w < c.x || r.x > c.x + c.w || r.y + r.h < c.y || r.y > c.y + c.h);
-        if (!overlap) continue;
+        if (!overlap) {
+          continue;
+        }
 
         const rows = results[result.id] ?? [];
         const csv = toCsv(rows);
@@ -320,7 +322,7 @@ function ReactFlowCanvasInner() {
           <path
             d={getSvgPathFromStroke(
               getStroke(livePoints, {
-                size: drawStrokeWidth * 4,
+                size: drawStrokeWidth * 4 * rf.getViewport().zoom,
                 thinning: 0.5,
                 smoothing: 0.5,
                 streamline: 0.5,

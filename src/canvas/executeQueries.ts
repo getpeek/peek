@@ -15,9 +15,7 @@ import { collectVariablesFor, substituteVariables } from "./variables";
 export type SetResults = (
   updater:
     | Record<string, DatabaseResult>
-    | ((
-        prev: Record<string, DatabaseResult>,
-      ) => Record<string, DatabaseResult>),
+    | ((prev: Record<string, DatabaseResult>) => Record<string, DatabaseResult>),
 ) => void;
 
 export async function executeQueries(
@@ -42,9 +40,7 @@ export async function executeQueries(
       try {
         const { resolved, missing } = substituteVariables(query, vars);
         if (missing.length > 0) {
-          throw new Error(
-            `Undefined variables: ${missing.map((m) => "@" + m).join(", ")}`,
-          );
+          throw new Error(`Undefined variables: ${missing.map((m) => "@" + m).join(", ")}`);
         }
         const response = (await invoke("get_results", {
           query: resolved,
@@ -76,11 +72,13 @@ export async function executeQueries(
         setResults((prev) => ({ ...prev, [resultNodeId]: result }));
 
         if (existing) {
-          canvas.updateNode(resultNodeId, (n) =>
-            ({
-              ...n,
-              data: { ...(n.data as ResultData), query },
-            }) as AppNode,
+          canvas.updateNode(
+            resultNodeId,
+            (n) =>
+              ({
+                ...n,
+                data: { ...(n.data as ResultData), query },
+              }) as AppNode,
           );
         } else {
           const resultNode: ResultNode = {
@@ -113,9 +111,7 @@ export async function executeQueries(
 
         const existing = canvas.getNode(errorNodeId);
         if (existing) {
-          canvas.updateNode(errorNodeId, (n) =>
-            ({ ...n, data: errorData }) as AppNode,
-          );
+          canvas.updateNode(errorNodeId, (n) => ({ ...n, data: errorData }) as AppNode);
         } else {
           const errorNode: QueryErrorNode = {
             id: errorNodeId,

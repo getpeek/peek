@@ -39,19 +39,31 @@ function findActiveQueryNode(canvas: ReturnType<typeof useCanvas>): QueryNode | 
   const focusedEl = document.activeElement?.closest("[data-id]");
   const focusedId = focusedEl?.getAttribute("data-id") ?? undefined;
   const candidates: (AppNode | undefined)[] = [];
-  if (focusedId) candidates.push(canvas.getNode(focusedId));
+  if (focusedId) {
+    candidates.push(canvas.getNode(focusedId));
+  }
   candidates.push(canvas.getSelectedNodes().find((n) => n.type === "query"));
   return candidates.find((n): n is QueryNode => !!n && n.type === "query");
 }
 
 function isTextInputFocused() {
   const el = document.activeElement;
-  if (!el) return false;
+  if (!el) {
+    return false;
+  }
   const tag = el.tagName.toLowerCase();
-  if (tag === "input" || tag === "textarea") return true;
-  if ((el as HTMLElement).isContentEditable) return true;
-  if (el.classList.contains("monaco-editor")) return true;
-  if (el.closest(".monaco-editor")) return true;
+  if (tag === "input" || tag === "textarea") {
+    return true;
+  }
+  if ((el as HTMLElement).isContentEditable) {
+    return true;
+  }
+  if (el.classList.contains("monaco-editor")) {
+    return true;
+  }
+  if (el.closest(".monaco-editor")) {
+    return true;
+  }
   return false;
 }
 
@@ -79,7 +91,9 @@ export function KeyboardShortcuts() {
 
       if (meta && e.shiftKey && e.code === "KeyI") {
         const target = findActiveQueryNode(canvas);
-        if (!target) return;
+        if (!target) {
+          return;
+        }
         e.preventDefault();
         try {
           const formatted = formatPreservingVars(target.data.query, {
@@ -94,7 +108,9 @@ export function KeyboardShortcuts() {
         return;
       }
 
-      if (isTextInputFocused()) return;
+      if (isTextInputFocused()) {
+        return;
+      }
 
       if (meta && e.key === "z" && !e.shiftKey) {
         e.preventDefault();
@@ -117,7 +133,9 @@ export function KeyboardShortcuts() {
       }
 
       if (meta && e.key === "v") {
-        if (clipboard.length === 0) return;
+        if (clipboard.length === 0) {
+          return;
+        }
         e.preventDefault();
         const OFFSET = 20;
         const copies: AppNode[] = clipboard.map((node) => ({
@@ -203,7 +221,9 @@ export function KeyboardShortcuts() {
 
       if (meta && !shift && /^[1-9]$/.test(e.key)) {
         const targetIdx = Number(e.key) - 1;
-        if (targetIdx >= pageActions.pages.length) return;
+        if (targetIdx >= pageActions.pages.length) {
+          return;
+        }
         e.preventDefault();
         pageActions.goToPageByIndex(targetIdx);
         return;
@@ -211,8 +231,11 @@ export function KeyboardShortcuts() {
 
       if (meta && shift && (e.code === "BracketLeft" || e.code === "BracketRight")) {
         e.preventDefault();
-        if (e.code === "BracketRight") pageActions.nextPage();
-        else pageActions.previousPage();
+        if (e.code === "BracketRight") {
+          pageActions.nextPage();
+        } else {
+          pageActions.previousPage();
+        }
         return;
       }
 
@@ -223,7 +246,9 @@ export function KeyboardShortcuts() {
           .filter((n) => n.type === "query")
           .slice()
           .sort((a, b) => a.position.x - b.position.x);
-        if (queries.length === 0) return;
+        if (queries.length === 0) {
+          return;
+        }
 
         const selected = canvas.getSelectedNodes()[0];
         let idx = -1;

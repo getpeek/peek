@@ -16,12 +16,7 @@ export function HiddenHandles({
         style={connectableTarget ? hiddenButConnectableStyle : hiddenStyle}
         isConnectable={!!connectableTarget}
       />
-      <Handle
-        type="source"
-        position={Position.Right}
-        style={hiddenStyle}
-        isConnectable={false}
-      />
+      <Handle type="source" position={Position.Right} style={hiddenStyle} isConnectable={false} />
     </>
   );
 }

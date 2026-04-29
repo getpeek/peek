@@ -1,18 +1,18 @@
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
-import {
-  documentAtom,
-  historyAtom,
-  loadEpochAtom,
-  type HistorySnapshot,
-} from "./state";
+import { documentAtom, historyAtom, loadEpochAtom, type HistorySnapshot } from "./state";
 import type { AppEdge, AppNode } from "./types";
 
 const MAX_HISTORY = 50;
 const DEBOUNCE_MS = 300;
 
 function stripNode(n: AppNode): AppNode {
-  const { selected: _s, dragging: _d, resizing: _r, ...rest } = n as AppNode & {
+  const {
+    selected: _s,
+    dragging: _d,
+    resizing: _r,
+    ...rest
+  } = n as AppNode & {
     selected?: boolean;
     dragging?: boolean;
     resizing?: boolean;
@@ -89,7 +89,9 @@ export function useUndoHistory() {
         return;
       }
 
-      if (key === last.key) return;
+      if (key === last.key) {
+        return;
+      }
 
       setHistory((prev) => {
         const pageHist = prev[pageId] ?? { past: [], future: [] };
@@ -127,7 +129,9 @@ export function useUndoHistory() {
 
   const undo = useCallback(() => {
     const pageHist = history[pageId];
-    if (!pageHist || pageHist.past.length === 0) return;
+    if (!pageHist || pageHist.past.length === 0) {
+      return;
+    }
 
     const previous = pageHist.past[pageHist.past.length - 1];
     const currentSnap = makeSnapshot(page.nodes, page.edges);
@@ -147,7 +151,9 @@ export function useUndoHistory() {
 
   const redo = useCallback(() => {
     const pageHist = history[pageId];
-    if (!pageHist || pageHist.future.length === 0) return;
+    if (!pageHist || pageHist.future.length === 0) {
+      return;
+    }
 
     const next = pageHist.future[pageHist.future.length - 1];
     const currentSnap = makeSnapshot(page.nodes, page.edges);

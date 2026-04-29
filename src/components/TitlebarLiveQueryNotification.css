@@ -1,41 +1,41 @@
 .liveQueryNotification {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px 6px 10px;
-    background: var(--pk-node-bg);
-    border: 1px solid transparent;
-    border-radius: var(--pk-radius-pill);
-    color: var(--pk-fg);
-    font: 500 11px var(--pk-font-sans);
-    cursor: pointer;
-    transition: background 0.12s;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 10px;
+  background: var(--pk-node-bg);
+  border: 1px solid transparent;
+  border-radius: var(--pk-radius-pill);
+  color: var(--pk-fg);
+  font: 500 11px var(--pk-font-sans);
+  cursor: pointer;
+  transition: background 0.12s;
 }
 
 .liveQueryNotification::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-        90deg,
-        #ff5e5e,
-        #ffb24c,
-        #f5e85c,
-        #6fea7a,
-        #5cd6e8,
-        #6c8cff,
-        #c87cff,
-        #ff5e5e
-    );
-    mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-    mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0.45;
-    pointer-events: none;
-    z-index: 2;
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    90deg,
+    #ff5e5e,
+    #ffb24c,
+    #f5e85c,
+    #6fea7a,
+    #5cd6e8,
+    #6c8cff,
+    #c87cff,
+    #ff5e5e
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 2;
 }

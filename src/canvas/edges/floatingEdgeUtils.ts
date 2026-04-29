@@ -23,10 +23,7 @@ function getCenter(rect: Rect) {
 
 // Compute the intersection point between the line connecting the two node
 // centers and the bounding box of `intersectionNode`.
-function getNodeIntersection(
-  intersectionNode: InternalNode<Node>,
-  targetNode: InternalNode<Node>,
-) {
+function getNodeIntersection(intersectionNode: InternalNode<Node>, targetNode: InternalNode<Node>) {
   const a = getNodeRect(intersectionNode);
   const b = getNodeRect(targetNode);
 
@@ -55,28 +52,30 @@ function getNodeIntersection(
 
 // Map an intersection point to the side of the node it lies on so that
 // React Flow can use it as a Position when rendering the edge path.
-function getEdgePosition(
-  node: InternalNode<Node>,
-  point: { x: number; y: number },
-): Position {
+function getEdgePosition(node: InternalNode<Node>, point: { x: number; y: number }): Position {
   const rect = getNodeRect(node);
   const px = Math.round(point.x);
   const py = Math.round(point.y);
   const nx = Math.round(rect.x);
   const ny = Math.round(rect.y);
 
-  if (px <= nx + 1) return Position.Left;
-  if (px >= nx + rect.width - 1) return Position.Right;
-  if (py <= ny + 1) return Position.Top;
-  if (py >= ny + rect.height - 1) return Position.Bottom;
+  if (px <= nx + 1) {
+    return Position.Left;
+  }
+  if (px >= nx + rect.width - 1) {
+    return Position.Right;
+  }
+  if (py <= ny + 1) {
+    return Position.Top;
+  }
+  if (py >= ny + rect.height - 1) {
+    return Position.Bottom;
+  }
 
   return Position.Top;
 }
 
-export function getEdgeParams(
-  source: InternalNode<Node>,
-  target: InternalNode<Node>,
-) {
+export function getEdgeParams(source: InternalNode<Node>, target: InternalNode<Node>) {
   const sourceIntersection = getNodeIntersection(source, target);
   const targetIntersection = getNodeIntersection(target, source);
 

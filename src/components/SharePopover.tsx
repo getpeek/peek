@@ -9,10 +9,7 @@ import {
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useCallback, useState } from "react";
-import {
-  participantsAtom,
-  sessionStateAtom,
-} from "../multiplayer/state";
+import { participantsAtom, sessionStateAtom } from "../multiplayer/state";
 import { initialFromName } from "../multiplayer/identity";
 import type { MultiplayerControls } from "../multiplayer/syncBridge";
 import "./SharePopover.css";
@@ -118,7 +115,9 @@ export function SharePopover({ onClose }: Props) {
               value={ticket}
               onChange={(e) => {
                 setTicket(e.currentTarget.value);
-                if (joinError) setJoinError(null);
+                if (joinError) {
+                  setJoinError(null);
+                }
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -149,28 +148,27 @@ export function SharePopover({ onClose }: Props) {
     );
   }
 
-  const peerEntries = Object.values(participants).filter(
-    (p) => p.author !== session.myAuthor,
-  );
+  const peerEntries = Object.values(participants).filter((p) => p.author !== session.myAuthor);
   const collaboratorCount = 1 + peerEntries.length;
   const isHost = session.role === "host";
-  const isTransient =
-    session.status === "connecting" || session.status === "reconnecting";
+  const isTransient = session.status === "connecting" || session.status === "reconnecting";
   const headline = isHost ? "Sharing canvas" : "In session";
-  const subhead = session.status === "connecting"
-    ? "Connecting to host…"
-    : session.status === "reconnecting"
-      ? isHost
-        ? "Lost contact with peers. Trying to reconnect…"
-        : "Lost contact with host. Trying to reconnect…"
-      : isHost
-        ? "Anyone with the ticket can edit this canvas in real-time."
-        : "Connected to host. Edits sync live.";
-  const pillLabel = session.status === "connecting"
-    ? "SYNC"
-    : session.status === "reconnecting"
-      ? "RECONNECTING"
-      : "LIVE";
+  const subhead =
+    session.status === "connecting"
+      ? "Connecting to host…"
+      : session.status === "reconnecting"
+        ? isHost
+          ? "Lost contact with peers. Trying to reconnect…"
+          : "Lost contact with host. Trying to reconnect…"
+        : isHost
+          ? "Anyone with the ticket can edit this canvas in real-time."
+          : "Connected to host. Edits sync live.";
+  const pillLabel =
+    session.status === "connecting"
+      ? "SYNC"
+      : session.status === "reconnecting"
+        ? "RECONNECTING"
+        : "LIVE";
 
   return (
     <div className="collab-panel">
@@ -194,11 +192,7 @@ export function SharePopover({ onClose }: Props) {
           <code className="collab-ticket">{session.ticket}</code>
           <CopyButton value={session.ticket} timeout={1500}>
             {({ copied, copy }) => (
-              <button
-                type="button"
-                className="collab-copy-button"
-                onClick={copy}
-              >
+              <button type="button" className="collab-copy-button" onClick={copy}>
                 {copied ? <IconCheck size={13} stroke={2} /> : <IconCopy size={13} stroke={1.75} />}
                 <span>{copied ? "Copied" : "Copy"}</span>
               </button>
@@ -216,10 +210,7 @@ export function SharePopover({ onClose }: Props) {
 
         <ul className="collab-list">
           <li className="collab-row">
-            <span
-              className="collab-avatar"
-              style={{ backgroundColor: session.myColor }}
-            >
+            <span className="collab-avatar" style={{ backgroundColor: session.myColor }}>
               {initialFromName(session.myName)}
               <span className="collab-presence" />
             </span>
@@ -230,10 +221,7 @@ export function SharePopover({ onClose }: Props) {
           </li>
           {peerEntries.map((p) => (
             <li className="collab-row" key={p.author}>
-              <span
-                className="collab-avatar"
-                style={{ backgroundColor: p.color }}
-              >
+              <span className="collab-avatar" style={{ backgroundColor: p.color }}>
                 {initialFromName(p.name)}
                 <span className="collab-presence" />
               </span>
@@ -244,12 +232,7 @@ export function SharePopover({ onClose }: Props) {
         </ul>
       </section>
 
-      <button
-        type="button"
-        className="collab-end-button"
-        onClick={endSession}
-        disabled={busy}
-      >
+      <button type="button" className="collab-end-button" onClick={endSession} disabled={busy}>
         <IconX size={14} stroke={2} />
         <span>End session</span>
       </button>

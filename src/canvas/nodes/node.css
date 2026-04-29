@@ -10,8 +10,7 @@
   --pk-node-bg-2: #1c1a24;
   --pk-node-border: #2a2733;
   --pk-node-border-strong: #3a3645;
-  --pk-node-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  --pk-node-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
 
   --pk-fg: #e8e5f0;
   --pk-fg-muted: #9c97ab;
@@ -42,20 +41,15 @@
   --pk-radius-card: 10px;
   --pk-radius-pill: 999px;
 
-  --pk-font-sans:
-    "Monaspace Krypton", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  --pk-font-mono:
-    "Monaspace Krypton", "SF Mono", ui-monospace, Menlo, monospace;
+  --pk-font-sans: "Monaspace Krypton", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --pk-font-mono: "Monaspace Krypton", "SF Mono", ui-monospace, Menlo, monospace;
 }
 
 /* ============================================================
    xyflow overrides
    ============================================================ */
 .react-flow {
-  background:
-    linear-gradient(rgba(147, 84, 224, 0.14), rgba(147, 84, 224, 0.14))
-      var(--pk-bg);
+  background: linear-gradient(rgba(147, 84, 224, 0.14), rgba(147, 84, 224, 0.14)) var(--pk-bg);
   color: var(--pk-fg);
   font-family: var(--pk-font-sans);
   --xy-background-color-default: transparent;
@@ -211,7 +205,6 @@
   background: var(--pk-node-bg-2);
   color: var(--pk-fg);
 }
-
 
 /* Body */
 .app-node-body {
@@ -778,13 +771,11 @@
 @keyframes pk-edge-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 1px var(--pk-accent))
-      drop-shadow(0 0 3px var(--pk-accent));
+    filter: drop-shadow(0 0 1px var(--pk-accent)) drop-shadow(0 0 3px var(--pk-accent));
     opacity: 0.85;
   }
   50% {
-    filter: drop-shadow(0 0 3px var(--pk-accent))
-      drop-shadow(0 0 8px var(--pk-accent));
+    filter: drop-shadow(0 0 3px var(--pk-accent)) drop-shadow(0 0 8px var(--pk-accent));
     opacity: 1;
   }
 }
@@ -792,12 +783,7 @@
 .running-shimmer {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    110deg,
-    transparent 30%,
-    var(--pk-accent-bg) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(110deg, transparent 30%, var(--pk-accent-bg) 50%, transparent 70%);
   background-size: 200% 100%;
   animation: pk-shimmer 1.4s infinite;
   pointer-events: none;

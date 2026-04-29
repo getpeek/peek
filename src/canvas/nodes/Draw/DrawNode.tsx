@@ -4,12 +4,15 @@ import { HiddenHandles } from "../HiddenHandles";
 import type { DrawNode as DrawNodeT } from "../../types";
 
 export function getSvgPathFromStroke(stroke: number[][]): string {
-  if (!stroke.length) return "";
-  const d = stroke.reduce<number[]>((acc, [x0, y0], i, arr) => {
+  if (!stroke.length) {
+    return "";
+  }
+  const d = stroke.reduce<number[]>((path, [x0, y0], i, arr) => {
     const [x1, y1] = arr[(i + 1) % arr.length];
-    acc.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
-    return acc;
+    path.push(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
+    return path;
   }, []);
+
   return `M${d[0].toFixed(2)},${d[1].toFixed(2)} Q${d
     .slice(2)
     .map((n) => n.toFixed(2))
@@ -32,11 +35,7 @@ export function DrawNode({ data, selected, width, height }: NodeProps<DrawNodeT>
     <>
       <HiddenHandles />
       <div style={{ width, height, position: "relative" }}>
-        <svg
-          width={width}
-          height={height}
-          style={{ display: "block", overflow: "hidden" }}
-        >
+        <svg width={width} height={height} style={{ display: "block", overflow: "hidden" }}>
           <path d={d} fill={fill} pointerEvents="all" />
         </svg>
       </div>

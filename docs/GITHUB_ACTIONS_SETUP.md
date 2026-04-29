@@ -30,25 +30,26 @@ rm ~/Downloads/certificates.p12 ~/Downloads/certificates_base64.txt
 ## Step 2: Create GitHub Secrets
 
 Go to your repository on GitHub:
+
 1. Navigate to **Settings** → **Secrets and variables** → **Actions**
 2. Click **New repository secret**
 3. Add the following secrets:
 
 ### Required Secrets
 
-| Secret Name | Description | How to Get It |
-|------------|-------------|---------------|
-| `APPLE_CERTIFICATE` | Base64 encoded .p12 certificate | Contents of `certificates_base64.txt` from Step 1 |
-| `APPLE_CERTIFICATE_PASSWORD` | Password used when exporting the certificate | The password you used in the `-P` flag in Step 1 |
-| `APPLE_ID` | Your Apple ID email | Your Apple Developer account email |
-| `APPLE_PASSWORD` | App-specific password for notarization | Generate at [appleid.apple.com](https://appleid.apple.com) → Sign-In and Security → App-Specific Passwords |
+| Secret Name                  | Description                                  | How to Get It                                                                                              |
+| ---------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `APPLE_CERTIFICATE`          | Base64 encoded .p12 certificate              | Contents of `certificates_base64.txt` from Step 1                                                          |
+| `APPLE_CERTIFICATE_PASSWORD` | Password used when exporting the certificate | The password you used in the `-P` flag in Step 1                                                           |
+| `APPLE_ID`                   | Your Apple ID email                          | Your Apple Developer account email                                                                         |
+| `APPLE_PASSWORD`             | App-specific password for notarization       | Generate at [appleid.apple.com](https://appleid.apple.com) → Sign-In and Security → App-Specific Passwords |
 
 ### Optional Secrets (for auto-updates)
 
-| Secret Name | Description | How to Get It |
-|------------|-------------|---------------|
-| `TAURI_PRIVATE_KEY` | Private key for Tauri updater | Generate with `tauri signer generate -w ~/.tauri/myapp.key` |
-| `TAURI_KEY_PASSWORD` | Password for the private key | Password you set when generating the key |
+| Secret Name          | Description                   | How to Get It                                               |
+| -------------------- | ----------------------------- | ----------------------------------------------------------- |
+| `TAURI_PRIVATE_KEY`  | Private key for Tauri updater | Generate with `tauri signer generate -w ~/.tauri/myapp.key` |
+| `TAURI_KEY_PASSWORD` | Password for the private key  | Password you set when generating the key                    |
 
 ## Step 3: Generate App-Specific Password
 
@@ -110,13 +111,15 @@ Create `src-tauri/entitlements.plist` if it doesn't exist:
 ## Workflows Included
 
 ### `build-test.yml`
+
 - Triggered on pushes to main/develop and PRs
 - Builds and signs the app
 - Uploads artifacts for testing
 - Does NOT notarize (faster for testing)
 
 ### `build-macos.yml`
-- Triggered on version tags (v*)
+
+- Triggered on version tags (v\*)
 - Builds universal binary (Intel + Apple Silicon)
 - Signs and notarizes the app
 - Creates draft release with artifacts
@@ -136,6 +139,7 @@ This will trigger the full build pipeline with notarization.
 ### Certificate Issues
 
 If you see "unable to build chain to self-signed root":
+
 - Ensure you exported the certificate WITH the private key
 - Check that the certificate hasn't expired
 - Verify the password is correct
@@ -143,6 +147,7 @@ If you see "unable to build chain to self-signed root":
 ### Notarization Failures
 
 Common issues:
+
 - Invalid app-specific password (regenerate it)
 - Missing entitlements
 - Hardened runtime not enabled
@@ -182,10 +187,12 @@ Add these steps to your workflow for debugging:
 ## Support
 
 For issues specific to this project:
+
 - Check the Actions tab for build logs
 - Review the workflow files in `.github/workflows/`
 - Ensure all secrets are properly configured
 
 For general Tauri/Apple signing issues:
+
 - [Tauri Discord](https://discord.com/invite/tauri)
 - [Apple Developer Forums](https://developer.apple.com/forums/)

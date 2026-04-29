@@ -21,11 +21,7 @@ export const ResultTableRow = forwardRef<
     inbound: Record<string, Reference[]>;
     outbound: Record<string, Reference[]>;
     onFollowReferences: (refs: CellReference[], value: unknown) => void;
-    onCellContextMenu: (
-      e: React.MouseEvent,
-      value: unknown,
-      column: string,
-    ) => void;
+    onCellContextMenu: (e: React.MouseEvent, value: unknown, column: string) => void;
   }
 >(function ResultTableRow(
   {
@@ -46,12 +42,7 @@ export const ResultTableRow = forwardRef<
   return (
     <Table.Tr ref={ref} data-index={rowIndex}>
       {row.map(([column, value, type], columnIdx) => {
-        const { isPk, isFk } = classifyColumn(
-          column,
-          columnIdx,
-          inbound[column],
-          outbound[column],
-        );
+        const { isPk, isFk } = classifyColumn(column, columnIdx, inbound[column], outbound[column]);
         const isEditing = editing?.row === rowIndex && editing?.col === columnIdx;
 
         const cellClasses: string[] = ["editable"];

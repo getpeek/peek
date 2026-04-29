@@ -25,7 +25,9 @@ const DEFAULT_H = 640;
 
 function firstLineOfQuery(query: string): string {
   const line = query.split("\n").find((l) => l.trim().length > 0);
-  if (!line) return "";
+  if (!line) {
+    return "";
+  }
   return line
     .replace(/^--\s*/, "")
     .trim()
@@ -51,12 +53,16 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
 
   const runCreateChart = () => {
     const node = canvas.getNode(id);
-    if (node && node.type === "result") createChart(node);
+    if (node && node.type === "result") {
+      createChart(node);
+    }
   };
 
   const fork = () => {
     const node = canvas.getNode(id);
-    if (!node || node.type !== "result") return;
+    if (!node || node.type !== "result") {
+      return;
+    }
 
     const branchId = `${id}-branch`;
     const existing = canvas.getNode(branchId);
@@ -85,7 +91,9 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
 
   const ask = () => {
     const node = canvas.getNode(id);
-    if (!node || node.type !== "result") return;
+    if (!node || node.type !== "result") {
+      return;
+    }
 
     const chatId = ids.chat(id);
     const existing = canvas.getNode(chatId);

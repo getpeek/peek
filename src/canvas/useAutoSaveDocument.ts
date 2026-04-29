@@ -14,10 +14,14 @@ export function useAutoSaveDocument() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!conn) return;
+    if (!conn) {
+      return;
+    }
     // Joiner observes the host's replica; their local doc shouldn't overwrite
     // their own on-disk state. session.end restores from snapshot.
-    if (session?.role === "joiner") return;
+    if (session?.role === "joiner") {
+      return;
+    }
 
     const json = JSON.stringify(doc);
 
@@ -27,9 +31,13 @@ export function useAutoSaveDocument() {
       return;
     }
 
-    if (json === lastSavedJsonRef.current) return;
+    if (json === lastSavedJsonRef.current) {
+      return;
+    }
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
     debounceRef.current = setTimeout(async () => {
       try {
         await invoke("save", {
@@ -44,7 +52,9 @@ export function useAutoSaveDocument() {
     }, 3000);
 
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
     };
   }, [doc, conn, session]);
 

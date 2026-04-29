@@ -21,11 +21,7 @@ function lspSeverityToMonaco(sev: number | undefined): MarkerSeverity {
   }
 }
 
-function applyDiagnostics(
-  monaco: Monaco,
-  model: editor.ITextModel,
-  diagnostics: LspDiagnostic[],
-) {
+function applyDiagnostics(monaco: Monaco, model: editor.ITextModel, diagnostics: LspDiagnostic[]) {
   const markers: editor.IMarkerData[] = diagnostics.map((d) => ({
     severity: lspSeverityToMonaco(d.severity),
     message: d.message,
@@ -75,8 +71,7 @@ export function createLspProvider(monaco: Monaco): IDisposable {
             sortText: item.sortText,
           };
           if (isSnippet(item.insertTextFormat)) {
-            monacoItem.insertTextRules =
-              languages.CompletionItemInsertTextRule.InsertAsSnippet;
+            monacoItem.insertTextRules = languages.CompletionItemInsertTextRule.InsertAsSnippet;
           }
           return monacoItem;
         });
@@ -105,14 +100,18 @@ export function attachLspDocumentSync(
 ): IDisposable[] {
   const subscriptions: IDisposable[] = [];
   const model = ed.getModel();
-  if (!model) return subscriptions;
+  if (!model) {
+    return subscriptions;
+  }
 
   const uri = model.uri.toString();
 
   const sync = (text: string) =>
     invoke<LspDiagnostic[]>("lsp_did_change", { uri, text })
       .then((diagnostics) => {
-        if (model.isDisposed()) return;
+        if (model.isDisposed()) {
+          return;
+        }
         applyDiagnostics(monaco, model, diagnostics);
       })
       .catch((e) => {
@@ -123,7 +122,9 @@ export function attachLspDocumentSync(
 
   let pending: number | null = null;
   const sub = ed.onDidChangeModelContent(() => {
-    if (pending !== null) window.clearTimeout(pending);
+    if (pending !== null) {
+      window.clearTimeout(pending);
+    }
     pending = window.setTimeout(() => {
       pending = null;
       void sync(model.getValue());
@@ -132,7 +133,9 @@ export function attachLspDocumentSync(
   subscriptions.push(sub);
   subscriptions.push({
     dispose: () => {
-      if (pending !== null) window.clearTimeout(pending);
+      if (pending !== null) {
+        window.clearTimeout(pending);
+      }
       if (!model.isDisposed()) {
         monaco.editor.setModelMarkers(model, MARKER_OWNER, []);
       }
@@ -140,4 +143,3 @@ export function attachLspDocumentSync(
   });
   return subscriptions;
 }
-

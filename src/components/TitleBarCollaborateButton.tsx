@@ -25,7 +25,9 @@ export function TitleBarCollaborateButton() {
       key: session.myAuthor,
     });
     for (const p of Object.values(participants)) {
-      if (p.author === session.myAuthor) continue;
+      if (p.author === session.myAuthor) {
+        continue;
+      }
       avatars.push({ color: p.color, name: p.name, key: p.author });
     }
   }

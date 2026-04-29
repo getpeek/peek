@@ -32,20 +32,14 @@ export const DataCell = ({
   if (typeof value === "string" || typeof value === "number") {
     if (inbound?.length > 0 && onInboundClick) {
       return (
-        <div
-          onClick={() => onInboundClick(inbound, value)}
-          className="reference"
-        >
+        <div onClick={() => onInboundClick(inbound, value)} className="reference">
           <Text c="inherit">{value}</Text>
         </div>
       );
     }
     if (outbound?.length > 0 && onOutboundClick) {
       return (
-        <div
-          onClick={() => onOutboundClick(outbound, value)}
-          className="reference"
-        >
+        <div onClick={() => onOutboundClick(outbound, value)} className="reference">
           <Text c="inherit">{value}</Text>
         </div>
       );

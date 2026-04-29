@@ -11,10 +11,7 @@ export function syntaxHighlight(json: string) {
     formattedJson = json;
   }
 
-  formattedJson = formattedJson
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  formattedJson = formattedJson.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   return formattedJson.replace(
     /("(?:[^"\\]|\\.)*")\s*(:)?|(\btrue\b|\bfalse\b|\bnull\b|\bundefined\b)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|([{}[\],])/g,

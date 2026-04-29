@@ -29,10 +29,7 @@ function App() {
   useMultiplayer();
 
   return (
-    <MantineProvider
-      theme={theme}
-      forceColorScheme={isDarkMode ? "dark" : "light"}
-    >
+    <MantineProvider theme={theme} forceColorScheme={isDarkMode ? "dark" : "light"}>
       <CustomTitleBar />
       <DropZone />
       <MonacoManager />

@@ -16,11 +16,7 @@ export function ResultTableHeader({
   inbound: Reference[] | undefined;
   outbound: Reference[] | undefined;
   onResizeStart: (e: React.PointerEvent<HTMLDivElement>, column: string) => void;
-  onContextMenu: (
-    e: React.MouseEvent,
-    columnIdx: number,
-    header: string,
-  ) => void;
+  onContextMenu: (e: React.MouseEvent, columnIdx: number, header: string) => void;
 }) {
   const { isPk, isFk } = classifyColumn(header, columnIdx, inbound, outbound);
   const headerClasses: string[] = [];

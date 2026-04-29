@@ -3,9 +3,7 @@ import { atom } from "jotai";
 import { atomWithIndexedDB } from "../db/atomWithIndexedDB";
 import { configAtom } from "../state";
 
-export const workspacesAtom = atom<Workspace[]>(
-  (get) => get(configAtom)?.workspaces ?? [],
-);
+export const workspacesAtom = atom<Workspace[]>((get) => get(configAtom)?.workspaces ?? []);
 
 export const activeConnectionAtom = atomWithIndexedDB<
   { connection: Connection; workspaceName: string } | undefined

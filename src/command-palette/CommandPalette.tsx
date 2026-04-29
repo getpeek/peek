@@ -21,9 +21,7 @@ export const CommandPalette = () => {
   useHotkeys([["Escape", () => hideSearch()]]);
 
   const moveCursor = (direction: -1 | 1) => {
-    setCursor((prev) =>
-      Math.max(0, Math.min(results.length - 1, prev + direction)),
-    );
+    setCursor((prev) => Math.max(0, Math.min(results.length - 1, prev + direction)));
   };
 
   if (!show) {

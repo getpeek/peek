@@ -3,7 +3,12 @@ import type { DatabaseResult } from "../state";
 import type { Operation } from "./types";
 
 function stripNode(n: AppNode): AppNode {
-  const { selected: _s, dragging: _d, resizing: _r, ...rest } = n as AppNode & {
+  const {
+    selected: _s,
+    dragging: _d,
+    resizing: _r,
+    ...rest
+  } = n as AppNode & {
     selected?: boolean;
     dragging?: boolean;
     resizing?: boolean;
@@ -26,14 +31,18 @@ function decode(bytes: Uint8Array): string {
 
 export function bytesToB64(bytes: Uint8Array): string {
   let bin = "";
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  for (let i = 0; i < bytes.length; i++) {
+    bin += String.fromCharCode(bytes[i]);
+  }
   return btoa(bin);
 }
 
 export function b64ToBytes(b64: string): Uint8Array {
   const bin = atob(b64);
   const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  for (let i = 0; i < bin.length; i++) {
+    out[i] = bin.charCodeAt(i);
+  }
   return out;
 }
 
@@ -66,11 +75,21 @@ export function execRequestKey(requestId: string): string {
 export type KeyKind = "doc" | "result" | "exec-request" | "schema" | "unknown";
 
 export function keyKind(key: string): KeyKind {
-  if (key === ACTIVE_PAGE_KEY || key === PAGE_ORDER_KEY) return "doc";
-  if (key.startsWith("pages/")) return "doc";
-  if (key.startsWith(RESULTS_PREFIX)) return "result";
-  if (key.startsWith(EXEC_REQUESTS_PREFIX)) return "exec-request";
-  if (key === SCHEMA_INDEX_KEY) return "schema";
+  if (key === ACTIVE_PAGE_KEY || key === PAGE_ORDER_KEY) {
+    return "doc";
+  }
+  if (key.startsWith("pages/")) {
+    return "doc";
+  }
+  if (key.startsWith(RESULTS_PREFIX)) {
+    return "result";
+  }
+  if (key.startsWith(EXEC_REQUESTS_PREFIX)) {
+    return "exec-request";
+  }
+  if (key === SCHEMA_INDEX_KEY) {
+    return "schema";
+  }
   return "unknown";
 }
 
@@ -82,10 +101,7 @@ export function keyKind(key: string): KeyKind {
  * query nodes into position/data subkeys to avoid LWW collisions on concurrent
  * drag + SQL-edit.
  */
-export function diffDocs(
-  prev: CanvasDocument,
-  next: CanvasDocument,
-): Operation[] {
+export function diffDocs(prev: CanvasDocument, next: CanvasDocument): Operation[] {
   const ops: Operation[] = [];
 
   if (prev.activePageId !== next.activePageId) {
@@ -104,7 +120,9 @@ export function diffDocs(
 
   // Page deletions: emit deletions for the removed page's nodes/edges/name.
   for (const pageId of Object.keys(prev.pages)) {
-    if (next.pages[pageId]) continue;
+    if (next.pages[pageId]) {
+      continue;
+    }
     const prevPage = prev.pages[pageId];
     for (const node of prevPage.nodes) {
       ops.push({ kind: "del", key: nodeKey(pageId, node.id) });
@@ -139,9 +157,7 @@ function diffNodes(
   nextPage: PageState,
   ops: Operation[],
 ): void {
-  const prevById = new Map<string, AppNode>(
-    (prevPage?.nodes ?? []).map((n) => [n.id, n]),
-  );
+  const prevById = new Map<string, AppNode>((prevPage?.nodes ?? []).map((n) => [n.id, n]));
   const nextById = new Map<string, AppNode>(nextPage.nodes.map((n) => [n.id, n]));
 
   for (const [nodeId] of prevById) {
@@ -169,9 +185,7 @@ function diffEdges(
   nextPage: PageState,
   ops: Operation[],
 ): void {
-  const prevById = new Map<string, AppEdge>(
-    (prevPage?.edges ?? []).map((e) => [e.id, e]),
-  );
+  const prevById = new Map<string, AppEdge>((prevPage?.edges ?? []).map((e) => [e.id, e]));
   const nextById = new Map<string, AppEdge>(nextPage.edges.map((e) => [e.id, e]));
 
   for (const [edgeId] of prevById) {
@@ -196,7 +210,9 @@ function diffEdges(
 const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 
 function ensurePage(doc: CanvasDocument, pageId: string): CanvasDocument {
-  if (doc.pages[pageId]) return doc;
+  if (doc.pages[pageId]) {
+    return doc;
+  }
   return {
     ...doc,
     pages: {
@@ -218,7 +234,9 @@ function updatePage(
   fn: (page: PageState) => PageState,
 ): CanvasDocument {
   const page = doc.pages[pageId];
-  if (!page) return doc;
+  if (!page) {
+    return doc;
+  }
   return { ...doc, pages: { ...doc.pages, [pageId]: fn(page) } };
 }
 
@@ -240,10 +258,7 @@ export function diffResults(
 
   for (const [id, rows] of Object.entries(next)) {
     const prevRows = prev[id];
-    if (
-      !prevRows ||
-      JSON.stringify(prevRows) !== JSON.stringify(rows)
-    ) {
+    if (!prevRows || JSON.stringify(prevRows) !== JSON.stringify(rows)) {
       ops.push({
         kind: "put",
         key: resultKey(id),
@@ -262,16 +277,22 @@ export function applyResultOperation(
   results: Record<string, DatabaseResult>,
   op: Operation,
 ): Record<string, DatabaseResult> {
-  if (!op.key.startsWith(RESULTS_PREFIX)) return results;
+  if (!op.key.startsWith(RESULTS_PREFIX)) {
+    return results;
+  }
   const id = op.key.slice(RESULTS_PREFIX.length);
   if (op.kind === "del") {
-    if (!(id in results)) return results;
+    if (!(id in results)) {
+      return results;
+    }
     const { [id]: _removed, ...rest } = results;
     return rest;
   }
   try {
     const rows = JSON.parse(decode(op.value)) as DatabaseResult;
-    if (!Array.isArray(rows)) return results;
+    if (!Array.isArray(rows)) {
+      return results;
+    }
     return { ...results, [id]: rows };
   } catch {
     return results;
@@ -282,9 +303,7 @@ export function applyResultOperation(
  * Lower an entire results map to a flat list of put operations — used during
  * the host's initial session push.
  */
-export function resultsToPuts(
-  results: Record<string, DatabaseResult>,
-): Operation[] {
+export function resultsToPuts(results: Record<string, DatabaseResult>): Operation[] {
   return Object.entries(results).map(([id, rows]) => ({
     kind: "put" as const,
     key: resultKey(id),
@@ -329,10 +348,7 @@ export function documentToPuts(doc: CanvasDocument): Operation[] {
   return ops;
 }
 
-export function applyOperation(
-  doc: CanvasDocument,
-  op: Operation,
-): CanvasDocument {
+export function applyOperation(doc: CanvasDocument, op: Operation): CanvasDocument {
   if (op.kind === "put") {
     const value = decode(op.value);
     if (op.key === ACTIVE_PAGE_KEY) {
@@ -360,11 +376,15 @@ export function applyOperation(
         const nodeId = parts[3];
         try {
           const parsed = JSON.parse(value) as AppNode;
-          if (parsed.id !== nodeId) return doc;
+          if (parsed.id !== nodeId) {
+            return doc;
+          }
           const next = ensurePage(doc, pageId);
           return updatePage(next, pageId, (p) => {
             const idx = p.nodes.findIndex((n) => n.id === nodeId);
-            if (idx === -1) return { ...p, nodes: [...p.nodes, parsed] };
+            if (idx === -1) {
+              return { ...p, nodes: [...p.nodes, parsed] };
+            }
             const nodes = p.nodes.slice();
             nodes[idx] = parsed;
             return { ...p, nodes };
@@ -377,11 +397,15 @@ export function applyOperation(
         const edgeId = parts[3];
         try {
           const parsed = JSON.parse(value) as AppEdge;
-          if (parsed.id !== edgeId) return doc;
+          if (parsed.id !== edgeId) {
+            return doc;
+          }
           const next = ensurePage(doc, pageId);
           return updatePage(next, pageId, (p) => {
             const idx = p.edges.findIndex((e) => e.id === edgeId);
-            if (idx === -1) return { ...p, edges: [...p.edges, parsed] };
+            if (idx === -1) {
+              return { ...p, edges: [...p.edges, parsed] };
+            }
             const edges = p.edges.slice();
             edges[idx] = parsed;
             return { ...p, edges };
@@ -400,11 +424,13 @@ export function applyOperation(
     const pageId = parts[1];
     if (parts[2] === "name" && parts.length === 3) {
       // Tombstone-ish: delete the page entirely.
-      if (!doc.pages[pageId]) return doc;
+      if (!doc.pages[pageId]) {
+        return doc;
+      }
       const { [pageId]: _removed, ...rest } = doc.pages;
       const order = doc.pageOrder.filter((p) => p !== pageId);
       const active =
-        doc.activePageId === pageId ? order[0] ?? doc.activePageId : doc.activePageId;
+        doc.activePageId === pageId ? (order[0] ?? doc.activePageId) : doc.activePageId;
       return { ...doc, pages: rest, pageOrder: order, activePageId: active };
     }
     if (parts[2] === "nodes" && parts.length === 4) {

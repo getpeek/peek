@@ -44,6 +44,7 @@ To add support for a new database (e.g., SQLite):
 ### 1. Update the DatabaseType Enum
 
 In `src/lib.rs`:
+
 ```rust
 #[derive(Debug)]
 pub enum DatabaseType {
@@ -57,6 +58,7 @@ pub enum DatabaseType {
 ### 2. Add Connection String Detection
 
 In `src/lib.rs`, update the `set_connection` function:
+
 ```rust
 } else if connection_string.starts_with("sqlite://")
     || connection_string.ends_with(".db")
@@ -67,6 +69,7 @@ In `src/lib.rs`, update the `set_connection` function:
 ### 3. Create the Implementation
 
 Create a new file `src/database/sqlite.rs`:
+
 ```rust
 use crate::database::Database;
 use serde_json::{json, Value};
@@ -100,6 +103,7 @@ impl Database for SqliteDatabase {
 ### 4. Register the Module
 
 In `src/database/mod.rs`:
+
 ```rust
 pub mod mysql;
 pub mod postgres;
@@ -120,6 +124,7 @@ DatabaseType::SQLite => {
 ### 6. Update Dependencies
 
 In `Cargo.toml`, add the necessary features to sqlx:
+
 ```toml
 sqlx = { version = "0.8.6", features = [
     "postgres",
@@ -134,6 +139,7 @@ sqlx = { version = "0.8.6", features = [
 Each database implementation handles its native types and converts them to JSON values:
 
 ### PostgreSQL Types
+
 - UUID → String
 - TEXT/VARCHAR/CHAR → String
 - DATE → String (YYYY-MM-DD)
@@ -144,6 +150,7 @@ Each database implementation handles its native types and converts them to JSON 
 - BOOL → Boolean
 
 ### MySQL Types
+
 - VARCHAR/CHAR/TEXT → String
 - DATE → String (YYYY-MM-DD)
 - DATETIME/TIMESTAMP → String (ISO 8601)
@@ -176,18 +183,21 @@ All database operations return `Result<T, String>` where errors are converted to
 ## Testing Different Databases
 
 ### PostgreSQL
+
 ```bash
 # Connection string format
 postgres://username:password@localhost:5432/database_name
 ```
 
 ### MySQL
+
 ```bash
 # Connection string format
 mysql://username:password@localhost:3306/database_name
 ```
 
 ### MariaDB
+
 ```bash
 # Connection string format (same as MySQL)
 mariadb://username:password@localhost:3306/database_name

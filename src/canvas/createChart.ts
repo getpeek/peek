@@ -3,11 +3,7 @@ import type { CanvasApi } from "./state";
 import type { DatabaseResult } from "../state";
 import type { BarChartNode, ResultNode } from "./types";
 
-export function createChart(
-  canvas: CanvasApi,
-  resultNode: ResultNode,
-  rows: DatabaseResult,
-) {
+export function createChart(canvas: CanvasApi, resultNode: ResultNode, rows: DatabaseResult) {
   if (rows.length === 0) {
     return;
   }

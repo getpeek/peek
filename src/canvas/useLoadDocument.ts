@@ -9,12 +9,22 @@ import type { DatabaseResult } from "../state";
 import type { AppNode, CanvasDocument } from "./types";
 
 function isValidDocument(value: unknown): value is CanvasDocument {
-  if (!value || typeof value !== "object") return false;
+  if (!value || typeof value !== "object") {
+    return false;
+  }
   const v = value as Record<string, unknown>;
-  if (v.version !== 1) return false;
-  if (typeof v.activePageId !== "string") return false;
-  if (!Array.isArray(v.pageOrder)) return false;
-  if (!v.pages || typeof v.pages !== "object") return false;
+  if (v.version !== 1) {
+    return false;
+  }
+  if (typeof v.activePageId !== "string") {
+    return false;
+  }
+  if (!Array.isArray(v.pageOrder)) {
+    return false;
+  }
+  if (!v.pages || typeof v.pages !== "object") {
+    return false;
+  }
   return true;
 }
 
@@ -37,20 +47,22 @@ function migrateAndHydrate(doc: CanvasDocument): {
             // crashed mid-execution — clear it so the run button is usable.
             return { ...n, data: { ...n.data, isRunning: false } } as AppNode;
           }
-          if (n.type !== "result") return n;
+          if (n.type !== "result") {
+            return n;
+          }
           const legacy = n.data as {
             data?: DatabaseResult;
             query?: string;
             columnWidths?: Record<string, number>;
           };
-          if (legacy.data) hydrated[n.id] = legacy.data;
+          if (legacy.data) {
+            hydrated[n.id] = legacy.data;
+          }
           return {
             ...n,
             data: {
               query: legacy.query ?? "",
-              ...(legacy.columnWidths
-                ? { columnWidths: legacy.columnWidths }
-                : {}),
+              ...(legacy.columnWidths ? { columnWidths: legacy.columnWidths } : {}),
             },
           } as AppNode;
         }),
@@ -69,17 +81,23 @@ export function useLoadDocument() {
   const setLoadEpoch = useSetAtom(loadEpochAtom);
 
   useEffect(() => {
-    if (!conn) return;
+    if (!conn) {
+      return;
+    }
     // Joiner views the host's replica; reading from disk would clobber it.
     // session.end restores from snapshot, so loads only resume in standalone/host.
-    if (session?.role === "joiner") return;
+    if (session?.role === "joiner") {
+      return;
+    }
     // End-of-session handoff: while `preSessionSnapshotAtom` is non-null and
     // `sessionStateAtom` has been cleared, `controls.end()` is mid-restore and
     // is about to write the snapshot back into `documentAtom`. An async
     // disk-reload here would land *after* the snapshot write and clobber it.
     // Wait until the snapshot is cleared — which `end()` does last — before
     // re-loading from disk.
-    if (!session && snapshot) return;
+    if (!session && snapshot) {
+      return;
+    }
 
     let cancelled = false;
 
@@ -94,7 +112,9 @@ export function useLoadDocument() {
       }).catch(() => "{}"),
     ])
       .then(([docJson, resultsJson]) => {
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
         let sidecar: Record<string, DatabaseResult> = {};
         try {

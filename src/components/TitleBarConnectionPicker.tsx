@@ -69,12 +69,7 @@ export const TitleBarConnectionPicker: React.FC = () => {
           )}
         </div>
       </Popover.Target>
-      <Popover.Dropdown
-        bg="transparent"
-        bd="none"
-        p={0}
-        style={{ backdropFilter: "blur(10px)" }}
-      >
+      <Popover.Dropdown bg="transparent" bd="none" p={0} style={{ backdropFilter: "blur(10px)" }}>
         <WorkspacePopover />
       </Popover.Dropdown>
     </Popover>

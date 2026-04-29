@@ -9,23 +9,14 @@ import { useCanvas } from "../../useCanvas";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
-import type {
-  QueryErrorNode as QueryErrorNodeT,
-  QueryNode,
-} from "../../types";
+import type { QueryErrorNode as QueryErrorNodeT, QueryNode } from "../../types";
 import "../../../shapes/Error/ErrorShape.css";
 import "../node.css";
 
 const DEFAULT_W = 400;
 const DEFAULT_H = 300;
 
-export function QueryErrorNode({
-  id,
-  data,
-  selected,
-  width,
-  height,
-}: NodeProps<QueryErrorNodeT>) {
+export function QueryErrorNode({ id, data, selected, width, height }: NodeProps<QueryErrorNodeT>) {
   const canvas = useCanvas();
   const runPrompt = useExecutePrompt("fast");
   const schema = useAtomValue(schemaAtom);
@@ -39,7 +30,9 @@ export function QueryErrorNode({
   const h = height ?? DEFAULT_H;
 
   useLayoutEffect(() => {
-    if (!suggestionRef.current) return;
+    if (!suggestionRef.current) {
+      return;
+    }
     const measured = suggestionRef.current.getBoundingClientRect().height;
     canvas.updateNode(id, (n) =>
       n.height === measured + 250 ? n : { ...n, height: measured + 250 },
@@ -98,34 +91,21 @@ The database schema looks like this ${JSON.stringify(schema, null, 2)}. You can 
     <>
       <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
       <HiddenHandles />
-      <div
-        className={`app-node ${selected ? "selected" : ""}`}
-        style={{ width: w, height: h }}
-      >
+      <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader nodeId={id} type="query-error" name="query failed" />
         <div className="app-node-body nodrag" ref={bodyRef}>
           <div className={`error-shape ${isThinking ? "loading" : ""}`}>
             <Stack gap="md">
               <Text size="sm">{data.message}</Text>
-              <button
-                className="suggest-fix-button"
-                onClick={getResponse}
-                disabled={isThinking}
-              >
+              <button className="suggest-fix-button" onClick={getResponse} disabled={isThinking}>
                 Suggest fix
               </button>
               {query.length > 0 && (
                 <Stack>
-                  <div
-                    className="query-suggestion"
-                    ref={suggestionRef}
-                  >
+                  <div className="query-suggestion" ref={suggestionRef}>
                     <pre>{query}</pre>
                   </div>
-                  <button
-                    className="suggest-fix-button"
-                    onClick={acceptQuery}
-                  >
+                  <button className="suggest-fix-button" onClick={acceptQuery}>
                     Accept
                   </button>
                 </Stack>

@@ -15,11 +15,7 @@ export function useCellContextMenu(nodeId: string) {
   const canvas = useCanvas();
   const [cellMenu, setCellMenu] = useState<CellMenuState | null>(null);
 
-  const openCellMenu = (
-    e: React.MouseEvent,
-    value: unknown,
-    column: string,
-  ) => {
+  const openCellMenu = (e: React.MouseEvent, value: unknown, column: string) => {
     e.preventDefault();
     setCellMenu({ x: e.clientX, y: e.clientY, value, column });
   };
@@ -27,7 +23,9 @@ export function useCellContextMenu(nodeId: string) {
   const closeCellMenu = () => setCellMenu(null);
 
   const createVariableFromCell = () => {
-    if (!cellMenu) return;
+    if (!cellMenu) {
+      return;
+    }
     const sourceNode = canvas.getNode(nodeId);
     if (!sourceNode) {
       setCellMenu(null);
@@ -41,9 +39,7 @@ export function useCellContextMenu(nodeId: string) {
     const newNode = makeNode("variable", position) as VariableNode;
     newNode.data = {
       ...newNode.data,
-      rows: [
-        { name: cellMenu.column, value: stringifyValue(cellMenu.value) },
-      ],
+      rows: [{ name: cellMenu.column, value: stringifyValue(cellMenu.value) }],
     };
     canvas.addNode(newNode);
     canvas.selectOnly(newNode.id);
@@ -52,7 +48,9 @@ export function useCellContextMenu(nodeId: string) {
   };
 
   const copyCellValue = () => {
-    if (!cellMenu) return;
+    if (!cellMenu) {
+      return;
+    }
     navigator.clipboard.writeText(stringifyValue(cellMenu.value));
     setCellMenu(null);
   };

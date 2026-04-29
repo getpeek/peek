@@ -8,10 +8,7 @@ import { useCanvas } from "./useCanvas";
 
 const STROKE_WIDTH = 4;
 const STROKE_COLOR = "white";
-// Buffer around the points' bbox. perfect-freehand outlines extend roughly
-// size/2 (= STROKE_WIDTH * 2) past the input points; pad generously so the
-// rendered stroke sits well inside the node's click target.
-const PADDING = STROKE_WIDTH * 4;
+const PADDING = STROKE_WIDTH * 2;
 
 export function useDrawTool() {
   const placeMode = useAtomValue(placeModeAtom);
@@ -33,11 +30,7 @@ export function useDrawTool() {
       const minY = Math.min(...ys);
       const maxX = Math.max(...xs);
       const maxY = Math.max(...ys);
-      const rel: DrawPoint[] = flow.map(([x, y, p]) => [
-        x - minX + PADDING,
-        y - minY + PADDING,
-        p,
-      ]);
+      const rel: DrawPoint[] = flow.map(([x, y, p]) => [x - minX + PADDING, y - minY + PADDING, p]);
       canvas.addNode({
         id: ids.draw(),
         type: "draw",
@@ -59,28 +52,30 @@ export function useDrawTool() {
       return;
     }
     const pane = document.querySelector<HTMLElement>(".react-flow__pane");
-    if (!pane) return;
+    if (!pane) {
+      return;
+    }
 
     const onDown = (e: PointerEvent) => {
-      if (e.button !== 0) return;
+      if (e.button !== 0) {
+        return;
+      }
       // Prevent ReactFlow's delegated handlers (node drag, selection) from
       // firing for this pointerdown. The pane is an ancestor of every node,
       // so without this RF would also start dragging the node we clicked on
       // and we'd commit a duplicate stroke alongside the moved node.
       e.stopPropagation();
       drawingRef.current = true;
-      try {
-        pane.setPointerCapture(e.pointerId);
-      } catch {
-        // some pointer types may not support capture
-      }
+      pane.setPointerCapture(e.pointerId);
       const initial: DrawPoint[] = [[e.clientX, e.clientY, e.pressure || 0.5]];
       livePointsRef.current = initial;
       setLivePoints(initial);
     };
 
     const onMove = (e: PointerEvent) => {
-      if (!drawingRef.current) return;
+      if (!drawingRef.current) {
+        return;
+      }
       const next: DrawPoint[] = [
         ...livePointsRef.current,
         [e.clientX, e.clientY, e.pressure || 0.5],
@@ -90,12 +85,16 @@ export function useDrawTool() {
     };
 
     const onUp = () => {
-      if (!drawingRef.current) return;
+      if (!drawingRef.current) {
+        return;
+      }
       drawingRef.current = false;
       const pts = livePointsRef.current;
       livePointsRef.current = [];
       setLivePoints([]);
-      if (pts.length >= 2) commit(pts);
+      if (pts.length >= 2) {
+        commit(pts);
+      }
     };
 
     pane.addEventListener("pointerdown", onDown);

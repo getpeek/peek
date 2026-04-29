@@ -74,8 +74,7 @@
   stroke: var(--pk-accent);
   stroke-width: 2;
   stroke-dasharray: 6 8;
-  filter: drop-shadow(0 0 4px var(--pk-accent))
-    drop-shadow(0 0 8px var(--pk-accent-line));
+  filter: drop-shadow(0 0 4px var(--pk-accent)) drop-shadow(0 0 8px var(--pk-accent-line));
   animation: schema-edge-flow 1.4s linear infinite;
 }
 
