@@ -11,7 +11,8 @@ export type AppNodeType =
   | "query-error"
   | "table-definition"
   | "text"
-  | "variable";
+  | "variable"
+  | "draw";
 
 export type QueryData = {
   query: string;
@@ -71,6 +72,14 @@ export type VariableData = {
   isGlobal?: boolean;
 };
 
+export type DrawPoint = [number, number, number];
+
+export type DrawData = {
+  points: DrawPoint[];
+  strokeWidth: number;
+  color: string;
+};
+
 export type QueryNode = Node<QueryData, "query">;
 export type ResultNode = Node<ResultData, "result">;
 export type AiPromptNode = Node<AiPromptData, "ai-prompt">;
@@ -80,6 +89,7 @@ export type QueryErrorNode = Node<ErrorData, "query-error">;
 export type TableDefinitionNode = Node<TableDefinitionData, "table-definition">;
 export type TextNode = Node<TextData, "text">;
 export type VariableNode = Node<VariableData, "variable">;
+export type DrawNode = Node<DrawData, "draw">;
 
 export type AppNode =
   | QueryNode
@@ -90,7 +100,8 @@ export type AppNode =
   | QueryErrorNode
   | TableDefinitionNode
   | TextNode
-  | VariableNode;
+  | VariableNode
+  | DrawNode;
 
 export type AppEdge = Edge;
 

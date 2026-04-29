@@ -23,6 +23,7 @@ const TYPE_LABELS: Record<AppNodeType, string> = {
   "table-definition": "TABLE",
   text: "TEXT",
   variable: "VARS",
+  draw: "DRAW",
 };
 
 export function NodeHeader({

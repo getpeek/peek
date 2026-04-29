@@ -34,6 +34,7 @@
     "node-sql-parser": "^5.3.12",
     "object-hash": "^3.0.0",
     "open-simplex-noise": "^2.5.0",
+    "perfect-freehand": "^1.2.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",

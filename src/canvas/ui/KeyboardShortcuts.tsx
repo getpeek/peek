@@ -30,6 +30,8 @@ function newIdForType(type: AppNodeType): string {
       return ids.text();
     case "variable":
       return ids.variable();
+    case "draw":
+      return ids.draw();
   }
 }
 
@@ -159,6 +161,12 @@ export function KeyboardShortcuts() {
       if (e.key.toLowerCase() === "v" && !meta) {
         e.preventDefault();
         setPlaceMode("variable");
+        return;
+      }
+
+      if (e.key.toLowerCase() === "d" && !meta) {
+        e.preventDefault();
+        setPlaceMode("draw");
         return;
       }
 

@@ -21,6 +21,7 @@ import { CanvasApiPublisher } from "./CanvasApiPublisher";
 import { AiPromptNode } from "./nodes/AiPrompt/AiPromptNode";
 import { BarChartNode } from "./nodes/BarChart/BarChartNode";
 import { ChatNode } from "./nodes/Chat/ChatNode";
+import { DrawNode, getSvgPathFromStroke } from "./nodes/Draw/DrawNode";
 import { QueryErrorNode } from "./nodes/QueryError/QueryErrorNode";
 import { QueryNode } from "./nodes/Query/QueryNode";
 import { ResultNode } from "./nodes/Result/ResultNode";
@@ -43,7 +44,9 @@ import type {
   ResultNode as ResultNodeT,
 } from "./types";
 import { useCanvas } from "./useCanvas";
+import { useDrawTool } from "./useDrawTool";
 import { useSchemaForceLayout } from "./useSchemaForceLayout";
+import { getStroke } from "perfect-freehand";
 import { FloatingEdge } from "./edges/FloatingEdge";
 import "./nodes/node.css";
 
@@ -57,6 +60,7 @@ const nodeTypes = {
   "table-definition": TableDefinitionNode,
   text: TextNode,
   variable: VariableNode,
+  draw: DrawNode,
 };
 
 const edgeTypes = {
@@ -85,6 +89,7 @@ function ReactFlowCanvasInner() {
   const results = useAtomValue(resultsAtom);
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
+  const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
   useCursorBroadcast();
   const { onSchemaNodeDragStart, onSchemaNodeDrag, onSchemaNodeDragStop } = useSchemaForceLayout();
 
@@ -165,6 +170,9 @@ function ReactFlowCanvasInner() {
   const onPaneClick = useCallback(
     (e: React.MouseEvent) => {
       if (!placeMode) {
+        return;
+      }
+      if (placeMode === "draw") {
         return;
       }
       const flowPos = rf.screenToFlowPosition({
@@ -267,7 +275,9 @@ function ReactFlowCanvasInner() {
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode="Shift"
         onlyRenderVisibleElements
-        selectionOnDrag
+        selectionOnDrag={placeMode !== "draw"}
+        nodesDraggable={placeMode !== "draw"}
+        elementsSelectable={placeMode !== "draw"}
         selectionMode={SelectionMode.Partial}
         panOnDrag={[1, 2]}
         panOnScroll
@@ -277,7 +287,13 @@ function ReactFlowCanvasInner() {
         proOptions={{ hideAttribution: true }}
         minZoom={0.1}
         maxZoom={4}
-        className={placeMode ? "place-mode-active" : undefined}
+        className={
+          placeMode === "draw"
+            ? "place-mode-active draw-mode-active"
+            : placeMode
+              ? "place-mode-active"
+              : undefined
+        }
       >
         <Background
           variant={BackgroundVariant.Dots}
@@ -290,6 +306,30 @@ function ReactFlowCanvasInner() {
         <ZoomIndicator />
         <RemoteCursorsLayer />
       </ReactFlow>
+      {livePoints.length > 1 && (
+        <svg
+          style={{
+            position: "fixed",
+            inset: 0,
+            width: "100vw",
+            height: "100vh",
+            pointerEvents: "none",
+            zIndex: 1000,
+          }}
+        >
+          <path
+            d={getSvgPathFromStroke(
+              getStroke(livePoints, {
+                size: drawStrokeWidth * 4,
+                thinning: 0.5,
+                smoothing: 0.5,
+                streamline: 0.5,
+              }),
+            )}
+            fill={drawColor}
+          />
+        </svg>
+      )}
       <CanvasApiPublisher />
       <KeyboardShortcuts />
     </>

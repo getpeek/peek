@@ -32,6 +32,7 @@ export const defaultDimensions: Record<
   "table-definition": { w: 450, h: 280 },
   text: { w: 280, h: 140 },
   variable: { w: 280, h: 220 },
+  draw: { w: 100, h: 100 },
 };
 
 export function makeNode(
@@ -116,6 +117,13 @@ export function makeNode(
         id: ids.variable(),
         type: "variable",
         data: { rows: [{ name: "", value: "" }] },
+      };
+    case "draw":
+      return {
+        ...base,
+        id: ids.draw(),
+        type: "draw",
+        data: { points: [], strokeWidth: 4, color: "white" },
       };
   }
 }
