@@ -4,7 +4,7 @@ import { HiddenHandles } from "../HiddenHandles";
 import type { DrawNode as DrawNodeT } from "../../types";
 
 export function getSvgPathFromStroke(stroke: number[][]): string {
-  if (!stroke.length) {
+  if (stroke.length === 0) {
     return "";
   }
   const d = stroke.reduce<number[]>((path, [x0, y0], i, arr) => {

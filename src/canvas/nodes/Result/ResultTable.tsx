@@ -76,13 +76,13 @@ export function ResultTable({
   const commitEdit = useCommitEdit({ editing, setEditing, data, query, ast, nodeId });
 
   const { outbound, inbound } = useMemo(() => {
-    const outbound: Record<string, Reference[]> = {};
-    const inbound: Record<string, Reference[]> = {};
+    const outboundMap: Record<string, Reference[]> = {};
+    const inboundMap: Record<string, Reference[]> = {};
     headers.forEach((column) => {
-      inbound[column] = getInboundReferences(ast, schema.references, column);
-      outbound[column] = getOutboundReferences(ast, schema.references, column);
+      inboundMap[column] = getInboundReferences(ast, schema.references, column);
+      outboundMap[column] = getOutboundReferences(ast, schema.references, column);
     });
-    return { outbound, inbound };
+    return { outbound: outboundMap, inbound: inboundMap };
   }, [headers, ast, schema.references]);
 
   const followReferences = (refs: CellReference[], value: unknown) => {
@@ -138,9 +138,7 @@ export function ResultTable({
   const virtualItems = rowVirtualizer.getVirtualItems();
   const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
   const paddingBottom =
-    virtualItems.length > 0
-      ? rowVirtualizer.getTotalSize() - virtualItems[virtualItems.length - 1].end
-      : 0;
+    virtualItems.length > 0 ? rowVirtualizer.getTotalSize() - virtualItems.at(-1).end : 0;
 
   const closeHeaderMenu = () => setHeaderMenu(null);
 

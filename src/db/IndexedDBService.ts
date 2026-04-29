@@ -15,16 +15,16 @@ export interface ConnectionRecord {
 
 export interface SettingsRecord {
   key: string;
-  value: any;
+  value: unknown;
 }
 
 class IndexedDBService {
   private db: IDBDatabase | null = null;
   private initPromise: Promise<void> | null = null;
 
-  async init(): Promise<void> {
+  init(): Promise<void> {
     if (this.db) {
-      return;
+      return Promise.resolve();
     }
     if (this.initPromise) {
       return this.initPromise;
@@ -33,15 +33,15 @@ class IndexedDBService {
     this.initPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-      request.onerror = () => {
+      request.addEventListener("error", () => {
         console.error("Failed to open IndexedDB:", request.error);
         reject(request.error);
-      };
+      });
 
-      request.onsuccess = () => {
+      request.addEventListener("success", () => {
         this.db = request.result;
         resolve();
-      };
+      });
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
@@ -90,8 +90,8 @@ class IndexedDBService {
       const store = transaction.objectStore(SETTINGS_STORE);
       const request = store.get("activeConnection");
 
-      request.onsuccess = () => resolve(request.result?.value);
-      request.onerror = () => reject(request.error);
+      request.addEventListener("success", () => resolve(request.result?.value));
+      request.addEventListener("error", () => reject(request.error));
     });
   }
 
@@ -109,8 +109,8 @@ class IndexedDBService {
         store.delete("activeConnection");
       }
 
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(transaction.error);
+      transaction.addEventListener("complete", () => resolve());
+      transaction.addEventListener("error", () => reject(transaction.error));
     });
   }
 }

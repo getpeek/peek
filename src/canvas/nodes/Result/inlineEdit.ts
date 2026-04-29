@@ -78,20 +78,20 @@ export function formatSqlLiteral(value: unknown, sqlType: string): string {
 
   if (upper === "JSON" || upper === "JSONB") {
     const json = typeof value === "string" ? value : JSON.stringify(value);
-    const escaped = json.replace(/'/g, "''");
+    const escaped = json.replaceAll('\'', "''");
     return upper === "JSONB" ? `'${escaped}'::jsonb` : `'${escaped}'::json`;
   }
 
   if (isNumericType(upper)) {
     const n = typeof value === "number" ? value : Number(value);
     if (!Number.isFinite(n)) {
-      throw new Error(`"${String(value)}" is not a valid ${sqlType} value`);
+      throw new TypeError(`"${String(value)}" is not a valid ${sqlType} value`);
     }
     return String(n);
   }
 
   const s = typeof value === "string" ? value : String(value);
-  const escaped = s.replace(/'/g, "''");
+  const escaped = s.replaceAll('\'', "''");
   return `'${escaped}'`;
 }
 

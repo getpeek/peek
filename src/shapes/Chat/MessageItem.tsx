@@ -1,6 +1,6 @@
 import Markdown from "react-markdown";
 import { Message } from "../Ai/useExecutePrompt";
-import { IconRobot } from "@tabler/icons-react";
+import { IconAlertTriangle, IconCheck, IconRobot, IconTool } from "@tabler/icons-react";
 import { Group, Stack, Text } from "@mantine/core";
 import remarkGfm from "remark-gfm";
 
@@ -30,6 +30,58 @@ export const MessageItem = ({ message, index }: MessageItemProps) => {
               {index === 0 ? "Query and result" : "Updated query and result"}
             </Text>
           </Stack>
+        </Group>
+      </div>
+    );
+  }
+
+  if (message.type === "tool_call") {
+    const calls = message.toolCalls ?? [];
+    return (
+      <div className="message tool-call">
+        {message.message.trim() && (
+          <div className="message-content">
+            <Markdown remarkPlugins={[remarkGfm]}>{message.message}</Markdown>
+          </div>
+        )}
+        <Group gap={6} wrap="wrap">
+          {calls.map((call) => (
+            <Group
+              key={call.id}
+              gap={6}
+              px={10}
+              py={4}
+              bd="1px solid var(--mantine-color-gray-7)"
+              style={{ borderRadius: 9999 }}
+            >
+              <IconTool size={14} />
+              <Text size="xs" ff="var(--pk-font-mono)">
+                {call.name}
+              </Text>
+            </Group>
+          ))}
+        </Group>
+      </div>
+    );
+  }
+
+  if (message.type === "tool_result") {
+    const Icon = message.isError ? IconAlertTriangle : IconCheck;
+    const color = message.isError ? "red" : "green";
+    return (
+      <div className="message tool-result">
+        <Group
+          gap={6}
+          px={10}
+          py={4}
+          bd={`1px solid var(--mantine-color-${color}-8)`}
+          c={`var(--mantine-color-${color}-4)`}
+          style={{ borderRadius: 9999, alignSelf: "flex-start" }}
+        >
+          <Icon size={14} />
+          <Text size="xs" ff="var(--pk-font-mono)">
+            {message.toolName ?? "tool"} {message.isError ? "failed" : "result"}
+          </Text>
         </Group>
       </div>
     );

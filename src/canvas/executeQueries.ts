@@ -18,6 +18,22 @@ export type SetResults = (
     | ((prev: Record<string, DatabaseResult>) => Record<string, DatabaseResult>),
 ) => void;
 
+function nextPosition(
+  canvas: CanvasApi,
+  sourceNode: AppNode,
+  lastCreatedId: string | null,
+): { x: number; y: number } {
+  const defaultX = sourceNode.position.x + (sourceNode.width ?? 350) + 50;
+  if (!lastCreatedId) {
+    return { x: defaultX, y: sourceNode.position.y };
+  }
+  const last = canvas.getNode(lastCreatedId);
+  if (!last) {
+    return { x: defaultX, y: sourceNode.position.y };
+  }
+  return { x: last.position.x, y: last.position.y + (last.height ?? 440) + 50 };
+}
+
 export async function executeQueries(
   canvas: CanvasApi,
   setResults: SetResults,
@@ -51,15 +67,7 @@ export async function executeQueries(
           continue;
         }
 
-        let x = sourceNode.position.x + (sourceNode.width ?? 350) + 50;
-        let y = sourceNode.position.y;
-        if (lastCreatedId) {
-          const last = canvas.getNode(lastCreatedId);
-          if (last) {
-            x = last.position.x;
-            y = last.position.y + (last.height ?? 440) + 50;
-          }
-        }
+        const { x, y } = nextPosition(canvas, sourceNode, lastCreatedId);
 
         const columnCount = result[0]?.length ?? 0;
         const w = result.length === 0 ? 400 : Math.max(columnCount * 250, 200);

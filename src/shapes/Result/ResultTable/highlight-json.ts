@@ -11,9 +11,12 @@ export function syntaxHighlight(json: string) {
     formattedJson = json;
   }
 
-  formattedJson = formattedJson.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  formattedJson = formattedJson
+    .replaceAll('&', "&amp;")
+    .replaceAll('<', "&lt;")
+    .replaceAll('>', "&gt;");
 
-  return formattedJson.replace(
+  return formattedJson.replaceAll(
     /("(?:[^"\\]|\\.)*")\s*(:)?|(\btrue\b|\bfalse\b|\bnull\b|\bundefined\b)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|([{}[\],])/g,
     function (match, string, colon, keyword, number, punctuation) {
       if (string !== undefined) {

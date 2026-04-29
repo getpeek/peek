@@ -47,7 +47,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
 
   const canChart =
     rows.length > 0 &&
-    !!rows[0].find(
+    !!rows[0].some(
       ([key, value]) => typeof value === "number" && key !== "id" && !key.endsWith("_id"),
     );
 
@@ -142,7 +142,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
           <div className="meta">
             <span className="ok">●</span>
             <span>{rows.length} rows</span>
-            {queryName && <span>{queryName.substring(0, 20)}...</span>}
+            {queryName && <span>{queryName.slice(0, 20)}...</span>}
           </div>
           <div className="actions">
             {canChart && (

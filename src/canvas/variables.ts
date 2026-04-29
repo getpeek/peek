@@ -54,7 +54,7 @@ export function collectVariablesFor(
     .getEdges()
     .filter((e) => e.target === queryNodeId)
     .slice()
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .toSorted((a, b) => a.id.localeCompare(b.id));
 
   const merged: Record<string, string> = {};
   for (const edge of edges) {

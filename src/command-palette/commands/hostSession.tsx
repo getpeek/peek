@@ -16,7 +16,7 @@ function controls(): MultiplayerControls | undefined {
 export const useHostSessionCommand = (): CommandPaletteResult => {
   const session = useAtomValue(sessionStateAtom);
   const setOpen = useSetAtom(collaboratePopoverOpenAtom);
-  const isInSession = session != null;
+  const isInSession = session !== null && session !== undefined;
   const isHost = session?.role === "host";
 
   return {

@@ -160,6 +160,11 @@
   width: auto !important;
 }
 
+.message.tool-call,
+.message.tool-result {
+  align-items: flex-start;
+}
+
 .chat-input-container {
   border-top: 1px solid var(--pk-node-border);
   padding: 8px 10px;

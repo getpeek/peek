@@ -18,7 +18,7 @@ const getOverflowWidgetsDomNode = () => {
   node.style.top = "0";
   node.style.left = "0";
   node.style.zIndex = "10000";
-  document.body.appendChild(node);
+  document.body.append(node);
   overflowWidgetsDomNode = node;
   return node;
 };
@@ -41,7 +41,7 @@ function ensureVariableProvider(monaco: Monaco) {
       }
 
       const lineText = model.getLineContent(position.lineNumber);
-      const before = lineText.substring(0, position.column - 1);
+      const before = lineText.slice(0, position.column - 1);
       const match = before.match(/@(\w*)$/);
       if (!match) {
         return { suggestions: [] };
@@ -131,10 +131,10 @@ export const SqlEditor = ({
       };
     });
 
-    if (!decorationsRef.current) {
-      decorationsRef.current = ed.createDecorationsCollection(decorations);
-    } else {
+    if (decorationsRef.current) {
       decorationsRef.current.set(decorations);
+    } else {
+      decorationsRef.current = ed.createDecorationsCollection(decorations);
     }
   };
 

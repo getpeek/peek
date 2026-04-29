@@ -1,8 +1,8 @@
 function hashName(name: string): number {
-  let hash = 2166136261 >>> 0;
+  let hash = Math.trunc(2166136261);
   for (let i = 0; i < name.length; i++) {
-    hash ^= name.charCodeAt(i);
-    hash = Math.imul(hash, 16777619) >>> 0;
+    hash ^= name.codePointAt(i) ?? 0;
+    hash = Math.trunc(Math.imul(hash, 16777619));
   }
   return hash;
 }

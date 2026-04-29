@@ -16,7 +16,7 @@ import "@xyflow/react/dist/style.css";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useMemo } from "react";
 import { darkModeAtom } from "../state";
-import { edgesAtom, nodesAtom, placeModeAtom, resultsAtom, viewportAtom } from "./state";
+import { edgesAtom, nodesAtom, placeModeAtom, viewportAtom } from "./state";
 import { CanvasApiPublisher } from "./CanvasApiPublisher";
 import { AiPromptNode } from "./nodes/AiPrompt/AiPromptNode";
 import { BarChartNode } from "./nodes/BarChart/BarChartNode";
@@ -34,18 +34,11 @@ import { KeyboardShortcuts } from "./ui/KeyboardShortcuts";
 import { RemoteCursorsLayer } from "../multiplayer/RemoteCursorsLayer";
 import { useCursorBroadcast } from "../multiplayer/useCursorBroadcast";
 import { defaultDimensions, makeNode } from "./defaults";
-import { toCsv } from "../tools/export/csv";
-import type { Message } from "../shapes/Ai/useExecutePrompt";
-import type {
-  AppEdge,
-  AppNode,
-  ChatNode as ChatNodeT,
-  QueryData,
-  ResultNode as ResultNodeT,
-} from "./types";
+import type { AppEdge, AppNode, QueryData } from "./types";
 import { useCanvas } from "./useCanvas";
 import { useDrawTool } from "./useDrawTool";
 import { useSchemaForceLayout } from "./useSchemaForceLayout";
+import { useResultDropOnChat } from "./useResultDropOnChat";
 import { getStroke } from "perfect-freehand";
 import { FloatingEdge } from "./edges/FloatingEdge";
 import "./nodes/node.css";
@@ -86,12 +79,12 @@ function ReactFlowCanvasInner() {
   const setViewport = useSetAtom(viewportAtom);
   const isDarkMode = useAtomValue(darkModeAtom);
   const [placeMode, setPlaceMode] = useAtom(placeModeAtom);
-  const results = useAtomValue(resultsAtom);
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
   const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
   useCursorBroadcast();
   const { onSchemaNodeDragStart, onSchemaNodeDrag, onSchemaNodeDragStop } = useSchemaForceLayout();
+  const onNodeDragStop = useResultDropOnChat(onSchemaNodeDragStop);
 
   const onNodesChange = useCallback(
     (changes: NodeChange<AppNode>[]) => {
@@ -141,7 +134,7 @@ function ReactFlowCanvasInner() {
     );
     const liveQueryIds = new Set(
       nodes
-        .filter((n) => n.type === "query" && (n.data as QueryData).liveIntervalMs != null)
+        .filter((n) => n.type === "query" && (n.data as QueryData).liveIntervalMs !== null)
         .map((n) => n.id),
     );
     if (selectedQueryIds.size === 0 && liveQueryIds.size === 0) {
@@ -203,56 +196,6 @@ function ReactFlowCanvasInner() {
       onSchemaNodeDrag(dragged);
     },
     [onSchemaNodeDrag],
-  );
-
-  const onNodeDragStop = useCallback(
-    (_e: React.MouseEvent | MouseEvent | TouchEvent, dragged: AppNode) => {
-      onSchemaNodeDragStop(dragged);
-
-      if (dragged.type !== "result") {
-        return;
-      }
-      const result = canvas.getNode(dragged.id) as ResultNodeT | undefined;
-      if (!result || result.type !== "result") {
-        return;
-      }
-
-      const r = {
-        x: result.position.x,
-        y: result.position.y,
-        w: result.width ?? defaultDimensions.result.w,
-        h: result.height ?? defaultDimensions.result.h,
-      };
-
-      const chats = canvas.getNodes().filter((n): n is ChatNodeT => n.type === "chat");
-
-      for (const chat of chats) {
-        const c = {
-          x: chat.position.x,
-          y: chat.position.y,
-          w: chat.width ?? defaultDimensions.chat.w,
-          h: chat.height ?? defaultDimensions.chat.h,
-        };
-        const overlap = !(r.x + r.w < c.x || r.x > c.x + c.w || r.y + r.h < c.y || r.y > c.y + c.h);
-        if (!overlap) {
-          continue;
-        }
-
-        const rows = results[result.id] ?? [];
-        const csv = toCsv(rows);
-        const message: Message = {
-          type: "context",
-          message: `The user ran an additional query ${result.data.query} which resulted in this data:\n${csv}`,
-          timestamp: Date.now(),
-        };
-        canvas.updateNodeData<ChatNodeT["data"]>(chat.id, (d) => ({
-          ...d,
-          messages: [...d.messages, message],
-        }));
-        return;
-      }
-    },
-    [canvas, onSchemaNodeDragStop, results],
   );
 
   return (

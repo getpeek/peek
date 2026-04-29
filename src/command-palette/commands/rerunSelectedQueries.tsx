@@ -32,7 +32,9 @@ export const useRerunSelectedQueriesCommand = (): CommandPaletteResult => {
         } else {
           await executeQueries(canvas, setResults, node, [q]);
         }
-        await new Promise((r) => setTimeout(r, 20));
+        await new Promise<void>((r) => {
+          setTimeout(r, 20);
+        });
       }
     },
   };

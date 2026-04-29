@@ -21,7 +21,7 @@ export function TableDefinitionTable({ table, columns }: Props) {
         fkSet.add(fromCol);
       }
     }
-    const isPk = (col: string, index: number) => {
+    const primaryKey = (col: string, index: number) => {
       if (declaredPks.has(col)) {
         return true;
       }
@@ -33,9 +33,9 @@ export function TableDefinitionTable({ table, columns }: Props) {
       }
       return false;
     };
-    const isFk = (col: string, index: number) =>
-      fkSet.has(col) || (/_id$/i.test(col) && !isPk(col, index));
-    return { isPk, isFk };
+    const foreignKey = (col: string, index: number) =>
+      fkSet.has(col) || (/_id$/i.test(col) && !primaryKey(col, index));
+    return { isPk: primaryKey, isFk: foreignKey };
   }, [schema.primaryKeys, schema.references, table]);
 
   return (

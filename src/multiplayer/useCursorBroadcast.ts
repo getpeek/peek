@@ -5,7 +5,8 @@ import { useEffect, useRef } from "react";
 import { documentAtom } from "../canvas/state";
 import { sessionStateAtom } from "./state";
 
-const CURSOR_BROADCAST_MS = 66; // ~15 Hz
+// ~15 Hz
+const CURSOR_BROADCAST_MS = 66;
 
 /**
  * While a session is active, listens for mouse moves over the document and

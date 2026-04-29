@@ -57,7 +57,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
     const incoming = allEdges
       .filter((e) => e.target === id)
       .slice()
-      .sort((a, b) => a.id.localeCompare(b.id));
+      .toSorted((a, b) => a.id.localeCompare(b.id));
     const merged: Record<string, true> = {};
     for (const edge of incoming) {
       const source = allNodes.find(
@@ -98,7 +98,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
 
   useEffect(() => {
     const interval = data.liveIntervalMs;
-    if (interval == null) {
+    if (interval === null || interval === undefined) {
       return;
     }
     // Only the host runs the query executor in a session; joiners observe

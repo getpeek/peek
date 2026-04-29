@@ -1,16 +1,32 @@
 import { ChatOllama } from "@langchain/ollama";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
-import { BaseMessage, HumanMessage, AIMessage, SystemMessage } from "@langchain/core/messages";
+import {
+  BaseMessage,
+  HumanMessage,
+  AIMessage,
+  SystemMessage,
+  ToolMessage,
+} from "@langchain/core/messages";
 import { invoke } from "@tauri-apps/api/core";
 import { useAtomValue } from "jotai";
 import { configAtom } from "../../state";
 
+export interface ToolCall {
+  id: string;
+  name: string;
+  args: unknown;
+}
+
 export interface Message {
-  type: "user" | "assistant" | "system" | "context";
+  type: "user" | "assistant" | "system" | "context" | "tool_call" | "tool_result";
   message: string;
   timestamp: number;
   contextKey?: string;
+  toolCalls?: ToolCall[];
+  toolCallId?: string;
+  toolName?: string;
+  isError?: boolean;
 }
 
 export const branchToNewConversationTool = new DynamicStructuredTool({
@@ -20,9 +36,7 @@ export const branchToNewConversationTool = new DynamicStructuredTool({
   schema: z.object({
     query: z.string().describe("A valid postgres sql query to create a query node for"),
   }),
-  func: async ({ query }: { query: string }): Promise<string> => {
-    return query;
-  },
+  func: ({ query }: { query: string }): Promise<string> => Promise.resolve(query),
 });
 
 export const getAdditionalContextTool = new DynamicStructuredTool({
@@ -52,6 +66,14 @@ export const getAdditionalContextTool = new DynamicStructuredTool({
   },
 });
 
+const ADVANCED_SYSTEM_PROMPT = `You analyze database query results to help the user understand their data.
+
+When tools are available:
+- getAdditionalContext: call when you need additional data from the database to answer the question.
+- branchToNewConversation: call only when the user explicitly asks for a NEW SQL query.
+
+After receiving a tool result, analyze the result and respond to the user directly with your insights. Do NOT call the same tool with the same arguments more than once. If the previous tool result already contains what you need, write the answer instead of calling another tool.`;
+
 export const useExecutePrompt = (modelType: "fast" | "advanced") => {
   const config = useAtomValue(configAtom)!;
 
@@ -64,13 +86,16 @@ export const useExecutePrompt = (modelType: "fast" | "advanced") => {
     think: false,
   });
 
-  return async (messages: Message[] = []) => {
+  return (messages: Message[] = []) => {
     const model =
       modelType === "advanced"
         ? baseModel.bindTools([branchToNewConversationTool, getAdditionalContextTool])
         : baseModel;
 
     const conversation: BaseMessage[] = [];
+    if (modelType === "advanced") {
+      conversation.push(new SystemMessage(ADVANCED_SYSTEM_PROMPT));
+    }
 
     for (const message of messages) {
       if (message.type === "context") {
@@ -82,6 +107,24 @@ export const useExecutePrompt = (modelType: "fast" | "advanced") => {
         conversation.push(new AIMessage(message.message));
       } else if (message.type === "system") {
         conversation.push(new SystemMessage(message.message));
+      } else if (message.type === "tool_call") {
+        conversation.push(
+          new AIMessage({
+            content: message.message,
+            tool_calls: (message.toolCalls ?? []).map((c) => ({
+              id: c.id,
+              name: c.name,
+              args: (c.args ?? {}) as Record<string, unknown>,
+            })),
+          }),
+        );
+      } else if (message.type === "tool_result") {
+        conversation.push(
+          new ToolMessage({
+            content: message.message,
+            tool_call_id: message.toolCallId ?? "",
+          }),
+        );
       }
     }
 

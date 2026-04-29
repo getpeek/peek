@@ -2,10 +2,24 @@
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc"],
   "categories": {
-    "correctness": "error"
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error"
   },
   "rules": {
-    "eslint/curly": ["error", "all"]
+    "eslint/curly": ["error", "all"],
+    "eslint/max-lines-per-function": "allow",
+    "eslint/no-underscore-dangle": [
+      "error",
+      {
+        "allow": [
+          "_documentBaseAtom",
+          "_documentMutationListeners",
+          "_resultsBaseAtom",
+          "_resultsMutationListeners"
+        ]
+      }
+    ]
   },
   "env": {
     "builtin": true

@@ -37,7 +37,7 @@ function newIdForType(type: AppNodeType): string {
 
 function findActiveQueryNode(canvas: ReturnType<typeof useCanvas>): QueryNode | undefined {
   const focusedEl = document.activeElement?.closest("[data-id]");
-  const focusedId = focusedEl?.getAttribute("data-id") ?? undefined;
+  const focusedId = focusedEl.dataset.id ?? undefined;
   const candidates: (AppNode | undefined)[] = [];
   if (focusedId) {
     candidates.push(canvas.getNode(focusedId));
@@ -190,8 +190,8 @@ export function KeyboardShortcuts() {
 
       if (meta && e.key === "a") {
         e.preventDefault();
-        const ids = canvas.getNodes().map((n) => n.id);
-        canvas.selectOnly(ids);
+        const nodeIds = canvas.getNodes().map((n) => n.id);
+        canvas.selectOnly(nodeIds);
         return;
       }
 
@@ -245,7 +245,7 @@ export function KeyboardShortcuts() {
           .getNodes()
           .filter((n) => n.type === "query")
           .slice()
-          .sort((a, b) => a.position.x - b.position.x);
+          .toSorted((a, b) => a.position.x - b.position.x);
         if (queries.length === 0) {
           return;
         }

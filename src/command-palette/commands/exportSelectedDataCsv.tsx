@@ -51,7 +51,7 @@ Use only English characters, numbers and underscores and append .csv to the end 
             ),
             new HumanMessage(`The query is: ${node.data.query}`),
           ])
-          .then((response) => response.text.replace(/<think>[\s]+<\/think>/gi, "").trim())
+          .then((response) => response.text.replaceAll(/<think>[\s]+<\/think>/gi, "").trim())
           .then((filename) => join(path, filename))
           .then((filepath) =>
             writeTextFile(filepath, output, {

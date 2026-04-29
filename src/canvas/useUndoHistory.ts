@@ -27,8 +27,8 @@ function stripEdge(e: AppEdge): AppEdge {
 
 function makeSnapshot(nodes: AppNode[], edges: AppEdge[]): HistorySnapshot {
   return {
-    nodes: nodes.map(stripNode),
-    edges: edges.map(stripEdge),
+    nodes: nodes.map((n) => stripNode(n)),
+    edges: edges.map((e) => stripEdge(e)),
   };
 }
 
@@ -133,7 +133,7 @@ export function useUndoHistory() {
       return;
     }
 
-    const previous = pageHist.past[pageHist.past.length - 1];
+    const previous = pageHist.past.at(-1);
     const currentSnap = makeSnapshot(page.nodes, page.edges);
 
     setHistory((prev) => {
@@ -155,7 +155,7 @@ export function useUndoHistory() {
       return;
     }
 
-    const next = pageHist.future[pageHist.future.length - 1];
+    const next = pageHist.future.at(-1);
     const currentSnap = makeSnapshot(page.nodes, page.edges);
 
     setHistory((prev) => {

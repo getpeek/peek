@@ -14,7 +14,7 @@ export const useGoToQueryCommands = (): CommandPaletteResult[] => {
     .map((node) => ({
       icon: <IconSql />,
       label: (
-        <Text size="xs">{node.data.query.replace(/\s/g, " ").substring(0, 60).toString()}</Text>
+        <Text size="xs">{node.data.query.replaceAll(/\s/g, " ").slice(0, 60).toString()}</Text>
       ),
       searchAgainst: node.data.query.toLowerCase(),
       onSelect: () => {

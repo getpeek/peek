@@ -7,4 +7,4 @@ export const workspacesAtom = atom<Workspace[]>((get) => get(configAtom)?.worksp
 
 export const activeConnectionAtom = atomWithIndexedDB<
   { connection: Connection; workspaceName: string } | undefined
->("activeConnection", undefined);
+>("activeConnection");
