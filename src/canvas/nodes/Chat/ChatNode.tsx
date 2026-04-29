@@ -7,6 +7,7 @@ import { useExecutePrompt } from "../../../shapes/Ai/useExecutePrompt";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
+import { NodeIndicator } from "../NodeIndicator";
 import { ChatInput } from "./ChatInput";
 import { useChatContextSync } from "./useChatContextSync";
 import { useChatStream } from "./useChatStream";
@@ -67,8 +68,8 @@ export function ChatNode({ id, data, selected, width, height }: NodeProps<ChatNo
       >
         <NodeHeader
           nodeId={id}
-          type='chat'
           name={data.query ? `chat · ${firstLine(data.query)}` : "new conversation"}
+          indicator={<NodeIndicator kind='chat' />}
         />
         <div className='app-node-body nodrag' ref={bodyRef}>
           <div className='chat-container'>

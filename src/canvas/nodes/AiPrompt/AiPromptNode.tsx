@@ -10,6 +10,7 @@ import { ids } from "../../ids";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
+import { NodeIndicator } from "../NodeIndicator";
 import type { AiPromptNode as AiPromptNodeT, QueryNode } from "../../types";
 import "./AiPrompt.css";
 
@@ -132,7 +133,11 @@ Respond ONLY with the sql in text format, no backticks, markdown, formatting, co
       <NodeResizer isVisible={!!selected} minWidth={300} minHeight={180} />
       <HiddenHandles />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-        <NodeHeader nodeId={id} type='ai-prompt' name={firstLine(data.prompt) || "new prompt"} />
+        <NodeHeader
+          nodeId={id}
+          name={firstLine(data.prompt) || "new prompt"}
+          indicator={<NodeIndicator kind='ai-prompt' />}
+        />
         <div className='ai-prompt-body nodrag' ref={bodyRef}>
           {data.isLoading && <div className='running-shimmer' />}
           <textarea

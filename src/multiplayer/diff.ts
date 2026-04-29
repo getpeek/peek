@@ -37,7 +37,7 @@ export function b64ToBytes(b64: string): Uint8Array {
   const bin = atob(b64);
   const out = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) {
-    out[i] = bin.codePointAt(i);
+    out[i] = bin.codePointAt(i) ?? 0;
   }
   return out;
 }
@@ -111,7 +111,11 @@ export function diffDocs(prev: CanvasDocument, next: CanvasDocument): Operation[
   const prevOrderJson = JSON.stringify(prev.pageOrder);
   const nextOrderJson = JSON.stringify(next.pageOrder);
   if (prevOrderJson !== nextOrderJson) {
-    ops.push({ kind: "put", key: PAGE_ORDER_KEY, value: encode(nextOrderJson) });
+    ops.push({
+      kind: "put",
+      key: PAGE_ORDER_KEY,
+      value: encode(nextOrderJson),
+    });
   }
 
   // Page deletions: emit deletions for the removed page's nodes/edges/name.

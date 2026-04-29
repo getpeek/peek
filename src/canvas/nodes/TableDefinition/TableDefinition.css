@@ -66,7 +66,7 @@
   color: var(--pk-fg-muted);
 }
 
-.app-node-header.type-table-definition .type-dot {
+.type-table-definition .type-dot {
   background: var(--pk-type-result);
 }
 
@@ -85,8 +85,8 @@
 }
 
 .react-flow__node.schema-node-connected .app-node {
-  border-color: var(--pk-accent-line);
+  border-color: var(--pk-accent-subtle);
   box-shadow:
-    0 0 0 1px var(--pk-accent-line),
+    0 0 0 3px var(--pk-accent-subtle),
     0 0 12px rgba(147, 84, 224, 0.15);
 }

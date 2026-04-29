@@ -9,6 +9,7 @@ import { useCanvas } from "../../useCanvas";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
+import { NodeIndicator } from "../NodeIndicator";
 import type { QueryErrorNode as QueryErrorNodeT, QueryNode } from "../../types";
 import "../../../shapes/Error/ErrorShape.css";
 
@@ -91,7 +92,11 @@ The database schema looks like this ${JSON.stringify(schema, null, 2)}. You can 
       <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
       <HiddenHandles />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-        <NodeHeader nodeId={id} type='query-error' name='query failed' />
+        <NodeHeader
+          nodeId={id}
+          name='query failed'
+          indicator={<NodeIndicator kind='query-error' />}
+        />
         <div className='app-node-body nodrag' ref={bodyRef}>
           <div className={`error-shape ${isThinking ? "loading" : ""}`}>
             <Stack gap='md'>

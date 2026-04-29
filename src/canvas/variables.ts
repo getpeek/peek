@@ -1,6 +1,6 @@
 import { format, type FormatOptionsWithLanguage } from "sql-formatter";
 import type { CanvasApi } from "./state";
-import type { VariableData } from "./types";
+import type { AppEdge, AppNode, VariableData } from "./types";
 
 export type VariableSite = { name: string; start: number; end: number };
 
@@ -46,24 +46,23 @@ export function substituteVariables(
   return { resolved: out, missing: Array.from(missingSet) };
 }
 
-export function collectVariablesFor(
-  canvas: CanvasApi,
-  queryNodeId: string,
+export function collectVariablesFromGraph(
+  nodes: AppNode[],
+  edges: AppEdge[],
+  targetId: string,
 ): Record<string, string> {
-  const edges = canvas
-    .getEdges()
-    .filter(e => e.target === queryNodeId)
+  const incoming = edges
+    .filter(e => e.target === targetId)
     .slice()
     .toSorted((a, b) => a.id.localeCompare(b.id));
 
   const merged: Record<string, string> = {};
-  for (const edge of edges) {
-    const source = canvas.getNode(edge.source);
+  for (const edge of incoming) {
+    const source = nodes.find(n => n.id === edge.source);
     if (!source || source.type !== "variable") {
       continue;
     }
-    const data = source.data as VariableData;
-    for (const row of data.rows) {
+    for (const row of (source.data as VariableData).rows) {
       if (!row.name) {
         continue;
       }
@@ -71,6 +70,13 @@ export function collectVariablesFor(
     }
   }
   return merged;
+}
+
+export function collectVariablesFor(
+  canvas: CanvasApi,
+  queryNodeId: string,
+): Record<string, string> {
+  return collectVariablesFromGraph(canvas.getNodes(), canvas.getEdges(), queryNodeId);
 }
 
 export function formatPreservingVars(query: string, options: FormatOptionsWithLanguage): string {

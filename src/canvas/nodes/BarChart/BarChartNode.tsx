@@ -3,6 +3,7 @@ import { AreaChart, BarChart, LineChart } from "@mantine/charts";
 import { IconChartArea, IconChartBar, IconChartLine } from "@tabler/icons-react";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
+import { NodeIndicator } from "../NodeIndicator";
 import { useCanvas } from "../../useCanvas";
 import type { BarChartData, BarChartNode as BarChartNodeT, ChartType } from "../../types";
 import "./BarChart.css";
@@ -47,7 +48,7 @@ export function BarChartNode({ id, data, selected, width, height }: NodeProps<Ba
         <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
         <HiddenHandles />
         <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-          <NodeHeader nodeId={id} type='barchart' name='empty' />
+          <NodeHeader nodeId={id} name='empty' indicator={<NodeIndicator kind='barchart' />} />
           <div className='chart-body'>No results</div>
         </div>
       </>
@@ -72,7 +73,11 @@ export function BarChartNode({ id, data, selected, width, height }: NodeProps<Ba
       <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
       <HiddenHandles />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-        <NodeHeader nodeId={id} type='barchart' name={`${seriesName} by ${dataKey}`} />
+        <NodeHeader
+          nodeId={id}
+          name={`${seriesName} by ${dataKey}`}
+          indicator={<NodeIndicator kind='barchart' />}
+        />
         <div className='chart-body nodrag'>
           <div className='chart-title'>
             <span>{seriesName}</span>

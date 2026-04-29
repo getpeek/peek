@@ -37,7 +37,7 @@ function newIdForType(type: AppNodeType): string {
 
 function findActiveQueryNode(canvas: ReturnType<typeof useCanvas>): QueryNode | undefined {
   const focusedEl = document.activeElement?.closest("[data-id]");
-  const focusedId = focusedEl.dataset.id ?? undefined;
+  const focusedId = focusedEl instanceof HTMLElement ? focusedEl.dataset.id : undefined;
   const candidates: (AppNode | undefined)[] = [];
   if (focusedId) {
     candidates.push(canvas.getNode(focusedId));

@@ -7,4 +7,5 @@ export const workspacesAtom = atom<Workspace[]>(get => get(configAtom)?.workspac
 
 export const activeConnectionAtom = atomWithIndexedDB<
   { connection: Connection; workspaceName: string } | undefined
->("activeConnection");
+  // oxlint-disable-next-line unicorn/no-useless-undefined
+>("activeConnection", undefined);

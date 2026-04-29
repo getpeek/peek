@@ -101,7 +101,7 @@
   color: var(--pk-red);
 }
 
-.app-node-header.type-variable .type-dot {
+.type-variable .type-dot {
   background: var(--pk-accent-soft);
 }
 

@@ -129,11 +129,11 @@ export function useUndoHistory() {
 
   const undo = useCallback(() => {
     const pageHist = history[pageId];
-    if (!pageHist || pageHist.past.length === 0) {
+    const previous = pageHist?.past.at(-1);
+    if (!pageHist || !previous) {
       return;
     }
 
-    const previous = pageHist.past.at(-1);
     const currentSnap = makeSnapshot(page.nodes, page.edges);
 
     setHistory(prev => {
@@ -151,11 +151,11 @@ export function useUndoHistory() {
 
   const redo = useCallback(() => {
     const pageHist = history[pageId];
-    if (!pageHist || pageHist.future.length === 0) {
+    const next = pageHist?.future.at(-1);
+    if (!pageHist || !next) {
       return;
     }
 
-    const next = pageHist.future.at(-1);
     const currentSnap = makeSnapshot(page.nodes, page.edges);
 
     setHistory(prev => {

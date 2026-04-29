@@ -43,6 +43,7 @@
 
   --pk-font-sans: "Monaspace Krypton", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --pk-font-mono: "Monaspace Krypton", "SF Mono", ui-monospace, Menlo, monospace;
+  --pk-font-playful: "Chewy";
 }
 
 /* ============================================================
@@ -133,7 +134,14 @@
   min-height: 36px;
 }
 
-.app-node-header .type-dot {
+.node-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.node-indicator .type-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -141,29 +149,29 @@
   flex-shrink: 0;
 }
 
-.app-node-header.type-query .type-dot {
+.type-query .type-dot {
   background: var(--pk-type-query);
 }
-.app-node-header.type-result .type-dot {
+.type-result .type-dot {
   background: var(--pk-type-result);
 }
-.app-node-header.type-ai-prompt .type-dot {
+.type-ai-prompt .type-dot {
   background: var(--pk-type-ai);
 }
-.app-node-header.type-chat .type-dot {
+.type-chat .type-dot {
   background: var(--pk-type-chat);
 }
-.app-node-header.type-barchart .type-dot {
+.type-barchart .type-dot {
   background: var(--pk-type-chart);
 }
-.app-node-header.type-query-error .type-dot {
+.type-query-error .type-dot {
   background: var(--pk-type-error);
 }
-.app-node-header.type-text .type-dot {
+.type-text .type-dot {
   background: var(--pk-fg-muted);
 }
 
-.app-node-header .type-label {
+.node-indicator .type-label {
   font: 500 12px var(--pk-font-sans);
   text-transform: uppercase;
   letter-spacing: 0.04em;

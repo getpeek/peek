@@ -4,6 +4,7 @@ import { useMemo, useRef } from "react";
 import { useCanvas } from "../../useCanvas";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { NodeHeader } from "../NodeHeader";
+import { NodeIndicator } from "../NodeIndicator";
 import { VARIABLE_NAME_RE } from "../../variables";
 import type { VariableNode as VariableNodeT, VariableRow } from "../../types";
 import "./Variable.css";
@@ -82,7 +83,7 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
         isConnectable
       />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-        <NodeHeader nodeId={id} type='variable' name={headerName} />
+        <NodeHeader nodeId={id} name={headerName} indicator={<NodeIndicator kind='variable' />} />
         <div className='app-node-body nodrag variable-body' ref={bodyRef}>
           <table className='variable-table'>
             <colgroup>

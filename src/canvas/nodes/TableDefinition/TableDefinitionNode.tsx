@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
+import { NodeIndicator } from "../NodeIndicator";
 import { TableDefinitionTable } from "./TableDefinitionTable";
 import type { TableDefinitionNode as TableDefinitionNodeT } from "../../types";
 import "../node.css";
@@ -27,7 +28,11 @@ export function TableDefinitionNode({
       <NodeResizer isVisible={!!selected} minWidth={300} minHeight={140} />
       <HiddenHandles />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-        <NodeHeader nodeId={id} type='table-definition' name={data.table} />
+        <NodeHeader
+          nodeId={id}
+          name={data.table}
+          indicator={<NodeIndicator kind='table-definition' />}
+        />
         <div className='app-node-body nodrag' ref={bodyRef}>
           <TableDefinitionTable table={data.table} columns={data.columns} />
         </div>

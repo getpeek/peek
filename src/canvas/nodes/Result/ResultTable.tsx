@@ -136,9 +136,10 @@ export function ResultTable({
   }
 
   const virtualItems = rowVirtualizer.getVirtualItems();
-  const paddingTop = virtualItems.length > 0 ? virtualItems[0].start : 0;
-  const paddingBottom =
-    virtualItems.length > 0 ? rowVirtualizer.getTotalSize() - virtualItems.at(-1).end : 0;
+  const firstItem = virtualItems[0];
+  const lastItem = virtualItems.at(-1);
+  const paddingTop = firstItem?.start ?? 0;
+  const paddingBottom = lastItem ? rowVirtualizer.getTotalSize() - lastItem.end : 0;
 
   const closeHeaderMenu = () => setHeaderMenu(null);
 

@@ -1,22 +1,19 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { IconIndentIncrease, IconLoader2, IconPlayerPlay } from "@tabler/icons-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useAtomValue } from "jotai";
 import type { editor as MonacoEditor } from "monaco-editor";
 import { SqlEditor } from "../../../shapes/Query/Editor/SqlEditor";
 import { useCanvas } from "../../useCanvas";
 import { useExecuteQueries } from "../../useExecuteQueries";
+import { useGetVariables } from "../../useGetVariables";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
-import { edgesAtom, nodesAtom } from "../../state";
+import { NodeIndicator } from "../NodeIndicator";
 import { sessionStateAtom } from "../../../multiplayer/state";
 import { formatPreservingVars } from "../../variables";
-import type {
-  QueryNode as QueryNodeT,
-  VariableData,
-  VariableNode as VariableNodeT,
-} from "../../types";
+import type { QueryNode as QueryNodeT } from "../../types";
 import { registerQueryEditorFocus } from "./editorFocusRegistry";
 import "./Query.css";
 
@@ -46,34 +43,11 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   const editorFocusedRef = useRef(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   useScrollFallthrough(bodyRef);
-  const allNodes = useAtomValue(nodesAtom);
-  const allEdges = useAtomValue(edgesAtom);
   const session = useAtomValue(sessionStateAtom);
+  const variables = useGetVariables(id);
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
   const isRunning = data.isRunning ?? false;
-
-  const variableNames = useMemo(() => {
-    const incoming = allEdges
-      .filter(e => e.target === id)
-      .slice()
-      .toSorted((a, b) => a.id.localeCompare(b.id));
-    const merged: Record<string, true> = {};
-    for (const edge of incoming) {
-      const source = allNodes.find(
-        (n): n is VariableNodeT => n.id === edge.source && n.type === "variable",
-      );
-      if (!source) {
-        continue;
-      }
-      for (const row of (source.data as VariableData).rows) {
-        if (row.name) {
-          merged[row.name] = true;
-        }
-      }
-    }
-    return Object.keys(merged);
-  }, [id, allNodes, allEdges]);
 
   useEffect(() => registerQueryEditorFocus(id, () => editorRef.current?.focus()), [id]);
 
@@ -156,15 +130,24 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
       >
         <NodeHeader
           nodeId={id}
-          type='query'
           name={firstLine(data.query) || "untitled.sql"}
-          isLive={isLive}
-          onLiveToggle={toggleLive}
-        />
+          indicator={<NodeIndicator kind='query' />}
+        >
+          <button
+            className={`header-icon-btn ${isLive ? "is-live" : ""}`}
+            onClick={e => {
+              e.stopPropagation();
+              toggleLive();
+            }}
+            title={isLive ? "Stop live polling" : "Poll every 10s"}
+          >
+            <span className='live-dot' />
+          </button>
+        </NodeHeader>
         <div className='app-node-body nodrag' ref={bodyRef}>
           <SqlEditor
             query={data.query}
-            variables={variableNames}
+            variables={Object.keys(variables)}
             onMount={(editor, monaco) => {
               editorRef.current = editor;
               editor.onDidFocusEditorWidget(() => {

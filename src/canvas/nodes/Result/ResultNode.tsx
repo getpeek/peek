@@ -15,6 +15,7 @@ import { useCreateChart } from "../../useCreateChart";
 import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
+import { NodeIndicator } from "../NodeIndicator";
 import { ids } from "../../ids";
 import { resultsAtom } from "../../state";
 import type { ChatNode, QueryNode, ResultNode as ResultNodeT } from "../../types";
@@ -135,8 +136,8 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader
           nodeId={id}
-          type='result'
           name={queryName ? `result · ${queryName}` : "result"}
+          indicator={<NodeIndicator kind='result' />}
         />
         <div className='app-node-subtoolbar nodrag'>
           <div className='meta'>
