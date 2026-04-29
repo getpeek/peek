@@ -14,7 +14,7 @@ export const useJoinSessionCommand = (): CommandPaletteResult | null => {
 
   return {
     icon: <IconLogin2 size={16} />,
-    label: <Text size="xs">Join session</Text>,
+    label: <Text size='xs'>Join session</Text>,
     searchAgainst: "join session multiplayer ticket connect collaborate",
     onSelect: () => {
       setOpen(true);

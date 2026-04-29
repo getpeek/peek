@@ -56,5 +56,5 @@ export const useSearch = (query: string): CommandPaletteResult[] => {
     hostSessionCommand,
     ...(joinSessionCommand ? [joinSessionCommand] : []),
   ];
-  return fuzzysort.go(query, searchSpace, { key: "searchAgainst" }).map((result) => result.obj);
+  return fuzzysort.go(query, searchSpace, { key: "searchAgainst" }).map(result => result.obj);
 };

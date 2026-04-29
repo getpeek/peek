@@ -10,12 +10,12 @@ interface ChatInputProps {
 
 export function ChatInput({ value, onChange, onSubmit, onStop, isLoading }: ChatInputProps) {
   return (
-    <div className="chat-input-container">
-      <div className="input-wrapper">
+    <div className='chat-input-container'>
+      <div className='input-wrapper'>
         <textarea
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={(e) => {
+          onChange={e => onChange(e.target.value)}
+          onKeyDown={e => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               if (!isLoading) {
@@ -23,7 +23,7 @@ export function ChatInput({ value, onChange, onSubmit, onStop, isLoading }: Chat
               }
             }
           }}
-          placeholder="Ask a question about your dataset..."
+          placeholder='Ask a question about your dataset...'
           className={`chat-input ${isLoading ? "loading" : ""}`}
           rows={1}
           disabled={isLoading}

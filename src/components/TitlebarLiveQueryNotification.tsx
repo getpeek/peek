@@ -11,19 +11,19 @@ export const TitlebarLiveQueryNotification = () => {
     return null;
   }
 
-  const liveNodes = nodes.filter((node) => node.type === "query" && node.data.liveIntervalMs) ?? [];
+  const liveNodes = nodes.filter(node => node.type === "query" && node.data.liveIntervalMs) ?? [];
 
   if (liveNodes.length === 0) {
     return null;
   }
 
   const killLiveQueries = () => {
-    liveNodes.forEach((node) => canvas.updateNodeData(node.id, { liveIntervalMs: null }));
+    liveNodes.forEach(node => canvas.updateNodeData(node.id, { liveIntervalMs: null }));
   };
 
   return (
-    <button onClick={killLiveQueries} className="liveQueryNotification is-live">
-      <span className="live-dot" />
+    <button onClick={killLiveQueries} className='liveQueryNotification is-live'>
+      <span className='live-dot' />
       {liveNodes.length} live {liveNodes.length === 1 ? "query" : "queries"}
     </button>
   );

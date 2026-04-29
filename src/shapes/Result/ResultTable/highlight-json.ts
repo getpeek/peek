@@ -12,9 +12,9 @@ export function syntaxHighlight(json: string) {
   }
 
   formattedJson = formattedJson
-    .replaceAll('&', "&amp;")
-    .replaceAll('<', "&lt;")
-    .replaceAll('>', "&gt;");
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 
   return formattedJson.replaceAll(
     /("(?:[^"\\]|\\.)*")\s*(:)?|(\btrue\b|\bfalse\b|\bnull\b|\bundefined\b)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|([{}[\],])/g,

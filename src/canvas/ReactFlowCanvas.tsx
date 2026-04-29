@@ -88,20 +88,20 @@ function ReactFlowCanvasInner() {
 
   const onNodesChange = useCallback(
     (changes: NodeChange<AppNode>[]) => {
-      setNodes((ns) => applyNodeChanges(changes, ns));
+      setNodes(ns => applyNodeChanges(changes, ns));
     },
     [setNodes],
   );
 
   const onEdgesChange = useCallback(
     (changes: EdgeChange<AppEdge>[]) => {
-      setEdges((es) => applyEdgeChanges(changes, es));
+      setEdges(es => applyEdgeChanges(changes, es));
     },
     [setEdges],
   );
 
   const isValidVariableConnection = useCallback<IsValidConnection<AppEdge>>(
-    (connection) => {
+    connection => {
       if (!connection.source || !connection.target || connection.source === connection.target) {
         return false;
       }
@@ -130,18 +130,18 @@ function ReactFlowCanvasInner() {
 
   const styledEdges = useMemo(() => {
     const selectedQueryIds = new Set(
-      nodes.filter((n) => n.type === "query" && n.selected).map((n) => n.id),
+      nodes.filter(n => n.type === "query" && n.selected).map(n => n.id),
     );
     const liveQueryIds = new Set(
       nodes
-        .filter((n) => n.type === "query" && (n.data as QueryData).liveIntervalMs !== null)
-        .map((n) => n.id),
+        .filter(n => n.type === "query" && (n.data as QueryData).liveIntervalMs !== null)
+        .map(n => n.id),
     );
     if (selectedQueryIds.size === 0 && liveQueryIds.size === 0) {
       return edges;
     }
-    const resultIds = new Set(nodes.filter((n) => n.type === "result").map((n) => n.id));
-    return edges.map((e) => {
+    const resultIds = new Set(nodes.filter(n => n.type === "result").map(n => n.id));
+    return edges.map(e => {
       if (!resultIds.has(e.target)) {
         return e;
       }
@@ -218,7 +218,7 @@ function ReactFlowCanvasInner() {
         defaultViewport={initialViewport}
         colorMode={isDarkMode ? "dark" : "light"}
         deleteKeyCode={["Backspace", "Delete"]}
-        multiSelectionKeyCode="Shift"
+        multiSelectionKeyCode='Shift'
         onlyRenderVisibleElements
         selectionOnDrag={placeMode !== "draw"}
         nodesDraggable={placeMode !== "draw"}
@@ -228,7 +228,7 @@ function ReactFlowCanvasInner() {
         panOnScroll
         zoomOnScroll={false}
         zoomOnPinch
-        panActivationKeyCode="Space"
+        panActivationKeyCode='Space'
         proOptions={{ hideAttribution: true }}
         minZoom={0.1}
         maxZoom={4}
@@ -242,8 +242,8 @@ function ReactFlowCanvasInner() {
       >
         <Background
           variant={BackgroundVariant.Dots}
-          bgColor="rgba(0, 0, 0, 0.7)"
-          color="#333"
+          bgColor='rgba(0, 0, 0, 0.7)'
+          color='#333'
           gap={24}
           size={1.4}
         />

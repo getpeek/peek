@@ -1,0 +1,97 @@
+.app-node table {
+  font-family: var(--pk-font-mono);
+  font-size: 12px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.app-node table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--pk-node-bg) !important;
+  color: var(--pk-fg-muted) !important;
+  font-weight: 500;
+  font-size: 11px !important;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--pk-node-border) !important;
+  padding: 9px 14px !important;
+  text-align: left;
+  white-space: nowrap;
+  user-select: none;
+  z-index: 1;
+}
+
+.app-node table tbody td {
+  padding: 7px 14px !important;
+  color: var(--pk-fg);
+  border-bottom: 1px solid var(--pk-node-border) !important;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  vertical-align: top;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+.col-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  z-index: 2;
+}
+.col-resize-handle:hover,
+.col-resize-handle:active {
+  background: var(--pk-node-border);
+}
+
+.app-node table tbody tr:hover td {
+  background: var(--pk-node-bg-2);
+}
+
+.app-node table thead th.pk .col-name {
+  color: var(--pk-yellow);
+}
+.app-node table thead th.fk .col-name {
+  color: var(--pk-blue);
+}
+
+.app-node table tbody td.pk,
+.app-node table tbody td.pk .mantine-Text-root {
+  color: var(--pk-yellow) !important;
+}
+.app-node table tbody td.fk,
+.app-node table tbody td.fk .mantine-Text-root {
+  color: var(--pk-blue) !important;
+}
+
+.app-node table tbody td.pk:hover,
+.app-node table tbody td.fk:hover {
+  background: var(--pk-accent-bg);
+  cursor: pointer;
+}
+
+.col-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.col-meta .col-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pk-fg);
+  font: 500 11px var(--pk-font-mono);
+}
+.col-meta .col-type {
+  font: 400 9.5px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

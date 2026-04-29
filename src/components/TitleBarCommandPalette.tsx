@@ -8,9 +8,9 @@ export const TitleBarCommandPalette = () => {
 
   return (
     <button
-      className="titlebar-cmdk-hint"
+      className='titlebar-cmdk-hint'
       onClick={() => setOpen(true)}
-      aria-label="Open command palette"
+      aria-label='Open command palette'
     >
       <IconSearch size={12} stroke={2} />
     </button>

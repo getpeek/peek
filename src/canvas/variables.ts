@@ -52,7 +52,7 @@ export function collectVariablesFor(
 ): Record<string, string> {
   const edges = canvas
     .getEdges()
-    .filter((e) => e.target === queryNodeId)
+    .filter(e => e.target === queryNodeId)
     .slice()
     .toSorted((a, b) => a.id.localeCompare(b.id));
 

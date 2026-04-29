@@ -4,6 +4,12 @@
   padding: 0;
 }
 
+@font-face {
+  font-display: block;
+  font-family: "Chewy";
+  src: url("/assets/chewy.ttf");
+}
+
 body {
   margin: 0;
   padding: 0;

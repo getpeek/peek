@@ -27,7 +27,7 @@ export function useChatTools(opts: { nodeId: string }): ToolHandlers {
 
   return useMemo<ToolHandlers>(() => {
     return {
-      getAdditionalContext: async (args) => {
+      getAdditionalContext: async args => {
         const { query } = args as { query: string };
         const toolResult = await getAdditionalContextTool.func({ query });
         if (!toolResult.success) {
@@ -48,7 +48,7 @@ export function useChatTools(opts: { nodeId: string }): ToolHandlers {
             height: NODE_H,
             data: { query: toolResult.query },
           };
-          setResults((prev) => ({ ...prev, [resultId]: toolResult.data }));
+          setResults(prev => ({ ...prev, [resultId]: toolResult.data }));
           canvas.addNode(newResult);
           canvas.connect(nodeId, resultId);
           canvas.selectOnly(resultId);
@@ -58,7 +58,7 @@ export function useChatTools(opts: { nodeId: string }): ToolHandlers {
         return `Executed query "${toolResult.query}"\n\n${toCsv(toolResult.data)}`;
       },
 
-      branchToNewConversation: async (args) => {
+      branchToNewConversation: async args => {
         const { query } = args as { query: string };
         const queryText = await branchToNewConversationTool.func({ query });
         const sourceNode = canvas.getNode(nodeId);
@@ -94,7 +94,7 @@ export function useChatTools(opts: { nodeId: string }): ToolHandlers {
           message: "Query created!",
           timestamp: Date.now(),
         };
-        canvas.updateNodeData<ChatData>(nodeId, (d) => ({
+        canvas.updateNodeData<ChatData>(nodeId, d => ({
           ...d,
           messages: [...d.messages, systemMessage],
         }));

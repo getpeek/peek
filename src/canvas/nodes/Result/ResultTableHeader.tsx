@@ -30,25 +30,25 @@ export function ResultTableHeader({
   return (
     <Table.Th
       className={headerClasses.join(" ")}
-      onContextMenu={(e) => {
+      onContextMenu={e => {
         e.preventDefault();
         e.stopPropagation();
         onContextMenu(e, columnIdx, header);
       }}
     >
-      <div className="col-meta">
-        <span className="col-name">
+      <div className='col-meta'>
+        <span className='col-name'>
           {header}
-          {isPk && <span className="col-tag pk">PK</span>}
-          {isFk && <span className="col-tag fk">FK</span>}
+          {isPk && <span className='col-tag pk'>PK</span>}
+          {isFk && <span className='col-tag fk'>FK</span>}
         </span>
-        {upperType && <span className="col-type">{upperType}</span>}
+        {upperType && <span className='col-type'>{upperType}</span>}
       </div>
       <div
-        className="col-resize-handle"
-        onPointerDown={(e) => onResizeStart(e, header)}
-        onClick={(e) => e.stopPropagation()}
-        onDoubleClick={(e) => e.stopPropagation()}
+        className='col-resize-handle'
+        onPointerDown={e => onResizeStart(e, header)}
+        onClick={e => e.stopPropagation()}
+        onDoubleClick={e => e.stopPropagation()}
       />
     </Table.Th>
   );

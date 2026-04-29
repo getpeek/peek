@@ -6,7 +6,6 @@ import { useScrollFallthrough } from "../useScrollFallthrough";
 import { NodeHeader } from "../NodeHeader";
 import { VARIABLE_NAME_RE } from "../../variables";
 import type { VariableNode as VariableNodeT, VariableRow } from "../../types";
-import "../node.css";
 import "./Variable.css";
 
 const DEFAULT_W = 280;
@@ -47,7 +46,7 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
   }, [data.rows]);
 
   const headerName = useMemo(() => {
-    const named = data.rows.filter((r) => r.name).length;
+    const named = data.rows.filter(r => r.name).length;
     return named === 0 ? "no variables" : `${named} variable${named === 1 ? "" : "s"}`;
   }, [data.rows]);
 
@@ -55,41 +54,41 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
     <>
       <NodeResizer isVisible={!!selected} minWidth={220} minHeight={140} />
       <Handle
-        id="top"
-        type="source"
+        id='top'
+        type='source'
         position={Position.Top}
-        className="variable-edge-handle variable-edge-handle--top"
+        className='variable-edge-handle variable-edge-handle--top'
         isConnectable
       />
       <Handle
-        id="right"
-        type="source"
+        id='right'
+        type='source'
         position={Position.Right}
-        className="variable-edge-handle variable-edge-handle--right"
+        className='variable-edge-handle variable-edge-handle--right'
         isConnectable
       />
       <Handle
-        id="bottom"
-        type="source"
+        id='bottom'
+        type='source'
         position={Position.Bottom}
-        className="variable-edge-handle variable-edge-handle--bottom"
+        className='variable-edge-handle variable-edge-handle--bottom'
         isConnectable
       />
       <Handle
-        id="left"
-        type="source"
+        id='left'
+        type='source'
         position={Position.Left}
-        className="variable-edge-handle variable-edge-handle--left"
+        className='variable-edge-handle variable-edge-handle--left'
         isConnectable
       />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-        <NodeHeader nodeId={id} type="variable" name={headerName} />
-        <div className="app-node-body nodrag variable-body" ref={bodyRef}>
-          <table className="variable-table">
+        <NodeHeader nodeId={id} type='variable' name={headerName} />
+        <div className='app-node-body nodrag variable-body' ref={bodyRef}>
+          <table className='variable-table'>
             <colgroup>
-              <col className="variable-col-name" />
-              <col className="variable-col-value" />
-              <col className="variable-col-actions" />
+              <col className='variable-col-name' />
+              <col className='variable-col-value' />
+              <col className='variable-col-actions' />
             </colgroup>
             <tbody>
               {data.rows.map((row, i) => {
@@ -98,37 +97,37 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
                   (!VARIABLE_NAME_RE.test(row.name) || nameCounts[row.name] > 1);
                 return (
                   <tr key={i}>
-                    <td className="variable-name-cell">
-                      <div className="variable-name-wrap">
-                        <span className="at-sigil">@</span>
+                    <td className='variable-name-cell'>
+                      <div className='variable-name-wrap'>
+                        <span className='at-sigil'>@</span>
                         <input
-                          type="text"
+                          type='text'
                           className={`variable-input ${nameInvalid ? "invalid" : ""}`}
                           value={row.name}
-                          placeholder="name"
-                          autoComplete="off"
+                          placeholder='name'
+                          autoComplete='off'
                           spellCheck={false}
-                          onChange={(e) => setField(i, "name", e.currentTarget.value)}
+                          onChange={e => setField(i, "name", e.currentTarget.value)}
                         />
                       </div>
                     </td>
-                    <td className="variable-value-cell">
+                    <td className='variable-value-cell'>
                       <input
-                        type="text"
-                        className="variable-input"
+                        type='text'
+                        className='variable-input'
                         value={row.value}
-                        placeholder="value"
-                        autoComplete="off"
+                        placeholder='value'
+                        autoComplete='off'
                         spellCheck={false}
-                        onChange={(e) => setField(i, "value", e.currentTarget.value)}
+                        onChange={e => setField(i, "value", e.currentTarget.value)}
                       />
                     </td>
-                    <td className="variable-actions-cell">
+                    <td className='variable-actions-cell'>
                       <button
-                        type="button"
-                        className="variable-row-delete"
+                        type='button'
+                        className='variable-row-delete'
                         onClick={() => removeRow(i)}
-                        title="Remove row"
+                        title='Remove row'
                       >
                         <IconTrash size={12} />
                       </button>
@@ -139,15 +138,15 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
             </tbody>
           </table>
         </div>
-        <div className="app-node-footer nodrag">
-          <button className="btn btn-ghost" onClick={addRow}>
+        <div className='app-node-footer nodrag'>
+          <button className='btn btn-ghost' onClick={addRow}>
             <IconPlus size={13} />
             Add variable
           </button>
           <button
-            type="button"
+            type='button'
             className={`variable-global-toggle ${data.isGlobal ? "active" : ""}`}
-            title="Make this variable node global"
+            title='Make this variable node global'
             onClick={() => {
               const next = !data.isGlobal;
               canvas.updateNodeData<VariableNodeT["data"]>(id, {

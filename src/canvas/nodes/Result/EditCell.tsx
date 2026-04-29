@@ -94,25 +94,25 @@ export function EditCell({
     };
 
     return (
-      <div className="edit-wrapper">
+      <div className='edit-wrapper'>
         <select
           ref={selectRef}
-          className="bool-select"
+          className='bool-select'
           disabled={saving}
           value={current}
-          onChange={(e) => {
+          onChange={e => {
             const next = e.target.value as "true" | "false" | "null";
             onChange(next === "null" ? "" : next);
           }}
           onKeyDown={onSelectKeyDown}
-          onClick={(e) => e.stopPropagation()}
-          onDoubleClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
+          onDoubleClick={e => e.stopPropagation()}
         >
-          <option value="true">TRUE</option>
-          <option value="false">FALSE</option>
-          <option value="null">NULL</option>
+          <option value='true'>TRUE</option>
+          <option value='false'>FALSE</option>
+          <option value='null'>NULL</option>
         </select>
-        {error && <div className="edit-error">{error}</div>}
+        {error && <div className='edit-error'>{error}</div>}
       </div>
     );
   }
@@ -135,36 +135,36 @@ export function EditCell({
   };
 
   return (
-    <div className="edit-wrapper">
-      <div className="edit-row">
+    <div className='edit-wrapper'>
+      <div className='edit-row'>
         {isMultiline ? (
           <textarea ref={inputRef as React.RefObject<HTMLTextAreaElement>} rows={3} {...common} />
         ) : isNumeric ? (
           <input
             ref={inputRef as React.RefObject<HTMLInputElement>}
-            type="number"
-            inputMode="decimal"
-            step="any"
+            type='number'
+            inputMode='decimal'
+            step='any'
             {...common}
           />
         ) : (
-          <input ref={inputRef as React.RefObject<HTMLInputElement>} type="text" {...common} />
+          <input ref={inputRef as React.RefObject<HTMLInputElement>} type='text' {...common} />
         )}
         <button
-          type="button"
-          className="edit-clear-null"
+          type='button'
+          className='edit-clear-null'
           disabled={saving}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={(e) => {
+          onMouseDown={e => e.preventDefault()}
+          onClick={e => {
             e.stopPropagation();
             clearToNull();
           }}
-          title="Set value to NULL"
+          title='Set value to NULL'
         >
           NULL
         </button>
       </div>
-      {error && <div className="edit-error">{error}</div>}
+      {error && <div className='edit-error'>{error}</div>}
     </div>
   );
 }

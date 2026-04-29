@@ -90,7 +90,7 @@ async function runOneQuery(args: RunOneQueryArgs): Promise<string | null> {
 
   const { resolved, missing } = substituteVariables(query, variables);
   if (missing.length > 0) {
-    throw new Error(`Undefined variables: ${missing.map((name) => "@" + name).join(", ")}`);
+    throw new Error(`Undefined variables: ${missing.map(name => "@" + name).join(", ")}`);
   }
 
   const response = (await invoke("get_results", { query: resolved })) as string;
@@ -103,13 +103,13 @@ async function runOneQuery(args: RunOneQueryArgs): Promise<string | null> {
   const resultNodeId = ids.result(sourceNode.id, index);
   const errorNodeId = ids.error(sourceNode.id);
 
-  setResults((prev) => ({ ...prev, [resultNodeId]: result }));
+  setResults(prev => ({ ...prev, [resultNodeId]: result }));
 
   const existingResult = canvas.getNode(resultNodeId);
   if (existingResult) {
     canvas.updateNode(
       resultNodeId,
-      (node) => ({ ...node, data: { ...(node.data as ResultData), query } }) as AppNode,
+      node => ({ ...node, data: { ...(node.data as ResultData), query } }) as AppNode,
     );
   } else {
     const { x, y } = nextPosition(canvas, sourceNode, previousNodeId);
@@ -148,7 +148,7 @@ function recordQueryError(
 
   const existing = canvas.getNode(errorNodeId);
   if (existing) {
-    canvas.updateNode(errorNodeId, (node) => ({ ...node, data: errorData }) as AppNode);
+    canvas.updateNode(errorNodeId, node => ({ ...node, data: errorData }) as AppNode);
     return null;
   }
 

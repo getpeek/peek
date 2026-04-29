@@ -23,7 +23,7 @@ export function subscribeDocumentMutations(fn: DocumentMutationListener): () => 
 }
 
 export const documentAtom = atom(
-  (get) => get(_documentBaseAtom),
+  get => get(_documentBaseAtom),
   (get, set, updater: CanvasDocument | ((prev: CanvasDocument) => CanvasDocument)) => {
     const prev = get(_documentBaseAtom);
     const next =
@@ -64,7 +64,7 @@ export function subscribeResultsMutations(fn: ResultsMutationListener): () => vo
 }
 
 export const resultsAtom = atom(
-  (get) => get(_resultsBaseAtom),
+  get => get(_resultsBaseAtom),
   (
     get,
     set,
@@ -90,7 +90,7 @@ export const resultsAtom = atom(
   },
 );
 
-export const activePageAtom = atom<PageState>((get) => {
+export const activePageAtom = atom<PageState>(get => {
   const doc = get(documentAtom);
   return doc.pages[doc.activePageId];
 });
@@ -102,7 +102,7 @@ function applyUpdater<T>(prev: T, updater: Updater<T>): T {
 }
 
 export const nodesAtom = atom(
-  (get) => get(activePageAtom).nodes,
+  get => get(activePageAtom).nodes,
   (get, set, updater: Updater<AppNode[]>) => {
     const doc = get(documentAtom);
     const page = doc.pages[doc.activePageId];
@@ -118,7 +118,7 @@ export const nodesAtom = atom(
 );
 
 export const edgesAtom = atom(
-  (get) => get(activePageAtom).edges,
+  get => get(activePageAtom).edges,
   (get, set, updater: Updater<AppEdge[]>) => {
     const doc = get(documentAtom);
     const page = doc.pages[doc.activePageId];
@@ -134,7 +134,7 @@ export const edgesAtom = atom(
 );
 
 export const viewportAtom = atom(
-  (get) => get(activePageAtom).viewport,
+  get => get(activePageAtom).viewport,
   (get, set, updater: Updater<Viewport>) => {
     const doc = get(documentAtom);
     const page = doc.pages[doc.activePageId];

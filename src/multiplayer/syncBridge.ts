@@ -2,11 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getDefaultStore, useAtomValue } from "jotai";
 import { useEffect } from "react";
-import {
-  participantsAtom,
-  remoteCursorsAtom,
-  sessionStateAtom,
-} from "./state";
+import { participantsAtom, remoteCursorsAtom, sessionStateAtom } from "./state";
 import { type MultiplayerControls, requestRemoteExecution } from "./syncBridgeUtils";
 import { useSyncBridge } from "./useSyncBridge";
 import { useMultiplayerControls } from "./useMultiplayerControls";
@@ -27,7 +23,7 @@ function useGossipBridge(): void {
   useEffect(() => {
     let unlistenRecv: UnlistenFn | undefined;
 
-    listen<GossipRecvPayload>("multiplayer:gossip-recv", (event) => {
+    listen<GossipRecvPayload>("multiplayer:gossip-recv", event => {
       const store = getDefaultStore();
       const session = store.get(sessionStateAtom);
       if (!session) {
@@ -46,7 +42,7 @@ function useGossipBridge(): void {
         if (!Number.isFinite(flowX) || !Number.isFinite(flowY) || !pageId) {
           return;
         }
-        store.set(remoteCursorsAtom, (prev) => ({
+        store.set(remoteCursorsAtom, prev => ({
           ...prev,
           [author]: { flowX, flowY, pageId, updatedAt: now },
         }));
@@ -54,7 +50,7 @@ function useGossipBridge(): void {
         // updates (every 5s) get pruned at 15s after just three dropped
         // gossip packets even though cursors are flowing fine. Throttle to
         // once per peer per 2s so SharePopover doesn't re-render at 15Hz.
-        store.set(participantsAtom, (prev) => {
+        store.set(participantsAtom, prev => {
           const peer = prev[author];
           if (!peer) {
             return prev;
@@ -68,7 +64,7 @@ function useGossipBridge(): void {
         const name = typeof payload.name === "string" ? payload.name : "Peer";
         const color = typeof payload.color === "string" ? payload.color : "#888";
         const isHost = Boolean(payload.isHost);
-        store.set(participantsAtom, (prev) => ({
+        store.set(participantsAtom, prev => ({
           ...prev,
           [author]: {
             author,
@@ -81,14 +77,14 @@ function useGossipBridge(): void {
       } else if (payload.type === "leave") {
         // Peer is shutting down cleanly; drop them immediately rather than
         // waiting for the 15s prune timeout.
-        store.set(participantsAtom, (prev) => {
+        store.set(participantsAtom, prev => {
           if (!(author in prev)) {
             return prev;
           }
           const { [author]: _gone, ...rest } = prev;
           return rest;
         });
-        store.set(remoteCursorsAtom, (prev) => {
+        store.set(remoteCursorsAtom, prev => {
           if (!(author in prev)) {
             return prev;
           }
@@ -96,7 +92,7 @@ function useGossipBridge(): void {
           return rest;
         });
       }
-    }).then((u) => {
+    }).then(u => {
       unlistenRecv = u;
     });
 
@@ -129,7 +125,7 @@ function useGossipBridge(): void {
     const prune = window.setInterval(() => {
       const store = getDefaultStore();
       const cutoff = Date.now() - PEER_STALE_MS;
-      store.set(participantsAtom, (prev) => {
+      store.set(participantsAtom, prev => {
         let changed = false;
         const next: Record<string, Peer> = {};
         for (const [author, peer] of Object.entries(prev)) {
@@ -141,7 +137,7 @@ function useGossipBridge(): void {
         }
         return changed ? next : prev;
       });
-      store.set(remoteCursorsAtom, (prev) => {
+      store.set(remoteCursorsAtom, prev => {
         let changed = false;
         const next: typeof prev = {};
         for (const [author, cur] of Object.entries(prev)) {

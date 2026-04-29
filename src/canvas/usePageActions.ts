@@ -21,7 +21,7 @@ export function usePageActions(): PageActions {
   const doc = useAtomValue(documentAtom);
   const setPendingClose = useSetAtom(pendingPageCloseAtom);
 
-  const pages = doc.pageOrder.map((id) => doc.pages[id]).filter((p): p is PageState => !!p);
+  const pages = doc.pageOrder.map(id => doc.pages[id]).filter((p): p is PageState => !!p);
 
   const cycle = (delta: number) => {
     if (!canvas || doc.pageOrder.length <= 1) {
@@ -55,11 +55,11 @@ export function usePageActions(): PageActions {
     pages,
     activePageId: doc.activePageId,
     canClose: doc.pageOrder.length > 1,
-    newPage: (name) => canvas?.addPage(name),
+    newPage: name => canvas?.addPage(name),
     closePage: requestClose,
     closeActivePage: () => requestClose(doc.activePageId),
-    switchPage: (pageId) => canvas?.switchPage(pageId),
-    goToPageByIndex: (index) => {
+    switchPage: pageId => canvas?.switchPage(pageId),
+    goToPageByIndex: index => {
       if (!canvas) {
         return;
       }

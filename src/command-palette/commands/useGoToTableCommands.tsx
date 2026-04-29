@@ -16,9 +16,9 @@ export const useGoToTableCommands = (): CommandPaletteResult[] => {
 
   return nodes
     .filter((n): n is TableDefinitionNode => n.type === "table-definition")
-    .map((node) => ({
+    .map(node => ({
       icon: <IconTable size={16} />,
-      label: <Text size="xs">{node.data.table}</Text>,
+      label: <Text size='xs'>{node.data.table}</Text>,
       searchAgainst: `table ${node.data.table}`,
       onSelect: () => {
         if (!canvas) {

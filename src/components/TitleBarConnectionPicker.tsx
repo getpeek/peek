@@ -43,16 +43,16 @@ export const TitleBarConnectionPicker: React.FC = () => {
   };
 
   return (
-    <Popover radius="lg" trapFocus>
+    <Popover radius='lg' trapFocus>
       <Popover.Target>
-        <div className="titlebar-connection-picker">
+        <div className='titlebar-connection-picker'>
           {activeConnection ? (
-            <button className="connection-button">
+            <button className='connection-button'>
               <div
-                className="connection-indicator"
+                className='connection-indicator'
                 style={{ backgroundColor: activeConnection.connection.color }}
               />
-              <Text size="xs" className="connection-text">
+              <Text size='xs' className='connection-text'>
                 {activeConnection.workspaceName}
                 <span style={{ color: "var(--pk-fg-muted)", fontWeight: 400 }}>
                   {" · "}
@@ -61,15 +61,15 @@ export const TitleBarConnectionPicker: React.FC = () => {
               </Text>
             </button>
           ) : (
-            <button className="connection-button no-connection">
-              <Text size="xs" className="connection-text">
+            <button className='connection-button no-connection'>
+              <Text size='xs' className='connection-text'>
                 No connection
               </Text>
             </button>
           )}
         </div>
       </Popover.Target>
-      <Popover.Dropdown bg="transparent" bd="none" p={0} style={{ backdropFilter: "blur(10px)" }}>
+      <Popover.Dropdown bg='transparent' bd='none' p={0} style={{ backdropFilter: "blur(10px)" }}>
         <WorkspacePopover />
       </Popover.Dropdown>
     </Popover>

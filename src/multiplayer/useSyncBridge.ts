@@ -92,7 +92,7 @@ export function useSyncBridge(): void {
     let unlistenDisconnected: UnlistenFn | undefined;
     let unlistenReconnected: UnlistenFn | undefined;
 
-    listen<DocUpdatePayload>("multiplayer:doc-update", (event) => {
+    listen<DocUpdatePayload>("multiplayer:doc-update", event => {
       const store = getDefaultStore();
       const currentSession = store.get(sessionStateAtom);
       if (!currentSession) {
@@ -104,14 +104,14 @@ export function useSyncBridge(): void {
       if (kind === "doc") {
         isApplyingRemoteRef.current = true;
         try {
-          store.set(documentAtom, (d) => applyOperation(d, { kind: "put", key, value }));
+          store.set(documentAtom, d => applyOperation(d, { kind: "put", key, value }));
         } finally {
           isApplyingRemoteRef.current = false;
         }
       } else if (kind === "result") {
         isApplyingRemoteRef.current = true;
         try {
-          store.set(resultsAtom, (r) => applyResultOperation(r, { kind: "put", key, value }));
+          store.set(resultsAtom, r => applyResultOperation(r, { kind: "put", key, value }));
         } finally {
           isApplyingRemoteRef.current = false;
         }
@@ -132,11 +132,11 @@ export function useSyncBridge(): void {
           console.error("multiplayer: bad schema/index payload:", e);
         }
       }
-    }).then((u) => {
+    }).then(u => {
       unlistenUpdate = u;
     });
 
-    listen<DocDeletePayload>("multiplayer:doc-delete", (event) => {
+    listen<DocDeletePayload>("multiplayer:doc-delete", event => {
       const store = getDefaultStore();
       if (!store.get(sessionStateAtom)) {
         return;
@@ -146,21 +146,21 @@ export function useSyncBridge(): void {
       if (kind === "doc") {
         isApplyingRemoteRef.current = true;
         try {
-          store.set(documentAtom, (d) => applyOperation(d, { kind: "del", key }));
+          store.set(documentAtom, d => applyOperation(d, { kind: "del", key }));
         } finally {
           isApplyingRemoteRef.current = false;
         }
       } else if (kind === "result") {
         isApplyingRemoteRef.current = true;
         try {
-          store.set(resultsAtom, (r) => applyResultOperation(r, { kind: "del", key }));
+          store.set(resultsAtom, r => applyResultOperation(r, { kind: "del", key }));
         } finally {
           isApplyingRemoteRef.current = false;
         }
       }
       // exec-request deletes are confirmation that the host processed a
       // request; nothing to do on the joiner side.
-    }).then((u) => {
+    }).then(u => {
       unlistenDelete = u;
     });
 
@@ -171,7 +171,7 @@ export function useSyncBridge(): void {
         return;
       }
       store.set(sessionStateAtom, { ...s, status: "active" });
-    }).then((u) => {
+    }).then(u => {
       unlistenSync = u;
     });
 
@@ -188,7 +188,7 @@ export function useSyncBridge(): void {
         return;
       }
       store.set(sessionStateAtom, { ...s, status: "reconnecting" });
-    }).then((u) => {
+    }).then(u => {
       unlistenDisconnected = u;
     });
 
@@ -202,7 +202,7 @@ export function useSyncBridge(): void {
         return;
       }
       store.set(sessionStateAtom, { ...s, status: "active" });
-    }).then((u) => {
+    }).then(u => {
       unlistenReconnected = u;
     });
 
@@ -224,7 +224,7 @@ export function useSyncBridge(): void {
       store.set(sessionStateAtom, null);
       store.set(remoteCursorsAtom, {});
       store.set(participantsAtom, {});
-    }).then((u) => {
+    }).then(u => {
       unlistenEnded = u;
     });
 

@@ -128,7 +128,7 @@ export function useSchemaSimulation({
     // Snapshot the schema sub-graph for the simulation. Coordinates are
     // tracked at the node *centre* in the simulation but stored as the
     // top-left corner in React Flow.
-    const simNodes: SimNode[] = schemaNodes.map((n) => {
+    const simNodes: SimNode[] = schemaNodes.map(n => {
       const w = n.width ?? DEFAULT_W;
       const h = n.height ?? DEFAULT_H;
       return {
@@ -140,18 +140,18 @@ export function useSchemaSimulation({
       };
     });
 
-    const simNodeById = new Map(simNodes.map((n) => [n.id, n]));
-    const presentIds = new Set(simNodes.map((n) => n.id));
+    const simNodeById = new Map(simNodes.map(n => [n.id, n]));
+    const presentIds = new Set(simNodes.map(n => n.id));
 
     const simLinks: SimLink[] = referencePairs
-      .filter((l) => presentIds.has(l.source) && presentIds.has(l.target))
-      .map((l) => ({ source: l.source, target: l.target }));
+      .filter(l => presentIds.has(l.source) && presentIds.has(l.target))
+      .map(l => ({ source: l.source, target: l.target }));
 
     const sim = forceSimulation<SimNode, SimLink>(simNodes)
       .force(
         "link",
         forceLink<SimNode, SimLink>(simLinks)
-          .id((d) => d.id)
+          .id(d => d.id)
           .distance(LINK_DISTANCE)
           .strength(LINK_STRENGTH),
       )
@@ -163,9 +163,9 @@ export function useSchemaSimulation({
       .alphaDecay(ALPHA_DECAY);
 
     sim.on("tick", () => {
-      setNodes((ns) => {
+      setNodes(ns => {
         let mutated = false;
-        const next = ns.map((n) => {
+        const next = ns.map(n => {
           if (!isSchemaNode(n.id) || draggingRef.current.has(n.id)) {
             return n;
           }
@@ -207,7 +207,7 @@ export function useSchemaSimulation({
     if (!sim) {
       return;
     }
-    const sn = sim.nodes().find((s) => s.id === node.id);
+    const sn = sim.nodes().find(s => s.id === node.id);
     if (!sn) {
       return;
     }
@@ -226,7 +226,7 @@ export function useSchemaSimulation({
     if (!sim) {
       return;
     }
-    const sn = sim.nodes().find((s) => s.id === node.id);
+    const sn = sim.nodes().find(s => s.id === node.id);
     if (!sn) {
       return;
     }
@@ -245,7 +245,7 @@ export function useSchemaSimulation({
     if (!sim) {
       return;
     }
-    const sn = sim.nodes().find((s) => s.id === node.id);
+    const sn = sim.nodes().find(s => s.id === node.id);
     if (sn) {
       sn.fx = null;
       sn.fy = null;

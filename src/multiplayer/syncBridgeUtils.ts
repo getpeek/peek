@@ -46,9 +46,9 @@ export function pushOperation(op: Operation): void {
     invoke("mp_doc_put", {
       key: op.key,
       valueB64: bytesToB64(op.value),
-    }).catch((e) => console.error("mp_doc_put failed:", op.key, e));
+    }).catch(e => console.error("mp_doc_put failed:", op.key, e));
   } else {
-    invoke("mp_doc_del", { key: op.key }).catch((e) =>
+    invoke("mp_doc_del", { key: op.key }).catch(e =>
       console.error("mp_doc_del failed:", op.key, e),
     );
   }
@@ -84,16 +84,14 @@ export function pushSchemaToLspCache(schema: Schema): void {
     Object.keys(schema.references).length === 0 &&
     Object.keys(schema.primaryKeys).length === 0;
   if (isEmpty) {
-    invoke("lsp_clear_schema_cache").catch((e) =>
-      console.error("lsp_clear_schema_cache failed:", e),
-    );
+    invoke("lsp_clear_schema_cache").catch(e => console.error("lsp_clear_schema_cache failed:", e));
     return;
   }
   invoke("lsp_set_schema_cache", {
     tables: schema.tables,
     references: schema.references,
     primaryKeys: schema.primaryKeys,
-  }).catch((e) => console.error("lsp_set_schema_cache failed:", e));
+  }).catch(e => console.error("lsp_set_schema_cache failed:", e));
 }
 
 /**

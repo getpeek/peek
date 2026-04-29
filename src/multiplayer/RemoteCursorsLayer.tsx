@@ -15,7 +15,7 @@ export function RemoteCursorsLayer() {
   const participants = useAtomValue(participantsAtom);
   const activePageId = useAtomValue(documentAtom).activePageId;
   // Subscribe to viewport so we re-render on pan/zoom.
-  const transform = useStore((s) => s.transform);
+  const transform = useStore(s => s.transform);
 
   if (!session) {
     return null;
@@ -30,7 +30,7 @@ export function RemoteCursorsLayer() {
   }
 
   return (
-    <Panel position="top-left" className="remote-cursors-panel">
+    <Panel position='top-left' className='remote-cursors-panel'>
       {entries.map(([author, cur]) => {
         const peer = participants[author];
         const color = peer?.color ?? "#888";
@@ -40,24 +40,24 @@ export function RemoteCursorsLayer() {
         return (
           <div
             key={author}
-            className="remote-cursor"
+            className='remote-cursor'
             style={{ transform: `translate(${screenX}px, ${screenY}px)` }}
           >
             <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              className="remote-cursor-arrow"
+              width='18'
+              height='18'
+              viewBox='0 0 18 18'
+              className='remote-cursor-arrow'
               aria-hidden
             >
               <path
-                d="M2 2 L2 14 L6 11 L9 16 L11 15 L8 10 L13 10 Z"
+                d='M2 2 L2 14 L6 11 L9 16 L11 15 L8 10 L13 10 Z'
                 fill={color}
-                stroke="rgba(0,0,0,0.4)"
-                strokeWidth="1"
+                stroke='rgba(0,0,0,0.4)'
+                strokeWidth='1'
               />
             </svg>
-            <span className="remote-cursor-label" style={{ backgroundColor: color }}>
+            <span className='remote-cursor-label' style={{ backgroundColor: color }}>
               {name}
             </span>
           </div>

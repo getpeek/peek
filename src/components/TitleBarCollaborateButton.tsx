@@ -38,30 +38,30 @@ export function TitleBarCollaborateButton() {
     <Popover
       opened={opened}
       onChange={setOpened}
-      radius="lg"
+      radius='lg'
       trapFocus
       withArrow={false}
-      position="bottom-end"
+      position='bottom-end'
     >
       <Popover.Target>
         <button
           className={`titlebar-collab-button ${session ? "active" : ""}`}
-          onClick={() => setOpened((o) => !o)}
+          onClick={() => setOpened(o => !o)}
           aria-label={session ? "Open session info" : "Start collaborating"}
         >
           {session ? (
-            <span className="collab-avatars" aria-hidden>
-              {visible.map((a) => (
+            <span className='collab-avatars' aria-hidden>
+              {visible.map(a => (
                 <span
                   key={a.key}
-                  className="collab-avatar"
+                  className='collab-avatar'
                   style={{ backgroundColor: a.color }}
                   title={a.name}
                 >
                   {initialFromName(a.name)}
                 </span>
               ))}
-              {overflow > 0 && <span className="collab-avatar overflow">+{overflow}</span>}
+              {overflow > 0 && <span className='collab-avatar overflow'>+{overflow}</span>}
             </span>
           ) : (
             <>
@@ -70,7 +70,7 @@ export function TitleBarCollaborateButton() {
           )}
         </button>
       </Popover.Target>
-      <Popover.Dropdown p={0} bd="none" bg="transparent">
+      <Popover.Dropdown p={0} bd='none' bg='transparent'>
         <SharePopover onClose={() => setOpened(false)} />
       </Popover.Dropdown>
     </Popover>

@@ -26,11 +26,11 @@ export const DropZone = () => {
 
     listen(TauriEvent.DRAG_ENTER, () => {
       setShowDropZone(true);
-    }).then((cb) => (enter = cb));
+    }).then(cb => (enter = cb));
 
-    listen(TauriEvent.DRAG_LEAVE, () => setShowDropZone(false)).then((cb) => (leave = cb));
+    listen(TauriEvent.DRAG_LEAVE, () => setShowDropZone(false)).then(cb => (leave = cb));
 
-    listen(TauriEvent.DRAG_DROP, async (event) => {
+    listen(TauriEvent.DRAG_DROP, async event => {
       const payload = event.payload as Record<string, unknown>;
       const { x, y } = payload.position as { x: number; y: number };
       setShowDropZone(false);
@@ -53,7 +53,7 @@ export const DropZone = () => {
       }
 
       await fetchSchema();
-    }).then((cb) => (drop = cb));
+    }).then(cb => (drop = cb));
 
     return () => {
       enter?.();
@@ -67,8 +67,8 @@ export const DropZone = () => {
   }
 
   return (
-    <div className="drop-zone">
-      <IconFileUpload size={80} color="#fff" />
+    <div className='drop-zone'>
+      <IconFileUpload size={80} color='#fff' />
       <Text>Import files</Text>
     </div>
   );

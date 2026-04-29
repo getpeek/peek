@@ -10,7 +10,7 @@ export const useNextPageCommand = (): CommandPaletteResult | null => {
   }
   return {
     icon: <IconArrowRight size={16} />,
-    label: <Text size="xs">Next Page</Text>,
+    label: <Text size='xs'>Next Page</Text>,
     searchAgainst: "next page forward tab",
     onSelect: () => {
       nextPage();
@@ -25,7 +25,7 @@ export const usePreviousPageCommand = (): CommandPaletteResult | null => {
   }
   return {
     icon: <IconArrowLeft size={16} />,
-    label: <Text size="xs">Previous Page</Text>,
+    label: <Text size='xs'>Previous Page</Text>,
     searchAgainst: "previous page back tab",
     onSelect: () => {
       previousPage();

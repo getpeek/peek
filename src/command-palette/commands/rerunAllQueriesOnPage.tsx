@@ -15,7 +15,7 @@ export const useRerunAllQueriesOnPageCommand = (): CommandPaletteResult => {
 
   return {
     searchAgainst: "rerun all queries on page",
-    label: <Text size="xs">Rerun all queries on page</Text>,
+    label: <Text size='xs'>Rerun all queries on page</Text>,
     icon: <IconPlayerPlay size={16} />,
     onSelect: async () => {
       if (!canvas) {
@@ -32,7 +32,7 @@ export const useRerunAllQueriesOnPageCommand = (): CommandPaletteResult => {
         } else {
           await executeQueries({ canvas, setResults, sourceNode: node, queries: [q] });
         }
-        await new Promise<void>((r) => {
+        await new Promise<void>(r => {
           setTimeout(r, 20);
         });
       }

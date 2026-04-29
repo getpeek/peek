@@ -42,7 +42,7 @@ function findActiveQueryNode(canvas: ReturnType<typeof useCanvas>): QueryNode | 
   if (focusedId) {
     candidates.push(canvas.getNode(focusedId));
   }
-  candidates.push(canvas.getSelectedNodes().find((n) => n.type === "query"));
+  candidates.push(canvas.getSelectedNodes().find(n => n.type === "query"));
   return candidates.find((n): n is QueryNode => !!n && n.type === "query");
 }
 
@@ -138,14 +138,14 @@ export function KeyboardShortcuts() {
         }
         e.preventDefault();
         const OFFSET = 20;
-        const copies: AppNode[] = clipboard.map((node) => ({
+        const copies: AppNode[] = clipboard.map(node => ({
           ...node,
           id: newIdForType(node.type as AppNodeType),
           position: { x: node.position.x + OFFSET, y: node.position.y + OFFSET },
           selected: true,
         }));
-        setNodes((prev) => [...prev.map((n) => ({ ...n, selected: false })), ...copies]);
-        canvas.selectOnly(copies.map((n) => n.id));
+        setNodes(prev => [...prev.map(n => ({ ...n, selected: false })), ...copies]);
+        canvas.selectOnly(copies.map(n => n.id));
         return;
       }
 
@@ -190,7 +190,7 @@ export function KeyboardShortcuts() {
 
       if (meta && e.key === "a") {
         e.preventDefault();
-        const nodeIds = canvas.getNodes().map((n) => n.id);
+        const nodeIds = canvas.getNodes().map(n => n.id);
         canvas.selectOnly(nodeIds);
         return;
       }
@@ -243,7 +243,7 @@ export function KeyboardShortcuts() {
         e.preventDefault();
         const queries = canvas
           .getNodes()
-          .filter((n) => n.type === "query")
+          .filter(n => n.type === "query")
           .slice()
           .toSorted((a, b) => a.position.x - b.position.x);
         if (queries.length === 0) {
@@ -253,7 +253,7 @@ export function KeyboardShortcuts() {
         const selected = canvas.getSelectedNodes()[0];
         let idx = -1;
         if (selected && selected.type === "query") {
-          idx = queries.findIndex((n) => n.id === selected.id);
+          idx = queries.findIndex(n => n.id === selected.id);
         }
         const nextIdx =
           e.key === "]"

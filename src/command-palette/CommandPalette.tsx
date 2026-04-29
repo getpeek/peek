@@ -21,7 +21,7 @@ export const CommandPalette = () => {
   useHotkeys([["Escape", () => hideSearch()]]);
 
   const moveCursor = (direction: -1 | 1) => {
-    setCursor((prev) => Math.max(0, Math.min(results.length - 1, prev + direction)));
+    setCursor(prev => Math.max(0, Math.min(results.length - 1, prev + direction)));
   };
 
   if (!show) {
@@ -29,13 +29,13 @@ export const CommandPalette = () => {
   }
 
   return (
-    <div className="command-palette" ref={ref}>
+    <div className='command-palette' ref={ref}>
       <input
         autoFocus
-        className="query"
-        type="text"
-        autoComplete="off"
-        autoCorrect="off"
+        className='query'
+        type='text'
+        autoComplete='off'
+        autoCorrect='off'
         value={query}
         onKeyDown={getHotkeyHandler([
           ["Escape", hideSearch],
@@ -49,17 +49,17 @@ export const CommandPalette = () => {
             },
           ],
         ])}
-        onChange={(e) => {
+        onChange={e => {
           setCursor(0);
           setQuery(e.currentTarget.value);
         }}
-        placeholder="Search a command or anything else"
+        placeholder='Search a command or anything else'
         style={{
           borderRadius: results.length === 0 ? 16 : "16px 16px 0 0",
         }}
       />
       {results.length > 0 && (
-        <div className="output">
+        <div className='output'>
           <Stack gap={4}>
             {results.map((result, i) => (
               <div
@@ -71,7 +71,7 @@ export const CommandPalette = () => {
                 }}
                 style={{ animationDelay: `${i * 0.05}s` }}
               >
-                <Group gap="sm" align="center">
+                <Group gap='sm' align='center'>
                   {result.icon}
                   <Group>
                     {result.label} {result.description}

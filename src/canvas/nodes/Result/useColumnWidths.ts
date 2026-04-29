@@ -103,7 +103,7 @@ export function useColumnWidths({
           /* noop */
         }
         setDraftWidth(null);
-        canvas.updateNodeData<ResultData>(nodeId, (d) => ({
+        canvas.updateNodeData<ResultData>(nodeId, d => ({
           ...d,
           columnWidths: { ...d.columnWidths, [column]: finalWidth },
         }));

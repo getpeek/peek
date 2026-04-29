@@ -10,7 +10,7 @@ export function useIndexedDB() {
     indexedDBService
       .init()
       .then(() => setIsReady(true))
-      .catch((err) => {
+      .catch(err => {
         setError(err);
         console.error("Failed to initialize IndexedDB:", err);
       });
@@ -29,11 +29,11 @@ export function useActiveConnection() {
   useEffect(() => {
     indexedDBService
       .getActiveConnection()
-      .then((conn) => {
+      .then(conn => {
         setActiveConnection(conn);
         setIsLoading(false);
       })
-      .catch((err) => {
+      .catch(err => {
         setError(err);
         setIsLoading(false);
       });

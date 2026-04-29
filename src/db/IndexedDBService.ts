@@ -43,7 +43,7 @@ class IndexedDBService {
         resolve();
       });
 
-      request.onupgradeneeded = (event) => {
+      request.onupgradeneeded = event => {
         const db = (event.target as IDBOpenDBRequest).result;
 
         if (!db.objectStoreNames.contains(WORKSPACES_STORE)) {

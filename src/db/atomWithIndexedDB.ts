@@ -13,7 +13,7 @@ export function atomWithIndexedDB<T, V = any>(
   const baseAtom = atom(initialValue);
 
   const derivedAtom = atom(
-    (get) => get(baseAtom),
+    get => get(baseAtom),
     (get, set, update: T | ((prev: T) => T)) => {
       const nextValue =
         typeof update === "function" ? (update as (prev: T) => T)(get(baseAtom)) : update;
@@ -36,7 +36,7 @@ export function atomWithIndexedDB<T, V = any>(
     },
   );
 
-  derivedAtom.onMount = (setAtom) => {
+  derivedAtom.onMount = setAtom => {
     const loadData = async () => {
       try {
         let value: any;

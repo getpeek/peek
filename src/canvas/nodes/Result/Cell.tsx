@@ -21,7 +21,7 @@ export const DataCell = ({
   if ((type === "JSON" || type === "JSONB") && value !== null) {
     return (
       <pre
-        className="json"
+        className='json'
         dangerouslySetInnerHTML={{
           __html: syntaxHighlight(JSON.stringify(value, null, 2)),
         }}
@@ -32,28 +32,28 @@ export const DataCell = ({
   if (typeof value === "string" || typeof value === "number") {
     if (inbound?.length > 0 && onInboundClick) {
       return (
-        <div onClick={() => onInboundClick(inbound, value)} className="reference">
-          <Text c="inherit">{value}</Text>
+        <div onClick={() => onInboundClick(inbound, value)} className='reference'>
+          <Text c='inherit'>{value}</Text>
         </div>
       );
     }
     if (outbound?.length > 0 && onOutboundClick) {
       return (
-        <div onClick={() => onOutboundClick(outbound, value)} className="reference">
-          <Text c="inherit">{value}</Text>
+        <div onClick={() => onOutboundClick(outbound, value)} className='reference'>
+          <Text c='inherit'>{value}</Text>
         </div>
       );
     }
-    return <Text c="inherit">{value}</Text>;
+    return <Text c='inherit'>{value}</Text>;
   }
 
   if (type === "BOOL") {
     return value ? (
-      <Text fs="italic" c="blue">
+      <Text fs='italic' c='blue'>
         TRUE
       </Text>
     ) : (
-      <Text fs="italic" c="red">
+      <Text fs='italic' c='red'>
         FALSE
       </Text>
     );
@@ -61,7 +61,7 @@ export const DataCell = ({
 
   if (value === null) {
     return (
-      <Text fs="italic" c="gray">
+      <Text fs='italic' c='gray'>
         NULL
       </Text>
     );

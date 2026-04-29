@@ -20,9 +20,9 @@ export function ClosePageConfirmModal() {
   };
 
   return (
-    <Modal opened={opened} onClose={close} title="Close page?" centered size="sm">
-      <Stack gap="md">
-        <Text size="sm">
+    <Modal opened={opened} onClose={close} title='Close page?' centered size='sm'>
+      <Stack gap='md'>
+        <Text size='sm'>
           {page ? (
             <>
               <strong>{page.name}</strong> has {page.nodes.length}{" "}
@@ -30,11 +30,11 @@ export function ClosePageConfirmModal() {
             </>
           ) : null}
         </Text>
-        <Group justify="flex-end" gap="xs">
-          <Button variant="default" size="xs" onClick={close}>
+        <Group justify='flex-end' gap='xs'>
+          <Button variant='default' size='xs' onClick={close}>
             Cancel
           </Button>
-          <Button color="red" size="xs" onClick={confirm}>
+          <Button color='red' size='xs' onClick={confirm}>
             Close page
           </Button>
         </Group>

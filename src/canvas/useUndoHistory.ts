@@ -27,8 +27,8 @@ function stripEdge(e: AppEdge): AppEdge {
 
 function makeSnapshot(nodes: AppNode[], edges: AppEdge[]): HistorySnapshot {
   return {
-    nodes: nodes.map((n) => stripNode(n)),
-    edges: edges.map((e) => stripEdge(e)),
+    nodes: nodes.map(n => stripNode(n)),
+    edges: edges.map(e => stripEdge(e)),
   };
 }
 
@@ -93,7 +93,7 @@ export function useUndoHistory() {
         return;
       }
 
-      setHistory((prev) => {
+      setHistory(prev => {
         const pageHist = prev[pageId] ?? { past: [], future: [] };
         return {
           ...prev,
@@ -112,7 +112,7 @@ export function useUndoHistory() {
   const restore = useCallback(
     (snap: HistorySnapshot) => {
       isUndoRedoRef.current = true;
-      setDoc((d) => ({
+      setDoc(d => ({
         ...d,
         pages: {
           ...d.pages,
@@ -136,7 +136,7 @@ export function useUndoHistory() {
     const previous = pageHist.past.at(-1);
     const currentSnap = makeSnapshot(page.nodes, page.edges);
 
-    setHistory((prev) => {
+    setHistory(prev => {
       const ph = prev[pageId] ?? { past: [], future: [] };
       return {
         ...prev,
@@ -158,7 +158,7 @@ export function useUndoHistory() {
     const next = pageHist.future.at(-1);
     const currentSnap = makeSnapshot(page.nodes, page.edges);
 
-    setHistory((prev) => {
+    setHistory(prev => {
       const ph = prev[pageId] ?? { past: [], future: [] };
       return {
         ...prev,

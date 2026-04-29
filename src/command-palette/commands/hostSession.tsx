@@ -22,7 +22,7 @@ export const useHostSessionCommand = (): CommandPaletteResult => {
   return {
     icon: isHost ? <IconBroadcastOff size={16} /> : <IconBroadcast size={16} />,
     label: (
-      <Text size="xs">
+      <Text size='xs'>
         {isHost ? "End hosted session" : isInSession ? "Leave session" : "Host session"}
       </Text>
     ),

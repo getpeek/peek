@@ -4,11 +4,7 @@ import { schemaAtom } from "../state";
 import { activePageAtom, edgesAtom, nodesAtom } from "./state";
 import { ids } from "./ids";
 import type { AppEdge } from "./types";
-import {
-  isSchemaNode,
-  tableIdFromRef,
-  useSchemaSimulation,
-} from "./useSchemaSimulation";
+import { isSchemaNode, tableIdFromRef, useSchemaSimulation } from "./useSchemaSimulation";
 
 /**
  * Runs a live d3-force simulation for the schema page.
@@ -30,7 +26,7 @@ export function useSchemaForceLayout() {
   const isSchemaPage = activePage?.name === "schema";
 
   const schemaNodes = useMemo(
-    () => activePage?.nodes.filter((n) => isSchemaNode(n.id)) ?? [],
+    () => activePage?.nodes.filter(n => isSchemaNode(n.id)) ?? [],
     [activePage?.nodes],
   );
 
@@ -60,7 +56,7 @@ export function useSchemaForceLayout() {
   const schemaNodeKey = useMemo(
     () =>
       schemaNodes
-        .map((n) => n.id)
+        .map(n => n.id)
         .toSorted()
         .join("|"),
     [schemaNodes],
@@ -69,7 +65,7 @@ export function useSchemaForceLayout() {
   const referenceKey = useMemo(
     () =>
       referencePairs
-        .map((p) => `${p.source}->${p.target}`)
+        .map(p => `${p.source}->${p.target}`)
         .toSorted()
         .join("|"),
     [referencePairs],
@@ -78,8 +74,8 @@ export function useSchemaForceLayout() {
   const selectedSchemaIdsKey = useMemo(
     () =>
       schemaNodes
-        .filter((n) => n.selected)
-        .map((n) => n.id)
+        .filter(n => n.selected)
+        .map(n => n.id)
         .toSorted()
         .join("|"),
     [schemaNodes],
@@ -89,16 +85,15 @@ export function useSchemaForceLayout() {
     if (!isSchemaPage) {
       return;
     }
-    const presentIds = new Set(schemaNodes.map((n) => n.id));
+    const presentIds = new Set(schemaNodes.map(n => n.id));
     const desired = referencePairs.filter(
-      (p) => presentIds.has(p.source) && presentIds.has(p.target),
+      p => presentIds.has(p.source) && presentIds.has(p.target),
     );
 
-    setEdges((es) => {
-      const isSchemaEdge = (e: AppEdge) =>
-        isSchemaNode(e.source) && isSchemaNode(e.target);
+    setEdges(es => {
+      const isSchemaEdge = (e: AppEdge) => isSchemaNode(e.source) && isSchemaNode(e.target);
 
-      const nonSchemaEdges = es.filter((e) => !isSchemaEdge(e));
+      const nonSchemaEdges = es.filter(e => !isSchemaEdge(e));
       const desiredById = new Map<string, AppEdge>();
       for (const pair of desired) {
         const id = ids.edge(pair.source, pair.target);
@@ -135,14 +130,7 @@ export function useSchemaForceLayout() {
       }
       return merged;
     });
-  }, [
-    isSchemaPage,
-    schemaNodeKey,
-    referenceKey,
-    setEdges,
-    schemaNodes,
-    referencePairs,
-  ]);
+  }, [isSchemaPage, schemaNodeKey, referenceKey, setEdges, schemaNodes, referencePairs]);
 
   // Highlight schema edges connected to a selected schema-table node by
   // tagging them with a `schema-edge-glow` className, and the schema
@@ -153,9 +141,7 @@ export function useSchemaForceLayout() {
     if (!isSchemaPage) {
       return;
     }
-    const selected = new Set(
-      selectedSchemaIdsKey ? selectedSchemaIdsKey.split("|") : [],
-    );
+    const selected = new Set(selectedSchemaIdsKey ? selectedSchemaIdsKey.split("|") : []);
     const connected = new Set<string>();
     if (selected.size > 0) {
       for (const pair of referencePairs) {
@@ -168,15 +154,13 @@ export function useSchemaForceLayout() {
       }
     }
 
-    setEdges((es) => {
+    setEdges(es => {
       let mutated = false;
-      const next = es.map((e) => {
+      const next = es.map(e => {
         if (!isSchemaNode(e.source) || !isSchemaNode(e.target)) {
           return e;
         }
-        const shouldGlow =
-          selected.size > 0 &&
-          (selected.has(e.source) || selected.has(e.target));
+        const shouldGlow = selected.size > 0 && (selected.has(e.source) || selected.has(e.target));
         const desired = shouldGlow ? "schema-edge-glow" : undefined;
         if (e.className === desired) {
           return e;
@@ -187,15 +171,13 @@ export function useSchemaForceLayout() {
       return mutated ? next : es;
     });
 
-    setNodes((ns) => {
+    setNodes(ns => {
       let mutated = false;
-      const next = ns.map((n) => {
+      const next = ns.map(n => {
         if (!isSchemaNode(n.id)) {
           return n;
         }
-        const desired = connected.has(n.id)
-          ? "schema-node-connected"
-          : undefined;
+        const desired = connected.has(n.id) ? "schema-node-connected" : undefined;
         if (n.className === desired) {
           return n;
         }
@@ -204,14 +186,7 @@ export function useSchemaForceLayout() {
       });
       return mutated ? next : ns;
     });
-  }, [
-    isSchemaPage,
-    selectedSchemaIdsKey,
-    referenceKey,
-    referencePairs,
-    setEdges,
-    setNodes,
-  ]);
+  }, [isSchemaPage, selectedSchemaIdsKey, referenceKey, referencePairs, setEdges, setNodes]);
 
   return useSchemaSimulation({
     isSchemaPage,

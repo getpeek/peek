@@ -18,13 +18,13 @@ import { NodeHeader } from "../NodeHeader";
 import { ids } from "../../ids";
 import { resultsAtom } from "../../state";
 import type { ChatNode, QueryNode, ResultNode as ResultNodeT } from "../../types";
-import "../node.css";
+import "./Result.css";
 
 const DEFAULT_W = 620;
 const DEFAULT_H = 640;
 
 function firstLineOfQuery(query: string): string {
-  const line = query.split("\n").find((l) => l.trim().length > 0);
+  const line = query.split("\n").find(l => l.trim().length > 0);
   if (!line) {
     return "";
   }
@@ -135,36 +135,36 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader
           nodeId={id}
-          type="result"
+          type='result'
           name={queryName ? `result · ${queryName}` : "result"}
         />
-        <div className="app-node-subtoolbar nodrag">
-          <div className="meta">
-            <span className="ok">●</span>
+        <div className='app-node-subtoolbar nodrag'>
+          <div className='meta'>
+            <span className='ok'>●</span>
             <span>{rows.length} rows</span>
             {queryName && <span>{queryName.slice(0, 20)}...</span>}
           </div>
-          <div className="actions">
+          <div className='actions'>
             {canChart && (
-              <button className="icon-btn" title="Create chart" onClick={runCreateChart}>
+              <button className='icon-btn' title='Create chart' onClick={runCreateChart}>
                 <IconChartBar size={14} />
               </button>
             )}
-            <button className="icon-btn" title="Ask about this result" onClick={ask}>
+            <button className='icon-btn' title='Ask about this result' onClick={ask}>
               <IconMessageChatbot size={14} />
             </button>
-            <button className="icon-btn" title="Fork query" onClick={fork}>
+            <button className='icon-btn' title='Fork query' onClick={fork}>
               <IconGitFork size={14} />
             </button>
-            <button className="icon-btn" title="Export">
+            <button className='icon-btn' title='Export'>
               <IconDownload size={14} />
             </button>
-            <button className="icon-btn" title="More">
+            <button className='icon-btn' title='More'>
               <IconDots size={14} />
             </button>
           </div>
         </div>
-        <div className="app-node-body nodrag" ref={bodyRef}>
+        <div className='app-node-body nodrag' ref={bodyRef}>
           <ResultTable
             nodeId={id}
             data={rows}

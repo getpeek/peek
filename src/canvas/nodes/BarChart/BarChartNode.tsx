@@ -5,7 +5,7 @@ import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { useCanvas } from "../../useCanvas";
 import type { BarChartData, BarChartNode as BarChartNodeT, ChartType } from "../../types";
-import "../node.css";
+import "./BarChart.css";
 
 const DEFAULT_W = 460;
 const DEFAULT_H = 290;
@@ -47,8 +47,8 @@ export function BarChartNode({ id, data, selected, width, height }: NodeProps<Ba
         <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
         <HiddenHandles />
         <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-          <NodeHeader nodeId={id} type="barchart" name="empty" />
-          <div className="chart-body">No results</div>
+          <NodeHeader nodeId={id} type='barchart' name='empty' />
+          <div className='chart-body'>No results</div>
         </div>
       </>
     );
@@ -72,15 +72,15 @@ export function BarChartNode({ id, data, selected, width, height }: NodeProps<Ba
       <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
       <HiddenHandles />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-        <NodeHeader nodeId={id} type="barchart" name={`${seriesName} by ${dataKey}`} />
-        <div className="chart-body nodrag">
-          <div className="chart-title">
+        <NodeHeader nodeId={id} type='barchart' name={`${seriesName} by ${dataKey}`} />
+        <div className='chart-body nodrag'>
+          <div className='chart-title'>
             <span>{seriesName}</span>
-            <div className="chart-type-toggle">
+            <div className='chart-type-toggle'>
               {CHART_TYPE_OPTIONS.map(({ type, label, Icon }) => (
                 <button
                   key={type}
-                  type="button"
+                  type='button'
                   title={label}
                   className={`chart-type-btn ${chartType === type ? "active" : ""}`}
                   onClick={() => setChartType(type)}
@@ -90,48 +90,48 @@ export function BarChartNode({ id, data, selected, width, height }: NodeProps<Ba
               ))}
             </div>
           </div>
-          <div className="chart-sub">
+          <div className='chart-sub'>
             by {dataKey} · {data.data.length} points
           </div>
           <div style={{ flex: 1, minHeight: 0 }}>
             {chartType === "bar" && (
               <BarChart
-                h="100%"
-                w="100%"
+                h='100%'
+                w='100%'
                 mih={undefined}
                 data={data.data}
                 dataKey={dataKey}
                 series={series}
-                tickLine="y"
-                gridAxis="none"
+                tickLine='y'
+                gridAxis='none'
               />
             )}
             {chartType === "line" && (
               <LineChart
-                h="100%"
-                w="100%"
+                h='100%'
+                w='100%'
                 mih={undefined}
                 data={data.data}
                 dataKey={dataKey}
                 series={series}
-                tickLine="y"
-                gridAxis="none"
+                tickLine='y'
+                gridAxis='none'
                 withDots={false}
-                curveType="monotone"
+                curveType='monotone'
               />
             )}
             {chartType === "area" && (
               <AreaChart
-                h="100%"
-                w="100%"
+                h='100%'
+                w='100%'
                 mih={undefined}
                 data={data.data}
                 dataKey={dataKey}
                 series={series}
-                tickLine="y"
-                gridAxis="none"
+                tickLine='y'
+                gridAxis='none'
                 withDots={false}
-                curveType="monotone"
+                curveType='monotone'
               />
             )}
           </div>

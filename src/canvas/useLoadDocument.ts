@@ -41,7 +41,7 @@ function migrateAndHydrate(doc: CanvasDocument): {
       pid,
       {
         ...page,
-        nodes: page.nodes.map((n) => {
+        nodes: page.nodes.map(n => {
           if (n.type === "query" && (n.data as { isRunning?: boolean }).isRunning) {
             // A persisted `isRunning: true` means the previous session
             // crashed mid-execution — clear it so the run button is usable.
@@ -135,7 +135,7 @@ export function useLoadDocument() {
             // a pre-migration workspace.
             setResults({ ...hydrated, ...sidecar });
             setDoc(migrated);
-            setLoadEpoch((n) => n + 1);
+            setLoadEpoch(n => n + 1);
             return;
           }
         } catch {
@@ -143,13 +143,13 @@ export function useLoadDocument() {
         }
         setResults(sidecar);
         setDoc(emptyDocument());
-        setLoadEpoch((n) => n + 1);
+        setLoadEpoch(n => n + 1);
       })
       .catch(() => {
         if (!cancelled) {
           setResults({});
           setDoc(emptyDocument());
-          setLoadEpoch((n) => n + 1);
+          setLoadEpoch(n => n + 1);
         }
       });
 

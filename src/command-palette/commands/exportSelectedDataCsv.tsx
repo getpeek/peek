@@ -17,7 +17,7 @@ export const useExportSelectedDataCsvCommand = (): CommandPaletteResult => {
 
   return {
     searchAgainst: "Export selected data as CSV",
-    label: <Text size="xs">Export selected data (CSV)</Text>,
+    label: <Text size='xs'>Export selected data (CSV)</Text>,
     icon: <IconTableExport size={16} />,
     onSelect: async () => {
       if (!canvas) {
@@ -51,9 +51,9 @@ Use only English characters, numbers and underscores and append .csv to the end 
             ),
             new HumanMessage(`The query is: ${node.data.query}`),
           ])
-          .then((response) => response.text.replaceAll(/<think>[\s]+<\/think>/gi, "").trim())
-          .then((filename) => join(path, filename))
-          .then((filepath) =>
+          .then(response => response.text.replaceAll(/<think>[\s]+<\/think>/gi, "").trim())
+          .then(filename => join(path, filename))
+          .then(filepath =>
             writeTextFile(filepath, output, {
               baseDir: BaseDirectory.AppConfig,
             }),

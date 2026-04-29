@@ -38,7 +38,7 @@ const UUID = ["uuid"];
 const BINARY = ["bytea", "blob"];
 
 function matches(type: string, list: string[]): boolean {
-  return list.some((t) => type === t || type.startsWith(`${t}(`));
+  return list.some(t => type === t || type.startsWith(`${t}(`));
 }
 
 export function categorizeType(rawType: string): TypeCategory {

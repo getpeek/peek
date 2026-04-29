@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useCanvas } from "../../useCanvas";
 import { HiddenHandles } from "../HiddenHandles";
 import type { TextNode as TextNodeT } from "../../types";
-import "../node.css";
+import "./Text.css";
 
 const DEFAULT_W = 280;
 const DEFAULT_H = 100;
@@ -42,7 +42,7 @@ export function TextNode({ id, data, selected, width, height }: NodeProps<TextNo
     }
     const required = Math.ceil(measure.offsetWidth) + WIDTH_PADDING;
     if (required > w) {
-      canvas.updateNode(id, (n) => ({ ...n, width: required }));
+      canvas.updateNode(id, n => ({ ...n, width: required }));
     }
   }, [data.text, fontSize, w, canvas, id]);
 
@@ -70,14 +70,14 @@ export function TextNode({ id, data, selected, width, height }: NodeProps<TextNo
         {isEditing ? (
           <textarea
             ref={textareaRef}
-            className="text-node-input nodrag"
+            className='text-node-input nodrag'
             value={data.text}
-            placeholder="Type..."
-            autoComplete="off"
-            autoCorrect="off"
+            placeholder='Type...'
+            autoComplete='off'
+            autoCorrect='off'
             spellCheck={false}
-            wrap="off"
-            onChange={(e) =>
+            wrap='off'
+            onChange={e =>
               canvas.updateNodeData<TextNodeT["data"]>(id, {
                 text: e.currentTarget.value,
               })
@@ -85,15 +85,15 @@ export function TextNode({ id, data, selected, width, height }: NodeProps<TextNo
             onBlur={() => setIsEditing(false)}
           />
         ) : (
-          <div className="text-node-display">
+          <div className='text-node-display'>
             {data.text ? (
               data.text
             ) : (
-              <span className="text-node-placeholder">Double-click to edit</span>
+              <span className='text-node-placeholder'>Double-click to edit</span>
             )}
           </div>
         )}
-        <div ref={measureRef} className="text-node-measure" aria-hidden="true">
+        <div ref={measureRef} className='text-node-measure' aria-hidden='true'>
           {lines.map((line, i) => (
             <div key={i}>{line.length > 0 ? line : " "}</div>
           ))}

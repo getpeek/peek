@@ -8,7 +8,7 @@ export const useNewPageCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconFilePlus size={16} />,
-    label: <Text size="xs">New Page</Text>,
+    label: <Text size='xs'>New Page</Text>,
     searchAgainst: "new page create add tab",
     onSelect: () => {
       newPage();

@@ -57,18 +57,18 @@ export function Toolbar() {
   const [placeMode, setPlaceMode] = useAtom(placeModeAtom);
 
   return (
-    <Panel position="bottom-center">
-      <div className="canvas-toolbar">
+    <Panel position='bottom-center'>
+      <div className='canvas-toolbar'>
         <button
           className={`toolbar-btn ${placeMode === null ? "active" : ""}`}
-          title="Select (Esc)"
+          title='Select (Esc)'
           onClick={() => setPlaceMode(null)}
         >
           <IconMouse size={16} stroke={1.75} />
-          <span className="kbd">Esc</span>
+          <span className='kbd'>Esc</span>
         </button>
-        <span className="sep" />
-        {tools.map((t) => {
+        <span className='sep' />
+        {tools.map(t => {
           const active = placeMode === t.mode;
           const { Icon } = t;
           return (
@@ -79,7 +79,7 @@ export function Toolbar() {
               onClick={() => setPlaceMode(t.mode)}
             >
               <Icon size={16} stroke={1.75} />
-              <span className="kbd">{t.hotkey}</span>
+              <span className='kbd'>{t.hotkey}</span>
             </button>
           );
         })}

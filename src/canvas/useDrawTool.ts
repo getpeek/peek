@@ -24,8 +24,8 @@ export function useDrawTool() {
         const f = rf.screenToFlowPosition({ x, y });
         return [f.x, f.y, p] as DrawPoint;
       });
-      const xs = flow.map((p) => p[0]);
-      const ys = flow.map((p) => p[1]);
+      const xs = flow.map(p => p[0]);
+      const ys = flow.map(p => p[1]);
       const minX = Math.min(...xs);
       const minY = Math.min(...ys);
       const maxX = Math.max(...xs);

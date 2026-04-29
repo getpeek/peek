@@ -1,0 +1,41 @@
+.ai-prompt-body {
+  flex: 1;
+  padding: 14px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.ai-prompt-body textarea {
+  flex: 1;
+  font: 400 13px/1.55 var(--pk-font-sans);
+  color: var(--pk-fg);
+  letter-spacing: -0.005em;
+}
+
+.ai-status {
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.running-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, var(--pk-accent-bg) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: pk-shimmer 1.4s infinite;
+  pointer-events: none;
+}
+
+@keyframes pk-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}

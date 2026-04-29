@@ -45,7 +45,7 @@ export function useChatStream(opts: {
   const abortRef = useRef(false);
 
   const appendMessage = (msg: Message) => {
-    canvas.updateNodeData<ChatData>(nodeId, (d) => ({
+    canvas.updateNodeData<ChatData>(nodeId, d => ({
       ...d,
       messages: [...d.messages, msg],
     }));
@@ -107,7 +107,7 @@ export function useChatStream(opts: {
           }
           if (chunk.tool_calls?.length) {
             calls.push(
-              ...chunk.tool_calls.map((c) => ({
+              ...chunk.tool_calls.map(c => ({
                 id: c.id ?? crypto.randomUUID(),
                 name: c.name,
                 args: c.args,
@@ -141,7 +141,7 @@ export function useChatStream(opts: {
         }
 
         const signature = calls
-          .map((c) => `${c.name}(${JSON.stringify(c.args)})`)
+          .map(c => `${c.name}(${JSON.stringify(c.args)})`)
           .toSorted()
           .join("|");
         if (seenCallSignatures.has(signature)) {

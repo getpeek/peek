@@ -47,7 +47,7 @@ export function useCommitEdit({
     }
 
     const setError = (error: string) =>
-      setEditing((current) => (current ? { ...current, error } : current));
+      setEditing(current => (current ? { ...current, error } : current));
 
     const { row, col, draft } = editing;
     const rowData = data[row];
@@ -86,7 +86,7 @@ export function useCommitEdit({
       return;
     }
 
-    const sourceQueryId = canvas.getEdges().find((edge) => edge.target === nodeId)?.source;
+    const sourceQueryId = canvas.getEdges().find(edge => edge.target === nodeId)?.source;
     const vars = sourceQueryId ? collectVariablesFor(canvas, sourceQueryId) : {};
 
     let resolvedUpdateSql: string;
@@ -94,11 +94,11 @@ export function useCommitEdit({
     try {
       const update = substituteVariables(updateSql, vars);
       if (update.missing.length > 0) {
-        throw new Error(`Undefined variables: ${update.missing.map((m) => "@" + m).join(", ")}`);
+        throw new Error(`Undefined variables: ${update.missing.map(m => "@" + m).join(", ")}`);
       }
       const refresh = substituteVariables(query, vars);
       if (refresh.missing.length > 0) {
-        throw new Error(`Undefined variables: ${refresh.missing.map((m) => "@" + m).join(", ")}`);
+        throw new Error(`Undefined variables: ${refresh.missing.map(m => "@" + m).join(", ")}`);
       }
       resolvedUpdateSql = update.resolved;
       resolvedRefreshQuery = refresh.resolved;
@@ -107,16 +107,16 @@ export function useCommitEdit({
       return;
     }
 
-    setEditing((current) => (current ? { ...current, saving: true, error: null } : current));
+    setEditing(current => (current ? { ...current, saving: true, error: null } : current));
     try {
       await invoke("execute_statement", { query: resolvedUpdateSql });
       const refreshed = JSON.parse(
         (await invoke("get_results", { query: resolvedRefreshQuery })) as string,
       ) as DatabaseResult;
-      setResults((prev) => ({ ...prev, [nodeId]: refreshed }));
+      setResults(prev => ({ ...prev, [nodeId]: refreshed }));
       setEditing(null);
     } catch (err) {
-      setEditing((current) =>
+      setEditing(current =>
         current ? { ...current, saving: false, error: String(err) } : current,
       );
     }

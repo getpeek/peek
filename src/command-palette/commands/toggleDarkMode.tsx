@@ -9,7 +9,7 @@ export const useToggleDarkModeCommand = (): CommandPaletteResult => {
 
   return {
     icon: isDarkMode ? <IconSun size={16} /> : <IconMoon size={16} />,
-    label: <Text size="xs">{isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}</Text>,
+    label: <Text size='xs'>{isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}</Text>,
     searchAgainst: "toggle dark mode light theme switch appearance",
     onSelect: () => {
       setIsDarkMode(!isDarkMode);

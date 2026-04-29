@@ -56,7 +56,7 @@ function ensureVariableProvider(monaco: Monaco) {
       };
 
       return {
-        suggestions: variables.map((v) => ({
+        suggestions: variables.map(v => ({
           label: `@${v}`,
           kind: monaco.languages.CompletionItemKind.Variable,
           insertText: v,
@@ -111,7 +111,7 @@ export const SqlEditor = ({
     const sites = scanVariableSites(text);
     const known = new Set(variablesRef.current);
 
-    const decorations: editor.IModelDeltaDecoration[] = sites.map((site) => {
+    const decorations: editor.IModelDeltaDecoration[] = sites.map(site => {
       const startPos = model.getPositionAt(site.start);
       const endPos = model.getPositionAt(site.end);
       const isMissing = !known.has(site.name);
@@ -157,12 +157,12 @@ export const SqlEditor = ({
 
   return (
     <div style={{ height: "100%", width: "100%", position: "relative" }}>
-      <div className="query-window" style={{ height: "100%", width: "100%" }}>
+      <div className='query-window' style={{ height: "100%", width: "100%" }}>
         <Editor
-          height="100%"
-          defaultLanguage="sql"
+          height='100%'
+          defaultLanguage='sql'
           defaultValue={query}
-          theme="rose-pine"
+          theme='rose-pine'
           onMount={(editor, monaco) => {
             ref.current = monaco;
             editorRef.current = editor;
@@ -178,7 +178,7 @@ export const SqlEditor = ({
             const lspSubs = attachLspDocumentSync(monaco, editor);
             const disposeSub = editor.onDidDispose(() => {
               contentSub.dispose();
-              lspSubs.forEach((s) => s.dispose());
+              lspSubs.forEach(s => s.dispose());
               if (model) {
                 variablesByModelUri.delete(model.uri.toString());
               }
@@ -254,7 +254,7 @@ export const SqlEditor = ({
             renderWhitespace: "none",
             copyWithSyntaxHighlighting: true,
           }}
-          onChange={(value) => onQueryChange(value ?? "")}
+          onChange={value => onQueryChange(value ?? "")}
         />
       </div>
     </div>

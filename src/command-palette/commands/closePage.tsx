@@ -17,10 +17,10 @@ export const useClosePageCommand = (): CommandPaletteResult | null => {
 
   return {
     icon: <IconFileMinus size={16} />,
-    label: <Text size="xs">Close Page</Text>,
+    label: <Text size='xs'>Close Page</Text>,
     searchAgainst: "close delete remove page tab",
     description: (
-      <Text size="xs" c="var(--text-color-subtle)">
+      <Text size='xs' c='var(--text-color-subtle)'>
         {activeName}
       </Text>
     ),

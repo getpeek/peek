@@ -21,11 +21,11 @@ export const MonacoManager = () => {
       }}
     >
       <Editor
-        height="1px"
-        width="1px"
-        defaultLanguage="sql"
-        defaultValue=""
-        theme="vs-dark"
+        height='1px'
+        width='1px'
+        defaultLanguage='sql'
+        defaultValue=''
+        theme='vs-dark'
         onMount={(editor, monaco) => {
           monacoRef.current = monaco;
           editorRef.current = editor;

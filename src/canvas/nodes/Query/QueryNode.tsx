@@ -18,14 +18,14 @@ import type {
   VariableNode as VariableNodeT,
 } from "../../types";
 import { registerQueryEditorFocus } from "./editorFocusRegistry";
-import "../node.css";
+import "./Query.css";
 
 const DEFAULT_W = 420;
 const DEFAULT_H = 320;
 const LIVE_POLL_MS = 10_000;
 
 function firstLine(query: string): string {
-  const line = query.split("\n").find((l) => l.trim().length > 0);
+  const line = query.split("\n").find(l => l.trim().length > 0);
   if (!line) {
     return "";
   }
@@ -55,7 +55,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
 
   const variableNames = useMemo(() => {
     const incoming = allEdges
-      .filter((e) => e.target === id)
+      .filter(e => e.target === id)
       .slice()
       .toSorted((a, b) => a.id.localeCompare(b.id));
     const merged: Record<string, true> = {};
@@ -156,12 +156,12 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
       >
         <NodeHeader
           nodeId={id}
-          type="query"
+          type='query'
           name={firstLine(data.query) || "untitled.sql"}
           isLive={isLive}
           onLiveToggle={toggleLive}
         />
-        <div className="app-node-body nodrag" ref={bodyRef}>
+        <div className='app-node-body nodrag' ref={bodyRef}>
           <SqlEditor
             query={data.query}
             variables={variableNames}
@@ -173,7 +173,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
               editor.onDidBlurEditorWidget(() => {
                 editorFocusedRef.current = false;
               });
-              editor.onKeyDown((e) => {
+              editor.onKeyDown(e => {
                 const isMod = e.metaKey || e.ctrlKey;
                 if (isMod && e.keyCode === monaco.KeyCode.Enter) {
                   e.preventDefault();
@@ -182,22 +182,22 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
                 }
               });
             }}
-            onQueryChange={(query) => canvas.updateNodeData<QueryNodeT["data"]>(id, { query })}
+            onQueryChange={query => canvas.updateNodeData<QueryNodeT["data"]>(id, { query })}
           />
         </div>
-        <div className="app-node-footer nodrag">
-          <button className="btn btn-ghost" onClick={formatQuery} title="Format query (⌘⇧I)">
+        <div className='app-node-footer nodrag'>
+          <button className='btn btn-ghost' onClick={formatQuery} title='Format query (⌘⇧I)'>
             <IconIndentIncrease size={13} />
             Format
           </button>
-          <button className="btn" onClick={runQuery} disabled={isRunning} title="Run query (⌘↵)">
+          <button className='btn' onClick={runQuery} disabled={isRunning} title='Run query (⌘↵)'>
             {isRunning ? (
-              <IconLoader2 size={13} className="btn-spinner" />
+              <IconLoader2 size={13} className='btn-spinner' />
             ) : (
               <IconPlayerPlay size={13} />
             )}
             {isRunning ? "Running…" : "Run"}
-            <span className="kbd">⌘↵</span>
+            <span className='kbd'>⌘↵</span>
           </button>
         </div>
       </div>

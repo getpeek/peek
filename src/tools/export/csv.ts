@@ -9,5 +9,5 @@ export const toCsv = (result: DatabaseResult): string => {
     rows.push(row.map(([, value]) => `"${value}"`));
   }
 
-  return [headers, ...rows].map((row) => row.join(";")).join("\n");
+  return [headers, ...rows].map(row => row.join(";")).join("\n");
 };

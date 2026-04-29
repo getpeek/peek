@@ -55,8 +55,8 @@ function applyNodePut(
       return doc;
     }
     const next = ensurePage(doc, pageId);
-    return updatePage(next, pageId, (p) => {
-      const idx = p.nodes.findIndex((n) => n.id === nodeId);
+    return updatePage(next, pageId, p => {
+      const idx = p.nodes.findIndex(n => n.id === nodeId);
       if (idx === -1) {
         return { ...p, nodes: [...p.nodes, parsed] };
       }
@@ -81,8 +81,8 @@ function applyEdgePut(
       return doc;
     }
     const next = ensurePage(doc, pageId);
-    return updatePage(next, pageId, (p) => {
-      const idx = p.edges.findIndex((e) => e.id === edgeId);
+    return updatePage(next, pageId, p => {
+      const idx = p.edges.findIndex(e => e.id === edgeId);
       if (idx === -1) {
         return { ...p, edges: [...p.edges, parsed] };
       }
@@ -130,7 +130,7 @@ export function applyOperation(doc: CanvasDocument, op: Operation): CanvasDocume
     if (op.key === PAGE_ORDER_KEY) {
       try {
         const parsed = JSON.parse(value);
-        if (Array.isArray(parsed) && parsed.every((p) => typeof p === "string")) {
+        if (Array.isArray(parsed) && parsed.every(p => typeof p === "string")) {
           return { ...doc, pageOrder: parsed };
         }
       } catch {
@@ -143,7 +143,7 @@ export function applyOperation(doc: CanvasDocument, op: Operation): CanvasDocume
       const pageId = parts[1];
       if (parts[2] === "name" && parts.length === 3) {
         const next = ensurePage(doc, pageId);
-        return updatePage(next, pageId, (p) => ({ ...p, name: value }));
+        return updatePage(next, pageId, p => ({ ...p, name: value }));
       }
       if (parts[2] === "nodes" && parts.length === 4) {
         return applyNodePut(doc, pageId, parts[3], value);
@@ -165,23 +165,23 @@ export function applyOperation(doc: CanvasDocument, op: Operation): CanvasDocume
         return doc;
       }
       const { [pageId]: _removed, ...rest } = doc.pages;
-      const order = doc.pageOrder.filter((p) => p !== pageId);
+      const order = doc.pageOrder.filter(p => p !== pageId);
       const active =
         doc.activePageId === pageId ? (order[0] ?? doc.activePageId) : doc.activePageId;
       return { ...doc, pages: rest, pageOrder: order, activePageId: active };
     }
     if (parts[2] === "nodes" && parts.length === 4) {
       const nodeId = parts[3];
-      return updatePage(doc, pageId, (p) => ({
+      return updatePage(doc, pageId, p => ({
         ...p,
-        nodes: p.nodes.filter((n) => n.id !== nodeId),
+        nodes: p.nodes.filter(n => n.id !== nodeId),
       }));
     }
     if (parts[2] === "edges" && parts.length === 4) {
       const edgeId = parts[3];
-      return updatePage(doc, pageId, (p) => ({
+      return updatePage(doc, pageId, p => ({
         ...p,
-        edges: p.edges.filter((e) => e.id !== edgeId),
+        edges: p.edges.filter(e => e.id !== edgeId),
       }));
     }
   }

@@ -1,0 +1,78 @@
+.text-node {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 1px dashed transparent;
+  border-radius: 4px;
+  color: var(--pk-fg);
+  font-family: var(--pk-font-sans);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  cursor: grab;
+  transition: border-color 0.12s ease-out;
+}
+
+.text-node.selected {
+  border-color: var(--pk-accent);
+}
+
+.text-node.editing {
+  cursor: text;
+}
+
+.text-node-display {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  padding: 4px 6px;
+  white-space: pre;
+  overflow: hidden;
+  user-select: none;
+}
+
+.text-node-placeholder {
+  color: var(--pk-fg-subtle);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.text-node-input {
+  font-family: "chewy";
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  padding: 4px 6px;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.text-node-measure {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  padding: 4px 6px;
+  width: max-content;
+  white-space: pre;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
+.text-node-input::placeholder {
+  color: var(--pk-fg-subtle);
+  font-style: italic;
+  font-weight: 400;
+}

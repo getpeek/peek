@@ -13,13 +13,12 @@ import { useChatStream } from "./useChatStream";
 import { useChatTools } from "./useChatTools";
 import type { ChatNode as ChatNodeT } from "../../types";
 import "../../../shapes/Chat/Chat.css";
-import "../node.css";
 
 const DEFAULT_W = 540;
 const DEFAULT_H = 400;
 
 function firstLine(text: string): string {
-  const line = text.split("\n").find((l) => l.trim().length > 0);
+  const line = text.split("\n").find(l => l.trim().length > 0);
   return line ? line.trim().slice(0, 40) : "";
 }
 
@@ -68,12 +67,12 @@ export function ChatNode({ id, data, selected, width, height }: NodeProps<ChatNo
       >
         <NodeHeader
           nodeId={id}
-          type="chat"
+          type='chat'
           name={data.query ? `chat · ${firstLine(data.query)}` : "new conversation"}
         />
-        <div className="app-node-body nodrag" ref={bodyRef}>
-          <div className="chat-container">
-            <div className="messages-container">
+        <div className='app-node-body nodrag' ref={bodyRef}>
+          <div className='chat-container'>
+            <div className='messages-container'>
               {data.messages.length === 0 ? (
                 <ChatEmptyState />
               ) : (

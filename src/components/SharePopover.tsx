@@ -77,22 +77,22 @@ export function SharePopover({ onClose }: Props) {
 
   if (!session) {
     return (
-      <div className="collab-panel">
-        <header className="collab-header">
-          <div className="collab-header-icon">
+      <div className='collab-panel'>
+        <header className='collab-header'>
+          <div className='collab-header-icon'>
             <IconUser size={18} stroke={1.75} />
           </div>
-          <div className="collab-header-text">
+          <div className='collab-header-text'>
             <h2>Collaborate</h2>
             <p>Host a session to share this canvas, or paste a ticket to join one.</p>
           </div>
         </header>
 
-        <section className="collab-section">
-          <div className="collab-label">Start a session</div>
+        <section className='collab-section'>
+          <div className='collab-label'>Start a session</div>
           <button
-            type="button"
-            className="collab-host-button"
+            type='button'
+            className='collab-host-button'
             onClick={startSession}
             disabled={busy}
           >
@@ -101,25 +101,25 @@ export function SharePopover({ onClose }: Props) {
           </button>
         </section>
 
-        <div className="collab-or">
+        <div className='collab-or'>
           <span>or</span>
         </div>
 
-        <section className="collab-section">
-          <div className="collab-label">Join a session</div>
-          <div className="collab-join-row">
+        <section className='collab-section'>
+          <div className='collab-label'>Join a session</div>
+          <div className='collab-join-row'>
             <input
-              type="text"
-              className="collab-input"
-              placeholder="Paste a ticket…"
+              type='text'
+              className='collab-input'
+              placeholder='Paste a ticket…'
               value={ticket}
-              onChange={(e) => {
+              onChange={e => {
                 setTicket(e.currentTarget.value);
                 if (joinError) {
                   setJoinError(null);
                 }
               }}
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 if (e.key === "Enter") {
                   e.preventDefault();
                   void joinSession();
@@ -129,18 +129,18 @@ export function SharePopover({ onClose }: Props) {
               autoFocus
             />
             <button
-              type="button"
-              className="collab-join-button"
+              type='button'
+              className='collab-join-button'
               onClick={joinSession}
               disabled={busy || !ticket.trim()}
             >
               Join
             </button>
           </div>
-          {joinError && <div className="collab-error">{joinError}</div>}
+          {joinError && <div className='collab-error'>{joinError}</div>}
         </section>
 
-        <footer className="collab-footer">
+        <footer className='collab-footer'>
           <IconShieldLock size={13} stroke={1.75} />
           <span>End-to-end encrypted · tickets expire in 24h</span>
         </footer>
@@ -148,7 +148,7 @@ export function SharePopover({ onClose }: Props) {
     );
   }
 
-  const peerEntries = Object.values(participants).filter((p) => p.author !== session.myAuthor);
+  const peerEntries = Object.values(participants).filter(p => p.author !== session.myAuthor);
   const collaboratorCount = 1 + peerEntries.length;
   const isHost = session.role === "host";
   const isTransient = session.status === "connecting" || session.status === "reconnecting";
@@ -171,28 +171,28 @@ export function SharePopover({ onClose }: Props) {
         : "LIVE";
 
   return (
-    <div className="collab-panel">
-      <header className="collab-header">
-        <div className="collab-header-icon collab-header-icon--live">
+    <div className='collab-panel'>
+      <header className='collab-header'>
+        <div className='collab-header-icon collab-header-icon--live'>
           <IconBroadcast size={18} stroke={1.75} />
         </div>
-        <div className="collab-header-text">
+        <div className='collab-header-text'>
           <h2>{headline}</h2>
           <p>{subhead}</p>
         </div>
         <div className={`collab-live-pill ${isTransient ? "is-connecting" : ""}`}>
-          <span className="collab-live-dot" />
+          <span className='collab-live-dot' />
           {pillLabel}
         </div>
       </header>
 
-      <section className="collab-section">
-        <div className="collab-label">Invite ticket</div>
-        <div className="collab-ticket-row">
-          <code className="collab-ticket">{session.ticket}</code>
+      <section className='collab-section'>
+        <div className='collab-label'>Invite ticket</div>
+        <div className='collab-ticket-row'>
+          <code className='collab-ticket'>{session.ticket}</code>
           <CopyButton value={session.ticket} timeout={1500}>
             {({ copied, copy }) => (
-              <button type="button" className="collab-copy-button" onClick={copy}>
+              <button type='button' className='collab-copy-button' onClick={copy}>
                 {copied ? <IconCheck size={13} stroke={2} /> : <IconCopy size={13} stroke={1.75} />}
                 <span>{copied ? "Copied" : "Copy"}</span>
               </button>
@@ -201,38 +201,38 @@ export function SharePopover({ onClose }: Props) {
         </div>
       </section>
 
-      <div className="collab-divider" />
+      <div className='collab-divider' />
 
-      <section className="collab-section">
-        <div className="collab-label">
-          Collaborators · <span className="collab-count">{collaboratorCount}</span>
+      <section className='collab-section'>
+        <div className='collab-label'>
+          Collaborators · <span className='collab-count'>{collaboratorCount}</span>
         </div>
 
-        <ul className="collab-list">
-          <li className="collab-row">
-            <span className="collab-avatar" style={{ backgroundColor: session.myColor }}>
+        <ul className='collab-list'>
+          <li className='collab-row'>
+            <span className='collab-avatar' style={{ backgroundColor: session.myColor }}>
               {initialFromName(session.myName)}
-              <span className="collab-presence" />
+              <span className='collab-presence' />
             </span>
-            <span className="collab-name">
-              {session.myName} <span className="collab-you">(you)</span>
+            <span className='collab-name'>
+              {session.myName} <span className='collab-you'>(you)</span>
             </span>
-            <span className="collab-role">{isHost ? "HOST" : "EDITOR"}</span>
+            <span className='collab-role'>{isHost ? "HOST" : "EDITOR"}</span>
           </li>
-          {peerEntries.map((p) => (
-            <li className="collab-row" key={p.author}>
-              <span className="collab-avatar" style={{ backgroundColor: p.color }}>
+          {peerEntries.map(p => (
+            <li className='collab-row' key={p.author}>
+              <span className='collab-avatar' style={{ backgroundColor: p.color }}>
                 {initialFromName(p.name)}
-                <span className="collab-presence" />
+                <span className='collab-presence' />
               </span>
-              <span className="collab-name">{p.name}</span>
-              <span className="collab-role">{p.isHost ? "HOST" : "EDITOR"}</span>
+              <span className='collab-name'>{p.name}</span>
+              <span className='collab-role'>{p.isHost ? "HOST" : "EDITOR"}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <button type="button" className="collab-end-button" onClick={endSession} disabled={busy}>
+      <button type='button' className='collab-end-button' onClick={endSession} disabled={busy}>
         <IconX size={14} stroke={2} />
         <span>End session</span>
       </button>

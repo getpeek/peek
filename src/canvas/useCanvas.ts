@@ -13,7 +13,7 @@ export function useCanvas(): CanvasApi {
 
   return useMemo<CanvasApi>(
     () => ({
-      addNode: (node) => {
+      addNode: node => {
         const globals =
           node.type === "query"
             ? (rf.getNodes() as AppNode[]).filter(
@@ -21,15 +21,15 @@ export function useCanvas(): CanvasApi {
                   n.type === "variable" && (n.data as VariableData).isGlobal === true,
               )
             : [];
-        setNodes((ns) => [...ns, node]);
+        setNodes(ns => [...ns, node]);
         if (globals.length === 0) {
           return;
         }
-        setEdges((es) => {
+        setEdges(es => {
           let acc = es;
           for (const g of globals) {
             const edgeId = ids.edge(g.id, node.id);
-            if (acc.some((e) => e.id === edgeId)) {
+            if (acc.some(e => e.id === edgeId)) {
               continue;
             }
             acc = [...acc, { id: edgeId, source: g.id, target: node.id }];
@@ -39,8 +39,8 @@ export function useCanvas(): CanvasApi {
       },
 
       updateNode: (id, patch) =>
-        setNodes((ns) =>
-          ns.map((n) => {
+        setNodes(ns =>
+          ns.map(n => {
             if (n.id !== id) {
               return n;
             }
@@ -49,8 +49,8 @@ export function useCanvas(): CanvasApi {
         ),
 
       updateNodeData: <D extends object>(id: string, patch: Partial<D> | ((d: D) => D)) =>
-        setNodes((ns) =>
-          ns.map((n) => {
+        setNodes(ns =>
+          ns.map(n => {
             if (n.id !== id) {
               return n;
             }
@@ -62,37 +62,37 @@ export function useCanvas(): CanvasApi {
           }),
         ),
 
-      deleteNode: (id) => {
-        setNodes((ns) => ns.filter((n) => n.id !== id));
-        setEdges((es) => es.filter((e) => e.source !== id && e.target !== id));
+      deleteNode: id => {
+        setNodes(ns => ns.filter(n => n.id !== id));
+        setEdges(es => es.filter(e => e.source !== id && e.target !== id));
       },
 
       connect: (source, target, opts = {}) =>
-        setEdges((es) => {
+        setEdges(es => {
           const id = ids.edge(source, target);
-          if (es.some((e) => e.id === id)) {
+          if (es.some(e => e.id === id)) {
             return es;
           }
           const next: AppEdge = { id, source, target, ...opts };
           return [...es, next];
         }),
 
-      getNode: (id) => rf.getNode(id) as AppNode | undefined,
+      getNode: id => rf.getNode(id) as AppNode | undefined,
       getNodes: () => rf.getNodes() as AppNode[],
       getEdges: () => rf.getEdges() as AppEdge[],
-      getSelectedNodes: () => (rf.getNodes() as AppNode[]).filter((n) => n.selected),
+      getSelectedNodes: () => (rf.getNodes() as AppNode[]).filter(n => n.selected),
 
-      selectOnly: (idOrIds) => {
+      selectOnly: idOrIds => {
         const wanted = new Set(Array.isArray(idOrIds) ? idOrIds : [idOrIds]);
-        setNodes((ns) =>
-          ns.map((n) =>
+        setNodes(ns =>
+          ns.map(n =>
             n.selected === wanted.has(n.id) ? n : ({ ...n, selected: wanted.has(n.id) } as AppNode),
           ),
         );
       },
 
       deselectAll: () =>
-        setNodes((ns) => ns.map((n) => (n.selected ? ({ ...n, selected: false } as AppNode) : n))),
+        setNodes(ns => ns.map(n => (n.selected ? ({ ...n, selected: false } as AppNode) : n))),
 
       zoomToNode: (id, opts = {}) => {
         const center = () => {
@@ -145,11 +145,11 @@ export function useCanvas(): CanvasApi {
         }
         const fit = () =>
           rf.fitView({
-            nodes: nodeIds.map((id) => ({ id })),
+            nodes: nodeIds.map(id => ({ id })),
             duration: opts.duration ?? 300,
             padding: opts.padding ?? 0.2,
           });
-        if (nodeIds.every((id) => rf.getNode(id))) {
+        if (nodeIds.every(id => rf.getNode(id))) {
           fit();
         } else {
           requestAnimationFrame(fit);
@@ -180,13 +180,13 @@ export function useCanvas(): CanvasApi {
 
       resetZoom: () => rf.zoomTo(1, { duration: 200 }),
       getZoom: () => rf.getZoom(),
-      screenToFlowPosition: (p) => rf.screenToFlowPosition(p),
+      screenToFlowPosition: p => rf.screenToFlowPosition(p),
 
-      switchPage: (pageId) => setDoc((d) => (d.pages[pageId] ? { ...d, activePageId: pageId } : d)),
+      switchPage: pageId => setDoc(d => (d.pages[pageId] ? { ...d, activePageId: pageId } : d)),
 
-      addPage: (name) => {
+      addPage: name => {
         const pageId = ids.page();
-        setDoc((d) => ({
+        setDoc(d => ({
           ...d,
           pages: {
             ...d.pages,
@@ -205,7 +205,7 @@ export function useCanvas(): CanvasApi {
       },
 
       renamePage: (pageId, name) =>
-        setDoc((d) =>
+        setDoc(d =>
           d.pages[pageId]
             ? {
                 ...d,
@@ -217,14 +217,14 @@ export function useCanvas(): CanvasApi {
             : d,
         ),
 
-      deletePage: (pageId) =>
-        setDoc((d) => {
+      deletePage: pageId =>
+        setDoc(d => {
           if (!d.pages[pageId] || d.pageOrder.length <= 1) {
             return d;
           }
           const { [pageId]: _removed, ...rest } = d.pages;
           const oldIdx = d.pageOrder.indexOf(pageId);
-          const order = d.pageOrder.filter((id) => id !== pageId);
+          const order = d.pageOrder.filter(id => id !== pageId);
           const fallbackIdx = Math.max(0, oldIdx - 1);
           return {
             ...d,

@@ -111,7 +111,7 @@ export const useExecutePrompt = (modelType: "fast" | "advanced") => {
         conversation.push(
           new AIMessage({
             content: message.message,
-            tool_calls: (message.toolCalls ?? []).map((c) => ({
+            tool_calls: (message.toolCalls ?? []).map(c => ({
               id: c.id,
               name: c.name,
               args: (c.args ?? {}) as Record<string, unknown>,

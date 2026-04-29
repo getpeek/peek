@@ -8,13 +8,13 @@ export const WorkspacePopover = () => {
   const workspaces = useAtomValue(workspacesAtom);
 
   return (
-    <div className="popover">
-      <Stack gap="xl">
-        <Group align="center" justify="space-between" w="100%">
+    <div className='popover'>
+      <Stack gap='xl'>
+        <Group align='center' justify='space-between' w='100%'>
           <Text>Workspaces</Text>
         </Group>
-        <Stack gap={40} mah="60vh" style={{ overflowY: "auto" }}>
-          {workspaces.map((workspace) => (
+        <Stack gap={40} mah='60vh' style={{ overflowY: "auto" }}>
+          {workspaces.map(workspace => (
             <Workspace
               key={workspace.name}
               name={workspace.name}

@@ -22,11 +22,11 @@ export function CellContextMenu({
     <Menu
       opened
       onClose={onClose}
-      position="bottom-start"
+      position='bottom-start'
       withinPortal
       width={200}
       offset={4}
-      radius="md"
+      radius='md'
       classNames={{
         dropdown: "column-menu-dropdown",
         item: "column-menu-item",

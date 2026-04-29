@@ -8,8 +8,8 @@ export function TitleBarPageSelector() {
   const [renameId, setRenameId] = useState<string | null>(null);
 
   return (
-    <div className="titlebar-page-selector">
-      {pages.map((page) => {
+    <div className='titlebar-page-selector'>
+      {pages.map(page => {
         const active = page.id === activePageId;
         if (renameId === page.id) {
           return (
@@ -17,11 +17,11 @@ export function TitleBarPageSelector() {
               key={page.id}
               autoFocus
               defaultValue={page.name}
-              onBlur={(e) => {
+              onBlur={e => {
                 renamePage(page.id, e.target.value || page.name);
                 setRenameId(null);
               }}
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 if (e.key === "Enter") {
                   renamePage(page.id, e.currentTarget.value || page.name);
                   setRenameId(null);
@@ -30,7 +30,7 @@ export function TitleBarPageSelector() {
                   setRenameId(null);
                 }
               }}
-              className="page-tab page-tab-input"
+              className='page-tab page-tab-input'
               style={{ width: 110 }}
             />
           );
@@ -42,16 +42,16 @@ export function TitleBarPageSelector() {
             onClick={() => switchPage(page.id)}
             onDoubleClick={() => setRenameId(page.id)}
           >
-            {active && <span className="dot" />}
+            {active && <span className='dot' />}
             {page.name}
             {active && canClose && (
               <span
-                className="close"
-                onClick={(e) => {
+                className='close'
+                onClick={e => {
                   e.stopPropagation();
                   closePage(page.id);
                 }}
-                title="Delete page"
+                title='Delete page'
               >
                 ×
               </span>
@@ -59,7 +59,7 @@ export function TitleBarPageSelector() {
           </button>
         );
       })}
-      <button className="page-tab add-btn" onClick={() => newPage()} title="New page">
+      <button className='page-tab add-btn' onClick={() => newPage()} title='New page'>
         <IconPlus size={13} />
       </button>
     </div>

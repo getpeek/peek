@@ -22,7 +22,7 @@ function lspSeverityToMonaco(sev: number | undefined): MarkerSeverity {
 }
 
 function applyDiagnostics(monaco: Monaco, model: editor.ITextModel, diagnostics: LspDiagnostic[]) {
-  const markers: editor.IMarkerData[] = diagnostics.map((d) => ({
+  const markers: editor.IMarkerData[] = diagnostics.map(d => ({
     severity: lspSeverityToMonaco(d.severity),
     message: d.message,
     source: d.source,
@@ -59,7 +59,7 @@ export function createLspProvider(monaco: Monaco): IDisposable {
           return { suggestions: [], incomplete: true };
         }
 
-        const suggestions = items.map<languages.CompletionItem>((item) => {
+        const suggestions = items.map<languages.CompletionItem>(item => {
           const insertText = item.insertText ?? item.label;
           const monacoItem: languages.CompletionItem = {
             label: item.label,
@@ -108,13 +108,13 @@ export function attachLspDocumentSync(
 
   const sync = (text: string) =>
     invoke<LspDiagnostic[]>("lsp_did_change", { uri, text })
-      .then((diagnostics) => {
+      .then(diagnostics => {
         if (model.isDisposed()) {
           return;
         }
         applyDiagnostics(monaco, model, diagnostics);
       })
-      .catch((e) => {
+      .catch(e => {
         console.error("lsp_did_change failed", e);
       });
 

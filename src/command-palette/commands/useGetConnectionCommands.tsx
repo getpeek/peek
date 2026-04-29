@@ -8,30 +8,30 @@ export const useGetConnectionCommands = (): CommandPaletteResult[] => {
   const setActiveConnection = useSetAtom(activeConnectionAtom);
 
   return workspaces
-    .flatMap((workspace) =>
-      workspace.connections.map((connection) => ({
+    .flatMap(workspace =>
+      workspace.connections.map(connection => ({
         workspaceName: workspace.name,
         connection,
       })),
     )
-    .map((workspace) => ({
+    .map(workspace => ({
       searchAgainst: workspace.workspaceName + " " + workspace.connection.name,
       icon: null,
       label: (
-        <Group gap="xs" align="center">
+        <Group gap='xs' align='center'>
           <div
-            className="color"
+            className='color'
             style={{
               background: workspace.connection.color,
               width: 12,
               height: 12,
             }}
           />
-          <Text size="xs">{workspace.connection.name}</Text>
+          <Text size='xs'>{workspace.connection.name}</Text>
         </Group>
       ),
       description: (
-        <Text size="xs" c="var(--text-color-subtle)">
+        <Text size='xs' c='var(--text-color-subtle)'>
           {workspace.workspaceName}
         </Text>
       ),

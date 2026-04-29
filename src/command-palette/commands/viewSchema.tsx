@@ -35,10 +35,10 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconSchema size={16} />,
-    label: <Text size="xs">View Schema</Text>,
+    label: <Text size='xs'>View Schema</Text>,
     searchAgainst: "View database schema",
     description: (
-      <Text size="xs" c="var(--text-color-subtle)">
+      <Text size='xs' c='var(--text-color-subtle)'>
         opens in a new page
       </Text>
     ),
@@ -46,7 +46,7 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
       if (!canvas) {
         return;
       }
-      let schemaPageId = doc.pageOrder.find((id) => doc.pages[id]?.name === "schema");
+      let schemaPageId = doc.pageOrder.find(id => doc.pages[id]?.name === "schema");
       if (schemaPageId) {
         canvas.switchPage(schemaPageId);
       } else {

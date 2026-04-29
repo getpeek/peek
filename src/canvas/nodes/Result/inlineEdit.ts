@@ -78,7 +78,7 @@ export function formatSqlLiteral(value: unknown, sqlType: string): string {
 
   if (upper === "JSON" || upper === "JSONB") {
     const json = typeof value === "string" ? value : JSON.stringify(value);
-    const escaped = json.replaceAll('\'', "''");
+    const escaped = json.replaceAll("'", "''");
     return upper === "JSONB" ? `'${escaped}'::jsonb` : `'${escaped}'::json`;
   }
 
@@ -91,7 +91,7 @@ export function formatSqlLiteral(value: unknown, sqlType: string): string {
   }
 
   const s = typeof value === "string" ? value : String(value);
-  const escaped = s.replaceAll('\'', "''");
+  const escaped = s.replaceAll("'", "''");
   return `'${escaped}'`;
 }
 
@@ -106,7 +106,7 @@ export function buildUpdateSql(
   if (pks.length === 0) {
     throw new Error("buildUpdateSql requires at least one primary key column");
   }
-  const where = pks.map((pk) => `"${pk.column}" = ${pk.literal}`).join(" AND ");
+  const where = pks.map(pk => `"${pk.column}" = ${pk.literal}`).join(" AND ");
   return `UPDATE "${table}" SET "${column}" = ${newLiteral} WHERE ${where}`;
 }
 

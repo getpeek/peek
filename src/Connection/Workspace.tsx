@@ -13,14 +13,14 @@ export const Workspace = ({ name, connections }: WorkspaceProps) => {
   const [activeConnection, setActiveConnection] = useAtom(activeConnectionAtom);
 
   return (
-    <Stack gap="xs">
-      <Group align="center" justify="space-between">
-        <Text size="xs" fw="bold" pos="sticky" c="var(--text-color)">
+    <Stack gap='xs'>
+      <Group align='center' justify='space-between'>
+        <Text size='xs' fw='bold' pos='sticky' c='var(--text-color)'>
           {name}
         </Text>
       </Group>
       <Stack gap={0}>
-        {connections.map((connection) => (
+        {connections.map(connection => (
           <ConnectionItem
             key={connection.url}
             connection={connection}

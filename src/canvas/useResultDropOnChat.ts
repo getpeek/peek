@@ -51,7 +51,7 @@ export function useResultDropOnChat(onSchemaNodeDragStop: (node: AppNode) => voi
           message: `The user ran an additional query ${result.data.query} which resulted in this data:\n${csv}`,
           timestamp: Date.now(),
         };
-        canvas.updateNodeData<ChatNodeT["data"]>(chat.id, (d) => ({
+        canvas.updateNodeData<ChatNodeT["data"]>(chat.id, d => ({
           ...d,
           messages: [...d.messages, message],
         }));

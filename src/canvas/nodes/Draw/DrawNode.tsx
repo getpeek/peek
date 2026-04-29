@@ -15,7 +15,7 @@ export function getSvgPathFromStroke(stroke: number[][]): string {
 
   return `M${d[0].toFixed(2)},${d[1].toFixed(2)} Q${d
     .slice(2)
-    .map((n) => n.toFixed(2))
+    .map(n => n.toFixed(2))
     .join(" ")} Z`;
 }
 
@@ -36,7 +36,7 @@ export function DrawNode({ data, selected, width, height }: NodeProps<DrawNodeT>
       <HiddenHandles />
       <div style={{ width, height, position: "relative" }}>
         <svg width={width} height={height} style={{ display: "block", overflow: "hidden" }}>
-          <path d={d} fill={fill} pointerEvents="all" />
+          <path d={d} fill={fill} pointerEvents='all' />
         </svg>
       </div>
     </>

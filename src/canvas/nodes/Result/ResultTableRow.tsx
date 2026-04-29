@@ -65,7 +65,7 @@ export const ResultTableRow = forwardRef<
           <Table.Td
             key={columnIdx}
             className={cellClasses.join(" ")}
-            onDoubleClick={(e) => {
+            onDoubleClick={e => {
               e.stopPropagation();
               setEditing({
                 row: rowIndex,
@@ -75,7 +75,7 @@ export const ResultTableRow = forwardRef<
                 saving: false,
               });
             }}
-            onContextMenu={(e) => {
+            onContextMenu={e => {
               e.stopPropagation();
               onCellContextMenu(e, value, column);
             }}
@@ -86,8 +86,8 @@ export const ResultTableRow = forwardRef<
                 draft={editing.draft}
                 error={editing.error}
                 saving={editing.saving}
-                onChange={(next) =>
-                  setEditing((current) => (current ? { ...current, draft: next } : current))
+                onChange={next =>
+                  setEditing(current => (current ? { ...current, draft: next } : current))
                 }
                 onCommit={commitEdit}
                 onCancel={() => setEditing(null)}

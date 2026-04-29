@@ -29,38 +29,38 @@ export const CustomTitleBar = () => {
   };
 
   return (
-    <div className="custom-titlebar">
-      <div className="titlebar-content" data-tauri-drag-region>
-        <div className="titlebar-left">
-          <div className="window-controls">
+    <div className='custom-titlebar'>
+      <div className='titlebar-content' data-tauri-drag-region>
+        <div className='titlebar-left'>
+          <div className='window-controls'>
             <button
-              className="control-button close-button"
+              className='control-button close-button'
               onClick={handleClose}
-              aria-label="Close"
+              aria-label='Close'
               tabIndex={-1}
             >
-              <IconX size={9} color="#333" className="icon" stroke={3} />
+              <IconX size={9} color='#333' className='icon' stroke={3} />
             </button>
             <button
-              className="control-button minimize-button"
+              className='control-button minimize-button'
               onClick={handleMinimize}
-              aria-label="Minimize"
+              aria-label='Minimize'
               tabIndex={-1}
             >
-              <IconMinus size={9} color="#333" className="icon" stroke={3} />
+              <IconMinus size={9} color='#333' className='icon' stroke={3} />
             </button>
             <button
-              className="control-button maximize-button"
+              className='control-button maximize-button'
               onClick={handleMaximize}
-              aria-label="Maximize"
+              aria-label='Maximize'
               tabIndex={-1}
             >
-              <IconArrowsDiagonal2 size={9} color="#333" className="icon" stroke={3} />
+              <IconArrowsDiagonal2 size={9} color='#333' className='icon' stroke={3} />
             </button>
           </div>
           <TitleBarPageSelector />
         </div>
-        <div className="titlebar-right">
+        <div className='titlebar-right'>
           <TitlebarLiveQueryNotification />
           <TitleBarCommandPalette />
           <TitleBarCollaborateButton />

@@ -153,8 +153,8 @@ function diffNodes(
   nextPage: PageState,
   ops: Operation[],
 ): void {
-  const prevById = new Map<string, AppNode>((prevPage?.nodes ?? []).map((n) => [n.id, n]));
-  const nextById = new Map<string, AppNode>(nextPage.nodes.map((n) => [n.id, n]));
+  const prevById = new Map<string, AppNode>((prevPage?.nodes ?? []).map(n => [n.id, n]));
+  const nextById = new Map<string, AppNode>(nextPage.nodes.map(n => [n.id, n]));
 
   for (const [nodeId] of prevById) {
     if (!nextById.has(nodeId)) {
@@ -181,8 +181,8 @@ function diffEdges(
   nextPage: PageState,
   ops: Operation[],
 ): void {
-  const prevById = new Map<string, AppEdge>((prevPage?.edges ?? []).map((e) => [e.id, e]));
-  const nextById = new Map<string, AppEdge>(nextPage.edges.map((e) => [e.id, e]));
+  const prevById = new Map<string, AppEdge>((prevPage?.edges ?? []).map(e => [e.id, e]));
+  const nextById = new Map<string, AppEdge>(nextPage.edges.map(e => [e.id, e]));
 
   for (const [edgeId] of prevById) {
     if (!nextById.has(edgeId)) {
@@ -282,4 +282,3 @@ export function documentToPuts(doc: CanvasDocument): Operation[] {
   }
   return ops;
 }
-

@@ -12,21 +12,21 @@ interface MessageItemProps {
 export const MessageItem = ({ message, index }: MessageItemProps) => {
   if (message.type === "context") {
     return (
-      <div className="message context">
+      <div className='message context'>
         <Group
           w={300}
-          c="var(--context-message)"
+          c='var(--context-message)'
           bd={`2px solid var(--mantine-color-green-8)`}
           py={16}
           px={8}
-          align="center"
-          justify="center"
+          align='center'
+          justify='center'
           style={{ borderRadius: 9999 }}
         >
-          <IconRobot size={20} color="var(--context-message)" />
+          <IconRobot size={20} color='var(--context-message)' />
           <Stack gap={2}>
-            <Text fw="bold">{index === 0 ? "Context inserted" : "Context updated"}!</Text>
-            <Text size="xs" c="var(--context-message-subtle)">
+            <Text fw='bold'>{index === 0 ? "Context inserted" : "Context updated"}!</Text>
+            <Text size='xs' c='var(--context-message-subtle)'>
               {index === 0 ? "Query and result" : "Updated query and result"}
             </Text>
           </Stack>
@@ -38,24 +38,24 @@ export const MessageItem = ({ message, index }: MessageItemProps) => {
   if (message.type === "tool_call") {
     const calls = message.toolCalls ?? [];
     return (
-      <div className="message tool-call">
+      <div className='message tool-call'>
         {message.message.trim() && (
-          <div className="message-content">
+          <div className='message-content'>
             <Markdown remarkPlugins={[remarkGfm]}>{message.message}</Markdown>
           </div>
         )}
-        <Group gap={6} wrap="wrap">
-          {calls.map((call) => (
+        <Group gap={6} wrap='wrap'>
+          {calls.map(call => (
             <Group
               key={call.id}
               gap={6}
               px={10}
               py={4}
-              bd="1px solid var(--mantine-color-gray-7)"
+              bd='1px solid var(--mantine-color-gray-7)'
               style={{ borderRadius: 9999 }}
             >
               <IconTool size={14} />
-              <Text size="xs" ff="var(--pk-font-mono)">
+              <Text size='xs' ff='var(--pk-font-mono)'>
                 {call.name}
               </Text>
             </Group>
@@ -69,7 +69,7 @@ export const MessageItem = ({ message, index }: MessageItemProps) => {
     const Icon = message.isError ? IconAlertTriangle : IconCheck;
     const color = message.isError ? "red" : "green";
     return (
-      <div className="message tool-result">
+      <div className='message tool-result'>
         <Group
           gap={6}
           px={10}
@@ -79,7 +79,7 @@ export const MessageItem = ({ message, index }: MessageItemProps) => {
           style={{ borderRadius: 9999, alignSelf: "flex-start" }}
         >
           <Icon size={14} />
-          <Text size="xs" ff="var(--pk-font-mono)">
+          <Text size='xs' ff='var(--pk-font-mono)'>
             {message.toolName ?? "tool"} {message.isError ? "failed" : "result"}
           </Text>
         </Group>
@@ -93,21 +93,21 @@ export const MessageItem = ({ message, index }: MessageItemProps) => {
     }
 
     return (
-      <div className="message context">
+      <div className='message context'>
         <Group
           w={300}
-          c="var(--system-message)"
+          c='var(--system-message)'
           bd={`2px solid var(--mantine-color-blue-8)`}
           py={16}
           px={8}
-          align="center"
-          justify="center"
+          align='center'
+          justify='center'
           style={{ borderRadius: 9999 }}
         >
-          <IconRobot size={20} color="var(--system-message)" />
+          <IconRobot size={20} color='var(--system-message)' />
           <Stack gap={2}>
-            <Text fw="bold">{message.message}</Text>
-            <Text size="xs" c="var(--system-message-subtle)">
+            <Text fw='bold'>{message.message}</Text>
+            <Text size='xs' c='var(--system-message-subtle)'>
               Just for you
             </Text>
           </Stack>
@@ -118,8 +118,8 @@ export const MessageItem = ({ message, index }: MessageItemProps) => {
 
   return (
     <div className={`message ${message.type}`}>
-      <div className="message-label">{message.type}</div>
-      <div className="message-content">
+      <div className='message-label'>{message.type}</div>
+      <div className='message-content'>
         <Markdown remarkPlugins={[remarkGfm]}>{message.message}</Markdown>
       </div>
     </div>

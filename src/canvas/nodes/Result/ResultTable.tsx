@@ -78,7 +78,7 @@ export function ResultTable({
   const { outbound, inbound } = useMemo(() => {
     const outboundMap: Record<string, Reference[]> = {};
     const inboundMap: Record<string, Reference[]> = {};
-    headers.forEach((column) => {
+    headers.forEach(column => {
       inboundMap[column] = getInboundReferences(ast, schema.references, column);
       outboundMap[column] = getOutboundReferences(ast, schema.references, column);
     });
@@ -91,7 +91,7 @@ export function ResultTable({
       return;
     }
     const queries = refs.map(
-      (ref) => `SELECT * FROM ${ref.table} WHERE ${ref.column} = '${value}' LIMIT 300`,
+      ref => `SELECT * FROM ${ref.table} WHERE ${ref.column} = '${value}' LIMIT 300`,
     );
     executeQueries(sourceNode, queries);
   };
@@ -99,8 +99,8 @@ export function ResultTable({
   const exportColumn = useCallback(
     async (columnIdx: number, header: string, format: "csv" | "json") => {
       const columnData: DatabaseResult = data
-        .map((row) => (row[columnIdx] ? [row[columnIdx]] : []))
-        .filter((row) => row.length > 0);
+        .map(row => (row[columnIdx] ? [row[columnIdx]] : []))
+        .filter(row => row.length > 0);
       if (columnData.length === 0) {
         return;
       }
@@ -129,8 +129,8 @@ export function ResultTable({
 
   if (data.length === 0) {
     return (
-      <div className="no-results" style={{ padding: 16 }}>
-        <Text c="var(--pk-fg-muted)">No results</Text>
+      <div className='no-results' style={{ padding: 16 }}>
+        <Text c='var(--pk-fg-muted)'>No results</Text>
       </div>
     );
   }
@@ -188,7 +188,7 @@ export function ResultTable({
               />
             </tr>
           )}
-          {virtualItems.map((virtualRow) => (
+          {virtualItems.map(virtualRow => (
             <ResultTableRow
               key={virtualRow.key}
               ref={rowVirtualizer.measureElement}
@@ -217,11 +217,11 @@ export function ResultTable({
         <Menu
           opened
           onClose={closeHeaderMenu}
-          position="bottom-start"
+          position='bottom-start'
           withinPortal
           width={220}
           offset={4}
-          radius="md"
+          radius='md'
           classNames={{
             dropdown: "column-menu-dropdown",
             item: "column-menu-item",

@@ -7,7 +7,7 @@ export const useGetConfig = () => {
   const setConfig = useSetAtom(configAtom);
 
   useEffect(() => {
-    invoke("get_config").then((configString) => {
+    invoke("get_config").then(configString => {
       const config = JSON.parse(configString as string) as Config;
       setConfig(config);
     });

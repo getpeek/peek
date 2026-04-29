@@ -39,7 +39,7 @@ export function TableDefinitionTable({ table, columns }: Props) {
   }, [schema.primaryKeys, schema.references, table]);
 
   return (
-    <table className="table-definition">
+    <table className='table-definition'>
       <tbody>
         {columns.map(([name, type], i) => {
           const pk = isPk(name, i);
@@ -48,10 +48,10 @@ export function TableDefinitionTable({ table, columns }: Props) {
           return (
             <tr key={name}>
               <td className={`col-name-cell ${pk ? "pk" : ""} ${fk ? "fk" : ""}`}>
-                <span className="col-name">
+                <span className='col-name'>
                   {name}
-                  {pk && <span className="col-tag pk">PK</span>}
-                  {fk && <span className="col-tag fk">FK</span>}
+                  {pk && <span className='col-tag pk'>PK</span>}
+                  {fk && <span className='col-tag fk'>FK</span>}
                 </span>
               </td>
               <td className={`col-type type-${category}`}>{type}</td>

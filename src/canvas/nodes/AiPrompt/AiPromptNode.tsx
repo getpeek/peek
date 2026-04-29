@@ -11,13 +11,13 @@ import { useScrollFallthrough } from "../useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import type { AiPromptNode as AiPromptNodeT, QueryNode } from "../../types";
-import "../node.css";
+import "./AiPrompt.css";
 
 const DEFAULT_W = 350;
 const DEFAULT_H = 240;
 
 function firstLine(text: string): string {
-  const line = text.split("\n").find((l) => l.trim().length > 0);
+  const line = text.split("\n").find(l => l.trim().length > 0);
   return line ? line.trim().slice(0, 60) : "";
 }
 
@@ -132,41 +132,41 @@ Respond ONLY with the sql in text format, no backticks, markdown, formatting, co
       <NodeResizer isVisible={!!selected} minWidth={300} minHeight={180} />
       <HiddenHandles />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-        <NodeHeader nodeId={id} type="ai-prompt" name={firstLine(data.prompt) || "new prompt"} />
-        <div className="ai-prompt-body nodrag" ref={bodyRef}>
-          {data.isLoading && <div className="running-shimmer" />}
+        <NodeHeader nodeId={id} type='ai-prompt' name={firstLine(data.prompt) || "new prompt"} />
+        <div className='ai-prompt-body nodrag' ref={bodyRef}>
+          {data.isLoading && <div className='running-shimmer' />}
           <textarea
             value={data.prompt}
-            placeholder="Generate a query that..."
-            autoComplete="off"
-            autoCorrect="off"
+            placeholder='Generate a query that...'
+            autoComplete='off'
+            autoCorrect='off'
             disabled={data.isLoading}
-            onChange={(e) =>
+            onChange={e =>
               canvas.updateNodeData<AiPromptNodeT["data"]>(id, {
                 prompt: e.currentTarget.value,
               })
             }
           />
           {data.reason && (
-            <div className="ai-status">
+            <div className='ai-status'>
               <IconSparkles size={11} />
               {data.reason}
             </div>
           )}
         </div>
-        <div className="app-node-footer nodrag">
-          <span className="ai-status">
+        <div className='app-node-footer nodrag'>
+          <span className='ai-status'>
             <IconSparkles size={11} />
             {modelName}
           </span>
           <button
-            className="btn"
+            className='btn'
             onClick={generate}
             disabled={data.isLoading || data.prompt.length === 0}
           >
             <IconPlayerPlay size={13} />
             Generate query
-            <span className="kbd">⌘↵</span>
+            <span className='kbd'>⌘↵</span>
           </button>
         </div>
       </div>

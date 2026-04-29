@@ -3,11 +3,7 @@ import { getDefaultStore, useSetAtom } from "jotai";
 import { useCallback, useEffect, useMemo } from "react";
 import { activeConnectionAtom } from "../Connection/state";
 import { emptyDocument } from "../canvas/emptyDocument";
-import {
-  documentAtom,
-  isApplyingRemoteRef,
-  resultsAtom,
-} from "../canvas/state";
+import { documentAtom, isApplyingRemoteRef, resultsAtom } from "../canvas/state";
 import { documentToPuts, resultsToPuts } from "./diff";
 import {
   preSessionSnapshotAtom,

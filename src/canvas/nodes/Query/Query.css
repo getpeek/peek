@@ -1,0 +1,38 @@
+.app-node.is-live,
+.app-node.is-live.selected {
+  position: relative;
+  border-color: transparent;
+}
+.app-node.is-live::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(
+    90deg,
+    #ff5e5e,
+    #ffb24c,
+    #f5e85c,
+    #6fea7a,
+    #5cd6e8,
+    #6c8cff,
+    #c87cff,
+    #ff5e5e
+  );
+  background-size: 200% 100%;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.45;
+  pointer-events: none;
+  animation: pk-rainbow-slide 3s linear infinite;
+  z-index: 2;
+}
+@keyframes pk-rainbow-slide {
+  to {
+    background-position: -200% 0;
+  }
+}
