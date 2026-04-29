@@ -21,6 +21,6 @@ export const useExecuteQueries = () => {
       }
       return requestRemoteExecution(sourceNode.id, queries);
     }
-    return executeQueries(canvas, setResults, sourceNode, queries);
+    return executeQueries({ canvas, setResults, sourceNode, queries });
   };
 };

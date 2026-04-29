@@ -79,6 +79,8 @@ Comments explain **why**, never **what**. Only write one when the reason is non-
 - `yarn fmt` / `yarn fmt:check` — oxfmt.
 - `yarn tauri dev` — full Tauri app (only when host-side behavior matters).
 
+Always run `yarn lint` and `yarn fmt` after making changes.
+
 # Don'ts
 
 - Don't add backwards-compat shims, deprecated re-exports, or `// removed: …` markers when refactoring. Delete the old code.

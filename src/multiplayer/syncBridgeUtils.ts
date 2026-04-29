@@ -145,7 +145,7 @@ export async function handleExecRequest(key: string, value: Uint8Array): Promise
   };
 
   try {
-    await executeQueries(canvas, setResults, sourceNode, payload.queries);
+    await executeQueries({ canvas, setResults, sourceNode, queries: payload.queries });
   } catch (e) {
     console.error("multiplayer: exec-request execution failed:", e);
   } finally {

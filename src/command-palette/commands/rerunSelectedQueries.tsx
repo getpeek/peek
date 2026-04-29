@@ -30,7 +30,7 @@ export const useRerunSelectedQueriesCommand = (): CommandPaletteResult => {
         if (session?.role === "joiner") {
           await requestRemoteExecution(node.id, [q]);
         } else {
-          await executeQueries(canvas, setResults, node, [q]);
+          await executeQueries({ canvas, setResults, sourceNode: node, queries: [q] });
         }
         await new Promise<void>((r) => {
           setTimeout(r, 20);
