@@ -8,15 +8,27 @@ export function HiddenHandles({
 }: {
   connectableTarget?: boolean;
 } = {}) {
+  const positions = [Position.Left, Position.Right, Position.Top, Position.Bottom];
+
   return (
     <>
+      {positions.map(position => (
+        <Handle
+          key={position}
+          id={`target-${position}`}
+          type='target'
+          position={position}
+          style={connectableTarget ? hiddenButConnectableStyle : hiddenStyle}
+          isConnectable={!!connectableTarget}
+        />
+      ))}
       <Handle
-        type='target'
-        position={Position.Left}
-        style={connectableTarget ? hiddenButConnectableStyle : hiddenStyle}
-        isConnectable={!!connectableTarget}
+        id='source-right'
+        type='source'
+        position={Position.Right}
+        style={hiddenStyle}
+        isConnectable={false}
       />
-      <Handle type='source' position={Position.Right} style={hiddenStyle} isConnectable={false} />
     </>
   );
 }

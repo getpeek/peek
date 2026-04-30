@@ -115,9 +115,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
         language: "postgresql",
       });
       canvas.updateNodeData<QueryNodeT["data"]>(id, { query: formatted });
-    } catch {
-      // ignore format errors
-    }
+    } catch {}
   };
 
   return (
