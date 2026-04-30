@@ -1,6 +1,6 @@
 import { IconFilePlus } from "@tabler/icons-react";
 import { Text } from "@mantine/core";
-import { usePageActions } from "../../canvas/usePageActions";
+import { usePageActions } from "../../canvas/hooks/usePageActions";
 import type { CommandPaletteResult } from ".";
 
 export const useNewPageCommand = (): CommandPaletteResult => {

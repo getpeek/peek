@@ -4,7 +4,7 @@ import { ChatEmptyState } from "../../../shapes/Chat/EmptyState";
 import { MessageItem } from "../../../shapes/Chat/MessageItem";
 import { MessageList } from "../../../shapes/Chat/MessageList";
 import { useExecutePrompt } from "../../../shapes/Ai/useExecutePrompt";
-import { useScrollFallthrough } from "../useScrollFallthrough";
+import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";

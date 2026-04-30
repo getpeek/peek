@@ -1,10 +1,10 @@
 import { useAtomValue } from "jotai";
 import { useCallback } from "react";
-import { resultsAtom } from "./state";
-import { defaultDimensions } from "./defaults";
-import { toCsv } from "../tools/export/csv";
-import type { Message } from "../shapes/Ai/useExecutePrompt";
-import type { AppNode, ChatNode as ChatNodeT, ResultNode as ResultNodeT } from "./types";
+import { resultsAtom } from "../state";
+import { defaultDimensions } from "../defaults";
+import { toCsv } from "../../tools/export/csv";
+import type { Message } from "../../shapes/Ai/useExecutePrompt";
+import type { AppNode, ChatNode as ChatNodeT, ResultNode as ResultNodeT } from "../types";
 import { useCanvas } from "./useCanvas";
 
 export function useResultDropOnChat(onSchemaNodeDragStop: (node: AppNode) => void) {

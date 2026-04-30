@@ -4,10 +4,10 @@ import { useEffect, useRef } from "react";
 import { useAtomValue } from "jotai";
 import type { editor as MonacoEditor } from "monaco-editor";
 import { SqlEditor } from "../../../shapes/Query/Editor/SqlEditor";
-import { useCanvas } from "../../useCanvas";
-import { useExecuteQueries } from "../../useExecuteQueries";
-import { useGetVariables } from "../../useGetVariables";
-import { useScrollFallthrough } from "../useScrollFallthrough";
+import { useCanvas } from "../../hooks/useCanvas";
+import { useExecuteQueries } from "../../hooks/useExecuteQueries";
+import { useGetVariables } from "./useGetVariables";
+import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
@@ -162,6 +162,9 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
                   e.preventDefault();
                   e.stopPropagation();
                   runQuery();
+                }
+                if (isMod && e.keyCode === monaco.KeyCode.KeyS) {
+                  formatQuery();
                 }
               });
             }}

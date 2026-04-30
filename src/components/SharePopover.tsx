@@ -1,12 +1,5 @@
 import { CopyButton } from "@mantine/core";
-import {
-  IconBroadcast,
-  IconCheck,
-  IconCopy,
-  IconShieldLock,
-  IconUser,
-  IconX,
-} from "@tabler/icons-react";
+import { IconBroadcast, IconCheck, IconCopy, IconUser, IconX } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useCallback, useState } from "react";
 import { participantsAtom, sessionStateAtom } from "../multiplayer/state";
@@ -139,11 +132,6 @@ export function SharePopover({ onClose }: Props) {
           </div>
           {joinError && <div className='collab-error'>{joinError}</div>}
         </section>
-
-        <footer className='collab-footer'>
-          <IconShieldLock size={13} stroke={1.75} />
-          <span>End-to-end encrypted · tickets expire in 24h</span>
-        </footer>
       </div>
     );
   }

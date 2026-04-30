@@ -1,9 +1,9 @@
 import { useReactFlow } from "@xyflow/react";
 import { useAtom, useSetAtom } from "jotai";
 import { useMemo } from "react";
-import { canvasApiAtom, documentAtom, edgesAtom, nodesAtom, type CanvasApi } from "./state";
-import { ids } from "./ids";
-import type { AppEdge, AppNode, VariableData, VariableNode } from "./types";
+import { canvasApiAtom, documentAtom, edgesAtom, nodesAtom, type CanvasApi } from "../state";
+import { ids } from "../ids";
+import type { AppEdge, AppNode, VariableData, VariableNode } from "../types";
 
 export function useCanvas(): CanvasApi {
   const rf = useReactFlow<AppNode, AppEdge>();

@@ -1,8 +1,8 @@
 import { Handle, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import { IconPlus, IconTrash, IconWorld } from "@tabler/icons-react";
 import { useMemo, useRef } from "react";
-import { useCanvas } from "../../useCanvas";
-import { useScrollFallthrough } from "../useScrollFallthrough";
+import { useCanvas } from "../../hooks/useCanvas";
+import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
 import { VARIABLE_NAME_RE } from "../../variables";

@@ -1,7 +1,7 @@
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
-import { documentAtom, historyAtom, loadEpochAtom, type HistorySnapshot } from "./state";
-import type { AppEdge, AppNode } from "./types";
+import { documentAtom, historyAtom, loadEpochAtom, type HistorySnapshot } from "../state";
+import type { AppEdge, AppNode } from "../types";
 
 const MAX_HISTORY = 50;
 const DEBOUNCE_MS = 300;

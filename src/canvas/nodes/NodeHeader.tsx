@@ -1,5 +1,5 @@
 import { IconX } from "@tabler/icons-react";
-import { useCanvas } from "../useCanvas";
+import { useCanvas } from "../hooks/useCanvas";
 
 interface NodeHeaderProps {
   nodeId: string;

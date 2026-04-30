@@ -7,7 +7,7 @@ import {
   type Message,
 } from "../../../shapes/Ai/useExecutePrompt";
 import { toCsv } from "../../../tools/export/csv";
-import { useCanvas } from "../../useCanvas";
+import { useCanvas } from "../../hooks/useCanvas";
 import { ids } from "../../ids";
 import { resultsAtom } from "../../state";
 import type { ChatData, QueryNode, ResultNode } from "../../types";

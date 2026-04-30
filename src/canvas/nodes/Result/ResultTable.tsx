@@ -14,8 +14,8 @@ import {
   getOutboundReferences,
   type CellReference,
 } from "../../../shapes/Result/ResultTable/findReferences";
-import { useCanvas } from "../../useCanvas";
-import { useExecuteQueries } from "../../useExecuteQueries";
+import { useCanvas } from "../../hooks/useCanvas";
+import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { CellContextMenu } from "./CellContextMenu";
 import { PortalAnchor } from "./PortalAnchor";
 import { ResultTableHeader } from "./ResultTableHeader";

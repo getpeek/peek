@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useSetAtom } from "jotai";
-import { useCanvas } from "./useCanvas";
+import { useCanvas } from "./hooks/useCanvas";
 import { canvasApiAtom } from "./state";
 
 export function CanvasApiPublisher() {

@@ -1,12 +1,12 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { activeConnectionAtom } from "../Connection/state";
-import { preSessionSnapshotAtom, sessionStateAtom } from "../multiplayer/state";
-import { documentAtom, loadEpochAtom, resultsAtom } from "./state";
-import { emptyDocument } from "./emptyDocument";
-import type { DatabaseResult } from "../state";
-import type { AppNode, CanvasDocument } from "./types";
+import { activeConnectionAtom } from "../../Connection/state";
+import { preSessionSnapshotAtom, sessionStateAtom } from "../../multiplayer/state";
+import { documentAtom, loadEpochAtom, resultsAtom } from "../state";
+import { emptyDocument } from "../emptyDocument";
+import type { DatabaseResult } from "../../state";
+import type { AppNode, CanvasDocument } from "../types";
 
 function isValidDocument(value: unknown): value is CanvasDocument {
   if (!value || typeof value !== "object") {

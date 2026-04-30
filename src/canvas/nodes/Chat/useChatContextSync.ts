@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { sha1 } from "object-hash";
-import { useCanvas } from "../../useCanvas";
+import { useCanvas } from "../../hooks/useCanvas";
 import type { ChatData, ChatSchema } from "../../types";
 import type { Message } from "../../../shapes/Ai/useExecutePrompt";
 import type { DatabaseResult } from "../../../state";

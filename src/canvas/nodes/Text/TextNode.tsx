@@ -1,6 +1,6 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useCanvas } from "../../useCanvas";
+import { useCanvas } from "../../hooks/useCanvas";
 import { HiddenHandles } from "../HiddenHandles";
 import type { TextNode as TextNodeT } from "../../types";
 import "./Text.css";

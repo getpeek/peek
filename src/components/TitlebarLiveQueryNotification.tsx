@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
 import { nodesAtom } from "../canvas/state";
-import { useCanvasApi } from "../canvas/useCanvas";
+import { useCanvasApi } from "../canvas/hooks/useCanvas";
 import "./TitlebarLiveQueryNotification.css";
 
 export const TitlebarLiveQueryNotification = () => {

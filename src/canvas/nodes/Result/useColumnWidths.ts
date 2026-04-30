@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import type { DatabaseResult } from "../../../state";
 import type { ResultData } from "../../types";
-import { useCanvas } from "../../useCanvas";
+import { useCanvas } from "../../hooks/useCanvas";
 import { stringifyValue } from "./stringify";
 
 const MONO_CHAR_PX = 7.2;

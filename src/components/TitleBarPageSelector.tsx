@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IconPlus } from "@tabler/icons-react";
-import { usePageActions } from "../canvas/usePageActions";
+import { usePageActions } from "../canvas/hooks/usePageActions";
 
 export function TitleBarPageSelector() {
   const { pages, activePageId, canClose, newPage, closePage, switchPage, renamePage } =

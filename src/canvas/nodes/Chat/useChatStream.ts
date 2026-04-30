@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useCanvas } from "../../useCanvas";
+import { useCanvas } from "../../hooks/useCanvas";
 import type { ChatData } from "../../types";
 import {
   type Message,

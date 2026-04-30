@@ -1,6 +1,6 @@
 import { useAtomValue, useSetAtom } from "jotai";
-import { canvasApiAtom, documentAtom, pendingPageCloseAtom } from "./state";
-import type { PageState } from "./types";
+import { canvasApiAtom, documentAtom, pendingPageCloseAtom } from "../state";
+import type { PageState } from "../types";
 
 export interface PageActions {
   pages: PageState[];

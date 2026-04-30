@@ -1,9 +1,9 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import { useEffect, useMemo } from "react";
-import { schemaAtom } from "../state";
-import { activePageAtom, edgesAtom, nodesAtom } from "./state";
-import { ids } from "./ids";
-import type { AppEdge } from "./types";
+import { schemaAtom } from "../../state";
+import { activePageAtom, edgesAtom, nodesAtom } from "../state";
+import { ids } from "../ids";
+import type { AppEdge } from "../types";
 import { isSchemaNode, tableIdFromRef, useSchemaSimulation } from "./useSchemaSimulation";
 
 /**

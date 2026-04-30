@@ -3,7 +3,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
 import type { AST } from "node-sql-parser";
 import { schemaAtom, type DatabaseResult } from "../../../state";
-import { useCanvas } from "../../useCanvas";
+import { useCanvas } from "../../hooks/useCanvas";
 import { resultsAtom } from "../../state";
 import { collectVariablesFor, substituteVariables } from "../../variables";
 import {

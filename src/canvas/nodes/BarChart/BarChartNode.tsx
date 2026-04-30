@@ -4,7 +4,7 @@ import { IconChartArea, IconChartBar, IconChartLine } from "@tabler/icons-react"
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
-import { useCanvas } from "../../useCanvas";
+import { useCanvas } from "../../hooks/useCanvas";
 import type { BarChartData, BarChartNode as BarChartNodeT, ChartType } from "../../types";
 import "./BarChart.css";
 

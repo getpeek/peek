@@ -11,8 +11,8 @@ import {
   type SimulationLinkDatum,
   type SimulationNodeDatum,
 } from "d3-force";
-import { nodesAtom } from "./state";
-import type { AppNode } from "./types";
+import { nodesAtom } from "../state";
+import type { AppNode } from "../types";
 
 export const SCHEMA_NODE_PREFIX = "schema-table-";
 export const DEFAULT_W = 450;

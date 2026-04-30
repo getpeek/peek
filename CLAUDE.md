@@ -37,6 +37,16 @@ src-tauri/        Rust host code (do not edit unless asked)
 - TypeScript: never widen to `any`; prefer `unknown` and narrow. Use `import type { … }` for type-only imports.
 - Named exports only. No default exports.
 
+## Proximity principle
+
+Code that changes together should live together. Group by feature, not by file type — never create catch-all `utils/`, `types/`, or `helpers/` folders that collect files solely by kind.
+
+- **Folders are features.** A folder describes one thing (a node, a tool, a feature) and contains everything that thing needs: its component, hooks, helpers, types, and `.css`. See `src/canvas/nodes/Result/` — `ResultNode.tsx` sits next to `ResultTableRow.tsx`, `useColumnWidths.ts`, `stringify.ts`, and `Result.css` because they all serve the result node.
+- **Single-consumer helpers stay co-located.** A hook, sub-component, or util used by exactly one parent belongs in the parent's folder (e.g. `ChatInput.tsx` lives in `Chat/` next to `ChatNode.tsx`). Don't lift it to a shared location "just in case."
+- **Promote only when crossing feature boundaries.** A second consumer inside the same feature is fine — keep the helper where it is. Move it up the tree only when a consumer outside the feature needs it. Shared canvas hooks live in `src/canvas/hooks/`; truly cross-cutting pieces live in `src/`.
+- **Declare variables next to their use.** The exception is a setup block that computes several values before a derivation — group those together at the top of that block, not scattered through the function.
+- **When a file grows, split within the folder first.** Extract a child component or hook into a sibling file before reaching for a new top-level directory. The folder absorbs the complexity; the import graph stays local.
+
 ## Composability
 
 Components stay thin. Push advanced logic into hooks (see `src/canvas/nodes/Chat/` — `ChatNode.tsx` is the shell, `useChatStream` / `useChatTools` / `useChatContextSync` carry the logic). Prefer extracting a child component over piling more responsibility into the parent.

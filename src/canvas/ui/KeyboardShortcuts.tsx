@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { useAtom, useSetAtom } from "jotai";
 import { clipboardAtom, nodesAtom, placeModeAtom } from "../state";
 import { formatPreservingVars } from "../variables";
-import { useCanvas } from "../useCanvas";
-import { usePageActions } from "../usePageActions";
+import { useCanvas } from "../hooks/useCanvas";
+import { usePageActions } from "../hooks/usePageActions";
 import { focusQueryEditor } from "../nodes/Query/editorFocusRegistry";
 import { ids } from "../ids";
-import { useUndoHistory } from "../useUndoHistory";
+import { useUndoHistory } from "./useUndoHistory";
 import type { AppNode, AppNodeType, QueryNode } from "../types";
 import { useHotkeys } from "@mantine/hooks";
 

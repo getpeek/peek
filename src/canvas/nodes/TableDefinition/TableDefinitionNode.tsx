@@ -1,6 +1,6 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { useRef } from "react";
-import { useScrollFallthrough } from "../useScrollFallthrough";
+import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";

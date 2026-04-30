@@ -1,9 +1,9 @@
 import { useReactFlow } from "@xyflow/react";
 import { useAtomValue } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ids } from "./ids";
-import { placeModeAtom } from "./state";
-import type { AppEdge, AppNode, DrawPoint } from "./types";
+import { ids } from "../ids";
+import { placeModeAtom } from "../state";
+import type { AppEdge, AppNode, DrawPoint } from "../types";
 import { useCanvas } from "./useCanvas";
 
 const STROKE_WIDTH = 4;

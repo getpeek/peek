@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCanvas } from "../../useCanvas";
+import { useCanvas } from "../../hooks/useCanvas";
 import { defaultDimensions, makeNode } from "../../defaults";
 import { stringifyValue } from "./stringify";
 import type { VariableNode } from "../../types";

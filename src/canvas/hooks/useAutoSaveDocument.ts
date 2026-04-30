@@ -1,9 +1,9 @@
 import { useAtomValue } from "jotai";
 import { useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { activeConnectionAtom } from "../Connection/state";
-import { sessionStateAtom } from "../multiplayer/state";
-import { documentAtom } from "./state";
+import { activeConnectionAtom } from "../../Connection/state";
+import { sessionStateAtom } from "../../multiplayer/state";
+import { documentAtom } from "../state";
 
 export function useAutoSaveDocument() {
   const doc = useAtomValue(documentAtom);

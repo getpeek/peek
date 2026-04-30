@@ -1,10 +1,10 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import { useCanvas } from "./useCanvas";
-import { executeQueries } from "./executeQueries";
-import { resultsAtom } from "./state";
-import { sessionStateAtom } from "../multiplayer/state";
-import { requestRemoteExecution } from "../multiplayer/syncBridge";
-import type { AppNode, QueryData } from "./types";
+import { executeQueries } from "../executeQueries";
+import { resultsAtom } from "../state";
+import { sessionStateAtom } from "../../multiplayer/state";
+import { requestRemoteExecution } from "../../multiplayer/syncBridge";
+import type { AppNode, QueryData } from "../types";
 
 export const useExecuteQueries = () => {
   const canvas = useCanvas();

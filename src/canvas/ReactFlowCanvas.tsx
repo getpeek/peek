@@ -35,10 +35,10 @@ import { RemoteCursorsLayer } from "../multiplayer/RemoteCursorsLayer";
 import { useCursorBroadcast } from "../multiplayer/useCursorBroadcast";
 import { defaultDimensions, makeNode } from "./defaults";
 import type { AppEdge, AppNode, QueryData } from "./types";
-import { useCanvas } from "./useCanvas";
-import { useDrawTool } from "./useDrawTool";
-import { useSchemaForceLayout } from "./useSchemaForceLayout";
-import { useResultDropOnChat } from "./useResultDropOnChat";
+import { useCanvas } from "./hooks/useCanvas";
+import { useDrawTool } from "./hooks/useDrawTool";
+import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
+import { useResultDropOnChat } from "./hooks/useResultDropOnChat";
 import { getStroke } from "perfect-freehand";
 import { FloatingEdge } from "./edges/FloatingEdge";
 import "./nodes/node.css";
@@ -134,29 +134,29 @@ function ReactFlowCanvasInner() {
     );
     const liveQueryIds = new Set(
       nodes
-        .filter(n => n.type === "query" && (n.data as QueryData).liveIntervalMs !== null)
-        .map(n => n.id),
+        .filter(node => node.type === "query" && (node.data as QueryData).liveIntervalMs !== null)
+        .map(node => node.id),
     );
     if (selectedQueryIds.size === 0 && liveQueryIds.size === 0) {
       return edges;
     }
     const resultIds = new Set(nodes.filter(n => n.type === "result").map(n => n.id));
-    return edges.map(e => {
-      if (!resultIds.has(e.target)) {
-        return e;
+    return edges.map(edge => {
+      if (!resultIds.has(edge.target)) {
+        return edge;
       }
-      const existing = e.className ?? "";
+      const existing = edge.className ?? "";
       const parts: string[] = existing ? [existing] : [];
-      if (selectedQueryIds.has(e.source) && !existing.includes("query-active")) {
+      if (selectedQueryIds.has(edge.source) && !existing.includes("query-active")) {
         parts.push("query-active");
       }
-      if (liveQueryIds.has(e.source) && !existing.includes("query-live")) {
+      if (liveQueryIds.has(edge.source) && !existing.includes("query-live")) {
         parts.push("query-live");
       }
       if (parts.length === (existing ? 1 : 0)) {
-        return e;
+        return edge;
       }
-      return { ...e, className: parts.join(" ").trim() };
+      return { ...edge, className: parts.join(" ").trim() };
     });
   }, [nodes, edges]);
 

@@ -70,7 +70,7 @@ export function TitleBarCollaborateButton() {
           )}
         </button>
       </Popover.Target>
-      <Popover.Dropdown p={0} bd='none' bg='transparent'>
+      <Popover.Dropdown p={0} my={12} bd='none' bg='transparent'>
         <SharePopover onClose={() => setOpened(false)} />
       </Popover.Dropdown>
     </Popover>
