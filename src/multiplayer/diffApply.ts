@@ -4,7 +4,6 @@ import type { Operation } from "./types";
 
 const RESULTS_PREFIX = "results/";
 
-const ACTIVE_PAGE_KEY = "doc/active-page";
 const PAGE_ORDER_KEY = "doc/page-order";
 const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 1 };
 
@@ -124,14 +123,19 @@ export function applyResultOperation(
 export function applyOperation(doc: CanvasDocument, op: Operation): CanvasDocument {
   if (op.kind === "put") {
     const value = decode(op.value);
-    if (op.key === ACTIVE_PAGE_KEY) {
-      return doc.pages[value] ? { ...doc, activePageId: value } : doc;
-    }
     if (op.key === PAGE_ORDER_KEY) {
       try {
         const parsed = JSON.parse(value);
         if (Array.isArray(parsed) && parsed.every(p => typeof p === "string")) {
-          return { ...doc, pageOrder: parsed };
+          // Joiner's emptyDocument() activePageId isn't in the host's
+          // pageOrder, so without this fallback they'd sit on an orphan page
+          // for the rest of the session. Same fallback also covers the case
+          // where a remote peer drops the page we were viewing.
+          const active = parsed.includes(doc.activePageId)
+            ? doc.activePageId
+            : (parsed[0] ?? doc.activePageId);
+          const next = active === doc.activePageId ? doc : ensurePage(doc, active);
+          return { ...next, pageOrder: parsed, activePageId: active };
         }
       } catch {
         // ignore malformed

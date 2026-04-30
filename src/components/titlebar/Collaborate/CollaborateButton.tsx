@@ -5,14 +5,14 @@ import {
   collaboratePopoverOpenAtom,
   participantsAtom,
   sessionStateAtom,
-} from "../multiplayer/state";
-import { initialFromName } from "../multiplayer/identity";
+} from "../../../multiplayer/state";
+import { initialFromName } from "../../../multiplayer/identity";
 import { SharePopover } from "./SharePopover";
-import "./TitleBarCollaborateButton.css";
+import "./CollaborateButton.css";
 
 const MAX_AVATARS = 3;
 
-export function TitleBarCollaborateButton() {
+export function CollaborateButton() {
   const session = useAtomValue(sessionStateAtom);
   const participants = useAtomValue(participantsAtom);
   const [opened, setOpened] = useAtom(collaboratePopoverOpenAtom);

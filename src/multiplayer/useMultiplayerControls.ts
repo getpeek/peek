@@ -92,9 +92,17 @@ export function useMultiplayerControls(): MultiplayerControls {
         }
       }
 
-      setSnapshot({ document, results, schema });
+      // Establish the connection first. If this throws (bad ticket, network
+      // failure), we exit with local state untouched — SharePopover catches
+      // the error and shows it. Only after the Rust side accepts the join do
+      // we wipe the joiner's canvas to receive the host's replica.
+      const info = await invoke<JoinSessionInfo>("mp_join_session", { ticket });
 
-      // Swap to a fresh empty document; host's replica will stream in.
+      // The block below must stay synchronous: queued `multiplayer:doc-update`
+      // events from the Rust subscribe loop won't run until we yield, so
+      // clearing + setSession in one microtask guarantees no remote entries
+      // land before the document is empty and the role is `joiner`.
+      setSnapshot({ document, results, schema });
       isApplyingRemoteRef.current = true;
       try {
         setDoc(emptyDocument());
@@ -103,7 +111,6 @@ export function useMultiplayerControls(): MultiplayerControls {
         isApplyingRemoteRef.current = false;
       }
 
-      const info = await invoke<JoinSessionInfo>("mp_join_session", { ticket });
       const name = store.get(configAtom)?.name ?? "Anonymous";
       const next: SessionState = {
         role: "joiner",

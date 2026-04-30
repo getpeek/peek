@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
 import { createTheme, MantineProvider } from "@mantine/core";
 import { MonacoManager } from "./shapes/Query/Editor/MonacoManager";
-import { CustomTitleBar } from "./components/CustomTitleBar";
+import { CustomTitleBar } from "./components/titlebar/CustomTitleBar";
 import { CommandPalette } from "./command-palette/CommandPalette";
 import { DropZone } from "./drop-zone/DropZone";
 import { useGetConfig } from "./app/useGetConfig";

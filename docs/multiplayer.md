@@ -72,7 +72,6 @@ Cursor rendering and broadcast are mounted _inside_ `<ReactFlowProvider>` becaus
 
 | Key                             | Value                                    | Notes                                                                                                                |
 | ------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `doc/active-page`               | UTF-8 page id                            | activePageId                                                                                                         |
 | `doc/page-order`                | JSON array                               | pageOrder                                                                                                            |
 | `pages/<pageId>/name`           | UTF-8 string                             | page name; deleting this key tombstones the page                                                                     |
 | `pages/<pageId>/nodes/<nodeId>` | JSON node                                | stripped of `selected`/`dragging`/`resizing`                                                                         |
@@ -81,7 +80,7 @@ Cursor rendering and broadcast are mounted _inside_ `<ReactFlowProvider>` becaus
 | `exec-requests/<requestId>`     | JSON `{nodeId, queries}`                 | joiner→host RPC; host deletes after running                                                                          |
 | `schema/index`                  | JSON `{tables, references, primaryKeys}` | host's DB schema; joiners feed this into `schemaAtom` and `lsp_set_schema_cache` so the LSP works without a local DB |
 
-Viewport is **not** synced — each peer has its own pan/zoom.
+Viewport and `activePageId` are **not** synced — each peer has its own pan/zoom and chooses which page to view independently. `activePageId` still lives on `CanvasDocument` so it persists to disk per-peer; it's just excluded from the multiplayer diff. When a remote `doc/page-order` arrives that no longer contains the local active page (joiner just imported the host's pages, or someone else deleted the page we were on), `applyOperation` falls back to `parsed[0]` so the peer doesn't end up on an orphan page.
 
 Routing is centralized in `keyKind()` (`diff.ts`); all inbound handlers dispatch through it.
 
@@ -99,7 +98,7 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 
 **Liveness signal.** `participantsAtom[author].lastSeen` is bumped on **both** presence (5 s) and cursor (15 Hz, throttled to once per peer per 2 s) receipts. Without the cursor path, presence is the only liveness signal — and gossip is best-effort, so three dropped presence packets in a row cause spurious 5–10 s prune windows where the participants pill flickers off.
 
-**Per-page cursor filtering.** The cursor payload carries the sender's `documentAtom.activePageId`. `RemoteCursorsLayer` filters cursors whose `pageId` doesn't match the local active page, so peers viewing different pages don't see each other's pointers as ghosts. (Today active page propagates via `doc/active-page` so peers usually converge anyway, but switches have a brief race window where stale cursor positions leak across.)
+**Per-page cursor filtering.** The cursor payload carries the sender's `documentAtom.activePageId`. `RemoteCursorsLayer` filters cursors whose `pageId` doesn't match the local active page, so peers viewing different pages don't see each other's pointers as ghosts. With active page no longer synced, this filter is what keeps cursors from peers viewing other pages from leaking onto your canvas.
 
 **Topic isolation.** `app_gossip_topic()` in `session.rs` derives our gossip `TopicId` as `blake3("peek/multiplayer:" || namespace_id)`. Do **not** use `namespace_id.into()` directly — that's the same topic iroh-docs subscribes to internally for live entry propagation, and our JSON payloads would land in iroh-docs' `receive_loop` where `postcard::from_bytes::<Op>(...)?` fails and `?`-s out, killing live sync. Initial reconciliation still works in that broken state (it goes over the docs ALPN), which is why the symptom presents as "first sync OK, edits don't propagate."
 

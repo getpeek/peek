@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Popover, Text } from "@mantine/core";
 import { useAtom, useAtomValue } from "jotai";
-import { activeConnectionAtom } from "../Connection/state";
-import { schemaAtom } from "../state";
+import { activeConnectionAtom } from "../../../Connection/state";
+import { schemaAtom } from "../../../state";
 import { invoke } from "@tauri-apps/api/core";
-import "./TitleBarConnectionPicker.css";
-import { WorkspacePopover } from "../Connection/WorkspacePopover";
-import type { Connection } from "../Connection/types";
+import "./ConnectionPicker.css";
+import { WorkspacePopover } from "../../../Connection/WorkspacePopover";
+import type { Connection } from "../../../Connection/types";
 
-export const TitleBarConnectionPicker: React.FC = () => {
+export const ConnectionPicker: React.FC = () => {
   const [, setSchema] = useAtom(schemaAtom);
   const [, setIsConnecting] = useState(false);
   const activeConnection = useAtomValue(activeConnectionAtom);

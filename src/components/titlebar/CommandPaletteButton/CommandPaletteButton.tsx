@@ -1,9 +1,9 @@
 import { useSetAtom } from "jotai";
 import { IconSearch } from "@tabler/icons-react";
-import { commandPaletteOpenAtom } from "../state";
-import "./TitleBarCommandPalette.css";
+import { commandPaletteOpenAtom } from "../../../state";
+import "./CommandPaletteButton.css";
 
-export const TitleBarCommandPalette = () => {
+export const CommandPaletteButton = () => {
   const setOpen = useSetAtom(commandPaletteOpenAtom);
 
   return (

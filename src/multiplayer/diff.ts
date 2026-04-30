@@ -42,7 +42,6 @@ export function b64ToBytes(b64: string): Uint8Array {
   return out;
 }
 
-const ACTIVE_PAGE_KEY = "doc/active-page";
 const PAGE_ORDER_KEY = "doc/page-order";
 export const RESULTS_PREFIX = "results/";
 export const EXEC_REQUESTS_PREFIX = "exec-requests/";
@@ -71,7 +70,7 @@ export function execRequestKey(requestId: string): string {
 export type KeyKind = "doc" | "result" | "exec-request" | "schema" | "unknown";
 
 export function keyKind(key: string): KeyKind {
-  if (key === ACTIVE_PAGE_KEY || key === PAGE_ORDER_KEY) {
+  if (key === PAGE_ORDER_KEY) {
     return "doc";
   }
   if (key.startsWith("pages/")) {
@@ -100,13 +99,9 @@ export function keyKind(key: string): KeyKind {
 export function diffDocs(prev: CanvasDocument, next: CanvasDocument): Operation[] {
   const ops: Operation[] = [];
 
-  if (prev.activePageId !== next.activePageId) {
-    ops.push({
-      kind: "put",
-      key: ACTIVE_PAGE_KEY,
-      value: encode(next.activePageId),
-    });
-  }
+  // activePageId is intentionally not synced — it's per-peer UI state. Each
+  // participant chooses their own active page; we still persist it as part of
+  // the local document so it survives reloads.
 
   const prevOrderJson = JSON.stringify(prev.pageOrder);
   const nextOrderJson = JSON.stringify(next.pageOrder);
@@ -256,7 +251,6 @@ export function resultsToPuts(results: Record<string, DatabaseResult>): Operatio
  */
 export function documentToPuts(doc: CanvasDocument): Operation[] {
   const ops: Operation[] = [
-    { kind: "put", key: ACTIVE_PAGE_KEY, value: encode(doc.activePageId) },
     {
       kind: "put",
       key: PAGE_ORDER_KEY,

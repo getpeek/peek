@@ -1,13 +1,13 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAtomValue } from "jotai";
-import { TitleBarConnectionPicker } from "./TitleBarConnectionPicker";
-import { TitleBarPageSelector } from "./TitleBarPageSelector";
-import { TitleBarCommandPalette } from "./TitleBarCommandPalette";
-import { TitleBarCollaborateButton } from "./TitleBarCollaborateButton";
+import { ConnectionPicker } from "./ConnectionPicker/ConnectionPicker";
+import { PageSelector } from "./PageSelector/PageSelector";
+import { CommandPaletteButton } from "./CommandPaletteButton/CommandPaletteButton";
+import { CollaborateButton } from "./Collaborate/CollaborateButton";
 import "./CustomTitleBar.css";
 import { IconArrowsDiagonal2, IconMinus, IconX } from "@tabler/icons-react";
-import { TitlebarLiveQueryNotification } from "./TitlebarLiveQueryNotification";
-import { sessionStateAtom } from "../multiplayer/state";
+import { LiveQueryNotification } from "./LiveQueryNotification/LiveQueryNotification";
+import { sessionStateAtom } from "../../multiplayer/state";
 
 export const CustomTitleBar = () => {
   const session = useAtomValue(sessionStateAtom);
@@ -58,13 +58,13 @@ export const CustomTitleBar = () => {
               <IconArrowsDiagonal2 size={9} color='#333' className='icon' stroke={3} />
             </button>
           </div>
-          <TitleBarPageSelector />
+          <PageSelector />
         </div>
         <div className='titlebar-right'>
-          <TitlebarLiveQueryNotification />
-          <TitleBarCommandPalette />
-          <TitleBarCollaborateButton />
-          {!isJoiner && <TitleBarConnectionPicker />}
+          <LiveQueryNotification />
+          <CommandPaletteButton />
+          <CollaborateButton />
+          {!isJoiner && <ConnectionPicker />}
         </div>
       </div>
     </div>
