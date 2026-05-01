@@ -10,10 +10,12 @@ import { toCsv } from "../../tools/export/csv";
 import { canvasApiAtom, resultsAtom } from "../../canvas/state";
 import type { CommandPaletteResult } from ".";
 import type { ResultNode } from "../../canvas/types";
+import { configAtom } from "../../state";
 
 export const useExportSelectedDataCsvCommand = (): CommandPaletteResult => {
   const canvas = useAtomValue(canvasApiAtom);
   const results = useAtomValue(resultsAtom);
+  const config = useAtomValue(configAtom);
 
   return {
     searchAgainst: "Export selected data as CSV",
@@ -29,7 +31,7 @@ export const useExportSelectedDataCsvCommand = (): CommandPaletteResult => {
       }
 
       const model = new ChatOllama({
-        model: "qwen3:8b",
+        model: config?.ai.model,
         baseUrl: "http://localhost:11434",
         streaming: false,
         numThread: 32,
@@ -47,7 +49,7 @@ export const useExportSelectedDataCsvCommand = (): CommandPaletteResult => {
             new SystemMessage(
               `/no_think Your job is to create short, descriptive file names
 for sql queries that have been exported to csv. Focus on the semantics of the query and convey that.
-Use only English characters, numbers and underscores and append .csv to the end of the filename`,
+Use only English characters, numbers and underscores and append .csv to the end of the filename. Reply **ONLY** with the file name, no thinking or reasoning output`,
             ),
             new HumanMessage(`The query is: ${node.data.query}`),
           ])
