@@ -10,7 +10,9 @@ import { ReactFlowCanvas } from "./canvas/ReactFlowCanvas";
 import { useAutoSaveDocument } from "./canvas/hooks/useAutoSaveDocument";
 import { useAutoSaveResults } from "./canvas/hooks/useAutoSaveResults";
 import { useLoadDocument } from "./canvas/hooks/useLoadDocument";
+import { InviteConfirmModal } from "./multiplayer/InviteConfirmModal";
 import { useMultiplayer } from "./multiplayer/syncBridge";
+import { useDeepLinkInvite } from "./multiplayer/useDeepLinkInvite";
 import { darkModeAtom } from "./state";
 import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
@@ -27,6 +29,7 @@ function App() {
   useAutoSaveResults();
   useLoadDocument();
   useMultiplayer();
+  useDeepLinkInvite();
 
   return (
     <MantineProvider theme={theme} forceColorScheme={isDarkMode ? "dark" : "light"}>
@@ -36,6 +39,7 @@ function App() {
       <ReactFlowCanvas />
       <CommandPalette />
       <ClosePageConfirmModal />
+      <InviteConfirmModal />
     </MantineProvider>
   );
 }

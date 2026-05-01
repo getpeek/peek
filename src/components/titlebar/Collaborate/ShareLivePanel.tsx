@@ -1,5 +1,5 @@
 import { CopyButton } from "@mantine/core";
-import { IconCheck, IconCopy, IconX } from "@tabler/icons-react";
+import { IconCheck, IconCopy, IconLink, IconX } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { participantsAtom } from "../../../multiplayer/state";
 import type { SessionState } from "../../../multiplayer/types";
@@ -18,6 +18,7 @@ export function ShareLivePanel({ session, onClose }: Props) {
 
   const peerEntries = Object.values(participants).filter(p => p.author !== session.myAuthor);
   const collaboratorCount = 1 + peerEntries.length;
+  const inviteUrl = `peek://invite/${session.ticket}`;
 
   return (
     <div className='collab-panel'>
@@ -29,9 +30,27 @@ export function ShareLivePanel({ session, onClose }: Props) {
           <code className='collab-ticket'>{session.ticket}</code>
           <CopyButton value={session.ticket} timeout={1500}>
             {({ copied, copy }) => (
-              <button type='button' className='collab-copy-button' onClick={copy}>
+              <button
+                type='button'
+                className='collab-copy-button'
+                onClick={copy}
+                title='Copy ticket'
+              >
                 {copied ? <IconCheck size={13} stroke={2} /> : <IconCopy size={13} stroke={1.75} />}
                 <span>{copied ? "Copied" : "Copy"}</span>
+              </button>
+            )}
+          </CopyButton>
+          <CopyButton value={inviteUrl} timeout={1500}>
+            {({ copied, copy }) => (
+              <button
+                type='button'
+                className='collab-copy-button collab-copy-button--icon'
+                onClick={copy}
+                title='Copy invite link'
+                aria-label='Copy invite link'
+              >
+                {copied ? <IconCheck size={14} stroke={2} /> : <IconLink size={14} stroke={1.75} />}
               </button>
             )}
           </CopyButton>

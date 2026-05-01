@@ -18,7 +18,7 @@ use multiplayer::{IrohNode, MultiplayerSession};
 use parking_lot::RwLock;
 use sqlx::Connection;
 use ssh_tunnel::SshTunnel;
-use tauri::{async_runtime::Mutex, State};
+use tauri::{async_runtime::Mutex, Manager, State};
 use url::Url;
 
 #[derive(Default)]
@@ -119,6 +119,15 @@ pub fn run() {
     let backend = Arc::new(Backend::new(Arc::clone(&schema_cache)));
 
     tauri::Builder::default()
+        // Single-instance must be registered before deep-link so its `deep-link`
+        // feature can forward `peek://` URLs from a duplicate launch into the
+        // primary window instead of spawning a second app.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.set_focus();
+            }
+        }))
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_prevent_default::init())

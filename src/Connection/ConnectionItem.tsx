@@ -35,7 +35,7 @@ export const ConnectionItem = ({
       <Group justify='space-between' align='center'>
         <Group gap={16} align='start' wrap='nowrap'>
           <div className='color' style={{ backgroundColor: connection.color }} />
-          <Stack style={{ width: "100%" }}>
+          <Stack style={{ width: "100%" }} gap='xs'>
             <Text size='xs' fw='bold' truncate='end' maw={80} className='connection-name'>
               {highlightMatch(highlights.connectionName, connection.name)}
             </Text>

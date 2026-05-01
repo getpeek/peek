@@ -102,6 +102,34 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 
 **Topic isolation.** `app_gossip_topic()` in `session.rs` derives our gossip `TopicId` as `blake3("peek/multiplayer:" || namespace_id)`. Do **not** use `namespace_id.into()` directly — that's the same topic iroh-docs subscribes to internally for live entry propagation, and our JSON payloads would land in iroh-docs' `receive_loop` where `postcard::from_bytes::<Op>(...)?` fails and `?`-s out, killing live sync. Initial reconciliation still works in that broken state (it goes over the docs ALPN), which is why the symptom presents as "first sync OK, edits don't propagate."
 
+## Deep link invites (`peek://invite/<ticket>`)
+
+A host can copy a one-click invite URL alongside the raw ticket; opening it on another machine launches Peek (or focuses an existing instance) and auto-joins. Iroh `DocTicket`s are base32, so the ticket sits in the path with no encoding.
+
+### Transport (Rust)
+
+Two Tauri plugins wire this up, in this order:
+
+- **`tauri-plugin-single-instance`** (with the `deep-link` feature) — registered **first** in `src-tauri/src/lib.rs`. On a duplicate launch (Linux/Windows), forwards the URL into the running instance instead of spawning a second app, then focuses the main window. macOS handles single-instance natively, but the plugin is still cheap to keep on for cross-platform consistency.
+- **`tauri-plugin-deep-link`** — registered **after** single-instance. Owns scheme registration and URL events: `getCurrent()` for cold starts, `onOpenUrl()` for warm hits. The `peek` scheme is declared in `tauri.conf.json` under `plugins.deep-link.desktop.schemes`, which makes the bundler write `CFBundleURLTypes` into the macOS `Info.plist` and the installer register the URI association on Windows/Linux. `capabilities/default.json` grants `deep-link:default` to the main window.
+
+### Plugin order gotcha
+
+`single-instance` **must** be registered before `deep-link`. The single-instance plugin's `deep-link` feature is what makes a duplicate launch deliver its URL into the primary instance's deep-link queue rather than the dying one's. Reverse the order and a click on `peek://invite/...` while Peek is already running spawns a second instance that briefly parses the URL, emits `onOpenUrl` to its own (about-to-exit) JS context, then dies — and the primary window never sees the URL.
+
+### Frontend (`src/multiplayer/`)
+
+- **`useDeepLinkInvite()`** — mounted from `App.tsx` next to `useMultiplayer()`. In `useEffect` it calls `register("peek")` in dev only (Linux dev needs the runtime registration; macOS/Windows pick the scheme up from the bundle), drains any cold-start URLs from `getCurrent()`, then subscribes to `onOpenUrl()`. Every URL runs through `parseInviteUrl()` and valid invites are handed to `handleInvite(ticket)`.
+- **`parseInviteUrl(raw)`** — uses the WHATWG `URL` parser. `peek://invite/<ticket>` parses with `hostname === "invite"` and `pathname === "/<ticket>"`, so the validity check is on `hostname`, not on the first path segment. Anything else (`peek://something-else`, malformed URLs) is logged and ignored.
+- **`handleInvite(ticket)`** — policy. If no session is active, calls `window.peekMultiplayer.join(ticket)` directly. If a session is active, sets `pendingInviteAtom` so the user is prompted before tearing the current session down.
+- **`<InviteConfirmModal />`** — rendered next to `<ClosePageConfirmModal />` in `App.tsx`. Driven off `pendingInviteAtom`. "End and join" runs `controls.end()` then `controls.join(ticket)`; "Stay" clears the pending atom.
+
+The hook depends on `window.peekMultiplayer` being populated, which `useMultiplayerControls` does in a `useEffect`. Both effects run on the first render and effects fire in mount order, so by the time any URL handler runs, the controls surface is already wired.
+
+### UI
+
+`ShareLivePanel` shows a single ticket row with two buttons after the `<code>` element: the existing "Copy" button (copies the raw ticket) and a square `IconLink` button (copies `peek://invite/<ticket>`). The grid is `1fr auto auto`; the icon-only button uses the `.collab-copy-button--icon` modifier.
+
 ## Lifecycle
 
 ### Hosting
@@ -155,6 +183,7 @@ The legacy migration in `useLoadDocument` (`migrateAndHydrate`) lifts any pre-St
 - `window.peekMultiplayer.host()` returns `{ticket, ...}`. Copy the ticket.
 - `window.peekMultiplayer.join('<ticket>')` from another `yarn tauri dev` instance.
 - `window.peekMultiplayer.end()` to leave or stop hosting.
+- Trigger a deep-link invite via the OS handler: macOS `open 'peek://invite/<ticket>'`, Linux `xdg-open ...`, Windows `start peek://invite/<ticket>`. In dev, `useDeepLinkInvite` calls `register("peek")` once on mount so the running instance handles the URL; production builds rely on the bundle's `Info.plist` / installer.
 - Rust logs go to whichever terminal launched `yarn tauri dev`. Useful prefixes: `multiplayer:` (our eprintln!), `iroh::` and `iroh_docs::` (iroh's tracing — enable with `RUST_LOG=iroh=debug,iroh_docs=debug yarn tauri dev`).
 - Inspect the on-disk shape: `cat ~/peek/<workspace>/<connection>.json | jq .` and `cat ~/peek/<workspace>/<connection>.results.json | jq 'keys'`.
 
@@ -180,6 +209,7 @@ The legacy migration in `useLoadDocument` (`migrateAndHydrate`) lifts any pre-St
 | A new role-gated behavior                        | Read `useAtomValue(sessionStateAtom)` in the relevant hook and gate on `session?.role`                                                  |
 | Persist results across sessions                  | They already do (sidecar). To skip persisting, read `sessionStateAtom` in `useAutoSaveResults` and gate similarly                       |
 | Disable a feature on joiner                      | Pattern is everywhere — `if (session?.role === "joiner") return;` early in the effect/handler                                           |
+| Another `peek://...` action besides invite       | `useDeepLinkInvite.ts` — switch on `u.hostname` in the parser, branch in `handleInvite`. For unrelated features prefer a sibling hook so the multiplayer one stays single-purpose |
 
 ## Stage history
 

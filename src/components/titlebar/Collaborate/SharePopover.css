@@ -249,7 +249,7 @@
 
 .collab-ticket-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 8px;
 }
 
@@ -289,6 +289,12 @@
 .collab-copy-button:hover {
   background: var(--pk-node-bg-2);
   border-color: var(--collab-violet-line);
+}
+
+.collab-copy-button--icon {
+  width: 38px;
+  padding: 0;
+  justify-content: center;
 }
 
 /* ---------- Divider ---------- */
