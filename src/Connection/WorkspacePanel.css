@@ -6,49 +6,45 @@
   margin-bottom: 24px;
 }
 
-.connection {
-  cursor: pointer;
-  border-radius: 8px;
-  padding: 8px 12px;
-  width: 100%;
-  flex-wrap: nowrap;
-  align-items: center;
-  margin-bottom: 4px;
-  transition: background 0.12s ease-out;
-  color: var(--pk-fg);
-}
-
-.connection:hover,
-.connection[data-is-active="true"] {
-  background: var(--pk-node-bg-2);
-}
-
-.connection[data-is-active="true"] {
-  outline: 1px solid var(--pk-accent-line);
-}
-
-.connection .color {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.connection-name {
-  color: var(--pk-fg);
-}
-
-.connection-url {
-  color: var(--pk-fg-muted);
+.query {
   font-family: var(--pk-font-mono);
 }
 
-.add-workspace-input {
+.popover mark.match {
+  background: transparent;
   color: var(--pk-fg);
-  background: var(--pk-node-bg-2);
-  border: 1px solid var(--pk-node-border);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--pk-active-color, var(--pk-accent-line));
+  text-underline-offset: 2px;
+}
+
+.connection {
+  cursor: pointer;
+  padding: 12px;
+  width: 100%;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin: 4px 0;
+  transition: background 0.12s ease-out;
+  color: var(--pk-fg);
   border-radius: 8px;
-  padding: 8px 12px;
-  font: 400 12px var(--pk-font-sans);
-  outline: none;
+  &:hover,
+  &[data-is-active="true"],
+  &[data-is-highlighted="true"] {
+    background: color-mix(in oklab, var(--pk-active-color) 5%, transparent 95%);
+  }
+
+  .color {
+    margin-top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px -1px var(--pk-active-color);
+  }
+  .chip {
+    font-size: 10px;
+    color: var(--pk-fg-muted);
+  }
 }

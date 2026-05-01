@@ -1,31 +1,54 @@
-import { useAtom } from "jotai";
-import { activeConnectionAtom } from "./state";
 import { Group, Stack, Text } from "@mantine/core";
 import { ConnectionItem } from "./ConnectionItem";
 import { Connection } from "./types";
+import type { ConnectionHighlights } from "./WorkspacePopover";
+import { highlightMatch } from "./highlightMatch";
 import "./WorkspacePanel.css";
+
+interface WorkspaceEntry {
+  item: { connection: Connection };
+  highlights: ConnectionHighlights;
+}
 
 interface WorkspaceProps {
   name: string;
-  connections: Connection[];
+  entries: WorkspaceEntry[];
+  workspaceNameHighlight?: Fuzzysort.Result;
+  activeUrl?: string;
+  highlightedUrl?: string;
+  onActivate: (connection: Connection) => void;
 }
-export const Workspace = ({ name, connections }: WorkspaceProps) => {
-  const [activeConnection, setActiveConnection] = useAtom(activeConnectionAtom);
 
+export const Workspace = ({
+  name,
+  entries,
+  workspaceNameHighlight,
+  activeUrl,
+  highlightedUrl,
+  onActivate,
+}: WorkspaceProps) => {
   return (
     <Stack gap='xs'>
-      <Group align='center' justify='space-between'>
+      <Group gap={8} align='center' justify='flex-start'>
         <Text size='xs' fw='bold' pos='sticky' c='var(--text-color)'>
-          {name}
+          {highlightMatch(workspaceNameHighlight, name)}
+        </Text>
+        <Text size='xs' c='var(--pk-fg-subtle)'>
+          /
+        </Text>
+        <Text size='xs' c='var(--pk-fg-subtle)'>
+          {entries.length} connections
         </Text>
       </Group>
       <Stack gap={0}>
-        {connections.map(connection => (
+        {entries.map(entry => (
           <ConnectionItem
-            key={connection.url}
-            connection={connection}
-            isActive={connection.url === activeConnection?.connection.url}
-            onActivate={() => setActiveConnection({ workspaceName: name, connection })}
+            key={entry.item.connection.url}
+            connection={entry.item.connection}
+            isActive={entry.item.connection.url === activeUrl}
+            isHighlighted={entry.item.connection.url === highlightedUrl}
+            highlights={entry.highlights}
+            onActivate={() => onActivate(entry.item.connection)}
           />
         ))}
       </Stack>

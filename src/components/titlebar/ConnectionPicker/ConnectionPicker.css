@@ -17,32 +17,32 @@
   font: 500 12px var(--pk-font-sans);
   cursor: pointer;
   transition:
-    background 0.12s,
-    border-color 0.12s;
+    background 0.3s,
+    border 0.3s;
   &:hover {
-    background: var(--pk-node-bg-2);
+    background: color-mix(in oklab, var(--pk-active-color) 25%, transparent 75%);
+    border: 1px solid color-mix(in oklab, var(--pk-active-color) 55%, transparent 45%);
   }
-}
 
-.connection-indicator {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: var(--pk-green);
-  box-shadow: 0 0 8px var(--pk-green);
-}
+  .connection-indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--pk-active-color);
+    box-shadow: 0 0 8px var(--pk-active-color);
+    &.no-connection {
+      background: var(--pk-node-bg);
+      color: var(--pk-fg-muted);
+    }
+  }
 
-.connection-text {
-  color: var(--pk-fg);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.connection-button.no-connection {
-  background: var(--pk-node-bg);
-  color: var(--pk-fg-muted);
+  .connection-text {
+    color: color-mix(in oklab, var(--pk-fg) 70%, var(--pk-active-color) 30%);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    font-weight: 500;
+  }
 }

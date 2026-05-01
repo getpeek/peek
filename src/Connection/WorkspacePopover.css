@@ -2,9 +2,19 @@
   width: 500px;
   padding: 20px;
   border-radius: var(--pk-radius-card, 10px);
-  background: var(--pk-node-bg, #16141c);
-  border: 1px solid var(--pk-node-border, #2a2733);
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
   color: var(--pk-fg, #e8e5f0);
-  font-family: var(--pk-font-sans, "Inter", sans-serif);
+  font-family: var(--pk-font-mono);
+  .query {
+    padding: 4px 8px;
+    outline: none;
+    font-family: var(--pk-font-mono);
+    :-moz-placeholder,
+    ::-webkit-input-placeholder,
+    ::placeholder {
+      color: rgba(255, 255, 255, 0.2);
+    }
+  }
 }
