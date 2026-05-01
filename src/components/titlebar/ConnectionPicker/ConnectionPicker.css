@@ -10,8 +10,8 @@
   align-items: center;
   gap: 8px;
   padding: 6px 12px 6px 10px;
-  background: var(--pk-node-bg);
-  border: 1px solid var(--pk-node-border);
+  background: color-mix(in oklab, var(--pk-active-color) 15%, transparent 85%);
+  border: 1px solid color-mix(in oklab, var(--pk-active-color) 35%, transparent 65%);
   border-radius: var(--pk-radius-pill);
   color: var(--pk-fg);
   font: 500 12px var(--pk-font-sans);
@@ -19,10 +19,9 @@
   transition:
     background 0.12s,
     border-color 0.12s;
-}
-
-.connection-button:hover {
-  background: var(--pk-node-bg-2);
+  &:hover {
+    background: var(--pk-node-bg-2);
+  }
 }
 
 .connection-indicator {

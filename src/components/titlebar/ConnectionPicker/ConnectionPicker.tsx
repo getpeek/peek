@@ -47,7 +47,12 @@ export const ConnectionPicker: React.FC = () => {
       <Popover.Target>
         <div className='titlebar-connection-picker'>
           {activeConnection ? (
-            <button className='connection-button'>
+            <button
+              className='connection-button'
+              style={
+                { "--pk-active-color": activeConnection?.connection.color } as React.CSSProperties
+              }
+            >
               <div
                 className='connection-indicator'
                 style={{ backgroundColor: activeConnection.connection.color }}
