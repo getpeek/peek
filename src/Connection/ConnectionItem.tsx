@@ -10,6 +10,7 @@ interface ConnectionItemProps {
   connection: Connection;
   highlights: ConnectionHighlights;
   onActivate: () => void;
+  onHover: () => void;
 }
 
 export const ConnectionItem = ({
@@ -18,12 +19,14 @@ export const ConnectionItem = ({
   connection,
   highlights,
   onActivate,
+  onHover,
 }: ConnectionItemProps) => {
   const url = new URL(connection.url);
 
   return (
     <div
       onClick={onActivate}
+      onMouseEnter={onHover}
       className='connection'
       data-is-active={isActive}
       data-is-highlighted={isHighlighted}

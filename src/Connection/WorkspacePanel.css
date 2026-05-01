@@ -29,7 +29,6 @@
   transition: background 0.12s ease-out;
   color: var(--pk-fg);
   border-radius: 8px;
-  &:hover,
   &[data-is-active="true"],
   &[data-is-highlighted="true"] {
     background: color-mix(in oklab, var(--pk-active-color) 5%, transparent 95%);

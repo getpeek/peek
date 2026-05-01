@@ -17,6 +17,7 @@ interface WorkspaceProps {
   activeUrl?: string;
   highlightedUrl?: string;
   onActivate: (connection: Connection) => void;
+  onHover: (connection: Connection) => void;
 }
 
 export const Workspace = ({
@@ -26,6 +27,7 @@ export const Workspace = ({
   activeUrl,
   highlightedUrl,
   onActivate,
+  onHover,
 }: WorkspaceProps) => {
   return (
     <Stack gap='xs'>
@@ -49,6 +51,7 @@ export const Workspace = ({
             isHighlighted={entry.item.connection.url === highlightedUrl}
             highlights={entry.highlights}
             onActivate={() => onActivate(entry.item.connection)}
+            onHover={() => onHover(entry.item.connection)}
           />
         ))}
       </Stack>

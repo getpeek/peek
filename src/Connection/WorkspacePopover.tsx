@@ -139,6 +139,14 @@ export const WorkspacePopover = ({ onClose }: WorkspacePopoverProps) => {
                     : undefined
                 }
                 onActivate={connection => activate(name, connection)}
+                onHover={connection => {
+                  const index = filtered.findIndex(
+                    e => e.item.workspaceName === name && e.item.connection.url === connection.url,
+                  );
+                  if (index >= 0) {
+                    setCursor(index);
+                  }
+                }}
               />
             );
           })}
