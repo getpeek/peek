@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::lsp::context::analyze_cursor;
+use crate::lsp::context::{CursorContext, analyze_cursor};
 use crate::lsp::parser::new_parser;
 use crate::lsp::schema::SchemaIndex;
 use crate::lsp::scope::Scope;
@@ -124,9 +124,74 @@ fn scenario_6_join_on_suggests_fk_snippet() {
 fn scenario_7_empty_offers_select_keyword() {
     let labels = run("", 0);
     assert!(
-        labels.contains(&"SELECT".to_string()),
+        labels.contains(&"select".to_string()),
         "got {labels:?}"
     );
+}
+
+#[test]
+fn where_clause_offers_boolean_operators() {
+    let source = "select * from users where ";
+    let labels = run(source, source.len());
+    assert!(labels.contains(&"and".to_string()), "got {labels:?}");
+    assert!(labels.contains(&"or".to_string()));
+    assert!(labels.contains(&"is null".to_string()));
+}
+
+#[test]
+fn join_on_predicate_offers_boolean_operators() {
+    let source = "select * from users u inner join organisations o on ";
+    let labels = run(source, source.len());
+    assert!(labels.contains(&"and".to_string()), "got {labels:?}");
+    assert!(labels.contains(&"or".to_string()));
+}
+
+#[test]
+fn select_list_offers_distinct_and_star() {
+    let source = "select  from users";
+    let cursor = source.find("select ").unwrap() + "select ".len();
+    let labels = run(source, cursor);
+    assert!(labels.contains(&"distinct".to_string()), "got {labels:?}");
+    assert!(labels.contains(&"*".to_string()));
+}
+
+#[test]
+fn lone_partial_first_word_offers_leading_keywords() {
+    let source = "s";
+    let labels = run(source, source.len());
+    assert!(labels.contains(&"select".to_string()), "got {labels:?}");
+    assert!(labels.contains(&"insert into".to_string()));
+}
+
+#[test]
+fn partial_continuation_keyword_after_table_includes_clauses() {
+    // Cursor mid-typing `w` after a table name — Monaco filters by prefix to
+    // surface `where`. The dispatcher must include continuation keywords in
+    // Table contexts for this to work.
+    let source = "select * from users w";
+    let labels = run(source, source.len());
+    assert!(labels.contains(&"where".to_string()), "got {labels:?}");
+}
+
+#[test]
+fn partial_continuation_keyword_in_select_list_includes_from() {
+    let source = "select id f";
+    let labels = run(source, source.len());
+    assert!(labels.contains(&"from".to_string()), "got {labels:?}");
+}
+
+#[test]
+fn general_context_offers_clause_continuation_keywords() {
+    let schema = fixture();
+    let scope = Scope::default();
+    let labels: Vec<String> = complete(&CursorContext::General, &scope, &schema)
+        .into_iter()
+        .map(|i| i.label)
+        .collect();
+    assert!(labels.contains(&"where".to_string()), "got {labels:?}");
+    assert!(labels.contains(&"inner join".to_string()));
+    assert!(labels.contains(&"order by".to_string()));
+    assert!(labels.contains(&"limit".to_string()));
 }
 
 #[test]

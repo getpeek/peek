@@ -125,7 +125,9 @@ mod tests {
         let backend = Backend::new(Arc::clone(&schema));
         backend.did_change(uri(), "select * from ".to_string());
 
-        // initially empty schema: no tables suggested
+        // initially empty schema: no `users` table suggested. Continuation
+        // keywords may still appear; we only care that the schema update
+        // surfaces the new table on the next call.
         let before = backend.completion(
             &uri(),
             Position {
@@ -133,7 +135,7 @@ mod tests {
                 character: 14,
             },
         );
-        assert!(before.is_empty());
+        assert!(before.iter().all(|i| i.label != "users"));
 
         // schema arrives
         *schema.write() = fixture_schema();

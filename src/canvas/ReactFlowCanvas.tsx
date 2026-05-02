@@ -229,6 +229,7 @@ function ReactFlowCanvasInner() {
         panOnScroll
         zoomOnScroll={false}
         zoomOnPinch
+        zoomOnDoubleClick={false}
         panActivationKeyCode='Space'
         proOptions={{ hideAttribution: true }}
         minZoom={0.1}

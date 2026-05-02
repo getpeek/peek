@@ -48,12 +48,27 @@ pub fn analyze_cursor(tree: &Tree, source: &[u8], byte_offset: usize) -> CursorC
         return ctx;
     }
 
+    // A buffer holding only a partial identifier (e.g. `s`, `  sele`) is the
+    // user mid-typing their first keyword — still effectively `StatementStart`,
+    // and we want to surface SELECT/INSERT/UPDATE/etc. for prefix filtering.
+    if is_only_partial_identifier(preceding) {
+        return CursorContext::StatementStart;
+    }
+
     let node = deepest_named_node_at(tree.root_node(), byte_offset);
     if let Some(ctx) = ancestor_context(node, source) {
         return ctx;
     }
 
     CursorContext::General
+}
+
+fn is_only_partial_identifier(preceding: &str) -> bool {
+    let trimmed = preceding.trim();
+    !trimmed.is_empty()
+        && trimmed
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_')
 }
 
 /// Look at the byte slice `..byte_offset` and return only the part on the same

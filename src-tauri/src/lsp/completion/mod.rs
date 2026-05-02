@@ -13,19 +13,43 @@ use super::scope::{Relation, Scope};
 pub fn complete(ctx: &CursorContext, scope: &Scope, schema: &SchemaIndex) -> Vec<CompletionItem> {
     match ctx {
         CursorContext::StatementStart => keywords::leading_keyword_items(),
-        CursorContext::Table | CursorContext::TableForJoin => table_items(schema),
+        CursorContext::Table | CursorContext::TableForJoin => {
+            let mut items = table_items(schema);
+            // The cursor here sits where a table name is expected, but the
+            // user may also be starting a continuation keyword (e.g. typing
+            // "w" to begin "where" after `from users`). The editor filters
+            // by prefix; tables and keywords coexist without conflict.
+            items.extend(keywords::general_clause_keyword_items());
+            items
+        }
         CursorContext::Column { qualifier: Some(q) } => {
             let table = scope
                 .resolve(q)
                 .map_or(q.as_str(), |r| r.table.as_str());
             column_items_for_table(table, schema)
         }
-        CursorContext::Column { qualifier: None } | CursorContext::WhereClause => {
-            in_scope_items(scope, schema)
+        CursorContext::Column { qualifier: None } => {
+            let mut items = in_scope_items(scope, schema);
+            items.extend(keywords::select_list_keyword_items());
+            items.extend(keywords::general_clause_keyword_items());
+            items
+        }
+        CursorContext::WhereClause => {
+            let mut items = in_scope_items(scope, schema);
+            items.extend(keywords::where_operator_items());
+            items
         }
         CursorContext::UpdateSet { table } => column_items_for_table(table, schema),
-        CursorContext::JoinOnPredicate => join_on_items(scope, schema),
-        CursorContext::General => general_items(scope, schema),
+        CursorContext::JoinOnPredicate => {
+            let mut items = join_on_items(scope, schema);
+            items.extend(keywords::join_on_operator_items());
+            items
+        }
+        CursorContext::General => {
+            let mut items = general_items(scope, schema);
+            items.extend(keywords::general_clause_keyword_items());
+            items
+        }
     }
 }
 
