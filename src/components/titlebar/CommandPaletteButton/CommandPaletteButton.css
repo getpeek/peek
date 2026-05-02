@@ -10,22 +10,32 @@
   color: var(--pk-fg-muted);
   font: 500 12px var(--pk-font-sans);
   cursor: pointer;
+  width: 34px;
   transition:
     background 0.12s,
     color 0.12s,
-    border-color 0.12s;
-}
-
-.titlebar-cmdk-hint:hover {
-  background: var(--pk-node-bg-2);
-  color: var(--pk-fg);
-}
-
-.titlebar-cmdk-hint kbd {
-  font: 500 10px var(--pk-font-mono, ui-monospace, monospace);
-  color: var(--pk-fg);
-  background: var(--pk-node-bg-2);
-  padding: 1px 5px;
-  border: 1px solid var(--pk-node-border);
-  border-radius: 3px;
+    border-color 0.12s,
+    width 0.2s;
+  kbd {
+    font: 500 10px var(--pk-font-mono, ui-monospace, monospace);
+    color: var(--pk-fg);
+    background: var(--pk-node-bg-2);
+    width: 0;
+    opacity: 0;
+    display: none;
+    transition:
+      width 0.2s,
+      opacity 0.5s;
+    transition-delay: 0.12s;
+  }
+  &:hover {
+    background: var(--pk-node-bg-2);
+    color: var(--pk-fg);
+    width: 80px;
+    kbd {
+      width: 40px;
+      display: block;
+      opacity: 1;
+    }
+  }
 }

@@ -23,8 +23,10 @@ export const useGetConnectionCommands = (): CommandPaletteResult[] => {
             className='color'
             style={{
               background: workspace.connection.color,
-              width: 12,
-              height: 12,
+              width: 10,
+              height: 10,
+              borderRadius: 9999,
+              boxShadow: `0 0 8px 1px ${workspace.connection.color}`,
             }}
           />
           <Text size='xs'>{workspace.connection.name}</Text>

@@ -13,6 +13,7 @@ export const CommandPaletteButton = () => {
       aria-label='Open command palette'
     >
       <IconSearch size={12} stroke={2} />
+      <kbd>cmd+p</kbd>
     </button>
   );
 };
