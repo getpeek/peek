@@ -52,11 +52,7 @@
     align-items: center;
     flex: 0 0 32px;
     font-size: 12px;
-    color: var(--pk-fg-muted);
+    color: var(--pk-fg-subtle);
     text-align: right;
-  }
-  .chip {
-    font-size: 10px;
-    color: var(--pk-fg-muted);
   }
 }

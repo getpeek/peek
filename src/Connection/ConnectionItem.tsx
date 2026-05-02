@@ -3,7 +3,7 @@ import { Connection } from "./types";
 import type { ConnectionHighlights } from "./WorkspacePopover";
 import { highlightMatch } from "./highlightMatch";
 import "./WorkspacePanel.css";
-import { IconBuildingTunnel, IconTerminal } from "@tabler/icons-react";
+import { IconTerminal } from "@tabler/icons-react";
 
 interface ConnectionItemProps {
   isActive: boolean;
@@ -48,7 +48,9 @@ export const ConnectionItem = ({
           {connection.ssh_tunnel ? (
             <>
               <IconTerminal size={14} />
-              <Text fz={10}>SSH</Text>
+              <Text fz={10} c='var(--pk-fg-subtle)'>
+                SSH
+              </Text>
             </>
           ) : null}
         </div>
