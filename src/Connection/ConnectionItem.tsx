@@ -3,6 +3,7 @@ import { Connection } from "./types";
 import type { ConnectionHighlights } from "./WorkspacePopover";
 import { highlightMatch } from "./highlightMatch";
 import "./WorkspacePanel.css";
+import { IconBuildingTunnel, IconTerminal } from "@tabler/icons-react";
 
 interface ConnectionItemProps {
   isActive: boolean;
@@ -32,19 +33,25 @@ export const ConnectionItem = ({
       data-is-highlighted={isHighlighted}
       style={{ "--pk-active-color": connection.color } as React.CSSProperties}
     >
-      <Group justify='space-between' align='center'>
-        <Group gap={16} align='start' wrap='nowrap'>
-          <div className='color' style={{ backgroundColor: connection.color }} />
-          <Stack style={{ width: "100%" }} gap='xs'>
-            <Text size='xs' fw='bold' truncate='end' maw={80} className='connection-name'>
-              {highlightMatch(highlights.connectionName, connection.name)}
-            </Text>
-            <Text size='xs' truncate='end' c='var(--pk-fg-subtle)' w='100%'>
-              {highlightMatch(highlights.user, url.username)}@
-              {highlightMatch(highlights.host, url.hostname)}
-            </Text>
-          </Stack>
-        </Group>
+      <Group gap='sm' wrap='nowrap' align='flex-start' flex='1 1 auto' miw={0}>
+        <div className='color' style={{ backgroundColor: connection.color }} />
+        <Stack gap='xs' flex='1 1 auto' miw={0}>
+          <Text size='xs' fw='bold' truncate='end' className='connection-name'>
+            {highlightMatch(highlights.connectionName, connection.name)}
+          </Text>
+          <Text size='xs' truncate='end' c='var(--pk-fg-subtle)'>
+            {highlightMatch(highlights.user, url.username)}@
+            {highlightMatch(highlights.host, url.hostname)}
+          </Text>
+        </Stack>
+        <div className='ssh'>
+          {connection.ssh_tunnel ? (
+            <>
+              <IconTerminal size={14} />
+              <Text fz={10}>SSH</Text>
+            </>
+          ) : null}
+        </div>
       </Group>
     </div>
   );

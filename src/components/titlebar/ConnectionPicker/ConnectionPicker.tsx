@@ -59,10 +59,11 @@ export const ConnectionPicker: React.FC = () => {
       <div className='connection-indicator' />
       <Text size='xs' className='connection-text'>
         {activeConnection?.workspaceName}
-        <Text span>
-          {" · "}
-          {activeConnection?.connection.name}
+        <Text span c='var(--pk-fg-subtle)'>
+          {" "}
+          /{" "}
         </Text>
+        <Text span>{activeConnection?.connection.name}</Text>
       </Text>
       <IconChevronDown size={8} />
     </button>

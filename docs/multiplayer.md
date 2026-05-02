@@ -202,13 +202,13 @@ The legacy migration in `useLoadDocument` (`migrateAndHydrate`) lifts any pre-St
 
 ## Where to extend
 
-| Want to add                                      | Edit                                                                                                                                    |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| A new doc-level key (e.g., `theme/*`)            | `diff.ts` — add to `keyKind()`, extend `diffDocs`/`applyOperation`, add `documentToPuts` lowering if it should land on host start       |
-| A new ephemeral message type (e.g., `selection`) | `useGossipBridge` in `syncBridge.ts` — add a `payload.type === '...'` branch; sender side: `invoke('mp_gossip_send', {payload: {...}})` |
-| A new role-gated behavior                        | Read `useAtomValue(sessionStateAtom)` in the relevant hook and gate on `session?.role`                                                  |
-| Persist results across sessions                  | They already do (sidecar). To skip persisting, read `sessionStateAtom` in `useAutoSaveResults` and gate similarly                       |
-| Disable a feature on joiner                      | Pattern is everywhere — `if (session?.role === "joiner") return;` early in the effect/handler                                           |
+| Want to add                                      | Edit                                                                                                                                                                              |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A new doc-level key (e.g., `theme/*`)            | `diff.ts` — add to `keyKind()`, extend `diffDocs`/`applyOperation`, add `documentToPuts` lowering if it should land on host start                                                 |
+| A new ephemeral message type (e.g., `selection`) | `useGossipBridge` in `syncBridge.ts` — add a `payload.type === '...'` branch; sender side: `invoke('mp_gossip_send', {payload: {...}})`                                           |
+| A new role-gated behavior                        | Read `useAtomValue(sessionStateAtom)` in the relevant hook and gate on `session?.role`                                                                                            |
+| Persist results across sessions                  | They already do (sidecar). To skip persisting, read `sessionStateAtom` in `useAutoSaveResults` and gate similarly                                                                 |
+| Disable a feature on joiner                      | Pattern is everywhere — `if (session?.role === "joiner") return;` early in the effect/handler                                                                                     |
 | Another `peek://...` action besides invite       | `useDeepLinkInvite.ts` — switch on `u.hostname` in the parser, branch in `handleInvite`. For unrelated features prefer a sibling hook so the multiplayer one stays single-purpose |
 
 ## Stage history
