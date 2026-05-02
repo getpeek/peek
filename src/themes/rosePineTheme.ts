@@ -90,17 +90,20 @@ export const rosePineTheme: editor.IStandaloneThemeData = {
     "scrollbarSlider.hoverBackground": "#403d52",
     "scrollbarSlider.activeBackground": "#524f67",
 
-    // Suggest widget
-    "editorSuggestWidget.background": "#26233a",
-    "editorSuggestWidget.border": "#3b82f6",
-    "editorSuggestWidget.foreground": "#e0def4",
-    "editorSuggestWidget.highlightForeground": "#c4a7e7",
-    "editorSuggestWidget.selectedBackground": "#403d52",
+    // Suggest widget — hex values mirror --pk-* tokens in src/canvas/nodes/node.css
+    "editorSuggestWidget.background": "#16141c",
+    "editorSuggestWidget.border": "#2a2733",
+    "editorSuggestWidget.foreground": "#e8e5f0",
+    "editorSuggestWidget.selectedBackground": "#251c36",
+    "editorSuggestWidget.selectedForeground": "#e8e5f0",
+    "editorSuggestWidget.focusHighlightForeground": "#9354e0",
+    "editorSuggestWidget.highlightForeground": "#9354e0",
+    "editorSuggestWidgetStatus.foreground": "#9c97ab",
 
     // Hover widget
-    "editorHoverWidget.background": "#26233a",
-    "editorHoverWidget.border": "#524f67",
-    "editorHoverWidget.foreground": "#e0def4",
+    "editorHoverWidget.background": "#1c1a24",
+    "editorHoverWidget.border": "#2a2733",
+    "editorHoverWidget.foreground": "#e8e5f0",
 
     // Error/warning underlines
     "editorError.foreground": "#eb6f92",
@@ -109,8 +112,8 @@ export const rosePineTheme: editor.IStandaloneThemeData = {
     "editorHint.foreground": "#31748f",
 
     // Widget backgrounds
-    "editorWidget.background": "#26233a",
-    "editorWidget.border": "#524f67",
-    "editorWidget.foreground": "#e0def4",
+    "editorWidget.background": "#1c1a24",
+    "editorWidget.border": "#2a2733",
+    "editorWidget.foreground": "#e8e5f0",
   },
 };

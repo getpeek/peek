@@ -36,25 +36,168 @@
   display: none !important;
 }
 
+/* ============================================================
+   Monaco suggest widget (autocomplete popup)
+   ============================================================ */
 .monaco-editor .suggest-widget {
-  background: var(--pk-node-bg-2) !important;
-  border: 1px solid var(--pk-node-border-strong) !important;
-  border-radius: 6px !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  background: var(--pk-node-bg) !important;
+  border: 1px solid var(--pk-node-border) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--pk-node-shadow);
+  font-family: var(--pk-font-mono) !important;
+  font-size: 12px !important;
   z-index: 9999 !important;
+  padding: 4px !important;
+  overflow: hidden;
+
+  /* Tabler-outline icon paths, inlined as SVG data URIs and used via mask-image */
+  --pk-icon-keyword: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16.555 3.843l3.602 3.602a2.877 2.877 0 0 1 0 4.069l-2.643 2.643a2.877 2.877 0 0 1 -4.069 0l-.301 -.301l-6.558 6.558a2 2 0 0 1 -1.239 .578l-.175 .008h-1.172a1 1 0 0 1 -.993 -.883l-.007 -.117v-1.172a2 2 0 0 1 .467 -1.284l.119 -.13l.414 -.414h2v-2h2v-2l2.144 -2.144l-.301 -.301a2.877 2.877 0 0 1 0 -4.069l2.643 -2.643a2.877 2.877 0 0 1 4.069 0'/%3E%3Cpath d='M15 9h.01'/%3E%3C/svg%3E");
+  --pk-icon-function: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6.667a2.667 2.667 0 0 1 2.667 -2.667h10.666a2.667 2.667 0 0 1 2.667 2.667v10.666a2.667 2.667 0 0 1 -2.667 2.667h-10.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -10.666'/%3E%3Cpath d='M9 15.5v.25c0 .69 .56 1.25 1.25 1.25c.71 0 1.304 -.538 1.374 -1.244l.752 -7.512a1.381 1.381 0 0 1 1.374 -1.244c.69 0 1.25 .56 1.25 1.25v.25'/%3E%3Cpath d='M9 12h6'/%3E%3C/svg%3E");
+  --pk-icon-field: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l5.5 0'/%3E%3Cpath d='M4 10l5.5 0'/%3E%3Cpath d='M4 14l5.5 0'/%3E%3Cpath d='M4 18l5.5 0'/%3E%3Cpath d='M14.5 6l5.5 0'/%3E%3Cpath d='M14.5 10l5.5 0'/%3E%3Cpath d='M14.5 14l5.5 0'/%3E%3Cpath d='M14.5 18l5.5 0'/%3E%3C/svg%3E");
+  --pk-icon-class: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14'/%3E%3Cpath d='M3 10h18'/%3E%3Cpath d='M10 3v18'/%3E%3C/svg%3E");
+  --pk-icon-module: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6a8 3 0 1 0 16 0a8 3 0 1 0 -16 0'/%3E%3Cpath d='M4 6v6a8 3 0 0 0 16 0v-6'/%3E%3Cpath d='M4 12v6a8 3 0 0 0 16 0v-6'/%3E%3C/svg%3E");
+  --pk-icon-variable: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0'/%3E%3Cpath d='M16 12v1.5a2.5 2.5 0 0 0 5 0v-1.5a9 9 0 1 0 -5.5 8.28'/%3E%3C/svg%3E");
+  --pk-icon-snippet: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 8l-4 4l4 4'/%3E%3Cpath d='M17 8l4 4l-4 4'/%3E%3Cpath d='M14 4l-4 16'/%3E%3C/svg%3E");
+  --pk-icon-text: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 4l12 0'/%3E%3Cpath d='M12 4l0 16'/%3E%3C/svg%3E");
+  --pk-icon-enum: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l11 0'/%3E%3Cpath d='M9 12l11 0'/%3E%3Cpath d='M9 18l11 0'/%3E%3Cpath d='M5 6l0 .01'/%3E%3Cpath d='M5 12l0 .01'/%3E%3Cpath d='M5 18l0 .01'/%3E%3C/svg%3E");
+  --pk-icon-reference: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 15l6 -6'/%3E%3Cpath d='M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464'/%3E%3Cpath d='M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463'/%3E%3C/svg%3E");
+  --pk-icon-operator: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12l18 0'/%3E%3Cpath d='M12 3l0 18'/%3E%3Cpath d='M16.5 4.5l3 3'/%3E%3Cpath d='M19.5 4.5l-3 3'/%3E%3Cpath d='M6 4l0 4'/%3E%3Cpath d='M4 6l4 0'/%3E%3Cpath d='M18 16l.01 0'/%3E%3Cpath d='M18 20l.01 0'/%3E%3Cpath d='M4 18l4 0'/%3E%3C/svg%3E");
 }
 
+/* Rows */
 .monaco-editor .suggest-widget .monaco-list .monaco-list-row {
+  height: 22px !important;
+  line-height: 22px !important;
+  padding: 0 6px !important;
   border-radius: 4px !important;
-  margin: 2px !important;
+  color: var(--pk-fg) !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row:hover {
+  background: var(--pk-node-bg-2) !important;
 }
 
 .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused {
   background: var(--pk-accent-bg) !important;
+  box-shadow: inset 2px 0 0 var(--pk-accent);
 }
 
-.monaco-editor .suggest-widget .monaco-list .monaco-list-row:hover {
-  background: var(--pk-node-bg) !important;
+/* Matched-character highlight */
+.monaco-editor .suggest-widget .monaco-highlighted-label .highlight,
+.monaco-editor .suggest-widget .monaco-list-row .monaco-highlighted-label .highlight {
+  color: var(--pk-accent) !important;
+  font-weight: 600;
+}
+
+/* Type / qualifier labels (right-side metadata, e.g. column type, schema) */
+.monaco-editor .suggest-widget .type-label,
+.monaco-editor .suggest-widget .qualifier-label {
+  color: var(--pk-fg-subtle) !important;
+  font-family: var(--pk-font-mono) !important;
+  font-size: 10.5px !important;
+  opacity: 1;
+}
+
+/* Description / details panel */
+.monaco-editor .suggest-widget .details {
+  background: var(--pk-node-bg-2) !important;
+  border-left: 1px solid var(--pk-node-border) !important;
+  color: var(--pk-fg-muted) !important;
+}
+.monaco-editor .suggest-widget .details .monaco-scrollable-element {
+  color: var(--pk-fg-muted) !important;
+}
+.monaco-editor .suggest-widget .details .header,
+.monaco-editor .suggest-widget .details .body {
+  color: var(--pk-fg-muted) !important;
+}
+
+/* Status bar at the bottom of the suggest widget */
+.monaco-editor .suggest-widget .suggest-status-bar {
+  background: var(--pk-node-bg-2) !important;
+  border-top: 1px solid var(--pk-node-border) !important;
+  color: var(--pk-fg-subtle) !important;
+  font-family: var(--pk-font-mono) !important;
+  font-size: 10.5px !important;
+}
+
+/* Internal scrollbar */
+.monaco-editor .suggest-widget .monaco-scrollable-element > .scrollbar > .slider {
+  background: var(--pk-node-border-strong) !important;
+}
+
+/* ============================================================
+   Replace codicon font glyphs with Tabler-style SVG masks
+   ============================================================
+   Per-kind selectors use `.codicon.codicon-symbol-X` to match the
+   broad selector's specificity (0,2,0) so they win on source order.
+   ============================================================ */
+.monaco-editor .suggest-widget .codicon[class*="codicon-symbol-"]::before {
+  content: "" !important;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background-color: currentColor;
+  -webkit-mask: var(--pk-icon, var(--pk-icon-text)) center / 14px 14px no-repeat;
+  mask: var(--pk-icon, var(--pk-icon-text)) center / 14px 14px no-repeat;
+  font-size: 0 !important;
+}
+
+.monaco-editor .suggest-widget .codicon.codicon-symbol-keyword {
+  --pk-icon: var(--pk-icon-keyword);
+  color: var(--pk-accent);
+}
+.monaco-editor .suggest-widget .codicon.codicon-symbol-function,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-method {
+  --pk-icon: var(--pk-icon-function);
+  color: var(--pk-accent-soft);
+}
+.monaco-editor .suggest-widget .codicon.codicon-symbol-field,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-property {
+  --pk-icon: var(--pk-icon-field);
+  color: var(--pk-yellow);
+}
+.monaco-editor .suggest-widget .codicon.codicon-symbol-class,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-struct,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-interface {
+  --pk-icon: var(--pk-icon-class);
+  color: var(--pk-blue);
+}
+.monaco-editor .suggest-widget .codicon.codicon-symbol-module,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-namespace,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-package {
+  --pk-icon: var(--pk-icon-module);
+  color: var(--pk-blue);
+}
+.monaco-editor .suggest-widget .codicon.codicon-symbol-variable,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-constant {
+  --pk-icon: var(--pk-icon-variable);
+  color: var(--pk-accent);
+}
+.monaco-editor .suggest-widget .codicon.codicon-symbol-snippet {
+  --pk-icon: var(--pk-icon-snippet);
+  color: var(--pk-green);
+}
+.monaco-editor .suggest-widget .codicon.codicon-symbol-text,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-value,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-string {
+  --pk-icon: var(--pk-icon-text);
+  color: var(--pk-fg-muted);
+}
+.monaco-editor .suggest-widget .codicon.codicon-symbol-enum,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-enum-member {
+  --pk-icon: var(--pk-icon-enum);
+  color: var(--pk-green);
+}
+.monaco-editor .suggest-widget .codicon.codicon-symbol-reference,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-file,
+.monaco-editor .suggest-widget .codicon.codicon-symbol-folder {
+  --pk-icon: var(--pk-icon-reference);
+  color: var(--pk-fg-muted);
+}
+.monaco-editor .suggest-widget .codicon.codicon-symbol-operator {
+  --pk-icon: var(--pk-icon-operator);
+  color: var(--pk-fg-muted);
 }
 
 .monaco-editor .sql-var-chip {

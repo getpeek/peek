@@ -132,7 +132,10 @@ function ReactFlowCanvasInner() {
     );
     const liveQueryIds = new Set(
       nodes
-        .filter(node => node.type === "query" && (node.data as QueryData).liveIntervalMs !== null)
+        .filter(
+          node =>
+            node.type === "query" && ((node.data as QueryData).liveIntervalMs ?? null) !== null,
+        )
         .map(node => node.id),
     );
     if (selectedQueryIds.size === 0 && liveQueryIds.size === 0) {
