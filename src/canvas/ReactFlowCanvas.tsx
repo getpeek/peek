@@ -15,7 +15,6 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useMemo } from "react";
-import { darkModeAtom } from "../state";
 import { edgesAtom, nodesAtom, placeModeAtom, viewportAtom } from "./state";
 import { CanvasApiPublisher } from "./CanvasApiPublisher";
 import { AiPromptNode } from "./nodes/AiPrompt/AiPromptNode";
@@ -77,7 +76,6 @@ function ReactFlowCanvasInner() {
   const [edges, setEdges] = useAtom(edgesAtom);
   const initialViewport = useAtomValue(viewportAtom);
   const setViewport = useSetAtom(viewportAtom);
-  const isDarkMode = useAtomValue(darkModeAtom);
   const [placeMode, setPlaceMode] = useAtom(placeModeAtom);
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
@@ -216,7 +214,7 @@ function ReactFlowCanvasInner() {
         onNodeDragStop={onNodeDragStop}
         onMoveEnd={(_, vp) => setViewport(vp)}
         defaultViewport={initialViewport}
-        colorMode={isDarkMode ? "dark" : "light"}
+        colorMode={"dark"}
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode='Shift'
         onlyRenderVisibleElements

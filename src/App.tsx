@@ -1,4 +1,3 @@
-import { useAtomValue } from "jotai";
 import { createTheme, MantineProvider } from "@mantine/core";
 import { MonacoManager } from "./shapes/Query/Editor/MonacoManager";
 import { CustomTitleBar } from "./components/titlebar/CustomTitleBar";
@@ -13,7 +12,6 @@ import { useLoadDocument } from "./canvas/hooks/useLoadDocument";
 import { InviteConfirmModal } from "./multiplayer/InviteConfirmModal";
 import { useMultiplayer } from "./multiplayer/syncBridge";
 import { useDeepLinkInvite } from "./multiplayer/useDeepLinkInvite";
-import { darkModeAtom } from "./state";
 import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
 import "./canvas/theme.css";
@@ -22,8 +20,6 @@ import "./App.css";
 const theme = createTheme({});
 
 function App() {
-  const isDarkMode = useAtomValue(darkModeAtom);
-
   useGetConfig();
   useAutoSaveDocument();
   useAutoSaveResults();
@@ -32,7 +28,7 @@ function App() {
   useDeepLinkInvite();
 
   return (
-    <MantineProvider theme={theme} forceColorScheme={isDarkMode ? "dark" : "light"}>
+    <MantineProvider theme={theme} forceColorScheme='dark'>
       <CustomTitleBar />
       <DropZone />
       <MonacoManager />

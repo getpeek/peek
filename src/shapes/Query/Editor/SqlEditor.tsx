@@ -2,8 +2,6 @@ import Editor, { Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
 import "../Query.css";
 import { useEffect, useRef } from "react";
-import { useAtomValue } from "jotai";
-import { darkModeAtom } from "../../../state";
 import { scanVariableSites } from "../../../canvas/variables";
 import { attachLspDocumentSync } from "./lspProvider";
 
@@ -80,12 +78,11 @@ export const SqlEditor = ({
   onQueryChange: (query: string) => void;
   onMount?: (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => void;
 }) => {
-  const isDarkMode = useAtomValue(darkModeAtom);
   const ref = useRef<Monaco | null>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const decorationsRef = useRef<editor.IEditorDecorationsCollection | null>(null);
   const variablesRef = useRef<string[]>(variables ?? []);
-  const theme = isDarkMode ? "rose-pine" : "rose-pine-dawn";
+  const theme = "rose-pine";
 
   useEffect(() => {
     variablesRef.current = variables ?? [];
@@ -143,7 +140,7 @@ export const SqlEditor = ({
       return;
     }
     ref.current.editor.setTheme(theme);
-  }, [isDarkMode, ref.current]);
+  }, [theme, ref.current]);
 
   useEffect(() => {
     const ed = editorRef.current;
