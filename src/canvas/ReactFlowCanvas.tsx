@@ -244,8 +244,8 @@ function ReactFlowCanvasInner() {
       >
         <Background
           variant={BackgroundVariant.Dots}
-          bgColor='rgba(0, 0, 0, 0.7)'
-          color='#333'
+          bgColor='#010412'
+          color='#141D44'
           gap={24}
           size={1.4}
         />
