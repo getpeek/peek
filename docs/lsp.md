@@ -41,17 +41,17 @@ Entry points: `backend.rs:57` (`Backend::completion`), `context.rs:30` (`analyze
 
 `CursorContext` is the v1 surface the dispatcher branches on. It's defined at `context.rs:6`.
 
-| Variant | Trigger | `complete()` returns |
-|---|---|---|
-| `StatementStart` | empty buffer, just after `;`, or a lone partial identifier (e.g. `s`, `  sele`) | `LEADING_KEYWORDS` (`select`, `insert into`, `update`, `delete from`, `with`, `explain`) |
-| `Table` | after `FROM`, `INSERT INTO`, `DELETE FROM`, `UPDATE`; or AST resolves to a `from`/`relation` node | tables + `GENERAL_CLAUSE_KEYWORDS` |
-| `TableForJoin` | after `JOIN` (any flavor) without `ON` | tables + `GENERAL_CLAUSE_KEYWORDS` |
-| `Column { qualifier: Some(q) }` | preceding text ends with `<ident>.` | columns of the relation `q` (or table named `q`) |
-| `Column { qualifier: None }` | after `SELECT`, or AST resolves to a `field`/`select` node | in-scope columns + `SELECT_LIST_KEYWORDS` + `GENERAL_CLAUSE_KEYWORDS` |
-| `UpdateSet { table }` | `UPDATE <table> [<alias>] SET <cur>` | columns of `table` |
-| `JoinOnPredicate` | inside a `JOIN ... ON ...` predicate, or after `AND`/`OR` reachable from a JOIN's `ON` | FK snippet (if a pair is in scope) + in-scope columns + `JOIN_ON_OPERATORS` |
-| `WhereClause` | after `WHERE`/`AND`/`OR` reachable from `WHERE`, or AST resolves to a `where` node | in-scope columns + `WHERE_OPERATORS` (`and`, `or`, `not`, `is null`, `in`, `like`, `between`, …) |
-| `General` | none of the above match | tables + in-scope columns + `GENERAL_CLAUSE_KEYWORDS` |
+| Variant                         | Trigger                                                                                           | `complete()` returns                                                                             |
+| ------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `StatementStart`                | empty buffer, just after `;`, or a lone partial identifier (e.g. `s`, `  sele`)                   | `LEADING_KEYWORDS` (`select`, `insert into`, `update`, `delete from`, `with`, `explain`)         |
+| `Table`                         | after `FROM`, `INSERT INTO`, `DELETE FROM`, `UPDATE`; or AST resolves to a `from`/`relation` node | tables + `GENERAL_CLAUSE_KEYWORDS`                                                               |
+| `TableForJoin`                  | after `JOIN` (any flavor) without `ON`                                                            | tables + `GENERAL_CLAUSE_KEYWORDS`                                                               |
+| `Column { qualifier: Some(q) }` | preceding text ends with `<ident>.`                                                               | columns of the relation `q` (or table named `q`)                                                 |
+| `Column { qualifier: None }`    | after `SELECT`, or AST resolves to a `field`/`select` node                                        | in-scope columns + `SELECT_LIST_KEYWORDS` + `GENERAL_CLAUSE_KEYWORDS`                            |
+| `UpdateSet { table }`           | `UPDATE <table> [<alias>] SET <cur>`                                                              | columns of `table`                                                                               |
+| `JoinOnPredicate`               | inside a `JOIN ... ON ...` predicate, or after `AND`/`OR` reachable from a JOIN's `ON`            | FK snippet (if a pair is in scope) + in-scope columns + `JOIN_ON_OPERATORS`                      |
+| `WhereClause`                   | after `WHERE`/`AND`/`OR` reachable from `WHERE`, or AST resolves to a `where` node                | in-scope columns + `WHERE_OPERATORS` (`and`, `or`, `not`, `is null`, `in`, `like`, `between`, …) |
+| `General`                       | none of the above match                                                                           | tables + in-scope columns + `GENERAL_CLAUSE_KEYWORDS`                                            |
 
 Continuation keywords (`GENERAL_CLAUSE_KEYWORDS`) are intentionally merged into `Table`, `TableForJoin`, and `Column { qualifier: None }` as well as `General`. The cursor in those contexts often sits at the end of a partial word that could be either an identifier or a keyword (`select id f` → `from`, `from users w` → `where`); Monaco filters by prefix client-side, so coexistence is harmless and the alternative — missing keyword candidates while typing — is the bug this codifies.
 

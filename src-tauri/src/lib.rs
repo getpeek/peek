@@ -135,6 +135,8 @@ pub fn run() {
         .manage(schema_cache)
         .manage(backend)
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .invoke_handler(tauri::generate_handler![
             database_commands::get_results,
             database_commands::get_schema,

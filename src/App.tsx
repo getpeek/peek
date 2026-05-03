@@ -12,6 +12,7 @@ import { useLoadDocument } from "./canvas/hooks/useLoadDocument";
 import { InviteConfirmModal } from "./multiplayer/InviteConfirmModal";
 import { useMultiplayer } from "./multiplayer/syncBridge";
 import { useDeepLinkInvite } from "./multiplayer/useDeepLinkInvite";
+import { UpdateDialog } from "./updater/UpdateDialog";
 import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
 import "./canvas/theme.css";
@@ -36,6 +37,7 @@ function App() {
       <CommandPalette />
       <ClosePageConfirmModal />
       <InviteConfirmModal />
+      <UpdateDialog />
     </MantineProvider>
   );
 }

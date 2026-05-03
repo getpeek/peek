@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Peek",
-  "version": "0.1.0",
+  "version": "../package.json",
   "identifier": "com.getpeek.dev",
   "build": {
     "beforeDevCommand": "yarn dev",
@@ -31,11 +31,18 @@
       "desktop": {
         "schemes": ["peek"]
       }
+    },
+    "updater": {
+      "endpoints": [
+        "https://github.com/damoonrashidi/peek/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVGMkE1M0ZEMUU3MjAxREUKUldUZUFYSWUvVk1xWDEyZ2dqVS9xam9aZWR1clJYOW1pNkZnMDBwa0xvbTBKMXUrY1JDRW9tZG0K"
     }
   },
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "macOS": {
       "dmg": {
         "appPosition": {

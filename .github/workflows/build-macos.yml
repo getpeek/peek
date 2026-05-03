@@ -16,6 +16,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Verify tag matches package.json version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -euo pipefail
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -88,18 +99,28 @@ jobs:
         run: |
           set -euo pipefail
           BUNDLE_DIR=src-tauri/target/aarch64-apple-darwin/release/bundle
-          APP="$BUNDLE_DIR/macos/Peek.app"
           DMG=$(ls "$BUNDLE_DIR"/dmg/*.dmg | head -n1)
+          EXTRACT_DIR="$RUNNER_TEMP/extracted"
+          mkdir -p "$EXTRACT_DIR"
 
-          echo "Build artifacts:"
+          echo "DMG: $DMG"
           ls -lh "$BUNDLE_DIR/dmg/"
-          ls -lh "$BUNDLE_DIR/macos/"
 
-          echo "--- codesign --verify (deep, strict) ---"
-          codesign --verify --deep --strict --verbose=2 "$APP"
+          # Tauri's DMG bundler post-processes the standalone .app in
+          # bundle/macos/, breaking its CodeResources seal. The .app inside the
+          # DMG is the actually-shipping artifact, so verify (and ship) that one.
+          MOUNT=$(hdiutil attach -nobrowse -readonly "$DMG" | tail -n1 | awk '{print $3}')
+          trap "hdiutil detach '$MOUNT' >/dev/null 2>&1 || true" EXIT
+          ditto "$MOUNT/Peek.app" "$EXTRACT_DIR/Peek.app"
+          hdiutil detach "$MOUNT"
+          trap - EXIT
 
-          echo "--- spctl assessment ---"
-          # Must report "accepted" with "source=Notarized Developer ID"
+          APP="$EXTRACT_DIR/Peek.app"
+
+          echo "--- codesign --verify ---"
+          codesign --verify --verbose=2 "$APP"
+
+          echo "--- spctl assessment (Gatekeeper truth) ---"
           spctl -a -vvv -t exec "$APP"
 
           echo "--- stapler validate (.app) ---"
@@ -108,16 +129,43 @@ jobs:
           echo "--- stapler validate (.dmg) ---"
           xcrun stapler validate "$DMG"
 
+          echo "--- updater artifacts present ---"
+          test -f "$BUNDLE_DIR/macos/Peek.app.tar.gz"
+          test -f "$BUNDLE_DIR/macos/Peek.app.tar.gz.sig"
+
+          echo "VERIFIED_APP=$APP" >> $GITHUB_ENV
+
       - name: Zip .app with ditto (preserve bundle metadata)
         run: |
           set -euo pipefail
-          BUNDLE_DIR=src-tauri/target/aarch64-apple-darwin/release/bundle
-          APP="$BUNDLE_DIR/macos/Peek.app"
-          OUT="$BUNDLE_DIR/macos/Peek.app.zip"
-          # ditto preserves symlinks, xattrs, and resource forks so the signature
-          # survives the round-trip through actions/upload-artifact's zipper.
-          ditto -c -k --sequesterRsrc --keepParent "$APP" "$OUT"
+          OUT="$RUNNER_TEMP/Peek.app.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$VERIFIED_APP" "$OUT"
           ls -lh "$OUT"
+          echo "APP_ZIP=$OUT" >> $GITHUB_ENV
+
+      - name: Generate updater manifest (latest.json)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -euo pipefail
+          BUNDLE_DIR=src-tauri/target/aarch64-apple-darwin/release/bundle/macos
+          VERSION="${GITHUB_REF_NAME#v}"
+          SIGNATURE=$(cat "$BUNDLE_DIR/Peek.app.tar.gz.sig")
+          PUB_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/Peek.app.tar.gz"
+          cat > "$BUNDLE_DIR/latest.json" <<EOF
+          {
+            "version": "${VERSION}",
+            "notes": "See the release page for changelog.",
+            "pub_date": "${PUB_DATE}",
+            "platforms": {
+              "darwin-aarch64": {
+                "signature": "${SIGNATURE}",
+                "url": "${URL}"
+              }
+            }
+          }
+          EOF
+          cat "$BUNDLE_DIR/latest.json"
 
       - name: Upload macOS ARM64 Binary
         uses: actions/upload-artifact@v4
@@ -125,16 +173,20 @@ jobs:
           name: macos-arm64-binary
           path: |
             src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Peek.app.zip
+            ${{ env.APP_ZIP }}
 
       - name: Create Release (if tag)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          draft: true
+          draft: false
+          generate_release_notes: true
           files: |
             src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Peek.app.zip
+            ${{ env.APP_ZIP }}
+            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Peek.app.tar.gz
+            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Peek.app.tar.gz.sig
+            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/latest.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
