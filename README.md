@@ -74,7 +74,7 @@ url = 'postgres://dbuser:dbpassword@rds-host.biz/dbname'
 
 ## Tools
 
-- [ ] Live Queries
+- [x] Live Queries
 - [x] AI integration -> Query -> Result
 - [ ] BYOK for external AI solutions
 
@@ -87,7 +87,7 @@ url = 'postgres://dbuser:dbpassword@rds-host.biz/dbname'
 
 - [x] Performance improvements somehow
 - [ ] Get rid of AST parser in the frontend
-- [ ] Maybe move completion suggestions to backend via wasm
+- [x] Maybe move completion suggestions to backend via wasm
 
 # V.2
 
