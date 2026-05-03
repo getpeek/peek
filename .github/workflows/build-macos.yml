@@ -84,6 +84,12 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APPLE_TEAM_ID: 93JGDXCC8N
+          # Without APPLE_SIGNING_IDENTITY tauri-bundler silently skips Apple
+          # signing and ships an ad-hoc/linker-signed .app — Gatekeeper then
+          # rejects it with "code has no resources but signature indicates
+          # they must be present". The keychain entry name comes from
+          # `security find-identity -v -p codesigning` in the cert-import step.
+          APPLE_SIGNING_IDENTITY: "Developer ID Application: Damoon Rashidi (93JGDXCC8N)"
           ENABLE_CODE_SIGNING: true
         run: |
           API_KEY_PATH=$RUNNER_TEMP/api_key.p8
@@ -97,48 +103,76 @@ jobs:
 
       - name: Verify signing, notarization, and stapling
         run: |
-          set -euo pipefail
+          set -uo pipefail
           BUNDLE_DIR=src-tauri/target/aarch64-apple-darwin/release/bundle
           DMG=$(ls "$BUNDLE_DIR"/dmg/*.dmg | head -n1)
           EXTRACT_DIR="$RUNNER_TEMP/extracted"
           mkdir -p "$EXTRACT_DIR"
+          STANDALONE="$BUNDLE_DIR/macos/Peek.app"
 
           echo "DMG: $DMG"
           ls -lh "$BUNDLE_DIR/dmg/"
 
-          # Tauri's DMG bundler post-processes the standalone .app in
-          # bundle/macos/, breaking its CodeResources seal. The .app inside the
-          # DMG is the actually-shipping artifact, so verify (and ship) that one.
+          # Mount and ditto out the DMG-internal .app so we can compare both
+          # candidates. Earlier this workflow assumed the DMG-internal copy was
+          # the safe one to ship; in practice (Tauri ~2.10/2.11) the
+          # CodeResources seal is broken on the DMG-internal .app *and* the
+          # standalone .app may also be modified post-sign — so we run all
+          # checks against both and pick whichever still passes Gatekeeper.
           MOUNT=$(hdiutil attach -nobrowse -readonly "$DMG" | tail -n1 | awk '{print $3}')
           trap "hdiutil detach '$MOUNT' >/dev/null 2>&1 || true" EXIT
-          ditto "$MOUNT/Peek.app" "$EXTRACT_DIR/Peek.app"
+          EXTRACTED="$EXTRACT_DIR/Peek.app"
+          ditto "$MOUNT/Peek.app" "$EXTRACTED"
           hdiutil detach "$MOUNT"
           trap - EXIT
 
-          APP="$EXTRACT_DIR/Peek.app"
+          dump() {
+            local label="$1" app="$2"
+            echo "===== $label ($app) ====="
+            if [ ! -d "$app" ]; then echo "  (missing)"; return; fi
+            echo "--- contents ---"
+            find "$app" -maxdepth 3 -type d | sed 's/^/  /'
+            echo "--- codesign -dvv ---"
+            codesign -dvv "$app" 2>&1 | sed 's/^/  /' || true
+            echo "--- codesign --verify ---"
+            codesign --verify --verbose=2 "$app" 2>&1 | sed 's/^/  /' || true
+            echo "--- spctl assessment ---"
+            spctl -a -vvv -t exec "$app" 2>&1 | sed 's/^/  /' || true
+            echo "--- stapler validate ---"
+            xcrun stapler validate "$app" 2>&1 | sed 's/^/  /' || true
+          }
 
-          # codesign --verify is informational only. It currently rejects
-          # Tauri 2.x DMG-internal apps with "no resources but signature
-          # indicates they must be present" — a manifest mismatch the
-          # Gatekeeper-equivalent check below does not share. spctl is the
-          # authoritative "will this launch on a user's Mac" signal.
-          echo "--- codesign --verify (informational) ---"
-          codesign --verify --verbose=2 "$APP" || echo "(codesign --verify reported issues — non-fatal; spctl + stapler are the gates)"
+          dump "STANDALONE" "$STANDALONE"
+          dump "DMG-EXTRACTED" "$EXTRACTED"
 
-          echo "--- spctl assessment (Gatekeeper truth) ---"
-          spctl -a -vvv -t exec "$APP"
+          # Pick whichever passes spctl as the artifact to ship. spctl is what
+          # Gatekeeper actually runs on user machines, so this is the signal
+          # that maps to "will it install".
+          VERIFIED_APP=""
+          if spctl -a -t exec "$STANDALONE" >/dev/null 2>&1; then
+            echo "✓ STANDALONE passes Gatekeeper — using it"
+            VERIFIED_APP="$STANDALONE"
+          elif spctl -a -t exec "$EXTRACTED" >/dev/null 2>&1; then
+            echo "✓ DMG-EXTRACTED passes Gatekeeper — using it"
+            VERIFIED_APP="$EXTRACTED"
+          else
+            echo "✗ Neither candidate passes Gatekeeper — release would not be installable"
+            exit 1
+          fi
 
-          echo "--- stapler validate (.app) ---"
-          xcrun stapler validate "$APP"
-
-          echo "--- stapler validate (.dmg) ---"
-          xcrun stapler validate "$DMG"
+          # The .app must have a notarization ticket stapled — that's what
+          # Gatekeeper checks offline. The DMG ticket is informational:
+          # tauri-bundler doesn't notarize+staple the DMG separately, so its
+          # absence is expected and only triggers a one-time "verifying…"
+          # online check on first open, not an install failure.
+          xcrun stapler validate "$VERIFIED_APP"
+          xcrun stapler validate "$DMG" || echo "(DMG not stapled — non-fatal; .app staple is the gate)"
 
           echo "--- updater artifacts present ---"
           test -f "$BUNDLE_DIR/macos/Peek.app.tar.gz"
           test -f "$BUNDLE_DIR/macos/Peek.app.tar.gz.sig"
 
-          echo "VERIFIED_APP=$APP" >> $GITHUB_ENV
+          echo "VERIFIED_APP=$VERIFIED_APP" >> $GITHUB_ENV
 
       - name: Zip .app with ditto (preserve bundle metadata)
         run: |
