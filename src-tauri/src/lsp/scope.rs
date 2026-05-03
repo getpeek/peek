@@ -48,10 +48,10 @@ impl Scope {
 }
 
 fn walk(node: Node<'_>, source: &[u8], out: &mut Vec<Relation>) {
-    if node.kind() == "relation" {
-        if let Some(rel) = relation_from_node(node, source) {
-            out.push(rel);
-        }
+    if node.kind() == "relation"
+        && let Some(rel) = relation_from_node(node, source)
+    {
+        out.push(rel);
     }
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
@@ -178,5 +178,4 @@ mod tests {
         assert_eq!(r.table, "users");
         assert!(r.alias.is_none());
     }
-
 }

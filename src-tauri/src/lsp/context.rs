@@ -88,14 +88,12 @@ fn preceding_text(source: &[u8], byte_offset: usize) -> &str {
 /// `users u` followed by `.` — returns `"u"`. Empty alias returns None.
 fn qualifier_before_dot(text: &str) -> Option<String> {
     let bytes = text.as_bytes();
-    if !bytes.last().is_some_and(|b| *b == b'.') {
+    if bytes.last().is_none_or(|b| *b != b'.') {
         return None;
     }
     let before_dot = &bytes[..bytes.len() - 1];
     let mut end = before_dot.len();
-    while end > 0
-        && (before_dot[end - 1].is_ascii_alphanumeric() || before_dot[end - 1] == b'_')
-    {
+    while end > 0 && (before_dot[end - 1].is_ascii_alphanumeric() || before_dot[end - 1] == b'_') {
         end -= 1;
     }
     if end == before_dot.len() {
@@ -116,7 +114,8 @@ fn clause_keyword_before_cursor(preceding: &str) -> Option<CursorContext> {
     let trimmed = preceding.trim_end();
     let upper = trimmed.to_ascii_uppercase();
 
-    if ends_with_keyword(&upper, "FROM") || ends_with_keyword(&upper, "INSERT INTO")
+    if ends_with_keyword(&upper, "FROM")
+        || ends_with_keyword(&upper, "INSERT INTO")
         || ends_with_keyword(&upper, "DELETE FROM")
         || ends_with_keyword(&upper, "UPDATE")
     {

@@ -23,9 +23,7 @@ pub fn complete(ctx: &CursorContext, scope: &Scope, schema: &SchemaIndex) -> Vec
             items
         }
         CursorContext::Column { qualifier: Some(q) } => {
-            let table = scope
-                .resolve(q)
-                .map_or(q.as_str(), |r| r.table.as_str());
+            let table = scope.resolve(q).map_or(q.as_str(), |r| r.table.as_str());
             column_items_for_table(table, schema)
         }
         CursorContext::Column { qualifier: None } => {
@@ -130,10 +128,10 @@ fn in_scope_items(scope: &Scope, schema: &SchemaIndex) -> Vec<CompletionItem> {
 fn join_on_items(scope: &Scope, schema: &SchemaIndex) -> Vec<CompletionItem> {
     let mut items = Vec::new();
 
-    if let Some((left, right)) = split_left_right(&scope.relations) {
-        if let Some(snippet) = fk_inference::infer_join_predicate(left, right, schema) {
-            items.push(snippet);
-        }
+    if let Some((left, right)) = split_left_right(&scope.relations)
+        && let Some(snippet) = fk_inference::infer_join_predicate(left, right, schema)
+    {
+        items.push(snippet);
     }
 
     items.extend(in_scope_items(scope, schema));

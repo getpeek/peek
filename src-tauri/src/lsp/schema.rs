@@ -66,7 +66,6 @@ impl SchemaIndex {
         }
     }
 
-    #[must_use]
     pub fn table_names(&self) -> impl Iterator<Item = &str> {
         self.tables.keys().map(String::as_str)
     }
