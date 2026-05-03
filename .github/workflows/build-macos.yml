@@ -12,6 +12,10 @@ jobs:
   build-macos:
     runs-on: macos-latest
     environment: default
+    # softprops/action-gh-release calls the Releases API, which needs
+    # write access to contents. The default GITHUB_TOKEN scope is read-only.
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
