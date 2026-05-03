@@ -11,7 +11,8 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "release": "node scripts/release.mjs"
   },
   "dependencies": {
     "@langchain/core": "^0.3.78",
