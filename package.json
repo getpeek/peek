@@ -28,7 +28,6 @@
     "@tauri-apps/plugin-dialog": "~2",
     "@tauri-apps/plugin-fs": "~2",
     "@tauri-apps/plugin-opener": "^2",
-    "@tauri-apps/plugin-sql": "~2",
     "@xyflow/react": "^12.10.2",
     "babel-plugin-react-compiler": "^19.1.0-rc.2",
     "d3-force": "^3.0.0",

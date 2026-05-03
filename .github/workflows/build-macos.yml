@@ -6,11 +6,6 @@ on:
   workflow_dispatch:
 
 env:
-  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-  TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-  APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-  APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
-  APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
   APPLE_TEAM_ID: 93JGDXCC8N
 
 jobs:
@@ -68,51 +63,61 @@ jobs:
             echo "ERROR: Developer ID Application certificate not found in keychain!"
             exit 1
           fi
-          # Export the signing identity for Tauri to use
-          SIGNING_IDENTITY=$(security find-identity -v -p codesigning $KEYCHAIN_PATH | grep "Developer ID Application" | head -1 | awk '{print $2}')
-          echo "SIGNING_IDENTITY=$SIGNING_IDENTITY" >> $GITHUB_ENV
-          echo "Using signing identity: $SIGNING_IDENTITY"
       - name: Build Tauri App (ARM64)
         env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          # Tauri reads APPLE_API_KEY as the Key ID, APPLE_API_ISSUER as the issuer UUID,
+          # and APPLE_API_KEY_PATH as the path to the .p8 file.
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER_ID }}
-          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APPLE_TEAM_ID: 93JGDXCC8N
           ENABLE_CODE_SIGNING: true
         run: |
-          # 1. Create a temporary file path for the API key
           API_KEY_PATH=$RUNNER_TEMP/api_key.p8
-
-          # 2. Decode the base64 secret into the temporary file
-          echo -n "$APPLE_API_KEY" | base64 --decode -o $API_KEY_PATH
-
-          # 3. Export the file path for Tauri to use
+          echo -n "$APPLE_API_KEY_BASE64" | base64 --decode -o $API_KEY_PATH
           echo "APPLE_API_KEY_PATH=$API_KEY_PATH" >> $GITHUB_ENV
+          export APPLE_API_KEY_PATH=$API_KEY_PATH
 
           cd src-tauri
-          # Build for Apple Silicon (Tauri will handle signing and notarization)
           echo "Building for Apple Silicon (ARM64)..."
-          echo "Tauri will automatically sign and notarize the app."
           yarn tauri build --target aarch64-apple-darwin
 
-      - name: Verify Build Output
+      - name: Verify signing, notarization, and stapling
         run: |
-          echo "✅ Build completed successfully!"
-          echo ""
-          echo "Tauri automatically:"
-          echo "• Signed the app with Developer ID certificate"
-          echo "• Notarized the app with Apple"
-          echo "• Created a signed DMG"
-          echo ""
-          # List the build artifacts
+          set -euo pipefail
+          BUNDLE_DIR=src-tauri/target/aarch64-apple-darwin/release/bundle
+          APP="$BUNDLE_DIR/macos/Peek.app"
+          DMG=$(ls "$BUNDLE_DIR"/dmg/*.dmg | head -n1)
+
           echo "Build artifacts:"
-          ls -lh src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
-          ls -lh src-tauri/target/aarch64-apple-darwin/release/bundle/macos/
+          ls -lh "$BUNDLE_DIR/dmg/"
+          ls -lh "$BUNDLE_DIR/macos/"
+
+          echo "--- codesign --verify (deep, strict) ---"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+
+          echo "--- spctl assessment ---"
+          # Must report "accepted" with "source=Notarized Developer ID"
+          spctl -a -vvv -t exec "$APP"
+
+          echo "--- stapler validate (.app) ---"
+          xcrun stapler validate "$APP"
+
+          echo "--- stapler validate (.dmg) ---"
+          xcrun stapler validate "$DMG"
+
+      - name: Zip .app with ditto (preserve bundle metadata)
+        run: |
+          set -euo pipefail
+          BUNDLE_DIR=src-tauri/target/aarch64-apple-darwin/release/bundle
+          APP="$BUNDLE_DIR/macos/Peek.app"
+          OUT="$BUNDLE_DIR/macos/Peek.app.zip"
+          # ditto preserves symlinks, xattrs, and resource forks so the signature
+          # survives the round-trip through actions/upload-artifact's zipper.
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "$OUT"
+          ls -lh "$OUT"
 
       - name: Upload macOS ARM64 Binary
         uses: actions/upload-artifact@v4
@@ -120,7 +125,7 @@ jobs:
           name: macos-arm64-binary
           path: |
             src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
-            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Peek.app
+            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Peek.app.zip
 
       - name: Create Release (if tag)
         if: startsWith(github.ref, 'refs/tags/')
@@ -129,8 +134,7 @@ jobs:
           draft: true
           files: |
             src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
-            # src-tauri/target/universal-apple-darwin/release/bundle/Peek.dmg
-            # src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+            src-tauri/target/aarch64-apple-darwin/release/bundle/macos/Peek.app.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
