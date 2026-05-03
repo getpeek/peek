@@ -33,8 +33,10 @@
       }
     },
     "updater": {
-      "endpoints": ["https://github.com/damoonrashidi/peek/releases/latest/download/latest.json"],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVGMkE1M0ZEMUU3MjAxREUKUldUZUFYSWUvVk1xWDEyZ2dqVS9xam9aZWR1clJYOW1pNkZnMDBwa0xvbTBKMXUrY1JDRW9tZG0K"
+      "endpoints": [
+        "https://github.com/damoonrashidi/peek/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI4MTRGQzc5NzJCQzBBRUEKUldUcUNyeHllZndVdUcrN0dzSUVoMHNFbzlXL2U4WXF2SnRaR2EzenJCQ3hnUEk2R0JkNEhNUzYK"
     }
   },
   "bundle": {
