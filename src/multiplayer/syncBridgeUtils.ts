@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { executeQueries } from "../canvas/executeQueries";
 import { canvasApiAtom, resultsAtom } from "../canvas/state";
 import { execRequestKey, bytesToB64 } from "./diff";
+import { multiplayerSyncIssueAtom } from "./state";
 import type { AppNode } from "../canvas/types";
 import type { DatabaseResult, Schema } from "../state";
 import type { Operation } from "./types";
@@ -41,16 +42,23 @@ export interface MultiplayerControls {
   end: () => Promise<void>;
 }
 
+function recordPushFailure(kind: "put" | "del", key: string, e: unknown): void {
+  console.error(`mp_doc_${kind} failed:`, key, e);
+  const store = getDefaultStore();
+  store.set(multiplayerSyncIssueAtom, prev => ({
+    count: prev.count + 1,
+    lastError: { kind, key, message: String(e), at: Date.now() },
+  }));
+}
+
 export function pushOperation(op: Operation): void {
   if (op.kind === "put") {
     invoke("mp_doc_put", {
       key: op.key,
       valueB64: bytesToB64(op.value),
-    }).catch(e => console.error("mp_doc_put failed:", op.key, e));
+    }).catch(e => recordPushFailure("put", op.key, e));
   } else {
-    invoke("mp_doc_del", { key: op.key }).catch(e =>
-      console.error("mp_doc_del failed:", op.key, e),
-    );
+    invoke("mp_doc_del", { key: op.key }).catch(e => recordPushFailure("del", op.key, e));
   }
 }
 

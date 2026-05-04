@@ -1,14 +1,21 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
+import { Menu } from "@mantine/core";
 import {
   IconChartBar,
   IconDownload,
   IconDots,
+  IconFileTypeCsv,
   IconGitFork,
+  IconJson,
   IconMessageChatbot,
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useRef } from "react";
+import { save } from "@tauri-apps/plugin-dialog";
+import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { schemaAtom } from "../../../state";
+import { toCsv } from "../../../tools/export/csv";
+import { toJson } from "../../../tools/export/json";
 import { ResultTable } from "./ResultTable";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useCreateChart } from "./useCreateChart";
@@ -129,6 +136,24 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
 
   const queryName = firstLineOfQuery(data.query);
 
+  const exportAs = async (format: "csv" | "json") => {
+    if (rows.length === 0) {
+      return;
+    }
+    const fallbackName = "result";
+    const baseName =
+      queryName.replaceAll(/[^a-z0-9_-]+/gi, "_").replaceAll(/^_+|_+$/g, "") || fallbackName;
+    const path = await save({
+      defaultPath: `${baseName}.${format}`,
+      filters: [{ name: format.toUpperCase(), extensions: [format] }],
+    });
+    if (!path) {
+      return;
+    }
+    const output = format === "csv" ? toCsv(rows) : JSON.stringify(toJson(rows), null, 2);
+    await writeTextFile(path, output);
+  };
+
   return (
     <>
       <NodeResizer isVisible={!!selected} minWidth={400} minHeight={260} />
@@ -157,9 +182,36 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
             <button className='icon-btn' title='Fork query' onClick={fork}>
               <IconGitFork size={14} />
             </button>
-            <button className='icon-btn' title='Export'>
-              <IconDownload size={14} />
-            </button>
+            <Menu
+              position='bottom-end'
+              offset={4}
+              radius='md'
+              width={180}
+              withinPortal
+              classNames={{
+                dropdown: "column-menu-dropdown",
+                item: "column-menu-item",
+                label: "column-menu-label",
+                itemSection: "column-menu-item-section",
+              }}
+            >
+              <Menu.Target>
+                <button className='icon-btn' title='Export' disabled={rows.length === 0}>
+                  <IconDownload size={14} />
+                </button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconFileTypeCsv size={14} />}
+                  onClick={() => exportAs("csv")}
+                >
+                  Export as CSV
+                </Menu.Item>
+                <Menu.Item leftSection={<IconJson size={14} />} onClick={() => exportAs("json")}>
+                  Export as JSON
+                </Menu.Item>
+              </Menu.Dropdown>
+            </Menu>
             <button className='icon-btn' title='More'>
               <IconDots size={14} />
             </button>

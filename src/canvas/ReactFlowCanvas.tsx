@@ -33,6 +33,7 @@ import { KeyboardShortcuts } from "./ui/KeyboardShortcuts";
 import { RemoteCursorsLayer } from "../multiplayer/RemoteCursorsLayer";
 import { useCursorBroadcast } from "../multiplayer/useCursorBroadcast";
 import { defaultDimensions, makeNode } from "./defaults";
+import { focusEditor } from "./nodes/editorFocusRegistry";
 import type { AppEdge, AppNode, QueryData } from "./types";
 import { useCanvas } from "./hooks/useCanvas";
 import { useDrawTool } from "./hooks/useDrawTool";
@@ -180,6 +181,9 @@ function ReactFlowCanvasInner() {
       });
       canvas.addNode(node);
       rf.setCenter(flowPos.x, flowPos.y, { zoom: 1, duration: 300 });
+      if (node.type === "query" || node.type === "ai-prompt") {
+        focusEditor(node.id);
+      }
       setPlaceMode(null);
     },
     [placeMode, rf, canvas, setPlaceMode],

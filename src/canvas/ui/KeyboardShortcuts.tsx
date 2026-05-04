@@ -4,7 +4,7 @@ import { clipboardAtom, nodesAtom, placeModeAtom } from "../state";
 import { formatPreservingVars } from "../variables";
 import { useCanvas } from "../hooks/useCanvas";
 import { usePageActions } from "../hooks/usePageActions";
-import { focusQueryEditor } from "../nodes/Query/editorFocusRegistry";
+import { focusEditor } from "../nodes/editorFocusRegistry";
 import { ids } from "../ids";
 import { useUndoHistory } from "./useUndoHistory";
 import type { AppNode, AppNodeType, QueryNode } from "../types";
@@ -153,7 +153,7 @@ export function KeyboardShortcuts() {
         const selected = canvas.getSelectedNodes()[0];
         if (selected?.type === "query") {
           e.preventDefault();
-          focusQueryEditor(selected.id);
+          focusEditor(selected.id);
         }
         return;
       }

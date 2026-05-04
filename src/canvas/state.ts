@@ -195,6 +195,7 @@ export interface CanvasApi {
   addPage: (name?: string) => string;
   renamePage: (id: string, name: string) => void;
   deletePage: (id: string) => void;
+  reorderPage: (id: string, toIndex: number) => void;
 }
 
 export const canvasApiAtom = atom<CanvasApi | null>(null);

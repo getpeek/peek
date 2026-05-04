@@ -6,6 +6,7 @@ import { emptyDocument } from "../canvas/emptyDocument";
 import { documentAtom, isApplyingRemoteRef, resultsAtom } from "../canvas/state";
 import { documentToPuts, resultsToPuts } from "./diff";
 import {
+  multiplayerSyncIssueAtom,
   preSessionSnapshotAtom,
   remoteCursorsAtom,
   sessionStateAtom,
@@ -30,6 +31,7 @@ export function useMultiplayerControls(): MultiplayerControls {
   const setRemoteCursors = useSetAtom(remoteCursorsAtom);
   const setParticipants = useSetAtom(participantsAtom);
   const setSchema = useSetAtom(schemaAtom);
+  const setSyncIssue = useSetAtom(multiplayerSyncIssueAtom);
 
   const host = useCallback(async () => {
     const store = getDefaultStore();
@@ -188,8 +190,18 @@ export function useMultiplayerControls(): MultiplayerControls {
     setSession(null);
     setRemoteCursors({});
     setParticipants({});
+    setSyncIssue({ count: 0, lastError: null });
     setSnapshot(null);
-  }, [setSession, setSnapshot, setDoc, setResults, setRemoteCursors, setParticipants, setSchema]);
+  }, [
+    setSession,
+    setSnapshot,
+    setDoc,
+    setResults,
+    setRemoteCursors,
+    setParticipants,
+    setSchema,
+    setSyncIssue,
+  ]);
 
   const controls = useMemo<MultiplayerControls>(() => ({ host, join, end }), [host, join, end]);
 

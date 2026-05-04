@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { IconPlus } from "@tabler/icons-react";
 import { usePageActions } from "../../../canvas/hooks/usePageActions";
+import { siblingSlideX, useTabDragReorder } from "./useTabDragReorder";
 
 export function PageSelector() {
-  const { pages, activePageId, canClose, newPage, closePage, switchPage, renamePage } =
+  const { pages, activePageId, canClose, newPage, closePage, switchPage, renamePage, reorderPage } =
     usePageActions();
   const [renameId, setRenameId] = useState<string | null>(null);
 
+  const pageIds = pages.map(p => p.id);
+  const { dragState, getTabHandlers, wasDragging } = useTabDragReorder(pageIds, reorderPage);
+
   return (
     <div className='titlebar-page-selector'>
-      {pages.map(page => {
+      {pages.map((page, index) => {
         const active = page.id === activePageId;
         if (renameId === page.id) {
           return (
@@ -35,11 +39,24 @@ export function PageSelector() {
             />
           );
         }
+        const isDragging = dragState?.draggingId === page.id;
+        const translateX = isDragging
+          ? (dragState?.pointerDx ?? 0)
+          : siblingSlideX(index, dragState);
+        const handlers = getTabHandlers(page.id, index);
         return (
           <button
             key={page.id}
-            className={`page-tab ${active ? "active" : ""}`}
-            onClick={() => switchPage(page.id)}
+            ref={handlers.ref}
+            className={`page-tab ${active ? "active" : ""} ${isDragging ? "dragging" : ""}`}
+            style={{ transform: `translateX(${translateX}px)` }}
+            onPointerDown={handlers.onPointerDown}
+            onClick={() => {
+              if (wasDragging()) {
+                return;
+              }
+              switchPage(page.id);
+            }}
             onDoubleClick={() => setRenameId(page.id)}
           >
             {active && <span className='dot' />}
@@ -47,6 +64,7 @@ export function PageSelector() {
             {active && canClose && (
               <span
                 className='close'
+                onPointerDown={e => e.stopPropagation()}
                 onClick={e => {
                   e.stopPropagation();
                   closePage(page.id);

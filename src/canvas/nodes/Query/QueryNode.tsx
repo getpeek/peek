@@ -1,6 +1,6 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { IconIndentIncrease, IconLoader2, IconPlayerPlay } from "@tabler/icons-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 import type { editor as MonacoEditor } from "monaco-editor";
 import { SqlEditor } from "../../../shapes/Query/Editor/SqlEditor";
@@ -14,7 +14,7 @@ import { NodeIndicator } from "../NodeIndicator";
 import { sessionStateAtom } from "../../../multiplayer/state";
 import { formatPreservingVars } from "../../variables";
 import type { QueryNode as QueryNodeT } from "../../types";
-import { registerQueryEditorFocus } from "./editorFocusRegistry";
+import { registerEditorFocus } from "../editorFocusRegistry";
 import "./Query.css";
 
 const DEFAULT_W = 420;
@@ -42,6 +42,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   const editorFocusedRef = useRef(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const [editorReady, setEditorReady] = useState(false);
   useScrollFallthrough(bodyRef);
   const session = useAtomValue(sessionStateAtom);
   const variables = useGetVariables(id);
@@ -49,7 +50,12 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   const h = height ?? DEFAULT_H;
   const isRunning = data.isRunning ?? false;
 
-  useEffect(() => registerQueryEditorFocus(id, () => editorRef.current?.focus()), [id]);
+  useEffect(() => {
+    if (!editorReady) {
+      return;
+    }
+    return registerEditorFocus(id, () => editorRef.current?.focus());
+  }, [id, editorReady]);
 
   const runQuery = () => {
     const node = canvas.getNode(id);
@@ -148,6 +154,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
             variables={Object.keys(variables)}
             onMount={(editor, monaco) => {
               editorRef.current = editor;
+              setEditorReady(true);
               editor.onDidFocusEditorWidget(() => {
                 editorFocusedRef.current = true;
               });

@@ -425,6 +425,7 @@
 
 .react-flow__edge.query-live .react-flow__edge-path {
   stroke: var(--pk-accent);
+  stroke-width: 2;
   stroke-dasharray: 4 6;
   animation: pk-flow 1.4s linear infinite;
 }

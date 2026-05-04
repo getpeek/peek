@@ -28,7 +28,7 @@
   background: transparent;
   border: none;
   color: var(--pk-fg-muted);
-  cursor: pointer;
+  cursor: grab;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -36,7 +36,15 @@
   font: 500 12px var(--pk-font-sans);
   transition:
     background 0.12s,
-    color 0.12s;
+    color 0.12s,
+    transform 0.18s ease;
+}
+
+.titlebar-page-selector .page-tab.dragging {
+  transition: none;
+  z-index: 2;
+  cursor: grabbing;
+  box-shadow: var(--pk-node-shadow);
 }
 
 .titlebar-page-selector .page-tab .dot {
@@ -69,6 +77,7 @@
   line-height: 1;
   width: 14px;
   text-align: center;
+  cursor: pointer;
 }
 
 .titlebar-page-selector .page-tab:hover .close {
@@ -78,6 +87,7 @@
 .titlebar-page-selector .page-tab.add-btn {
   padding: 4px 8px;
   color: var(--pk-fg-subtle);
+  cursor: pointer;
 }
 
 .titlebar-page-selector .page-tab.add-btn .dot {

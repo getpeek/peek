@@ -159,6 +159,7 @@ impl MultiplayerSession {
             app.clone(),
             Arc::clone(&shutdown),
             tracker.clone(),
+            false,
         )
         .await?;
 
@@ -217,12 +218,17 @@ impl MultiplayerSession {
 
         let shutdown = Arc::new(Notify::new());
         let tracker = NeighborTracker::new();
+        // Joiners need to enumerate existing entries once reconciliation has
+        // actually happened. The subscribe loop ties enumeration to the first
+        // `LiveEvent::SyncFinished` so it runs against a populated replica
+        // regardless of network speed.
         let subscribe_task = spawn_subscribe_loop(
             doc.clone(),
             node.blobs.clone(),
             app.clone(),
             Arc::clone(&shutdown),
             tracker.clone(),
+            true,
         )
         .await?;
 
@@ -230,7 +236,7 @@ impl MultiplayerSession {
             &node.gossip,
             &namespace_id,
             bootstrap_node_ids,
-            app.clone(),
+            app,
             Arc::clone(&shutdown),
         )
         .await?;
@@ -241,18 +247,6 @@ impl MultiplayerSession {
             tracker,
             Arc::clone(&shutdown),
         );
-
-        // Joining a doc transfers entries via reconciliation rather than the
-        // live event stream, so subscribe alone misses anything already
-        // present. Enumerate once after subscribe is set up; ContentReady
-        // covers blobs that aren't yet local.
-        let enumerate_doc = doc.clone();
-        let enumerate_blobs = node.blobs.clone();
-        let enumerate_app = app;
-        tokio::spawn(async move {
-            tokio::time::sleep(Duration::from_millis(300)).await;
-            enumerate_doc_entries(enumerate_doc, enumerate_blobs, enumerate_app).await;
-        });
 
         Ok(Self {
             doc,
@@ -410,6 +404,7 @@ async fn spawn_subscribe_loop(
     app: AppHandle,
     shutdown: Arc<Notify>,
     tracker: NeighborTracker,
+    enumerate_on_first_sync: bool,
 ) -> anyhow::Result<JoinHandle<()>> {
     let stream = doc.subscribe().await.context("subscribe to doc")?;
     Ok(tokio::spawn(async move {
@@ -417,6 +412,11 @@ async fn spawn_subscribe_loop(
         // ContentReady drains the entry for that hash.
         let mut pending: HashMap<Hash, Vec<PendingFetch>> = HashMap::new();
         let mut stream = stream;
+        // Joiner-only: ensures the post-reconciliation entry enumeration runs
+        // exactly once, on the first `SyncFinished`. Subsequent reconciliation
+        // cycles fire `SyncFinished` again and are picked up by the live
+        // `InsertRemote` path; re-enumerating each time would be wasteful.
+        let mut enumerated = false;
         loop {
             tokio::select! {
                 () = shutdown.notified() => break,
@@ -485,6 +485,20 @@ async fn spawn_subscribe_loop(
                             }
                         }
                         Some(Ok(LiveEvent::SyncFinished(_))) => {
+                            // Joiners drain the reconciled state before
+                            // signalling `sync-finished` so the JS-side status
+                            // pill flips to "active" only when entries are
+                            // actually present. Hosts have nothing to
+                            // enumerate.
+                            if enumerate_on_first_sync && !enumerated {
+                                enumerated = true;
+                                enumerate_doc_entries(
+                                    doc.clone(),
+                                    blobs.clone(),
+                                    app.clone(),
+                                )
+                                .await;
+                            }
                             let _ = app.emit("multiplayer:sync-finished", SyncFinishedEvent {});
                         }
                         Some(Ok(LiveEvent::NeighborUp(_peer))) => {

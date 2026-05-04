@@ -14,6 +14,7 @@ export interface PageActions {
   nextPage: () => void;
   previousPage: () => void;
   renamePage: (pageId: string, name: string) => void;
+  reorderPage: (pageId: string, toIndex: number) => void;
 }
 
 export function usePageActions(): PageActions {
@@ -72,5 +73,6 @@ export function usePageActions(): PageActions {
     nextPage: () => cycle(1),
     previousPage: () => cycle(-1),
     renamePage: (pageId, name) => canvas?.renamePage(pageId, name),
+    reorderPage: (pageId, toIndex) => canvas?.reorderPage(pageId, toIndex),
   };
 }

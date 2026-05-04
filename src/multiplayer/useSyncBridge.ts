@@ -11,6 +11,7 @@ import {
 import { applyOperation, applyResultOperation } from "./diffApply";
 import { b64ToBytes, diffDocs, diffResults, keyKind, SCHEMA_INDEX_KEY } from "./diff";
 import {
+  multiplayerSyncIssueAtom,
   preSessionSnapshotAtom,
   remoteCursorsAtom,
   sessionStateAtom,
@@ -224,6 +225,7 @@ export function useSyncBridge(): void {
       store.set(sessionStateAtom, null);
       store.set(remoteCursorsAtom, {});
       store.set(participantsAtom, {});
+      store.set(multiplayerSyncIssueAtom, { count: 0, lastError: null });
     }).then(u => {
       unlistenEnded = u;
     });

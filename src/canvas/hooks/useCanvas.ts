@@ -233,6 +233,22 @@ export function useCanvas(): CanvasApi {
             activePageId: d.activePageId === pageId ? order[fallbackIdx] : d.activePageId,
           };
         }),
+
+      reorderPage: (pageId, toIndex) =>
+        setDoc(d => {
+          const fromIdx = d.pageOrder.indexOf(pageId);
+          if (fromIdx === -1) {
+            return d;
+          }
+          const clamped = Math.max(0, Math.min(toIndex, d.pageOrder.length - 1));
+          if (clamped === fromIdx) {
+            return d;
+          }
+          const next = d.pageOrder.slice();
+          next.splice(fromIdx, 1);
+          next.splice(clamped, 0, pageId);
+          return { ...d, pageOrder: next };
+        }),
     }),
     [rf, setNodes, setEdges, setDoc],
   );

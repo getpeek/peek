@@ -1,7 +1,7 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { IconPlayerPlay, IconSparkles } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { format } from "sql-formatter";
 import { useExecutePrompt } from "../../../shapes/Ai/useExecutePrompt";
 import { configAtom, schemaAtom } from "../../../state";
@@ -11,6 +11,7 @@ import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
+import { registerEditorFocus } from "../editorFocusRegistry";
 import type { AiPromptNode as AiPromptNodeT, QueryNode } from "../../types";
 import "./AiPrompt.css";
 
@@ -32,7 +33,10 @@ export function AiPromptNode({ id, data, selected, width, height }: NodeProps<Ai
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
   const bodyRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   useScrollFallthrough(bodyRef);
+
+  useEffect(() => registerEditorFocus(id, () => textareaRef.current?.focus()), [id]);
 
   const generate = async () => {
     const node = canvas.getNode(id);
@@ -141,6 +145,7 @@ Respond ONLY with the sql in text format, no backticks, markdown, formatting, co
         <div className='ai-prompt-body nodrag' ref={bodyRef}>
           {data.isLoading && <div className='running-shimmer' />}
           <textarea
+            ref={textareaRef}
             value={data.prompt}
             placeholder='Generate a query that...'
             autoComplete='off'

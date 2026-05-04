@@ -28,3 +28,16 @@ export interface PreSessionSnapshot {
 }
 
 export const preSessionSnapshotAtom = atom<PreSessionSnapshot | null>(null);
+
+// Counts mp_doc_put / mp_doc_del failures during a session. Bumped from
+// `pushOperation` and read by `ShareLiveHeader` to surface that the local
+// canvas may be out of sync with the host's replica. Reset on session end —
+// stale counts from a previous session shouldn't bleed into a new one.
+export interface MultiplayerSyncIssue {
+  count: number;
+  lastError: { kind: "put" | "del"; key: string; message: string; at: number } | null;
+}
+export const multiplayerSyncIssueAtom = atom<MultiplayerSyncIssue>({
+  count: 0,
+  lastError: null,
+});
