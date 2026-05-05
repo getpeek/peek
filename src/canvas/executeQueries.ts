@@ -106,14 +106,22 @@ async function runOneQuery(args: RunOneQueryArgs): Promise<string | null> {
   setResults(prev => ({ ...prev, [resultNodeId]: result }));
 
   const existingResult = canvas.getNode(resultNodeId);
+  const { width, height } = resultNodeDimensions(result);
+  const isLiveQuery =
+    sourceNode.type === "query" && ((sourceNode.data as QueryData).liveIntervalMs ?? null) !== null;
   if (existingResult) {
-    canvas.updateNode(
-      resultNodeId,
-      node => ({ ...node, data: { ...(node.data as ResultData), query } }) as AppNode,
-    );
+    canvas.updateNode(resultNodeId, node => {
+      const next = {
+        ...node,
+        data: { ...(node.data as ResultData), query },
+      } as AppNode;
+      if (isLiveQuery) {
+        return next;
+      }
+      return { ...next, width, height };
+    });
   } else {
     const { x, y } = nextPosition(canvas, sourceNode, previousNodeId);
-    const { width, height } = resultNodeDimensions(result);
     const newNode: ResultNode = {
       id: resultNodeId,
       type: "result",
