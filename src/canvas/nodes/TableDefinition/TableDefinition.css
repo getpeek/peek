@@ -88,5 +88,5 @@
   border-color: var(--pk-accent);
   box-shadow:
     0 0 0 3px var(--pk-accent),
-    0 0 12px rgba(147, 84, 224, 0.15);
+    0 0 12px rgba(155, 109, 255, 0.15);
 }

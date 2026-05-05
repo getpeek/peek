@@ -13,6 +13,7 @@ import {
   type NodeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import "./ReactFlowCanvas.css";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useMemo } from "react";
 import { edgesAtom, nodesAtom, placeModeAtom, viewportAtom } from "./state";
@@ -251,6 +252,7 @@ function ReactFlowCanvasInner() {
                 ? "place-mode-active"
                 : "",
             variableDragHighlight.active ? "connecting-from-variable" : "",
+            variableDragHighlight.connecting ? "connecting" : "",
           ]
             .filter(Boolean)
             .join(" ") || undefined
@@ -258,10 +260,10 @@ function ReactFlowCanvasInner() {
       >
         <Background
           variant={BackgroundVariant.Dots}
-          bgColor='rgba(0, 0, 0, 0.7)'
-          color='#333'
-          gap={24}
-          size={1.4}
+          bgColor='transparent'
+          color='rgba(255, 255, 255, 0.18)'
+          gap={28}
+          size={1}
         />
         <Toolbar />
         <ZoomIndicator />

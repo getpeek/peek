@@ -52,11 +52,11 @@ body {
   --outbound-key: rgba(107, 138, 253, 0.16);
   --outbound-key-hover: rgba(107, 138, 253, 0.32);
   --user-label: #9c97ab;
-  --assistant-label: #9354e0;
+  --assistant-label: #9b6dff;
   --context-message: #4da660;
   --context-message-subtle: #5e5a6b;
   --system-message: #6b8afd;
   --system-message-subtle: #5e5a6b;
-  --selected-tool-color: #9354e0;
+  --selected-tool-color: #9b6dff;
   --tool-color: #9c97ab;
 }

@@ -14,12 +14,42 @@
   transition:
     background 0.12s,
     color 0.12s,
-    border-color 0.12s;
+    border-color 0.12s,
+    width 0.2s;
+}
+
+.titlebar-collab-button:not(.active) {
+  width: 34px;
+}
+
+.titlebar-collab-button > svg {
+  flex-shrink: 0;
 }
 
 .titlebar-collab-button:hover {
   background: var(--pk-node-bg-2);
   color: var(--pk-fg);
+}
+
+.collab-hint {
+  font: 500 10px var(--pk-font-sans);
+  color: var(--pk-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  width: 0;
+  opacity: 0;
+  transition:
+    width 0.2s,
+    opacity 0.2s;
+}
+
+.titlebar-collab-button:not(.active):hover {
+  width: 120px;
+}
+
+.titlebar-collab-button:not(.active):hover .collab-hint {
+  width: 72px;
+  opacity: 1;
 }
 
 .titlebar-collab-button.active {
@@ -51,7 +81,7 @@
   mask-composite: xor;
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  opacity: 0.45;
+  opacity: 0.55;
   pointer-events: none;
   z-index: 2;
 }

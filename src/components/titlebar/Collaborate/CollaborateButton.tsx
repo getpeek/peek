@@ -64,7 +64,10 @@ export function CollaborateButton() {
               {overflow > 0 && <span className='collab-avatar overflow'>+{overflow}</span>}
             </span>
           ) : (
-            <IconUsers size={12} stroke={2} />
+            <>
+              <IconUsers size={12} stroke={2} />
+              <span className='collab-hint'>Collaborate</span>
+            </>
           )}
         </button>
       </Popover.Target>

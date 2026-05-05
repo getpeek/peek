@@ -4,7 +4,6 @@
   left: 0;
   right: 0;
   height: 50px;
-  background: hsla(40deg, 10%, 10%, 0.1);
   backdrop-filter: blur(20px);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;

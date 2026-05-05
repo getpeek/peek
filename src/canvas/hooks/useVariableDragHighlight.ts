@@ -5,13 +5,12 @@ import type { AppEdge, AppNode } from "../types";
 export function useVariableDragHighlight() {
   const rf = useReactFlow<AppNode, AppEdge>();
   const [active, setActive] = useState(false);
+  const [connecting, setConnecting] = useState(false);
 
   const onConnectStart = useCallback<OnConnectStart>(
     (_e, params) => {
-      if (!params.nodeId) {
-        return;
-      }
-      if (rf.getNode(params.nodeId)?.type === "variable") {
+      setConnecting(true);
+      if (params.nodeId && rf.getNode(params.nodeId)?.type === "variable") {
         setActive(true);
       }
     },
@@ -20,7 +19,8 @@ export function useVariableDragHighlight() {
 
   const onConnectEnd = useCallback(() => {
     setActive(false);
+    setConnecting(false);
   }, []);
 
-  return { active, onConnectStart, onConnectEnd };
+  return { active, connecting, onConnectStart, onConnectEnd };
 }

@@ -4,40 +4,40 @@
 :root,
 .react-flow,
 .react-flow.dark {
-  --pk-bg: #0e0d12;
-  --pk-bg-grid: #1a1822;
-  --pk-node-bg: #16141c;
-  --pk-node-bg-2: #1c1a24;
-  --pk-node-border: #2a2733;
-  --pk-node-border-strong: #3a3645;
-  --pk-node-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  --pk-bg: #080916;
+  --pk-bg-grid: #1f2138;
+  --pk-node-bg: #131428;
+  --pk-node-bg-2: #1c1e36;
+  --pk-node-border: #2a2d4a;
+  --pk-node-border-strong: #3a3d5e;
+  --pk-node-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
 
-  --pk-fg: #e8e5f0;
-  --pk-fg-muted: #9c97ab;
-  --pk-fg-subtle: #5e5a6b;
+  --pk-fg: #e6e4f5;
+  --pk-fg-muted: #9892b0;
+  --pk-fg-subtle: #5a5878;
 
-  --pk-accent: #9354e0;
-  --pk-accent-soft: #dbcaf9;
-  --pk-accent-bg: rgba(147, 84, 224, 0.14);
-  --pk-accent-line: rgba(147, 84, 224, 0.5);
-  --pk-row-selected-bg: rgba(147, 84, 224, 0.22);
-  --pk-row-selected-bg-hover: rgba(147, 84, 224, 0.3);
+  --pk-accent: #9b6dff;
+  --pk-accent-soft: #dccafd;
+  --pk-accent-bg: rgba(155, 109, 255, 0.14);
+  --pk-accent-line: rgba(155, 109, 255, 0.5);
+  --pk-row-selected-bg: rgba(155, 109, 255, 0.22);
+  --pk-row-selected-bg-hover: rgba(155, 109, 255, 0.3);
 
-  --pk-green: #4da660;
-  --pk-green-soft: rgba(77, 166, 96, 0.18);
-  --pk-yellow: #f6c944;
-  --pk-yellow-soft: rgba(246, 201, 68, 0.16);
+  --pk-green: #4da66e;
+  --pk-green-soft: rgba(77, 166, 110, 0.18);
+  --pk-yellow: #f0c25c;
+  --pk-yellow-soft: rgba(240, 194, 92, 0.16);
   --pk-blue: #6b8afd;
   --pk-blue-soft: rgba(107, 138, 253, 0.16);
-  --pk-red: #e24a35;
-  --pk-red-soft: rgba(226, 74, 53, 0.16);
+  --pk-red: #e0526a;
+  --pk-red-soft: rgba(224, 82, 106, 0.16);
 
-  --pk-type-query: #9354e0;
+  --pk-type-query: #9b6dff;
   --pk-type-ai: #6b8afd;
-  --pk-type-result: #4da660;
-  --pk-type-chart: #f6c944;
-  --pk-type-chat: #dbcaf9;
-  --pk-type-error: #e24a35;
+  --pk-type-result: #4da66e;
+  --pk-type-chart: #f0c25c;
+  --pk-type-chat: #dccafd;
+  --pk-type-error: #e0526a;
 
   --pk-radius-node: 10px;
   --pk-radius-card: 10px;
@@ -52,7 +52,6 @@
    xyflow overrides
    ============================================================ */
 .react-flow {
-  background: linear-gradient(rgba(147, 84, 224, 0.14), rgba(147, 84, 224, 0.14)) var(--pk-bg);
   color: var(--pk-fg);
   font-family: var(--pk-font-sans);
   --xy-background-color-default: transparent;
@@ -122,7 +121,7 @@
   border-color: var(--pk-accent);
   box-shadow:
     0 0 0 3px var(--pk-accent),
-    0 0 12px rgba(147, 84, 224, 0.15);
+    0 0 12px rgba(155, 109, 255, 0.15);
 }
 
 /* ============================================================
