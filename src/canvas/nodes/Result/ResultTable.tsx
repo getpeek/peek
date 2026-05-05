@@ -17,13 +17,17 @@ import {
 import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { CellContextMenu } from "./CellContextMenu";
+import { InsertRow } from "./InsertRow";
 import { PortalAnchor } from "./PortalAnchor";
 import { ResultTableHeader } from "./ResultTableHeader";
 import { ResultTableRow } from "./ResultTableRow";
 import { useCellContextMenu } from "./useCellContextMenu";
 import { useColumnWidths } from "./useColumnWidths";
 import { useCommitEdit, type EditingState } from "./useCommitEdit";
+import { useCommitInsert, type InsertingState } from "./useCommitInsert";
+import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
 import type { Reference } from "./columnRoles";
+import { getEditableTableName } from "./inlineEdit";
 import "../../../shapes/Result/ResultShape.css";
 
 type HeaderMenuState = {
@@ -49,12 +53,17 @@ export function ResultTable({
   const executeQueries = useExecuteQueries();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState<EditingState | null>(null);
+  const [inserting, setInserting] = useState<InsertingState | null>(null);
   const [headerMenu, setHeaderMenu] = useState<HeaderMenuState | null>(null);
   const cellContextMenu = useCellContextMenu(nodeId);
 
   const firstRow = data[0] ?? [];
   const headers = firstRow.map(([key]) => key);
   const headerTypes = firstRow.map(([, , type]) => type);
+  const columnTypes: Record<string, string> = {};
+  headers.forEach((header, idx) => {
+    columnTypes[header] = headerTypes[idx] ?? "";
+  });
 
   const { widthFor, totalWidth, startResize } = useColumnWidths({
     data,
@@ -74,6 +83,16 @@ export function ResultTable({
   }, [query]);
 
   const commitEdit = useCommitEdit({ editing, setEditing, data, query, ast, nodeId });
+  const commitInsert = useCommitInsert({
+    inserting,
+    setInserting,
+    query,
+    ast,
+    nodeId,
+    columnTypes,
+  });
+  const canInsert = getEditableTableName(ast) !== null;
+  const variableNames = Object.keys(useGetVariablesForNode(nodeId).direct).toSorted();
 
   const { outbound, inbound } = useMemo(() => {
     const outboundMap: Record<string, Reference[]> = {};
@@ -198,6 +217,7 @@ export function ResultTable({
               editing={editing}
               setEditing={setEditing}
               commitEdit={commitEdit}
+              variableNames={variableNames}
               inbound={inbound}
               outbound={outbound}
               onFollowReferences={followReferences}
@@ -211,6 +231,16 @@ export function ResultTable({
                 style={{ height: paddingBottom, padding: 0, border: "none" }}
               />
             </tr>
+          )}
+          {canInsert && (
+            <InsertRow
+              headers={headers}
+              columnTypes={columnTypes}
+              variableNames={variableNames}
+              inserting={inserting}
+              setInserting={setInserting}
+              onCommit={commitInsert}
+            />
           )}
         </Table.Tbody>
       </Table>

@@ -18,6 +18,7 @@ export const ResultTableRow = forwardRef<
     editing: EditingState | null;
     setEditing: React.Dispatch<React.SetStateAction<EditingState | null>>;
     commitEdit: () => void;
+    variableNames: string[];
     inbound: Record<string, Reference[]>;
     outbound: Record<string, Reference[]>;
     onFollowReferences: (refs: CellReference[], value: unknown) => void;
@@ -30,6 +31,7 @@ export const ResultTableRow = forwardRef<
     editing,
     setEditing,
     commitEdit,
+    variableNames,
     inbound,
     outbound,
     onFollowReferences,
@@ -86,6 +88,7 @@ export const ResultTableRow = forwardRef<
                 draft={editing.draft}
                 error={editing.error}
                 saving={editing.saving}
+                variableNames={variableNames}
                 onChange={next =>
                   setEditing(current => (current ? { ...current, draft: next } : current))
                 }

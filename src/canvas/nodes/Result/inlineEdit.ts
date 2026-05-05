@@ -96,6 +96,7 @@ export function formatSqlLiteral(value: unknown, sqlType: string): string {
 }
 
 export type PkAssignment = { column: string; literal: string };
+export type InsertAssignment = { column: string; literal: string };
 
 export function buildUpdateSql(
   table: string,
@@ -108,6 +109,15 @@ export function buildUpdateSql(
   }
   const where = pks.map(pk => `"${pk.column}" = ${pk.literal}`).join(" AND ");
   return `UPDATE "${table}" SET "${column}" = ${newLiteral} WHERE ${where}`;
+}
+
+export function buildInsertSql(table: string, assignments: InsertAssignment[]): string {
+  if (assignments.length === 0) {
+    throw new Error("buildInsertSql requires at least one column");
+  }
+  const cols = assignments.map(a => `"${a.column}"`).join(", ");
+  const vals = assignments.map(a => a.literal).join(", ");
+  return `INSERT INTO "${table}" (${cols}) VALUES (${vals})`;
 }
 
 export function buildPkAssignments(

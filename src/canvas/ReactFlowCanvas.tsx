@@ -39,6 +39,7 @@ import { useCanvas } from "./hooks/useCanvas";
 import { useDrawTool } from "./hooks/useDrawTool";
 import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
 import { useResultDropOnChat } from "./hooks/useResultDropOnChat";
+import { useVariableDragHighlight } from "./hooks/useVariableDragHighlight";
 import { getStroke } from "perfect-freehand";
 import { FloatingEdge } from "./edges/FloatingEdge";
 import "./nodes/node.css";
@@ -109,7 +110,7 @@ function ReactFlowCanvasInner() {
       if (!source || !target) {
         return false;
       }
-      return source.type === "variable" && target.type === "query";
+      return source.type === "variable" && (target.type === "query" || target.type === "result");
     },
     [rf],
   );
@@ -126,6 +127,8 @@ function ReactFlowCanvasInner() {
     },
     [canvas, isValidVariableConnection],
   );
+
+  const variableDragHighlight = useVariableDragHighlight();
 
   const styledEdges = useMemo(() => {
     const selectedQueryIds = new Set(
@@ -214,6 +217,8 @@ function ReactFlowCanvasInner() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onConnectStart={variableDragHighlight.onConnectStart}
+        onConnectEnd={variableDragHighlight.onConnectEnd}
         isValidConnection={isValidVariableConnection}
         onPaneClick={onPaneClick}
         onNodeDragStart={onNodeDragStart}
@@ -239,11 +244,16 @@ function ReactFlowCanvasInner() {
         minZoom={0.1}
         maxZoom={4}
         className={
-          placeMode === "draw"
-            ? "place-mode-active draw-mode-active"
-            : placeMode
-              ? "place-mode-active"
-              : undefined
+          [
+            placeMode === "draw"
+              ? "place-mode-active draw-mode-active"
+              : placeMode
+                ? "place-mode-active"
+                : "",
+            variableDragHighlight.active ? "connecting-from-variable" : "",
+          ]
+            .filter(Boolean)
+            .join(" ") || undefined
         }
       >
         <Background

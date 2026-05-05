@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { isBooleanType, isNumericType } from "./inlineEdit";
+import { VariableInput, type VariableInputKind } from "./VariableInput";
 
 function parseBooleanDraft(draft: string): "true" | "false" | "null" {
   const value = draft.toLowerCase();
@@ -17,6 +18,7 @@ export function EditCell({
   draft,
   error,
   saving,
+  variableNames,
   onChange,
   onCommit,
   onCancel,
@@ -25,6 +27,7 @@ export function EditCell({
   draft: string;
   error: string | null;
   saving: boolean;
+  variableNames: string[];
   onChange: (v: string) => void;
   onCommit: () => void;
   onCancel: () => void;
@@ -74,7 +77,7 @@ export function EditCell({
     return false;
   };
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const onKeyDown = (e: React.KeyboardEvent) => {
     e.stopPropagation();
     handleCommitKeys(e);
   };
@@ -117,39 +120,31 @@ export function EditCell({
     );
   }
 
-  const common = {
-    value: draft,
-    disabled: saving,
-    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      onChange(e.target.value),
-    onKeyDown,
-    onClick: (e: React.MouseEvent) => e.stopPropagation(),
-    onDoubleClick: (e: React.MouseEvent) => e.stopPropagation(),
-    className: "edit-input",
-    spellCheck: false,
-  };
-
   const clearToNull = () => {
     onChange("");
     onCommit();
   };
 
+  const kind: VariableInputKind = isMultiline ? "textarea" : isNumeric ? "number" : "text";
+
   return (
     <div className='edit-wrapper'>
       <div className='edit-row'>
-        {isMultiline ? (
-          <textarea ref={inputRef as React.RefObject<HTMLTextAreaElement>} rows={3} {...common} />
-        ) : isNumeric ? (
-          <input
-            ref={inputRef as React.RefObject<HTMLInputElement>}
-            type='number'
-            inputMode='decimal'
-            step='any'
-            {...common}
-          />
-        ) : (
-          <input ref={inputRef as React.RefObject<HTMLInputElement>} type='text' {...common} />
-        )}
+        <VariableInput
+          value={draft}
+          onChange={onChange}
+          variableNames={variableNames}
+          kind={kind}
+          className='edit-input'
+          disabled={saving}
+          spellCheck={false}
+          rows={3}
+          inputRef={el => {
+            inputRef.current = el;
+          }}
+          onKeyDown={onKeyDown}
+          onClick={e => e.stopPropagation()}
+        />
         <button
           type='button'
           className='edit-clear-null'

@@ -195,3 +195,158 @@ td.editing.error {
 .column-menu-item[data-hovered] .column-menu-item-section {
   color: var(--pk-accent-soft) !important;
 }
+
+.app-node table tbody tr.insert-row-prompt:hover td,
+.app-node table tbody tr.insert-row:hover td,
+.app-node table tbody tr.insert-status-row:hover td {
+  background: transparent;
+}
+
+.app-node table tbody td.insert-row-button {
+  padding: 8px 14px !important;
+  color: var(--pk-fg-muted);
+  background: var(--pk-node-bg);
+  border-bottom: 1px solid var(--pk-node-border) !important;
+  cursor: pointer;
+  user-select: none;
+  font: 500 11px var(--pk-font-mono);
+  letter-spacing: 0.02em;
+  transition:
+    background 0.12s ease-out,
+    color 0.12s ease-out;
+}
+
+.app-node table tbody td.insert-row-button:hover {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+.app-node table tbody td.insert-cell {
+  padding: 0 !important;
+  background: var(--pk-accent-bg);
+  border-bottom: 1px solid var(--pk-accent-line) !important;
+}
+
+.insert-cell-row {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+}
+
+.insert-cell-row .insert-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.insert-input {
+  width: 100%;
+  height: 100%;
+  min-height: 30px;
+  padding: 6px 14px;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: var(--pk-fg);
+  font-family: var(--pk-font-mono);
+  font-size: 12px;
+  line-height: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.insert-input::placeholder {
+  color: var(--pk-fg-subtle);
+  font-style: italic;
+}
+
+.insert-input:disabled {
+  opacity: 0.6;
+}
+
+.insert-input.is-null {
+  opacity: 1;
+  color: var(--pk-fg-subtle);
+  font-style: italic;
+}
+
+.insert-input.is-null::placeholder {
+  color: var(--pk-fg-muted);
+  font-style: italic;
+  opacity: 1;
+}
+
+.insert-null-toggle {
+  flex: 0 0 auto;
+  padding: 0 8px;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: var(--pk-fg-subtle);
+  font-family: var(--pk-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  outline: none;
+  transition: color 0.12s ease-out;
+}
+
+.insert-null-toggle:hover:not(:disabled) {
+  color: var(--pk-red);
+}
+
+.insert-null-toggle.active {
+  color: var(--pk-red);
+}
+
+.insert-null-toggle:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.app-node table tbody td.insert-status {
+  padding: 6px 14px !important;
+  background: var(--pk-node-bg);
+  border-bottom: 1px solid var(--pk-node-border) !important;
+  font: 500 11px var(--pk-font-mono);
+}
+
+.insert-saving {
+  color: var(--pk-fg-muted);
+}
+
+.insert-error {
+  color: var(--pk-red);
+  white-space: pre-wrap;
+}
+
+.variable-suggest {
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-card);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  padding: 4px;
+  font-family: var(--pk-font-mono);
+  font-size: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.variable-suggest-item {
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--pk-fg);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background 0.12s ease-out,
+    color 0.12s ease-out;
+}
+
+.variable-suggest-item:hover,
+.variable-suggest-item.selected {
+  background: var(--pk-accent-bg);
+  color: var(--pk-accent-soft);
+}

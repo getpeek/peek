@@ -101,18 +101,26 @@ The database schema looks like this ${JSON.stringify(schema, null, 2)}. You can 
           <div className={`error-shape ${isThinking ? "loading" : ""}`}>
             <Stack gap='md'>
               <Text size='sm'>{data.message}</Text>
-              <button className='suggest-fix-button' onClick={getResponse} disabled={isThinking}>
-                Suggest fix
-              </button>
-              {query.length > 0 && (
-                <Stack>
-                  <div className='query-suggestion' ref={suggestionRef}>
-                    <pre>{query}</pre>
-                  </div>
-                  <button className='suggest-fix-button' onClick={acceptQuery}>
-                    Accept
+              {data.queryNodeId !== "" && (
+                <>
+                  <button
+                    className='suggest-fix-button'
+                    onClick={getResponse}
+                    disabled={isThinking}
+                  >
+                    Suggest fix
                   </button>
-                </Stack>
+                  {query.length > 0 && (
+                    <Stack>
+                      <div className='query-suggestion' ref={suggestionRef}>
+                        <pre>{query}</pre>
+                      </div>
+                      <button className='suggest-fix-button' onClick={acceptQuery}>
+                        Accept
+                      </button>
+                    </Stack>
+                  )}
+                </>
               )}
             </Stack>
           </div>

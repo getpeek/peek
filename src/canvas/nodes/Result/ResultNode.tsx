@@ -157,7 +157,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
   return (
     <>
       <NodeResizer isVisible={!!selected} minWidth={400} minHeight={260} />
-      <HiddenHandles />
+      <HiddenHandles connectableTarget />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader
           nodeId={id}

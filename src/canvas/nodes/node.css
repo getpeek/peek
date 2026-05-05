@@ -115,6 +115,14 @@
     0 12px 32px rgba(0, 0, 0, 0.45);
 }
 
+.connecting-from-variable .react-flow__node-query .app-node,
+.connecting-from-variable .react-flow__node-result .app-node {
+  border-color: var(--pk-accent);
+  box-shadow:
+    0 0 0 3px var(--pk-accent),
+    0 0 12px rgba(147, 84, 224, 0.15);
+}
+
 /* ============================================================
    Node header (type dot + label + name + pin/close)
    ============================================================ */

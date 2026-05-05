@@ -5,7 +5,8 @@ import type { AST } from "node-sql-parser";
 import { schemaAtom, type DatabaseResult } from "../../../state";
 import { useCanvas } from "../../hooks/useCanvas";
 import { resultsAtom } from "../../state";
-import { collectVariablesFor, substituteVariables } from "../../variables";
+import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
+import { substituteVariables } from "../../variables";
 import {
   buildPkAssignments,
   buildUpdateSql,
@@ -40,6 +41,7 @@ export function useCommitEdit({
   const canvas = useCanvas();
   const setResults = useSetAtom(resultsAtom);
   const editableTable = useMemo(() => getEditableTableName(ast), [ast]);
+  const vars = useGetVariablesForNode(nodeId);
 
   return useCallback(async () => {
     if (!editing) {
@@ -79,28 +81,23 @@ export function useCommitEdit({
 
     let updateSql: string;
     try {
-      const newLiteral = draft === "" ? "NULL" : formatSqlLiteral(draft, columnType);
+      // Resolve the draft against connected variables before quoting; undefined
+      // refs (e.g. typing `@test` with no `test` variable) stay as literal text.
+      const resolvedDraft = substituteVariables(draft, vars.direct).resolved;
+      const newLiteral =
+        resolvedDraft === "" ? "NULL" : formatSqlLiteral(resolvedDraft, columnType);
       updateSql = buildUpdateSql(editableTable, columnName, newLiteral, pks);
     } catch (err) {
       setError(String(err));
       return;
     }
 
-    const sourceQueryId = canvas.getEdges().find(edge => edge.target === nodeId)?.source;
-    const vars = sourceQueryId ? collectVariablesFor(canvas, sourceQueryId) : {};
-
-    let resolvedUpdateSql: string;
     let resolvedRefreshQuery: string;
     try {
-      const update = substituteVariables(updateSql, vars);
-      if (update.missing.length > 0) {
-        throw new Error(`Undefined variables: ${update.missing.map(m => "@" + m).join(", ")}`);
-      }
-      const refresh = substituteVariables(query, vars);
+      const refresh = substituteVariables(query, vars.inherited);
       if (refresh.missing.length > 0) {
         throw new Error(`Undefined variables: ${refresh.missing.map(m => "@" + m).join(", ")}`);
       }
-      resolvedUpdateSql = update.resolved;
       resolvedRefreshQuery = refresh.resolved;
     } catch (err) {
       setError(String(err));
@@ -109,7 +106,7 @@ export function useCommitEdit({
 
     setEditing(current => (current ? { ...current, saving: true, error: null } : current));
     try {
-      await invoke("execute_statement", { query: resolvedUpdateSql });
+      await invoke("execute_statement", { query: updateSql });
       const refreshed = JSON.parse(
         (await invoke("get_results", { query: resolvedRefreshQuery })) as string,
       ) as DatabaseResult;
@@ -130,5 +127,6 @@ export function useCommitEdit({
     nodeId,
     query,
     setResults,
+    vars,
   ]);
 }
