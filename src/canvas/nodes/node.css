@@ -16,129 +16,138 @@
    ============================================================ */
 :root,
 body.theme-pine {
-  --pk-bg: #080916;
-  --pk-bg-grid: #1f2138;
-  --pk-node-bg: #131428;
-  --pk-node-bg-2: #1c1e36;
-  --pk-node-border: #2a2d4a;
-  --pk-node-border-strong: #3a3d5e;
-  --pk-node-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --pk-bg: oklch(14.7% 0.028 278.7);
+  --pk-bg-grid: oklch(25.8% 0.043 279.1);
+  --pk-node-bg: oklch(20.2% 0.04 280);
+  --pk-node-bg-2: oklch(24.6% 0.046 278.9);
+  --pk-node-border: oklch(30.9% 0.052 278.4);
+  --pk-node-border-strong: oklch(37.2% 0.057 279.3);
+  --pk-node-shadow: 0 8px 24px oklch(0% 0 0 / 0.5), 0 1px 0 oklch(100% 0 0 / 0.04) inset;
 
-  --pk-fg: #e6e4f5;
-  --pk-fg-muted: #9892b0;
-  --pk-fg-subtle: #5a5878;
+  --pk-fg: oklch(92.5% 0.023 291.4);
+  --pk-fg-muted: oklch(67.5% 0.044 294.4);
+  --pk-fg-subtle: oklch(47.5% 0.051 287.1);
 
-  --pk-accent: #9b6dff;
-  --pk-accent-soft: #dccafd;
-  --pk-accent-bg: rgba(155, 109, 255, 0.14);
-  --pk-accent-line: rgba(155, 109, 255, 0.5);
-  --pk-row-selected-bg: rgba(155, 109, 255, 0.22);
-  --pk-row-selected-bg-hover: rgba(155, 109, 255, 0.3);
+  --pk-accent: oklch(65.2% 0.208 294.4);
+  --pk-accent-soft: oklch(87% 0.072 301);
+  --pk-accent-bg: oklch(65.2% 0.208 294.4 / 0.14);
+  --pk-accent-line: oklch(65.2% 0.208 294.4 / 0.5);
+  --pk-row-selected-bg: oklch(65.2% 0.208 294.4 / 0.22);
+  --pk-row-selected-bg-hover: oklch(65.2% 0.208 294.4 / 0.3);
 
-  --pk-green: #4da66e;
-  --pk-green-soft: rgba(77, 166, 110, 0.18);
-  --pk-yellow: #f0c25c;
-  --pk-yellow-soft: rgba(240, 194, 92, 0.16);
-  --pk-blue: #6b8afd;
-  --pk-blue-soft: rgba(107, 138, 253, 0.16);
-  --pk-red: #e0526a;
-  --pk-red-soft: rgba(224, 82, 106, 0.16);
+  --pk-green: oklch(65.5% 0.12 153.8);
+  --pk-green-soft: oklch(65.5% 0.12 153.8 / 0.18);
+  --pk-yellow: oklch(83.5% 0.13 84.9);
+  --pk-yellow-soft: oklch(83.5% 0.13 84.9 / 0.16);
+  --pk-blue: oklch(66.5% 0.173 269.8);
+  --pk-blue-soft: oklch(66.5% 0.173 269.8 / 0.16);
+  --pk-red: oklch(63.4% 0.177 13.6);
+  --pk-red-soft: oklch(63.4% 0.177 13.6 / 0.16);
 
-  --pk-type-query: #9b6dff;
-  --pk-type-ai: #6b8afd;
-  --pk-type-result: #4da66e;
-  --pk-type-chart: #f0c25c;
-  --pk-type-chat: #dccafd;
-  --pk-type-error: #e0526a;
+  --pk-type-query: oklch(65.2% 0.208 294.4);
+  --pk-type-ai: oklch(66.5% 0.173 269.8);
+  --pk-type-result: oklch(65.5% 0.12 153.8);
+  --pk-type-chart: oklch(83.5% 0.13 84.9);
+  --pk-type-chat: oklch(87% 0.072 301);
+  --pk-type-error: oklch(63.4% 0.177 13.6);
 
   --pk-canvas-bg:
-    radial-gradient(closest-side at 10% 100%, rgba(81, 128, 230, 0.1), transparent 70%),
-    radial-gradient(140% 100% at 50% 0%, rgba(81, 128, 230, 0.1) 0%, transparent 50%),
-    linear-gradient(180deg, rgba(15, 16, 32, 0.5) 0%, rgba(8, 9, 22, 0.95) 100%), #050511;
+    radial-gradient(closest-side at 10% 100%, oklch(61.7% 0.163 263.7 / 0.1), transparent 70%),
+    radial-gradient(140% 100% at 50% 0%, oklch(61.7% 0.163 263.7 / 0.1) 0%, transparent 50%),
+    linear-gradient(
+      180deg,
+      oklch(18.1% 0.033 279.9 / 0.5) 0%,
+      oklch(14.7% 0.028 278.7 / 0.95) 100%
+    ),
+    oklch(12.4% 0.029 281.3);
 }
 
 /* ============================================================
    Midnight theme (the original dark theme)
    ============================================================ */
 body.theme-midnight {
-  --pk-bg: #0e0d12;
-  --pk-bg-grid: #1a1822;
-  --pk-node-bg: #16141c;
-  --pk-node-bg-2: #1c1a24;
-  --pk-node-border: #2a2733;
-  --pk-node-border-strong: #3a3645;
-  --pk-node-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  --pk-bg: oklch(16.3% 0.011 294.4);
+  --pk-bg-grid: oklch(21.6% 0.02 293.9);
+  --pk-node-bg: oklch(19.7% 0.016 296.4);
+  --pk-node-bg-2: oklch(22.5% 0.019 293.9);
+  --pk-node-border: oklch(28.1% 0.022 296.4);
+  --pk-node-border-strong: oklch(34.3% 0.026 297.2);
+  --pk-node-shadow: 0 8px 24px oklch(0% 0 0 / 0.35), 0 1px 0 oklch(100% 0 0 / 0.03) inset;
 
-  --pk-fg: #e8e5f0;
-  --pk-fg-muted: #9c97ab;
-  --pk-fg-subtle: #5e5a6b;
+  --pk-fg: oklch(92.7% 0.015 298.6);
+  --pk-fg-muted: oklch(68.7% 0.03 297.1);
+  --pk-fg-subtle: oklch(47.8% 0.027 296.1);
 
-  --pk-accent: #9354e0;
-  --pk-accent-soft: #dbcaf9;
-  --pk-accent-bg: rgba(147, 84, 224, 0.14);
-  --pk-accent-line: rgba(147, 84, 224, 0.5);
-  --pk-row-selected-bg: rgba(147, 84, 224, 0.22);
-  --pk-row-selected-bg-hover: rgba(147, 84, 224, 0.3);
+  --pk-accent: oklch(58.7% 0.205 301);
+  --pk-accent-soft: oklch(86.8% 0.067 301.5);
+  --pk-accent-bg: oklch(58.7% 0.205 301 / 0.14);
+  --pk-accent-line: oklch(58.7% 0.205 301 / 0.5);
+  --pk-row-selected-bg: oklch(58.7% 0.205 301 / 0.22);
+  --pk-row-selected-bg-hover: oklch(58.7% 0.205 301 / 0.3);
 
-  --pk-green: #4da660;
-  --pk-green-soft: rgba(77, 166, 96, 0.18);
-  --pk-yellow: #f6c944;
-  --pk-yellow-soft: rgba(246, 201, 68, 0.16);
-  --pk-blue: #6b8afd;
-  --pk-blue-soft: rgba(107, 138, 253, 0.16);
-  --pk-red: #e24a35;
-  --pk-red-soft: rgba(226, 74, 53, 0.16);
+  --pk-green: oklch(65.3% 0.134 148.6);
+  --pk-green-soft: oklch(65.3% 0.134 148.6 / 0.18);
+  --pk-yellow: oklch(85.3% 0.152 89.5);
+  --pk-yellow-soft: oklch(85.3% 0.152 89.5 / 0.16);
+  --pk-blue: oklch(66.5% 0.173 269.8);
+  --pk-blue-soft: oklch(66.5% 0.173 269.8 / 0.16);
+  --pk-red: oklch(62% 0.192 30.9);
+  --pk-red-soft: oklch(62% 0.192 30.9 / 0.16);
 
-  --pk-type-query: #9354e0;
-  --pk-type-ai: #6b8afd;
-  --pk-type-result: #4da660;
-  --pk-type-chart: #f6c944;
-  --pk-type-chat: #dbcaf9;
-  --pk-type-error: #e24a35;
+  --pk-type-query: oklch(58.7% 0.205 301);
+  --pk-type-ai: oklch(66.5% 0.173 269.8);
+  --pk-type-result: oklch(65.3% 0.134 148.6);
+  --pk-type-chart: oklch(85.3% 0.152 89.5);
+  --pk-type-chat: oklch(86.8% 0.067 301.5);
+  --pk-type-error: oklch(62% 0.192 30.9);
 
-  --pk-canvas-bg: linear-gradient(180deg, #14121a 0%, #0e0d12 100%), #0e0d12;
+  --pk-canvas-bg:
+    linear-gradient(180deg, oklch(18.8% 0.016 296.3) 0%, oklch(16.3% 0.011 294.4) 100%),
+    oklch(16.3% 0.011 294.4);
 }
 
 /* ============================================================
    Midday theme (light)
    ============================================================ */
 body.theme-midday {
-  --pk-bg: #f7f6fc;
-  --pk-bg-grid: #dedce8;
-  --pk-node-bg: #ffffff;
-  --pk-node-bg-2: #f0eef7;
-  --pk-node-border: #d6d3e2;
-  --pk-node-border-strong: #b1adc4;
-  --pk-node-shadow: 0 4px 12px rgba(20, 15, 40, 0.08), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  --pk-bg: oklch(97.6% 0.008 293.9);
+  --pk-bg-grid: oklch(78% 0.8 293.7);
+  --pk-node-bg: oklch(100% 0 0);
+  --pk-node-bg-2: oklch(95.3% 0.012 296.3);
+  --pk-node-border: oklch(87.4% 0.021 295.1);
+  --pk-node-border-strong: oklch(75.8% 0.033 293.6);
+  --pk-node-shadow: 0 4px 12px oklch(19% 0.049 290.1 / 0.08), 0 1px 0 oklch(100% 0 0 / 0.6) inset;
 
-  --pk-fg: #1a1822;
-  --pk-fg-muted: #5e5a6b;
-  --pk-fg-subtle: #9c97ab;
+  --pk-fg: oklch(21.6% 0.02 293.9);
+  --pk-fg-muted: oklch(47.8% 0.027 296.1);
+  --pk-fg-subtle: oklch(68.7% 0.03 297.1);
 
-  --pk-accent: #6b3fc4;
-  --pk-accent-soft: #4a2890;
-  --pk-accent-bg: rgba(107, 63, 196, 0.1);
-  --pk-accent-line: rgba(107, 63, 196, 0.4);
-  --pk-row-selected-bg: rgba(107, 63, 196, 0.14);
-  --pk-row-selected-bg-hover: rgba(107, 63, 196, 0.22);
+  --pk-accent: oklch(49.6% 0.195 293.1);
+  --pk-accent-soft: oklch(38.6% 0.161 292.1);
+  --pk-accent-bg: oklch(49.6% 0.195 293.1 / 0.1);
+  --pk-accent-line: oklch(49.6% 0.195 293.1 / 0.4);
+  --pk-row-selected-bg: oklch(49.6% 0.195 293.1 / 0.14);
+  --pk-row-selected-bg-hover: oklch(49.6% 0.195 293.1 / 0.22);
 
-  --pk-green: #2f8a4d;
-  --pk-green-soft: rgba(47, 138, 77, 0.14);
-  --pk-yellow: #b88200;
-  --pk-yellow-soft: rgba(184, 130, 0, 0.14);
-  --pk-blue: #3858c4;
-  --pk-blue-soft: rgba(56, 88, 196, 0.14);
-  --pk-red: #c4353d;
-  --pk-red-soft: rgba(196, 53, 61, 0.14);
+  --pk-green: oklch(56.4% 0.127 150.9);
+  --pk-green-soft: oklch(56.4% 0.127 150.9 / 0.14);
+  --pk-yellow: oklch(64.4% 0.134 79.3);
+  --pk-yellow-soft: oklch(64.4% 0.134 79.3 / 0.14);
+  --pk-blue: oklch(50% 0.173 267.3);
+  --pk-blue-soft: oklch(50% 0.173 267.3 / 0.14);
+  --pk-red: oklch(54.9% 0.179 22.5);
+  --pk-red-soft: oklch(54.9% 0.179 22.5 / 0.14);
 
-  --pk-type-query: #6b3fc4;
-  --pk-type-ai: #3858c4;
-  --pk-type-result: #2f8a4d;
-  --pk-type-chart: #b88200;
-  --pk-type-chat: #6b3fc4;
-  --pk-type-error: #c4353d;
+  --pk-type-query: oklch(49.6% 0.195 293.1);
+  --pk-type-ai: oklch(50% 0.173 267.3);
+  --pk-type-result: oklch(56.4% 0.127 150.9);
+  --pk-type-chart: oklch(64.4% 0.134 79.3);
+  --pk-type-chat: oklch(49.6% 0.195 293.1);
+  --pk-type-error: oklch(54.9% 0.179 22.5);
 
-  --pk-canvas-bg: linear-gradient(180deg, #faf9fd 0%, #ecebf3 100%), #f5f4fa;
+  --pk-canvas-bg:
+    linear-gradient(180deg, oklch(98.4% 0.005 297.7) 0%, oklch(94.3% 0.011 291.9) 100%),
+    oklch(97% 0.008 293.9);
 }
 
 /* ============================================================
@@ -206,7 +215,7 @@ body.theme-midday {
   border-color: var(--pk-accent);
   box-shadow:
     0 0 0 1px var(--pk-accent),
-    0 12px 32px rgba(0, 0, 0, 0.45);
+    0 12px 32px oklch(0% 0 0 / 0.45);
 }
 
 .connecting-from-variable .react-flow__node-query .app-node,
@@ -214,7 +223,7 @@ body.theme-midday {
   border-color: var(--pk-accent);
   box-shadow:
     0 0 0 3px var(--pk-accent),
-    0 0 12px rgba(155, 109, 255, 0.15);
+    0 0 12px color-mix(in oklab, var(--pk-accent) 15%, transparent);
 }
 
 /* ============================================================
