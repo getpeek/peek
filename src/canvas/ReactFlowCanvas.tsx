@@ -38,7 +38,6 @@ import type { AppEdge, AppNode, QueryData } from "./types";
 import { useCanvas } from "./hooks/useCanvas";
 import { useDrawTool } from "./hooks/useDrawTool";
 import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
-import { useResultDropOnChat } from "./hooks/useResultDropOnChat";
 import { useVariableDragHighlight } from "./hooks/useVariableDragHighlight";
 import { getStroke } from "perfect-freehand";
 import { FloatingEdge } from "./edges/FloatingEdge";
@@ -84,7 +83,6 @@ function ReactFlowCanvasInner() {
   const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
   useCursorBroadcast();
   const { onSchemaNodeDragStart, onSchemaNodeDrag, onSchemaNodeDragStop } = useSchemaForceLayout();
-  const onNodeDragStop = useResultDropOnChat(onSchemaNodeDragStop);
 
   const onNodesChange = useCallback(
     (changes: NodeChange<AppNode>[]) => {
@@ -100,7 +98,7 @@ function ReactFlowCanvasInner() {
     [setEdges],
   );
 
-  const isValidVariableConnection = useCallback<IsValidConnection<AppEdge>>(
+  const isValidConnection = useCallback<IsValidConnection<AppEdge>>(
     connection => {
       if (!connection.source || !connection.target || connection.source === connection.target) {
         return false;
@@ -110,22 +108,25 @@ function ReactFlowCanvasInner() {
       if (!source || !target) {
         return false;
       }
-      return source.type === "variable" && (target.type === "query" || target.type === "result");
+      if (source.type === "variable" && (target.type === "query" || target.type === "result")) {
+        return true;
+      }
+      if (source.type === "result" && target.type === "chat") {
+        return true;
+      }
+      return false;
     },
     [rf],
   );
 
   const onConnect = useCallback(
-    (connection: Connection) => {
-      if (!connection.source || !connection.target) {
+    (c: Connection) => {
+      if (!c.source || !c.target || !isValidConnection(c)) {
         return;
       }
-      if (!isValidVariableConnection(connection)) {
-        return;
-      }
-      canvas.connect(connection.source, connection.target);
+      canvas.connect(c.source, c.target);
     },
-    [canvas, isValidVariableConnection],
+    [canvas, isValidConnection],
   );
 
   const variableDragHighlight = useVariableDragHighlight();
@@ -193,17 +194,16 @@ function ReactFlowCanvasInner() {
   );
 
   const onNodeDragStart = useCallback(
-    (_e: React.MouseEvent | MouseEvent | TouchEvent, dragged: AppNode) => {
-      onSchemaNodeDragStart(dragged);
-    },
+    (_e: unknown, n: AppNode) => onSchemaNodeDragStart(n),
     [onSchemaNodeDragStart],
   );
-
   const onNodeDrag = useCallback(
-    (_e: React.MouseEvent | MouseEvent | TouchEvent, dragged: AppNode) => {
-      onSchemaNodeDrag(dragged);
-    },
+    (_e: unknown, n: AppNode) => onSchemaNodeDrag(n),
     [onSchemaNodeDrag],
+  );
+  const onNodeDragStop = useCallback(
+    (_e: unknown, n: AppNode) => onSchemaNodeDragStop(n),
+    [onSchemaNodeDragStop],
   );
 
   return (
@@ -219,7 +219,7 @@ function ReactFlowCanvasInner() {
         onConnect={onConnect}
         onConnectStart={variableDragHighlight.onConnectStart}
         onConnectEnd={variableDragHighlight.onConnectEnd}
-        isValidConnection={isValidVariableConnection}
+        isValidConnection={isValidConnection}
         onPaneClick={onPaneClick}
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}

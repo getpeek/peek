@@ -65,8 +65,6 @@ export function makeNode(type: AppNodeType, position: { x: number; y: number }):
         type: "chat",
         data: {
           query: "",
-          result: [],
-          schema: { tables: {}, references: {} },
           messages: [
             {
               type: "system",

@@ -37,13 +37,7 @@ export function ChatNode({ id, data, selected, width, height }: NodeProps<ChatNo
     handlers,
   });
 
-  useChatContextSync({
-    nodeId: id,
-    query: data.query,
-    result: data.result,
-    schema: data.schema,
-    messages: data.messages,
-  });
+  useChatContextSync({ nodeId: id, messages: data.messages });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,7 +55,7 @@ export function ChatNode({ id, data, selected, width, height }: NodeProps<ChatNo
   return (
     <>
       <NodeResizer isVisible={!!selected} minWidth={400} minHeight={300} />
-      <HiddenHandles />
+      <HiddenHandles connectableTarget />
       <div
         className={`app-node ${selected ? "selected" : ""} ${isLoading ? "loading" : ""}`}
         style={{ width: w, height: h }}

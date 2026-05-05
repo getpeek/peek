@@ -107,3 +107,52 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+.result-edge-handle {
+  background: var(--pk-accent-soft);
+  border: 0;
+  border-radius: 2px;
+  cursor: crosshair;
+  transform: none;
+  min-width: 0;
+  min-height: 0;
+  opacity: 0.05;
+  transition:
+    background 0.12s ease-out,
+    opacity 0.12s ease-out;
+  z-index: 1;
+}
+
+.result-edge-handle--top,
+.result-edge-handle--bottom {
+  width: 50%;
+  height: 4px;
+  left: 25%;
+  right: auto;
+}
+
+.result-edge-handle--left,
+.result-edge-handle--right {
+  width: 4px;
+  height: 50%;
+  top: 25%;
+  bottom: auto;
+}
+
+.result-edge-handle--top {
+  top: -12px;
+}
+.result-edge-handle--bottom {
+  bottom: -12px;
+}
+.result-edge-handle--left {
+  left: -12px;
+}
+.result-edge-handle--right {
+  right: -12px;
+}
+
+.result-edge-handle:hover {
+  background: var(--pk-accent);
+  opacity: 1;
+}

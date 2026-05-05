@@ -1,5 +1,4 @@
 import type { Node, Edge } from "@xyflow/react";
-import type { DatabaseResult } from "../state";
 import type { Message } from "../shapes/Ai/useExecutePrompt";
 
 export type AppNodeType =
@@ -31,15 +30,8 @@ export type AiPromptData = {
   reason: string;
 };
 
-export type ChatSchema = {
-  tables: Record<string, string[]>;
-  references: Record<string, string[]>;
-};
-
 export type ChatData = {
   query: string;
-  result: DatabaseResult;
-  schema: ChatSchema;
   messages: Message[];
 };
 

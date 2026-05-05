@@ -1,4 +1,4 @@
-import { NodeProps, NodeResizer } from "@xyflow/react";
+import { Handle, NodeProps, NodeResizer, Position } from "@xyflow/react";
 import { Menu } from "@mantine/core";
 import {
   IconChartBar,
@@ -11,7 +11,6 @@ import {
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useRef } from "react";
-import { schemaAtom } from "../../../state";
 import { exportRows } from "./exportRows";
 import { ResultTable } from "./ResultTable";
 import { useCanvas } from "../../hooks/useCanvas";
@@ -42,7 +41,6 @@ function firstLineOfQuery(query: string): string {
 export function ResultNode({ id, data, selected, width, height }: NodeProps<ResultNodeT>) {
   const canvas = useCanvas();
   const createChart = useCreateChart();
-  const schema = useAtomValue(schemaAtom);
   const results = useAtomValue(resultsAtom);
   const rows = results[id] ?? [];
   const w = width ?? DEFAULT_W;
@@ -114,13 +112,6 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
         height: 400,
         data: {
           query: data.query,
-          result: rows,
-          schema: {
-            tables: Object.fromEntries(
-              Object.entries(schema.tables).map(([k, cols]) => [k, cols.map(([col]) => col)]),
-            ),
-            references: schema.references,
-          },
           messages: [],
         },
       };
@@ -143,6 +134,34 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
     <>
       <NodeResizer isVisible={!!selected} minWidth={400} minHeight={260} />
       <HiddenHandles connectableTarget />
+      <Handle
+        id='out-top'
+        type='source'
+        position={Position.Top}
+        className='result-edge-handle result-edge-handle--top'
+        isConnectable
+      />
+      <Handle
+        id='out-right'
+        type='source'
+        position={Position.Right}
+        className='result-edge-handle result-edge-handle--right'
+        isConnectable
+      />
+      <Handle
+        id='out-bottom'
+        type='source'
+        position={Position.Bottom}
+        className='result-edge-handle result-edge-handle--bottom'
+        isConnectable
+      />
+      <Handle
+        id='out-left'
+        type='source'
+        position={Position.Left}
+        className='result-edge-handle result-edge-handle--left'
+        isConnectable
+      />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader
           nodeId={id}
