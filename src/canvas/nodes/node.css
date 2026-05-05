@@ -1,9 +1,21 @@
 /* ============================================================
-   Plock dark theme tokens (Theme A from prototype)
+   Static tokens — shared across all themes
+   ============================================================ */
+:root {
+  --pk-radius-node: 10px;
+  --pk-radius-card: 10px;
+  --pk-radius-pill: 999px;
+
+  --pk-font-sans: "Monaspace Krypton", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --pk-font-mono: "Monaspace Krypton", "SF Mono", ui-monospace, Menlo, monospace;
+  --pk-font-playful: "Chewy";
+}
+
+/* ============================================================
+   Pine theme (default — applied if no body.theme-* class is set)
    ============================================================ */
 :root,
-.react-flow,
-.react-flow.dark {
+body.theme-pine {
   --pk-bg: #080916;
   --pk-bg-grid: #1f2138;
   --pk-node-bg: #131428;
@@ -39,13 +51,94 @@
   --pk-type-chat: #dccafd;
   --pk-type-error: #e0526a;
 
-  --pk-radius-node: 10px;
-  --pk-radius-card: 10px;
-  --pk-radius-pill: 999px;
+  --pk-canvas-bg:
+    radial-gradient(closest-side at 10% 100%, rgba(81, 128, 230, 0.1), transparent 70%),
+    radial-gradient(140% 100% at 50% 0%, rgba(81, 128, 230, 0.1) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(15, 16, 32, 0.5) 0%, rgba(8, 9, 22, 0.95) 100%), #050511;
+}
 
-  --pk-font-sans: "Monaspace Krypton", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --pk-font-mono: "Monaspace Krypton", "SF Mono", ui-monospace, Menlo, monospace;
-  --pk-font-playful: "Chewy";
+/* ============================================================
+   Midnight theme (the original dark theme)
+   ============================================================ */
+body.theme-midnight {
+  --pk-bg: #0e0d12;
+  --pk-bg-grid: #1a1822;
+  --pk-node-bg: #16141c;
+  --pk-node-bg-2: #1c1a24;
+  --pk-node-border: #2a2733;
+  --pk-node-border-strong: #3a3645;
+  --pk-node-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+
+  --pk-fg: #e8e5f0;
+  --pk-fg-muted: #9c97ab;
+  --pk-fg-subtle: #5e5a6b;
+
+  --pk-accent: #9354e0;
+  --pk-accent-soft: #dbcaf9;
+  --pk-accent-bg: rgba(147, 84, 224, 0.14);
+  --pk-accent-line: rgba(147, 84, 224, 0.5);
+  --pk-row-selected-bg: rgba(147, 84, 224, 0.22);
+  --pk-row-selected-bg-hover: rgba(147, 84, 224, 0.3);
+
+  --pk-green: #4da660;
+  --pk-green-soft: rgba(77, 166, 96, 0.18);
+  --pk-yellow: #f6c944;
+  --pk-yellow-soft: rgba(246, 201, 68, 0.16);
+  --pk-blue: #6b8afd;
+  --pk-blue-soft: rgba(107, 138, 253, 0.16);
+  --pk-red: #e24a35;
+  --pk-red-soft: rgba(226, 74, 53, 0.16);
+
+  --pk-type-query: #9354e0;
+  --pk-type-ai: #6b8afd;
+  --pk-type-result: #4da660;
+  --pk-type-chart: #f6c944;
+  --pk-type-chat: #dbcaf9;
+  --pk-type-error: #e24a35;
+
+  --pk-canvas-bg: linear-gradient(180deg, #14121a 0%, #0e0d12 100%), #0e0d12;
+}
+
+/* ============================================================
+   Midday theme (light)
+   ============================================================ */
+body.theme-midday {
+  --pk-bg: #f7f6fc;
+  --pk-bg-grid: #dedce8;
+  --pk-node-bg: #ffffff;
+  --pk-node-bg-2: #f0eef7;
+  --pk-node-border: #d6d3e2;
+  --pk-node-border-strong: #b1adc4;
+  --pk-node-shadow: 0 4px 12px rgba(20, 15, 40, 0.08), 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+
+  --pk-fg: #1a1822;
+  --pk-fg-muted: #5e5a6b;
+  --pk-fg-subtle: #9c97ab;
+
+  --pk-accent: #6b3fc4;
+  --pk-accent-soft: #4a2890;
+  --pk-accent-bg: rgba(107, 63, 196, 0.1);
+  --pk-accent-line: rgba(107, 63, 196, 0.4);
+  --pk-row-selected-bg: rgba(107, 63, 196, 0.14);
+  --pk-row-selected-bg-hover: rgba(107, 63, 196, 0.22);
+
+  --pk-green: #2f8a4d;
+  --pk-green-soft: rgba(47, 138, 77, 0.14);
+  --pk-yellow: #b88200;
+  --pk-yellow-soft: rgba(184, 130, 0, 0.14);
+  --pk-blue: #3858c4;
+  --pk-blue-soft: rgba(56, 88, 196, 0.14);
+  --pk-red: #c4353d;
+  --pk-red-soft: rgba(196, 53, 61, 0.14);
+
+  --pk-type-query: #6b3fc4;
+  --pk-type-ai: #3858c4;
+  --pk-type-result: #2f8a4d;
+  --pk-type-chart: #b88200;
+  --pk-type-chat: #6b3fc4;
+  --pk-type-error: #c4353d;
+
+  --pk-canvas-bg: linear-gradient(180deg, #faf9fd 0%, #ecebf3 100%), #f5f4fa;
 }
 
 /* ============================================================

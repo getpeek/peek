@@ -32,7 +32,7 @@ export const Workspace = ({
   return (
     <Stack gap='xs'>
       <Group gap={8} align='center' justify='flex-start'>
-        <Text size='xs' fw='bold' pos='sticky' c='var(--text-color)'>
+        <Text size='xs' fw='bold' pos='sticky' c='var(--pk-fg)'>
           {highlightMatch(workspaceNameHighlight, name)}
         </Text>
         <Text size='xs' c='var(--pk-fg-subtle)'>

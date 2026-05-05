@@ -3,6 +3,7 @@ import { atomWithStorage } from "jotai/utils";
 import { Workspace } from "./Connection/types";
 
 export type DatabaseResult = [string, unknown, string][][];
+export type Theme = "pine" | "midnight" | "midday";
 export interface Config {
   ai: {
     model: string;
@@ -10,6 +11,7 @@ export interface Config {
   };
   workspaces: Workspace[];
   name: string;
+  theme: Theme;
 }
 
 export const configAtom = atom<Config>();

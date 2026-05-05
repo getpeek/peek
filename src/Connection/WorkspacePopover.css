@@ -4,17 +4,18 @@
   border-radius: var(--pk-radius-card, 10px);
   background: var(--pk-node-bg);
   border: 1px solid var(--pk-node-border);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
-  color: var(--pk-fg, #e8e5f0);
+  box-shadow: var(--pk-node-shadow);
+  color: var(--pk-fg);
   font-family: var(--pk-font-mono);
   .query {
     padding: 4px 8px;
     outline: none;
+    border: none;
+    background: transparent;
+    color: var(--pk-fg);
     font-family: var(--pk-font-mono);
-    :-moz-placeholder,
-    ::-webkit-input-placeholder,
-    ::placeholder {
-      color: rgba(255, 255, 255, 0.2);
+    &::placeholder {
+      color: var(--pk-fg-subtle);
     }
   }
 }

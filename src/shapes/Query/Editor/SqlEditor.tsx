@@ -2,8 +2,10 @@ import Editor, { Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
 import "../Query.css";
 import { useEffect, useRef } from "react";
+import { useAtomValue } from "jotai";
 import { scanVariableSites } from "../../../canvas/variables";
 import { attachLspDocumentSync } from "./lspProvider";
+import { configAtom } from "../../../state";
 
 let overflowWidgetsDomNode: HTMLElement | null = null;
 const getOverflowWidgetsDomNode = () => {
@@ -82,7 +84,8 @@ export const SqlEditor = ({
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const decorationsRef = useRef<editor.IEditorDecorationsCollection | null>(null);
   const variablesRef = useRef<string[]>(variables ?? []);
-  const theme = "rose-pine";
+  const config = useAtomValue(configAtom);
+  const theme = config?.theme === "midday" ? "rose-pine-dawn" : "rose-pine";
 
   useEffect(() => {
     variablesRef.current = variables ?? [];
@@ -159,7 +162,7 @@ export const SqlEditor = ({
           height='100%'
           defaultLanguage='sql'
           defaultValue={query}
-          theme='rose-pine'
+          theme={theme}
           onMount={(editor, monaco) => {
             ref.current = monaco;
             editorRef.current = editor;

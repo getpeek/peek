@@ -63,7 +63,9 @@ export const ConnectionPicker: React.FC = () => {
           {" "}
           /{" "}
         </Text>
-        <Text span>{activeConnection?.connection.name}</Text>
+        <Text span c='inherit'>
+          {activeConnection?.connection.name}
+        </Text>
       </Text>
       <IconChevronDown size={8} />
     </button>

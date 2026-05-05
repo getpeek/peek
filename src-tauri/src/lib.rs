@@ -147,6 +147,7 @@ pub fn run() {
             storage_commands::load_results,
             storage_commands::save_results,
             config::get_config,
+            config::set_theme,
             lsp_commands::lsp_did_change,
             lsp_commands::lsp_completion,
             lsp_commands::lsp_set_schema_cache,

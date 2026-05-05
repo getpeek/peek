@@ -1,8 +1,5 @@
 .react-flow {
-  background:
-    radial-gradient(closest-side at 10% 100%, rgba(81, 128, 230, 0.1), transparent 70%),
-    radial-gradient(140% 100% at 50% 0%, rgba(81, 128, 230, 0.1) 0%, transparent 50%),
-    linear-gradient(180deg, rgba(15, 16, 32, 0.5) 0%, rgba(8, 9, 22, 0.95) 100%), #050511;
+  background: var(--pk-canvas-bg);
 }
 
 .react-flow.connecting,

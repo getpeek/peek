@@ -9,12 +9,35 @@ pub fn get_config() -> Result<String, String> {
     serde_json::to_string(&config).map_err(|_| "Can't serialize config".to_string())
 }
 
+#[tauri::command]
+pub fn set_theme(theme: Theme) -> Result<(), String> {
+    let mut config = PeekConfig::get_or_default();
+    config.theme = theme;
+    config.save_to_disk()
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum Theme {
+    Pine,
+    Midnight,
+    Midday,
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Theme::Pine
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct PeekConfig {
     workspaces: Vec<Workspace>,
     ai: AIConfig,
     #[serde(default)]
     name: Option<String>,
+    #[serde(default)]
+    theme: Theme,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -56,6 +79,16 @@ impl PeekConfig {
             return PeekConfig::default();
         };
         toml::from_str(&config_file).unwrap_or(PeekConfig::default())
+    }
+
+    fn save_to_disk(&self) -> Result<(), String> {
+        let home_dir = std::env::var("HOME").map_err(|e| e.to_string())?;
+        let config_dir = PathBuf::from(format!("{home_dir}/.config/peek"));
+        std::fs::create_dir_all(&config_dir).map_err(|e| e.to_string())?;
+
+        let config_path = config_dir.join("config.toml");
+        let serialized = toml::to_string_pretty(self).map_err(|e| e.to_string())?;
+        std::fs::write(&config_path, serialized).map_err(|e| e.to_string())
     }
 }
 

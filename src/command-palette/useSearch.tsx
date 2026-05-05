@@ -15,6 +15,7 @@ import { useGoToPageCommands } from "./commands/useGoToPageCommands";
 import { useGoToTableCommands } from "./commands/useGoToTableCommands";
 import { useHostSessionCommand } from "./commands/hostSession";
 import { useJoinSessionCommand } from "./commands/joinSession";
+import { useSetThemeCommands } from "./commands/setTheme";
 
 export const useSearch = (query: string): CommandPaletteResult[] => {
   const queryCommands = useGoToQueryCommands();
@@ -33,6 +34,7 @@ export const useSearch = (query: string): CommandPaletteResult[] => {
   const goToTableCommands = useGoToTableCommands();
   const hostSessionCommand = useHostSessionCommand();
   const joinSessionCommand = useJoinSessionCommand();
+  const setThemeCommands = useSetThemeCommands();
 
   if (query.trim().length === 0) {
     return [];
@@ -55,6 +57,7 @@ export const useSearch = (query: string): CommandPaletteResult[] => {
     ...goToTableCommands,
     hostSessionCommand,
     ...(joinSessionCommand ? [joinSessionCommand] : []),
+    ...setThemeCommands,
   ];
   return fuzzysort.go(query, searchSpace, { key: "searchAgainst" }).map(result => result.obj);
 };
