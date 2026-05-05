@@ -3,7 +3,6 @@ import { Menu } from "@mantine/core";
 import {
   IconChartBar,
   IconDownload,
-  IconDots,
   IconFileTypeCsv,
   IconGitFork,
   IconJson,
@@ -216,9 +215,6 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>
-            <button className='icon-btn' title='More'>
-              <IconDots size={14} />
-            </button>
           </div>
         </div>
         <div className='app-node-body nodrag' ref={bodyRef}>

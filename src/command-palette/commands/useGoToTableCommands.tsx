@@ -1,5 +1,4 @@
 import { IconTable } from "@tabler/icons-react";
-import { Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { activePageAtom, canvasApiAtom, nodesAtom } from "../../canvas/state";
 import { CommandPaletteResult } from ".";
@@ -18,8 +17,8 @@ export const useGoToTableCommands = (): CommandPaletteResult[] => {
     .filter((n): n is TableDefinitionNode => n.type === "table-definition")
     .map(node => ({
       icon: <IconTable size={16} />,
-      label: <Text size='xs'>{node.data.table}</Text>,
-      searchAgainst: `table ${node.data.table}`,
+      label: node.data.table,
+      searchAgainst: "table",
       onSelect: () => {
         if (!canvas) {
           return;

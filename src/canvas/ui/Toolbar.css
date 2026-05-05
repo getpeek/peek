@@ -6,8 +6,9 @@
   align-items: center;
   gap: 4px;
   padding: 5px;
-  background: var(--pk-node-bg);
+  background: color-mix(in oklab, var(--pk-node-bg), transparent);
   border: 1px solid var(--pk-node-border);
+  backdrop-filter: blur(14px);
   border-radius: var(--pk-radius-card);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
   pointer-events: auto;
@@ -69,9 +70,10 @@
   display: inline-flex;
   align-items: center;
   gap: 1px;
-  background: var(--pk-node-bg);
-  border: 1px solid var(--pk-node-border);
-  border-radius: var(--pk-radius-card);
+  background: transparent;
+  border: 1px solid color-mix(in oklab, var(--pk-node-border), transparent);
+  backdrop-filter: blur(12px);
+  border-radius: 9999px;
   padding: 3px;
   font-variant-numeric: tabular-nums;
   font: 500 12px var(--pk-font-mono);
@@ -103,117 +105,4 @@
   text-align: center;
   color: var(--pk-fg);
   cursor: pointer;
-}
-
-/* ============================================================
-   Page menu (top-left tabs)
-   ============================================================ */
-.page-menu {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px;
-  background: var(--pk-node-bg);
-  border: 1px solid var(--pk-node-border);
-  border-radius: var(--pk-radius-card);
-  font-size: 12px;
-  pointer-events: auto;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
-  font-family: var(--pk-font-sans);
-}
-
-.page-tab {
-  padding: 5px 12px;
-  border-radius: 6px;
-  background: transparent;
-  border: none;
-  color: var(--pk-fg-muted);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  font: 500 12px var(--pk-font-sans);
-  transition:
-    background 0.12s,
-    color 0.12s;
-}
-
-.page-tab .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--pk-fg-subtle);
-  flex-shrink: 0;
-}
-
-.page-tab.active .dot {
-  background: var(--pk-green);
-  box-shadow: 0 0 8px var(--pk-green);
-}
-
-.page-tab:hover {
-  color: var(--pk-fg);
-  background: var(--pk-node-bg-2);
-}
-
-.page-tab.active {
-  color: var(--pk-fg);
-  background: var(--pk-node-bg-2);
-}
-
-.page-tab .close {
-  margin-left: 4px;
-  color: var(--pk-fg-subtle);
-  font-size: 14px;
-  line-height: 1;
-  width: 14px;
-  text-align: center;
-}
-
-.page-tab:hover .close {
-  color: var(--pk-fg);
-}
-
-.page-tab.add-btn {
-  padding: 5px 8px;
-  color: var(--pk-fg-subtle);
-}
-.page-tab.add-btn .dot {
-  display: none;
-}
-
-.page-tab-input {
-  background: transparent;
-  border: 1px solid var(--pk-accent-line);
-  outline: none;
-  color: var(--pk-fg);
-  padding: 4px 10px;
-  border-radius: 6px;
-  font: 500 12px var(--pk-font-sans);
-}
-
-/* ============================================================
-   Pane cursor when in place mode
-   ============================================================ */
-.react-flow.place-mode-active,
-.react-flow.place-mode-active .react-flow__pane,
-.react-flow.place-mode-active .react-flow__background {
-  cursor: crosshair;
-}
-
-/* ============================================================
-   Bottom-right hint (decorative)
-   ============================================================ */
-.canvas-hint {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  background: var(--pk-node-bg);
-  border: 1px solid var(--pk-node-border);
-  border-radius: var(--pk-radius-card);
-  color: var(--pk-fg-muted);
-  font: 400 11px var(--pk-font-sans);
-  pointer-events: auto;
 }

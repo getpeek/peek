@@ -1,5 +1,4 @@
 import { IconFilePlus } from "@tabler/icons-react";
-import { Text } from "@mantine/core";
 import { usePageActions } from "../../canvas/hooks/usePageActions";
 import type { CommandPaletteResult } from ".";
 
@@ -8,8 +7,8 @@ export const useNewPageCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconFilePlus size={16} />,
-    label: <Text size='xs'>New Page</Text>,
-    searchAgainst: "new page create add tab",
+    label: "New page",
+    searchAgainst: "create add tab",
     onSelect: () => {
       newPage();
     },

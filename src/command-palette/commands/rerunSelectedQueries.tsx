@@ -1,5 +1,4 @@
 import { IconPlayerPlay } from "@tabler/icons-react";
-import { Text } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import { canvasApiAtom, resultsAtom } from "../../canvas/state";
 import { executeQueries } from "../../canvas/executeQueries";
@@ -14,9 +13,8 @@ export const useRerunSelectedQueriesCommand = (): CommandPaletteResult => {
   const session = useAtomValue(sessionStateAtom);
 
   return {
-    searchAgainst: "rerun selected queries",
-    label: <Text size='xs'>Rerun selected queries</Text>,
     icon: <IconPlayerPlay size={16} />,
+    label: "Rerun selected queries",
     onSelect: async () => {
       if (!canvas) {
         return;

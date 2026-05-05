@@ -1,4 +1,3 @@
-import { Text } from "@mantine/core";
 import { IconLayoutGrid } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { canvasApiAtom, nodesAtom } from "../../canvas/state";
@@ -22,13 +21,9 @@ export const useOrganizeCanvasCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconLayoutGrid size={16} />,
-    label: <Text size='xs'>Organize canvas</Text>,
-    description: (
-      <Text size='xs' c='var(--text-color-subtle)'>
-        arrange nodes by their connections
-      </Text>
-    ),
-    searchAgainst: "organize canvas layout arrange auto force directed graph fit",
+    label: "Organize canvas",
+    description: "Arrange nodes by their connections",
+    searchAgainst: "layout auto force directed graph fit",
     onSelect: () => {
       if (!canvas) {
         return;

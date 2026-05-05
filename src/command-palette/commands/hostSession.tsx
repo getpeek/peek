@@ -1,5 +1,4 @@
 import { IconBroadcast, IconBroadcastOff } from "@tabler/icons-react";
-import { Text } from "@mantine/core";
 import { useAtomValue, useSetAtom } from "jotai";
 import { collaboratePopoverOpenAtom, sessionStateAtom } from "../../multiplayer/state";
 import type { MultiplayerControls } from "../../multiplayer/syncBridge";
@@ -21,12 +20,8 @@ export const useHostSessionCommand = (): CommandPaletteResult => {
 
   return {
     icon: isHost ? <IconBroadcastOff size={16} /> : <IconBroadcast size={16} />,
-    label: (
-      <Text size='xs'>
-        {isHost ? "End hosted session" : isInSession ? "Leave session" : "Host session"}
-      </Text>
-    ),
-    searchAgainst: "host session multiplayer share collaborate end leave",
+    label: isHost ? "End hosted session" : isInSession ? "Leave session" : "Host session",
+    searchAgainst: "multiplayer share collaborate",
     onSelect: async () => {
       if (isInSession) {
         await controls()?.end();

@@ -1,5 +1,4 @@
 import { IconPalette } from "@tabler/icons-react";
-import { Text } from "@mantine/core";
 import { invoke } from "@tauri-apps/api/core";
 import { useSetAtom } from "jotai";
 import { configAtom, Theme } from "../../state";
@@ -16,20 +15,20 @@ export const useSetThemeCommands = (): CommandPaletteResult[] => {
   return [
     {
       icon: <IconPalette size={16} />,
-      label: <Text size='xs'>Set theme to Pine</Text>,
-      searchAgainst: "set theme pine purple dark",
+      label: "Set theme to Pine",
+      searchAgainst: "purple dark",
       onSelect: apply("pine"),
     },
     {
       icon: <IconPalette size={16} />,
-      label: <Text size='xs'>Set theme to Midnight</Text>,
-      searchAgainst: "set theme midnight black dark",
+      label: "Set theme to Midnight",
+      searchAgainst: "black dark",
       onSelect: apply("midnight"),
     },
     {
       icon: <IconPalette size={16} />,
-      label: <Text size='xs'>Set theme to Midday</Text>,
-      searchAgainst: "set theme midday light bright",
+      label: "Set theme to Midday",
+      searchAgainst: "light bright",
       onSelect: apply("midday"),
     },
   ];

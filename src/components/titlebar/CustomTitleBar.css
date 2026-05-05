@@ -22,10 +22,10 @@
 }
 
 .titlebar-page-selector .page-tab {
-  padding: 4px 10px;
-  border-radius: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
   background: transparent;
-  border: none;
+  border: 1px solid var(--pk-node-border);
   color: var(--pk-fg-muted);
   cursor: grab;
   display: inline-flex;
@@ -101,6 +101,37 @@
   padding: 3px 10px;
   border-radius: 6px;
   font: 500 12px var(--pk-font-sans);
+}
+
+@keyframes page-tab-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-tab-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.titlebar-page-selector .page-tab.entering {
+  animation: page-tab-enter 0.18s ease forwards;
+}
+
+.titlebar-page-selector .page-tab.exiting {
+  animation: page-tab-exit 0.14s ease forwards;
+  pointer-events: none;
 }
 
 .titlebar-content {

@@ -17,7 +17,12 @@ import { useHostSessionCommand } from "./commands/hostSession";
 import { useJoinSessionCommand } from "./commands/joinSession";
 import { useSetThemeCommands } from "./commands/setTheme";
 
-export const useSearch = (query: string): CommandPaletteResult[] => {
+export interface SearchResult {
+  command: CommandPaletteResult;
+  labelHighlight?: Fuzzysort.Result;
+}
+
+export const useSearch = (query: string): SearchResult[] => {
   const queryCommands = useGoToQueryCommands();
   const connectionCommands = useGetConnectionCommands();
   const viewSchemaCommand = useViewSchemaCommand();
@@ -35,10 +40,6 @@ export const useSearch = (query: string): CommandPaletteResult[] => {
   const hostSessionCommand = useHostSessionCommand();
   const joinSessionCommand = useJoinSessionCommand();
   const setThemeCommands = useSetThemeCommands();
-
-  if (query.trim().length === 0) {
-    return [];
-  }
 
   const searchSpace: CommandPaletteResult[] = [
     rerunAllOnPage,
@@ -59,5 +60,13 @@ export const useSearch = (query: string): CommandPaletteResult[] => {
     ...(joinSessionCommand ? [joinSessionCommand] : []),
     ...setThemeCommands,
   ];
-  return fuzzysort.go(query, searchSpace, { key: "searchAgainst" }).map(result => result.obj);
+
+  if (query.trim().length === 0) {
+    return searchSpace.map(command => ({ command }));
+  }
+
+  return fuzzysort.go(query, searchSpace, { keys: ["label", "searchAgainst"] }).map(result => ({
+    command: result.obj,
+    labelHighlight: result[0],
+  }));
 };

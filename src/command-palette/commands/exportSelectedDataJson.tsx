@@ -1,4 +1,3 @@
-import { Text } from "@mantine/core";
 import { IconTableExport } from "@tabler/icons-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { BaseDirectory, writeTextFile } from "@tauri-apps/plugin-fs";
@@ -18,9 +17,8 @@ export const useExportSelectedDataJsonCommand = (): CommandPaletteResult => {
   const config = useAtomValue(configAtom);
 
   return {
-    searchAgainst: "Export selected data as JSON",
-    label: <Text size='xs'>Export selected data (JSON)</Text>,
     icon: <IconTableExport size={16} />,
+    label: "Export selected data (JSON)",
     onSelect: async () => {
       if (!canvas) {
         return;

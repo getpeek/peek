@@ -1,6 +1,5 @@
 import { CommandPaletteResult } from "./index";
 import { IconSchema } from "@tabler/icons-react";
-import { Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { schemaAtom } from "../../state";
 import { canvasApiAtom, documentAtom } from "../../canvas/state";
@@ -35,13 +34,9 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconSchema size={16} />,
-    label: <Text size='xs'>View Schema</Text>,
-    searchAgainst: "View database schema",
-    description: (
-      <Text size='xs' c='var(--text-color-subtle)'>
-        opens in a new page
-      </Text>
-    ),
+    label: "View schema",
+    description: "Opens in a new page",
+    searchAgainst: "database",
     onSelect: () => {
       if (!canvas) {
         return;

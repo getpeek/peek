@@ -1,5 +1,4 @@
 import { IconArrowRight, IconArrowLeft } from "@tabler/icons-react";
-import { Text } from "@mantine/core";
 import { usePageActions } from "../../canvas/hooks/usePageActions";
 import type { CommandPaletteResult } from ".";
 
@@ -10,8 +9,8 @@ export const useNextPageCommand = (): CommandPaletteResult | null => {
   }
   return {
     icon: <IconArrowRight size={16} />,
-    label: <Text size='xs'>Next Page</Text>,
-    searchAgainst: "next page forward tab",
+    label: "Next page",
+    searchAgainst: "forward tab",
     onSelect: () => {
       nextPage();
     },
@@ -25,8 +24,8 @@ export const usePreviousPageCommand = (): CommandPaletteResult | null => {
   }
   return {
     icon: <IconArrowLeft size={16} />,
-    label: <Text size='xs'>Previous Page</Text>,
-    searchAgainst: "previous page back tab",
+    label: "Previous page",
+    searchAgainst: "back tab",
     onSelect: () => {
       previousPage();
     },

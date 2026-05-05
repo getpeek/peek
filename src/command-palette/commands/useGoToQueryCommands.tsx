@@ -1,9 +1,9 @@
 import { IconSql } from "@tabler/icons-react";
-import { Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { canvasApiAtom, nodesAtom } from "../../canvas/state";
 import { CommandPaletteResult } from ".";
 import type { QueryNode } from "../../canvas/types";
+import { QueryDetails } from "../details/QueryDetails";
 
 export const useGoToQueryCommands = (): CommandPaletteResult[] => {
   const nodes = useAtomValue(nodesAtom);
@@ -12,11 +12,10 @@ export const useGoToQueryCommands = (): CommandPaletteResult[] => {
   return nodes
     .filter((n): n is QueryNode => n.type === "query")
     .map(node => ({
-      icon: <IconSql />,
-      label: (
-        <Text size='xs'>{node.data.query.replaceAll(/\s/g, " ").slice(0, 60).toString()}</Text>
-      ),
+      icon: <IconSql size={16} />,
+      label: node.data.query.replaceAll(/\s/g, " ").slice(0, 60),
       searchAgainst: node.data.query.toLowerCase(),
+      details: () => <QueryDetails sql={node.data.query} />,
       onSelect: () => {
         if (!canvas) {
           return;

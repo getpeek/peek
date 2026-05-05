@@ -1,12 +1,57 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IconPlus } from "@tabler/icons-react";
 import { usePageActions } from "../../../canvas/hooks/usePageActions";
 import { siblingSlideX, useTabDragReorder } from "./useTabDragReorder";
+
+const ENTER_MS = 180;
+const EXIT_MS = 140;
 
 export function PageSelector() {
   const { pages, activePageId, canClose, newPage, closePage, switchPage, renamePage, reorderPage } =
     usePageActions();
   const [renameId, setRenameId] = useState<string | null>(null);
+  const [enteringIds, setEnteringIds] = useState<Set<string>>(new Set());
+  const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
+  const prevPageIds = useRef<Set<string>>(new Set(pages.map(p => p.id)));
+
+  useEffect(() => {
+    const currentIds = new Set(pages.map(p => p.id));
+    const newIds: string[] = [];
+    for (const id of currentIds) {
+      if (!prevPageIds.current.has(id)) {
+        newIds.push(id);
+      }
+    }
+    prevPageIds.current = currentIds;
+
+    if (newIds.length === 0) {
+      return;
+    }
+
+    setEnteringIds(prev => new Set([...prev, ...newIds]));
+    const timer = setTimeout(() => {
+      setEnteringIds(prev => {
+        const next = new Set(prev);
+        for (const id of newIds) {
+          next.delete(id);
+        }
+        return next;
+      });
+    }, ENTER_MS);
+    return () => clearTimeout(timer);
+  }, [pages]);
+
+  function handleClosePage(id: string) {
+    setExitingIds(prev => new Set([...prev, id]));
+    setTimeout(() => {
+      closePage(id);
+      setExitingIds(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, EXIT_MS);
+  }
 
   const pageIds = pages.map(p => p.id);
   const { dragState, getTabHandlers, wasDragging } = useTabDragReorder(pageIds, reorderPage);
@@ -40,6 +85,8 @@ export function PageSelector() {
           );
         }
         const isDragging = dragState?.draggingId === page.id;
+        const isEntering = enteringIds.has(page.id);
+        const isExiting = exitingIds.has(page.id);
         const translateX = isDragging
           ? (dragState?.pointerDx ?? 0)
           : siblingSlideX(index, dragState);
@@ -48,8 +95,10 @@ export function PageSelector() {
           <button
             key={page.id}
             ref={handlers.ref}
-            className={`page-tab ${active ? "active" : ""} ${isDragging ? "dragging" : ""}`}
-            style={{ transform: `translateX(${translateX}px)` }}
+            className={`page-tab ${active ? "active" : ""} ${isDragging ? "dragging" : ""} ${isEntering ? "entering" : ""} ${isExiting ? "exiting" : ""}`}
+            style={
+              isEntering || isExiting ? undefined : { transform: `translateX(${translateX}px)` }
+            }
             onPointerDown={handlers.onPointerDown}
             onClick={() => {
               if (wasDragging()) {
@@ -67,7 +116,7 @@ export function PageSelector() {
                 onPointerDown={e => e.stopPropagation()}
                 onClick={e => {
                   e.stopPropagation();
-                  closePage(page.id);
+                  handleClosePage(page.id);
                 }}
                 title='Delete page'
               >

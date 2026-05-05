@@ -1,5 +1,4 @@
 import { IconFileMinus } from "@tabler/icons-react";
-import { Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { documentAtom } from "../../canvas/state";
 import { usePageActions } from "../../canvas/hooks/usePageActions";
@@ -17,13 +16,9 @@ export const useClosePageCommand = (): CommandPaletteResult | null => {
 
   return {
     icon: <IconFileMinus size={16} />,
-    label: <Text size='xs'>Close Page</Text>,
-    searchAgainst: "close delete remove page tab",
-    description: (
-      <Text size='xs' c='var(--text-color-subtle)'>
-        {activeName}
-      </Text>
-    ),
+    label: "Close page",
+    description: activeName,
+    searchAgainst: "delete remove tab",
     onSelect: () => {
       closeActivePage();
     },
