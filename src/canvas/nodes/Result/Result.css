@@ -55,6 +55,18 @@
   background: var(--pk-node-bg-2);
 }
 
+.app-node table tbody tr.selected td,
+.app-node table tbody tr.selected td.pk,
+.app-node table tbody tr.selected td.fk {
+  background: var(--pk-row-selected-bg);
+}
+
+.app-node table tbody tr.selected:hover td,
+.app-node table tbody tr.selected:hover td.pk,
+.app-node table tbody tr.selected:hover td.fk {
+  background: var(--pk-row-selected-bg-hover);
+}
+
 .app-node table thead th.pk .col-name {
   color: var(--pk-yellow);
 }

@@ -21,8 +21,15 @@ export const ResultTableRow = forwardRef<
     variableNames: string[];
     inbound: Record<string, Reference[]>;
     outbound: Record<string, Reference[]>;
+    isSelected: boolean;
+    onSelectMouseDown: (rowIndex: number, e: React.MouseEvent) => void;
     onFollowReferences: (refs: CellReference[], value: unknown) => void;
-    onCellContextMenu: (e: React.MouseEvent, value: unknown, column: string) => void;
+    onCellContextMenu: (
+      e: React.MouseEvent,
+      value: unknown,
+      column: string,
+      rowIndex: number,
+    ) => void;
   }
 >(function ResultTableRow(
   {
@@ -34,15 +41,30 @@ export const ResultTableRow = forwardRef<
     variableNames,
     inbound,
     outbound,
+    isSelected,
+    onSelectMouseDown,
     onFollowReferences,
     onCellContextMenu,
   },
   ref,
 ) {
   const isEvenRow = rowIndex % 2 === 0;
+  const rowClasses: string[] = [];
+  if (isSelected) {
+    rowClasses.push("selected");
+  }
 
   return (
-    <Table.Tr ref={ref} data-index={rowIndex}>
+    <Table.Tr
+      ref={ref}
+      data-index={rowIndex}
+      className={rowClasses.join(" ") || undefined}
+      onMouseDown={e => {
+        if (e.metaKey || e.ctrlKey) {
+          onSelectMouseDown(rowIndex, e);
+        }
+      }}
+    >
       {row.map(([column, value, type], columnIdx) => {
         const { isPk, isFk } = classifyColumn(column, columnIdx, inbound[column], outbound[column]);
         const isEditing = editing?.row === rowIndex && editing?.col === columnIdx;
@@ -79,7 +101,7 @@ export const ResultTableRow = forwardRef<
             }}
             onContextMenu={e => {
               e.stopPropagation();
-              onCellContextMenu(e, value, column);
+              onCellContextMenu(e, value, column, rowIndex);
             }}
           >
             {isEditing && editing ? (

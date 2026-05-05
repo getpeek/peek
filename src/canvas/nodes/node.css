@@ -20,6 +20,8 @@
   --pk-accent-soft: #dbcaf9;
   --pk-accent-bg: rgba(147, 84, 224, 0.14);
   --pk-accent-line: rgba(147, 84, 224, 0.5);
+  --pk-row-selected-bg: rgba(147, 84, 224, 0.22);
+  --pk-row-selected-bg-hover: rgba(147, 84, 224, 0.3);
 
   --pk-green: #4da660;
   --pk-green-soft: rgba(77, 166, 96, 0.18);

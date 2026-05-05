@@ -1,13 +1,8 @@
-import { Menu, Table, Text } from "@mantine/core";
+import { Table, Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { save } from "@tauri-apps/plugin-dialog";
-import { writeTextFile } from "@tauri-apps/plugin-fs";
-import { IconFileTypeCsv, IconJson } from "@tabler/icons-react";
 import { AST, Parser } from "node-sql-parser";
-import { toCsv } from "../../../tools/export/csv";
-import { toJson } from "../../../tools/export/json";
 import { schemaAtom, type DatabaseResult } from "../../../state";
 import {
   getInboundReferences,
@@ -17,25 +12,22 @@ import {
 import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { CellContextMenu } from "./CellContextMenu";
+import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import { exportRows } from "./exportRows";
 import { InsertRow } from "./InsertRow";
-import { PortalAnchor } from "./PortalAnchor";
+import { ResultHeaderMenu, type HeaderMenuState } from "./ResultHeaderMenu";
 import { ResultTableHeader } from "./ResultTableHeader";
 import { ResultTableRow } from "./ResultTableRow";
 import { useCellContextMenu } from "./useCellContextMenu";
 import { useColumnWidths } from "./useColumnWidths";
 import { useCommitEdit, type EditingState } from "./useCommitEdit";
 import { useCommitInsert, type InsertingState } from "./useCommitInsert";
+import { useRowActions } from "./useRowActions";
+import { useRowSelection } from "./useRowSelection";
 import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
 import type { Reference } from "./columnRoles";
 import { getEditableTableName } from "./inlineEdit";
 import "../../../shapes/Result/ResultShape.css";
-
-type HeaderMenuState = {
-  x: number;
-  y: number;
-  columnIdx: number;
-  header: string;
-};
 
 export function ResultTable({
   nodeId,
@@ -56,6 +48,7 @@ export function ResultTable({
   const [inserting, setInserting] = useState<InsertingState | null>(null);
   const [headerMenu, setHeaderMenu] = useState<HeaderMenuState | null>(null);
   const cellContextMenu = useCellContextMenu(nodeId);
+  const rowSelection = useRowSelection(data);
 
   const firstRow = data[0] ?? [];
   const headers = firstRow.map(([key]) => key);
@@ -91,6 +84,14 @@ export function ResultTable({
     nodeId,
     columnTypes,
   });
+  const rowActions = useRowActions({
+    data,
+    query,
+    ast,
+    nodeId,
+    selected: rowSelection.selected,
+    closeCellMenu: cellContextMenu.closeCellMenu,
+  });
   const canInsert = getEditableTableName(ast) !== null;
   const variableNames = Object.keys(useGetVariablesForNode(nodeId).direct).toSorted();
 
@@ -123,21 +124,27 @@ export function ResultTable({
       if (columnData.length === 0) {
         return;
       }
-
-      const path = await save({
-        defaultPath: `${header}.${format}`,
-        filters: [{ name: format.toUpperCase(), extensions: [format] }],
-      });
-      if (!path) {
-        return;
-      }
-
-      const output =
-        format === "csv" ? toCsv(columnData) : JSON.stringify(toJson(columnData), null, 2);
-      await writeTextFile(path, output);
+      await exportRows(columnData, format, header);
     },
     [data],
   );
+
+  const onContainerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (rowSelection.count === 0) {
+      return;
+    }
+    const target = e.target as HTMLElement | null;
+    // React bubbles synthetic events through the component tree, so portaled
+    // children (Mantine Modal, Menu) hit this handler too. Ignore anything
+    // whose DOM ancestry is not inside the scroll container.
+    if (!target || !e.currentTarget.contains(target)) {
+      return;
+    }
+    if (target.closest("tr[data-index]") || target.closest("thead")) {
+      return;
+    }
+    rowSelection.clear();
+  };
 
   const rowVirtualizer = useVirtualizer({
     count: data.length,
@@ -176,6 +183,7 @@ export function ResultTable({
         background: "var(--pk-node-bg)",
       }}
       ref={scrollContainerRef}
+      onMouseDown={onContainerMouseDown}
     >
       <Table style={{ width: totalWidth, tableLayout: "fixed" }}>
         <colgroup>
@@ -220,6 +228,8 @@ export function ResultTable({
               variableNames={variableNames}
               inbound={inbound}
               outbound={outbound}
+              isSelected={rowSelection.isSelected(virtualRow.index)}
+              onSelectMouseDown={rowSelection.onSelectMouseDown}
               onFollowReferences={followReferences}
               onCellContextMenu={cellContextMenu.openCellMenu}
             />
@@ -244,55 +254,39 @@ export function ResultTable({
           )}
         </Table.Tbody>
       </Table>
-      {headerMenu && (
-        <Menu
-          opened
-          onClose={closeHeaderMenu}
-          position='bottom-start'
-          withinPortal
-          width={220}
-          offset={4}
-          radius='md'
-          classNames={{
-            dropdown: "column-menu-dropdown",
-            item: "column-menu-item",
-            label: "column-menu-label",
-            itemSection: "column-menu-item-section",
-          }}
-        >
-          <Menu.Target>
-            <PortalAnchor x={headerMenu.x} y={headerMenu.y} />
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Label>{headerMenu.header}</Menu.Label>
-            <Menu.Item
-              leftSection={<IconFileTypeCsv size={14} />}
-              onClick={() => {
-                const { columnIdx, header } = headerMenu;
-                closeHeaderMenu();
-                exportColumn(columnIdx, header, "csv");
-              }}
-            >
-              Export column as CSV
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<IconJson size={14} />}
-              onClick={() => {
-                const { columnIdx, header } = headerMenu;
-                closeHeaderMenu();
-                exportColumn(columnIdx, header, "json");
-              }}
-            >
-              Export column as JSON
-            </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-      )}
+      <ResultHeaderMenu
+        state={headerMenu}
+        onClose={closeHeaderMenu}
+        onExportColumn={exportColumn}
+      />
+
       <CellContextMenu
         cellMenu={cellContextMenu.cellMenu}
+        selected={rowSelection.selected}
         onClose={cellContextMenu.closeCellMenu}
         onUseAsVariable={cellContextMenu.createVariableFromCell}
         onCopyValue={cellContextMenu.copyCellValue}
+        onExportRow={format => {
+          const rowIndex = cellContextMenu.cellMenu?.rowIndex;
+          cellContextMenu.closeCellMenu();
+          if (rowIndex !== undefined) {
+            rowActions.exportSingleRow(rowIndex, format);
+          }
+        }}
+        onExportSelected={format => {
+          cellContextMenu.closeCellMenu();
+          rowActions.exportSelectedRows(format);
+        }}
+        onRequestDelete={rowActions.requestDelete}
+      />
+      <DeleteConfirmModal
+        opened={!!rowActions.deleteConfirm}
+        rowCount={rowActions.deleteConfirm?.rowCount ?? 0}
+        table={rowActions.deleteConfirm?.table || null}
+        saving={rowActions.deleteConfirm?.saving ?? false}
+        error={rowActions.deleteConfirm?.error ?? null}
+        onCancel={rowActions.cancelDelete}
+        onConfirm={rowActions.confirmDelete}
       />
     </div>
   );

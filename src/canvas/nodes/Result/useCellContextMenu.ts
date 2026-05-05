@@ -9,15 +9,16 @@ export type CellMenuState = {
   y: number;
   value: unknown;
   column: string;
+  rowIndex: number;
 };
 
 export function useCellContextMenu(nodeId: string) {
   const canvas = useCanvas();
   const [cellMenu, setCellMenu] = useState<CellMenuState | null>(null);
 
-  const openCellMenu = (e: React.MouseEvent, value: unknown, column: string) => {
+  const openCellMenu = (e: React.MouseEvent, value: unknown, column: string, rowIndex: number) => {
     e.preventDefault();
-    setCellMenu({ x: e.clientX, y: e.clientY, value, column });
+    setCellMenu({ x: e.clientX, y: e.clientY, value, column, rowIndex });
   };
 
   const closeCellMenu = () => setCellMenu(null);

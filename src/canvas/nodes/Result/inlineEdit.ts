@@ -111,6 +111,40 @@ export function buildUpdateSql(
   return `UPDATE "${table}" SET "${column}" = ${newLiteral} WHERE ${where}`;
 }
 
+export function buildDeleteSql(table: string, pkColumns: string[], rows: PkAssignment[][]): string {
+  if (pkColumns.length === 0) {
+    throw new Error("buildDeleteSql requires at least one primary key column");
+  }
+  if (rows.length === 0) {
+    throw new Error("buildDeleteSql requires at least one row");
+  }
+
+  if (pkColumns.length === 1) {
+    const col = pkColumns[0];
+    const literals = rows.map(row => {
+      const cell = row.find(pk => pk.column === col);
+      if (!cell) {
+        throw new Error(`Row missing primary key column "${col}"`);
+      }
+      return cell.literal;
+    });
+    return `DELETE FROM "${table}" WHERE "${col}" IN (${literals.join(", ")})`;
+  }
+
+  const colTuple = pkColumns.map(col => `"${col}"`).join(", ");
+  const valueTuples = rows.map(row => {
+    const literals = pkColumns.map(col => {
+      const cell = row.find(pk => pk.column === col);
+      if (!cell) {
+        throw new Error(`Row missing primary key column "${col}"`);
+      }
+      return cell.literal;
+    });
+    return `(${literals.join(", ")})`;
+  });
+  return `DELETE FROM "${table}" WHERE (${colTuple}) IN (${valueTuples.join(", ")})`;
+}
+
 export function buildInsertSql(table: string, assignments: InsertAssignment[]): string {
   if (assignments.length === 0) {
     throw new Error("buildInsertSql requires at least one column");

@@ -11,11 +11,8 @@ import {
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useRef } from "react";
-import { save } from "@tauri-apps/plugin-dialog";
-import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { schemaAtom } from "../../../state";
-import { toCsv } from "../../../tools/export/csv";
-import { toJson } from "../../../tools/export/json";
+import { exportRows } from "./exportRows";
 import { ResultTable } from "./ResultTable";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useCreateChart } from "./useCreateChart";
@@ -137,21 +134,9 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
   const queryName = firstLineOfQuery(data.query);
 
   const exportAs = async (format: "csv" | "json") => {
-    if (rows.length === 0) {
-      return;
-    }
-    const fallbackName = "result";
     const baseName =
-      queryName.replaceAll(/[^a-z0-9_-]+/gi, "_").replaceAll(/^_+|_+$/g, "") || fallbackName;
-    const path = await save({
-      defaultPath: `${baseName}.${format}`,
-      filters: [{ name: format.toUpperCase(), extensions: [format] }],
-    });
-    if (!path) {
-      return;
-    }
-    const output = format === "csv" ? toCsv(rows) : JSON.stringify(toJson(rows), null, 2);
-    await writeTextFile(path, output);
+      queryName.replaceAll(/[^a-z0-9_-]+/gi, "_").replaceAll(/^_+|_+$/g, "") || "result";
+    await exportRows(rows, format, baseName);
   };
 
   return (
