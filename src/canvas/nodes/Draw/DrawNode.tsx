@@ -36,7 +36,7 @@ export function DrawNode({ data, selected, width, height }: NodeProps<DrawNodeT>
       <HiddenHandles />
       <div style={{ width, height, position: "relative" }}>
         <svg width={width} height={height} style={{ display: "block", overflow: "hidden" }}>
-          <path d={d} fill={fill} pointerEvents='all' />
+          <path d={d} style={{ fill }} pointerEvents='all' />
         </svg>
       </div>
     </>

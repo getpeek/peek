@@ -7,8 +7,8 @@ import type { AppEdge, AppNode, DrawPoint } from "../types";
 import { useCanvas } from "./useCanvas";
 
 const STROKE_WIDTH = 4;
-const STROKE_COLOR = "white";
 const PADDING = STROKE_WIDTH * 2;
+const STROKE_COLOR = "var(--pk-fg)";
 
 export function useDrawTool() {
   const placeMode = useAtomValue(placeModeAtom);
