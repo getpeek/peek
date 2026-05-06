@@ -7,5 +7,5 @@ export interface CommandPaletteResult {
   searchAgainst?: string;
   onSelect: () => void | Promise<unknown>;
   keybinding?: string[];
-  details?: (command: CommandPaletteResult) => ReactNode;
+  details?: ReactNode;
 }

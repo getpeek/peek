@@ -4,13 +4,20 @@
   left: 0;
   right: 0;
   height: 50px;
-  backdrop-filter: blur(20px);
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   z-index: 10000;
   user-select: none;
   display: flex;
   align-items: center;
+  border-bottom: 1px solid transparent;
+  transition:
+    backdrop-filter 0.2s ease-in,
+    border 0.2s ease-in;
+  &:hover {
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--pk-node-border);
+  }
 }
 
 .titlebar-page-selector {
@@ -33,6 +40,7 @@
   gap: 6px;
   white-space: nowrap;
   font: 500 12px var(--pk-font-sans);
+  backdrop-filter: blur(12px);
   transition:
     background 0.12s,
     color 0.12s,

@@ -39,7 +39,7 @@ export const CommandPalette = () => {
   const activeResult = results[cursor];
   const activeCommand = activeResult?.command;
   const detailsContent = activeCommand
-    ? (activeCommand.details?.(activeCommand) ?? <DefaultDetails command={activeCommand} />)
+    ? (activeCommand.details ?? <DefaultDetails command={activeCommand} />)
     : null;
 
   return (
@@ -69,7 +69,7 @@ export const CommandPalette = () => {
             setCursor(0);
             setQuery(e.currentTarget.value);
           }}
-          placeholder='Search workspace…'
+          placeholder='Search…'
         />
       </div>
       <div className='command-palette-body'>

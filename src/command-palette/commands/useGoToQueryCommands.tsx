@@ -15,7 +15,7 @@ export const useGoToQueryCommands = (): CommandPaletteResult[] => {
       icon: <IconSql size={16} />,
       label: node.data.query.replaceAll(/\s/g, " ").slice(0, 60),
       searchAgainst: node.data.query.toLowerCase(),
-      details: () => <QueryDetails sql={node.data.query} />,
+      details: <QueryDetails sql={node.data.query} />,
       onSelect: () => {
         if (!canvas) {
           return;

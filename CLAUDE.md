@@ -36,6 +36,7 @@ src-tauri/        Rust host code (do not edit unless asked)
 - Use full words for identifiers (`truncatedString`, not `truncString`).
 - TypeScript: never widen to `any`; prefer `unknown` and narrow. Use `import type { … }` for type-only imports.
 - Named exports only. No default exports.
+- CSS: Use nested rules rather than having everything top level.
 
 ## Proximity principle
 
