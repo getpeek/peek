@@ -15,7 +15,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import "./ReactFlowCanvas.css";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { edgesAtom, nodesAtom, placeModeAtom, viewportAtom } from "./state";
 import { CanvasApiPublisher } from "./CanvasApiPublisher";
 import { AiPromptNode } from "./nodes/AiPrompt/AiPromptNode";
@@ -33,12 +33,14 @@ import { ZoomIndicator } from "./ui/ZoomIndicator";
 import { KeyboardShortcuts } from "./ui/KeyboardShortcuts";
 import { RemoteCursorsLayer } from "../multiplayer/RemoteCursorsLayer";
 import { useCursorBroadcast } from "../multiplayer/useCursorBroadcast";
-import { defaultDimensions, makeNode } from "./defaults";
-import { focusEditor } from "./nodes/editorFocusRegistry";
-import type { AppEdge, AppNode, QueryData } from "./types";
+import type { AppEdge, AppNode } from "./types";
 import { useCanvas } from "./hooks/useCanvas";
 import { useDrawTool } from "./hooks/useDrawTool";
+import { usePlaceTool } from "./hooks/usePlaceTool";
+import { useRubberBandSelect } from "./hooks/useRubberBandSelect";
 import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
+import { useSelectionHighlight } from "./hooks/useSelectionHighlight";
+import { LassoOverlay } from "./LassoOverlay";
 import { useVariableDragHighlight } from "./hooks/useVariableDragHighlight";
 import { getStroke } from "perfect-freehand";
 import { FloatingEdge } from "./edges/FloatingEdge";
@@ -78,10 +80,12 @@ function ReactFlowCanvasInner() {
   const [edges, setEdges] = useAtom(edgesAtom);
   const initialViewport = useAtomValue(viewportAtom);
   const setViewport = useSetAtom(viewportAtom);
-  const [placeMode, setPlaceMode] = useAtom(placeModeAtom);
+  const placeMode = useAtomValue(placeModeAtom);
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
   const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
+  usePlaceTool();
+  const { rect: selectionRect } = useRubberBandSelect();
   useCursorBroadcast();
   const { onSchemaNodeDragStart, onSchemaNodeDrag, onSchemaNodeDragStop } = useSchemaForceLayout();
 
@@ -132,67 +136,7 @@ function ReactFlowCanvasInner() {
 
   const variableDragHighlight = useVariableDragHighlight();
 
-  const styledEdges = useMemo(() => {
-    const selectedQueryIds = new Set(
-      nodes.filter(n => n.type === "query" && n.selected).map(n => n.id),
-    );
-    const liveQueryIds = new Set(
-      nodes
-        .filter(
-          node =>
-            node.type === "query" && ((node.data as QueryData).liveIntervalMs ?? null) !== null,
-        )
-        .map(node => node.id),
-    );
-    if (selectedQueryIds.size === 0 && liveQueryIds.size === 0) {
-      return edges;
-    }
-    const resultIds = new Set(nodes.filter(n => n.type === "result").map(n => n.id));
-    return edges.map(edge => {
-      if (!resultIds.has(edge.target)) {
-        return edge;
-      }
-      const existing = edge.className ?? "";
-      const parts: string[] = existing ? [existing] : [];
-      if (selectedQueryIds.has(edge.source) && !existing.includes("query-active")) {
-        parts.push("query-active");
-      }
-      if (liveQueryIds.has(edge.source) && !existing.includes("query-live")) {
-        parts.push("query-live");
-      }
-      if (parts.length === (existing ? 1 : 0)) {
-        return edge;
-      }
-      return { ...edge, className: parts.join(" ").trim() };
-    });
-  }, [nodes, edges]);
-
-  const onPaneClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (!placeMode) {
-        return;
-      }
-      if (placeMode === "draw") {
-        return;
-      }
-      const flowPos = rf.screenToFlowPosition({
-        x: e.clientX,
-        y: e.clientY,
-      });
-      const dims = defaultDimensions[placeMode];
-      const node = makeNode(placeMode, {
-        x: flowPos.x - dims.w / 2,
-        y: flowPos.y - dims.h / 2,
-      });
-      canvas.addNode(node);
-      rf.setCenter(flowPos.x, flowPos.y, { zoom: 1, duration: 300 });
-      if (node.type === "query" || node.type === "ai-prompt") {
-        focusEditor(node.id);
-      }
-      setPlaceMode(null);
-    },
-    [placeMode, rf, canvas, setPlaceMode],
-  );
+  const { styledNodes, styledEdges } = useSelectionHighlight(nodes, edges);
 
   const onNodeDragStart = useCallback(
     (_e: unknown, n: AppNode) => onSchemaNodeDragStart(n),
@@ -210,7 +154,7 @@ function ReactFlowCanvasInner() {
   return (
     <>
       <ReactFlow<AppNode, AppEdge>
-        nodes={nodes}
+        nodes={styledNodes}
         edges={styledEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
@@ -221,7 +165,6 @@ function ReactFlowCanvasInner() {
         onConnectStart={variableDragHighlight.onConnectStart}
         onConnectEnd={variableDragHighlight.onConnectEnd}
         isValidConnection={isValidConnection}
-        onPaneClick={onPaneClick}
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
@@ -231,9 +174,9 @@ function ReactFlowCanvasInner() {
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode='Shift'
         onlyRenderVisibleElements
-        selectionOnDrag={placeMode !== "draw"}
-        nodesDraggable={placeMode !== "draw"}
-        elementsSelectable={placeMode !== "draw"}
+        selectionOnDrag={false}
+        nodesDraggable={placeMode === null}
+        elementsSelectable={placeMode === null}
         selectionMode={SelectionMode.Partial}
         panOnDrag={[1, 2]}
         panOnScroll
@@ -293,6 +236,23 @@ function ReactFlowCanvasInner() {
           />
         </svg>
       )}
+      {selectionRect && (
+        <div
+          style={{
+            position: "fixed",
+            left: selectionRect.x,
+            top: selectionRect.y,
+            width: selectionRect.w,
+            height: selectionRect.h,
+            pointerEvents: "none",
+            zIndex: 1000,
+            border: "1px dashed var(--pk-accent)",
+            background: "var(--pk-accent-bg)",
+            borderRadius: 4,
+          }}
+        />
+      )}
+      <LassoOverlay />
       <CanvasApiPublisher />
       <KeyboardShortcuts />
     </>

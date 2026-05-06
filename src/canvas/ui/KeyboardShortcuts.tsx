@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAtom, useSetAtom } from "jotai";
-import { clipboardAtom, nodesAtom, placeModeAtom } from "../state";
+import { clipboardAtom, nodesAtom, placeModeAtom, selectionToolAtom } from "../state";
 import { formatPreservingVars } from "../variables";
 import { useCanvas } from "../hooks/useCanvas";
 import { usePageActions } from "../hooks/usePageActions";
@@ -70,6 +70,7 @@ function isTextInputFocused() {
 export function KeyboardShortcuts() {
   const canvas = useCanvas();
   const setPlaceMode = useSetAtom(placeModeAtom);
+  const setSelectionTool = useSetAtom(selectionToolAtom);
   const [clipboard, setClipboard] = useAtom(clipboardAtom);
   const setNodes = useSetAtom(nodesAtom);
   const pageActions = usePageActions();
@@ -79,6 +80,7 @@ export function KeyboardShortcuts() {
       "Escape",
       () => {
         setPlaceMode(null);
+        setSelectionTool("default");
         canvas.deselectAll();
       },
     ],
@@ -161,30 +163,42 @@ export function KeyboardShortcuts() {
       if (e.key.toLowerCase() === "q" && !meta) {
         e.preventDefault();
         setPlaceMode("query");
+        setSelectionTool("default");
         return;
       }
 
       if (e.key.toLowerCase() === "a" && !meta) {
         e.preventDefault();
         setPlaceMode("ai-prompt");
+        setSelectionTool("default");
         return;
       }
 
       if (e.key.toLowerCase() === "t" && !meta) {
         e.preventDefault();
         setPlaceMode("text");
+        setSelectionTool("default");
         return;
       }
 
       if (e.key.toLowerCase() === "v" && !meta) {
         e.preventDefault();
         setPlaceMode("variable");
+        setSelectionTool("default");
         return;
       }
 
       if (e.key.toLowerCase() === "d" && !meta) {
         e.preventDefault();
         setPlaceMode("draw");
+        setSelectionTool("default");
+        return;
+      }
+
+      if (e.key.toLowerCase() === "l" && !meta) {
+        e.preventDefault();
+        setPlaceMode(null);
+        setSelectionTool("lasso");
         return;
       }
 
@@ -267,7 +281,17 @@ export function KeyboardShortcuts() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [canvas, setPlaceMode, clipboard, setClipboard, setNodes, pageActions, undo, redo]);
+  }, [
+    canvas,
+    setPlaceMode,
+    setSelectionTool,
+    clipboard,
+    setClipboard,
+    setNodes,
+    pageActions,
+    undo,
+    redo,
+  ]);
 
   return null;
 }

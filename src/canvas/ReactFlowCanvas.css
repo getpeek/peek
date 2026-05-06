@@ -8,3 +8,9 @@
 .react-flow:has(.react-flow__node.dragging) * {
   user-select: none;
 }
+
+body.is-rubber-band-selecting,
+body.is-rubber-band-selecting * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}

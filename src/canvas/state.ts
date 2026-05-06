@@ -151,6 +151,8 @@ export const viewportAtom = atom(
 
 export const placeModeAtom = atom<AppNodeType | null>(null);
 
+export const selectionToolAtom = atom<"default" | "lasso">("default");
+
 export const pendingPageCloseAtom = atom<{ pageId: string } | null>(null);
 
 export const clipboardAtom = atom<AppNode[]>([]);

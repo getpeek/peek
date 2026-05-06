@@ -32,6 +32,19 @@ export const defaultDimensions: Record<AppNodeType, { w: number; h: number }> = 
   draw: { w: 100, h: 100 },
 };
 
+export const minDimensions: Record<AppNodeType, { w: number; h: number }> = {
+  query: { w: 320, h: 200 },
+  result: { w: 400, h: 260 },
+  "ai-prompt": { w: 300, h: 180 },
+  chat: { w: 400, h: 300 },
+  barchart: { w: 300, h: 200 },
+  "query-error": { w: 300, h: 200 },
+  "table-definition": { w: 300, h: 140 },
+  text: { w: 80, h: 32 },
+  variable: { w: 220, h: 140 },
+  draw: { w: 1, h: 1 },
+};
+
 export function makeNode(type: AppNodeType, position: { x: number; y: number }): AppNode {
   const { w, h } = defaultDimensions[type];
   const base = { position, width: w, height: h };

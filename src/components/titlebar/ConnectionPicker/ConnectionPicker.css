@@ -14,6 +14,7 @@
   border: 1px solid color-mix(in oklab, var(--pk-active-color) 35%, transparent 65%);
   border-radius: var(--pk-radius-pill);
   color: var(--pk-fg);
+  backdrop-filter: blur(12px);
   font: 500 12px var(--pk-font-sans);
   cursor: pointer;
   transition:

@@ -218,6 +218,13 @@ body.theme-midday {
     0 12px 32px oklch(0% 0 0 / 0.45);
 }
 
+.react-flow__node.connected .app-node {
+  border-color: color-mix(in oklab, var(--pk-accent) 55%, var(--pk-node-border));
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--pk-accent) 35%, transparent),
+    0 8px 20px oklch(0% 0 0 / 0.35);
+}
+
 .connecting-from-variable .react-flow__node-query .app-node,
 .connecting-from-variable .react-flow__node-result .app-node {
   border-color: var(--pk-accent);
@@ -571,7 +578,7 @@ body.theme-midday {
   }
 }
 
-.react-flow__edge.query-active .react-flow__edge-path {
+.react-flow__edge.connection-active .react-flow__edge-path {
   stroke: var(--pk-accent);
   stroke-width: 1.75;
   animation: pk-edge-pulse 1.6s ease-in-out infinite;

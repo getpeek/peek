@@ -1,6 +1,7 @@
 import {
   IconAt,
   IconCode,
+  IconLasso,
   IconLetterT,
   IconMouse,
   IconPencil,
@@ -9,7 +10,7 @@ import {
 import { Panel } from "@xyflow/react";
 import { useAtom } from "jotai";
 import type { ComponentType } from "react";
-import { placeModeAtom } from "../state";
+import { placeModeAtom, selectionToolAtom } from "../state";
 import type { AppNodeType } from "../types";
 import "./Toolbar.css";
 
@@ -55,18 +56,30 @@ const tools: ToolDef[] = [
 
 export function Toolbar() {
   const [placeMode, setPlaceMode] = useAtom(placeModeAtom);
+  const [selectionTool, setSelectionTool] = useAtom(selectionToolAtom);
 
   return (
     <Panel position='bottom-center'>
       <div className='canvas-toolbar'>
-        <button
-          className={`toolbar-btn ${placeMode === null ? "active" : ""}`}
-          title='Select (Esc)'
-          onClick={() => setPlaceMode(null)}
-        >
-          <IconMouse size={16} stroke={1.75} />
-          <span className='kbd'>Esc</span>
-        </button>
+        {selectionTool === "lasso" ? (
+          <button
+            className={`toolbar-btn ${placeMode === null ? "active" : ""}`}
+            title='Lasso (L)'
+            onClick={() => setPlaceMode(null)}
+          >
+            <IconLasso size={16} stroke={1.75} />
+            <span className='kbd'>L</span>
+          </button>
+        ) : (
+          <button
+            className={`toolbar-btn ${placeMode === null ? "active" : ""}`}
+            title='Select (Esc)'
+            onClick={() => setPlaceMode(null)}
+          >
+            <IconMouse size={16} stroke={1.75} />
+            <span className='kbd'>Esc</span>
+          </button>
+        )}
         <span className='sep' />
         {tools.map(t => {
           const active = placeMode === t.mode;
@@ -76,7 +89,10 @@ export function Toolbar() {
               key={t.label}
               className={`toolbar-btn ${active ? "active" : ""}`}
               title={`${t.label} (${t.hotkey})`}
-              onClick={() => setPlaceMode(t.mode)}
+              onClick={() => {
+                setPlaceMode(t.mode);
+                setSelectionTool("default");
+              }}
             >
               <Icon size={16} stroke={1.75} />
               <span className='kbd'>{t.hotkey}</span>
