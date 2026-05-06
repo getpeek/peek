@@ -110,7 +110,7 @@ export function PageSelector() {
             onDoubleClick={() => setRenameId(page.id)}
           >
             {active && <span className='dot' />}
-            {page.name}
+            <span className='page-tab-label'>{page.name}</span>
             {active && canClose && (
               <span
                 className='close'

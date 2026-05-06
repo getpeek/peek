@@ -1,7 +1,10 @@
 .titlebar-page-selector {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
   -webkit-app-region: no-drag;
   font-family: var(--pk-font-sans);
 
@@ -15,6 +18,9 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 200px;
     white-space: nowrap;
     font: 500 12px var(--pk-font-sans);
     backdrop-filter: blur(12px);
@@ -22,6 +28,12 @@
       background 0.12s,
       color 0.12s,
       transform 0.18s ease;
+
+    .page-tab-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
 
     &.dragging {
       transition: none;
@@ -63,6 +75,7 @@
       font-size: 14px;
       line-height: 1;
       width: 14px;
+      flex-shrink: 0;
       text-align: center;
       cursor: pointer;
     }
@@ -71,6 +84,7 @@
       padding: 4px 8px;
       color: var(--pk-fg-subtle);
       cursor: pointer;
+      flex-shrink: 0;
 
       .dot {
         display: none;
