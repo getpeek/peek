@@ -8,7 +8,6 @@ import { focusEditor } from "../nodes/editorFocusRegistry";
 import { ids } from "../ids";
 import { useUndoHistory } from "./useUndoHistory";
 import type { AppNode, AppNodeType, QueryNode } from "../types";
-import { useHotkeys } from "@mantine/hooks";
 
 function newIdForType(type: AppNodeType): string {
   switch (type) {
@@ -75,21 +74,22 @@ export function KeyboardShortcuts() {
   const setNodes = useSetAtom(nodesAtom);
   const pageActions = usePageActions();
   const { undo, redo } = useUndoHistory();
-  useHotkeys([
-    [
-      "Escape",
-      () => {
-        setPlaceMode(null);
-        setSelectionTool("default");
-        canvas.deselectAll();
-      },
-    ],
-  ]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const meta = e.metaKey || e.ctrlKey;
       const shift = e.shiftKey;
+
+      if (e.key === "Escape") {
+        const active = document.activeElement;
+        if (active instanceof HTMLElement) {
+          active.blur();
+        }
+        setPlaceMode(null);
+        setSelectionTool("default");
+        canvas.deselectAll();
+        return;
+      }
 
       if (meta && e.shiftKey && e.code === "KeyI") {
         const target = findActiveQueryNode(canvas);
