@@ -1,0 +1,121 @@
+.titlebar-page-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  -webkit-app-region: no-drag;
+  font-family: var(--pk-font-sans);
+
+  .page-tab {
+    padding: 6px 14px;
+    border-radius: 9999px;
+    background: transparent;
+    border: 1px solid var(--pk-node-border);
+    color: var(--pk-fg-muted);
+    cursor: grab;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font: 500 12px var(--pk-font-sans);
+    backdrop-filter: blur(12px);
+    transition:
+      background 0.12s,
+      color 0.12s,
+      transform 0.18s ease;
+
+    &.dragging {
+      transition: none;
+      z-index: 2;
+      cursor: grabbing;
+      box-shadow: var(--pk-node-shadow);
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--pk-fg-subtle);
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      color: var(--pk-fg);
+      background: var(--pk-node-bg-2);
+
+      .close {
+        color: var(--pk-fg);
+      }
+    }
+
+    &.active {
+      color: var(--pk-fg);
+      background: var(--pk-node-bg-2);
+
+      .dot {
+        background: var(--pk-green);
+        box-shadow: 0 0 8px var(--pk-green);
+      }
+    }
+
+    .close {
+      margin-left: 4px;
+      color: var(--pk-fg-subtle);
+      font-size: 14px;
+      line-height: 1;
+      width: 14px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    &.add-btn {
+      padding: 4px 8px;
+      color: var(--pk-fg-subtle);
+      cursor: pointer;
+
+      .dot {
+        display: none;
+      }
+    }
+
+    &.entering {
+      animation: page-tab-enter 0.18s ease forwards;
+    }
+
+    &.exiting {
+      animation: page-tab-exit 0.14s ease forwards;
+      pointer-events: none;
+    }
+  }
+
+  .page-tab-input {
+    background: transparent;
+    border: 1px solid var(--pk-accent-line);
+    outline: none;
+    color: var(--pk-fg);
+    padding: 3px 10px;
+    border-radius: 6px;
+    font: 500 12px var(--pk-font-sans);
+  }
+}
+
+@keyframes page-tab-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-tab-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

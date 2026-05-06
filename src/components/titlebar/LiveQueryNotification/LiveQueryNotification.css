@@ -4,7 +4,8 @@
   align-items: center;
   gap: 8px;
   padding: 6px 12px 6px 10px;
-  background: var(--pk-node-bg);
+  background: color-mix(in oklab, var(--pk-node-bg), transparent 50%);
+  backdrop-filter: blur(12px);
   border: 1px solid transparent;
   border-radius: var(--pk-radius-pill);
   color: var(--pk-fg);

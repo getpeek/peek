@@ -2,7 +2,7 @@
   width: 500px;
   padding: 20px;
   border-radius: var(--pk-radius-card, 10px);
-  background: var(--pk-node-bg);
+  background: color-mix(in oklab, var(--pk-node-bg), transparent 20%);
   border: 1px solid var(--pk-node-border);
   box-shadow: var(--pk-node-shadow);
   color: var(--pk-fg);

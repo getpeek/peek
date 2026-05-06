@@ -5,9 +5,10 @@
   align-items: center;
   gap: 6px;
   padding: 5px 10px;
-  background: var(--pk-node-bg);
+  background: color-mix(in oklab, var(--pk-green-soft), transparent 50%);
   border: 1px solid var(--pk-node-border);
   border-radius: var(--pk-radius-pill, 9999px);
+  backdrop-filter: blur(12px);
   color: var(--pk-fg-muted);
   font: 500 12px var(--pk-font-sans);
   cursor: pointer;
@@ -16,19 +17,19 @@
     color 0.12s,
     border-color 0.12s,
     width 0.2s;
-}
 
-.titlebar-collab-button:not(.active) {
-  width: 34px;
-}
+  &:not(.active) {
+    width: 34px;
+  }
 
-.titlebar-collab-button > svg {
-  flex-shrink: 0;
-}
+  & > svg {
+    flex-shrink: 0;
+  }
 
-.titlebar-collab-button:hover {
-  background: var(--pk-node-bg-2);
-  color: var(--pk-fg);
+  &:hover {
+    background: color-mix(in oklab, var(--pk-green-soft), transparent 50%);
+    color: var(--pk-fg);
+  }
 }
 
 .collab-hint {
@@ -44,7 +45,7 @@
 }
 
 .titlebar-collab-button:not(.active):hover {
-  width: 120px;
+  width: 110px;
 }
 
 .titlebar-collab-button:not(.active):hover .collab-hint {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { IconPlus } from "@tabler/icons-react";
 import { usePageActions } from "../../../canvas/hooks/usePageActions";
 import { siblingSlideX, useTabDragReorder } from "./useTabDragReorder";
+import "./PageSelector.css";
 
 const ENTER_MS = 180;
 const EXIT_MS = 140;
