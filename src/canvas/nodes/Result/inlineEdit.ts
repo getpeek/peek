@@ -1,32 +1,17 @@
-import type { AST } from "node-sql-parser";
+import type { QueryInfo } from "./queryInfo";
 
-type FromEntry = {
-  db?: string | null;
-  table?: string | null;
-  as?: string | null;
-  join?: string | null;
-};
-
-export function getEditableTableName(ast: AST | null | undefined): string | null {
-  if (!ast || typeof ast !== "object") {
+export function getEditableTableName(info: QueryInfo | null | undefined): string | null {
+  if (!info || info.statementType !== "select") {
     return null;
   }
-  const a = ast as { type?: string; from?: FromEntry[] | null };
-  if (a.type !== "select") {
+  if (info.tables.length !== 1) {
     return null;
   }
-  const from = a.from;
-  if (!Array.isArray(from) || from.length !== 1) {
+  const table = info.tables[0];
+  if (!table || table.isJoined) {
     return null;
   }
-  const entry = from[0];
-  if (!entry || !entry.table) {
-    return null;
-  }
-  if (entry.join) {
-    return null;
-  }
-  return entry.table;
+  return table.name;
 }
 
 const NUMERIC_TYPES = new Set([

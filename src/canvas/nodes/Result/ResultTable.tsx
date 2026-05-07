@@ -2,7 +2,6 @@ import { Table, Text } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { AST, Parser } from "node-sql-parser";
 import { schemaAtom, type DatabaseResult } from "../../../state";
 import {
   getInboundReferences,
@@ -22,6 +21,7 @@ import { useCellContextMenu } from "./useCellContextMenu";
 import { useColumnWidths } from "./useColumnWidths";
 import { useCommitEdit, type EditingState } from "./useCommitEdit";
 import { useCommitInsert, type InsertingState } from "./useCommitInsert";
+import type { QueryInfo } from "./queryInfo";
 import { useRowActions } from "./useRowActions";
 import { useRowSelection } from "./useRowSelection";
 import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
@@ -33,11 +33,13 @@ export function ResultTable({
   nodeId,
   data,
   query,
+  queryInfo,
   columnWidths,
 }: {
   nodeId: string;
   data: DatabaseResult;
   query: string;
+  queryInfo: QueryInfo | null;
   columnWidths?: Record<string, number>;
 }) {
   const schema = useAtomValue(schemaAtom);
@@ -66,44 +68,35 @@ export function ResultTable({
     scrollContainerRef,
   });
 
-  const ast = useMemo(() => {
-    try {
-      const parsed = new Parser().astify(query);
-      return Array.isArray(parsed) ? parsed[0] : parsed;
-    } catch {
-      return {} as AST;
-    }
-  }, [query]);
-
-  const commitEdit = useCommitEdit({ editing, setEditing, data, query, ast, nodeId });
+  const commitEdit = useCommitEdit({ editing, setEditing, data, query, queryInfo, nodeId });
   const commitInsert = useCommitInsert({
     inserting,
     setInserting,
     query,
-    ast,
+    queryInfo,
     nodeId,
     columnTypes,
   });
   const rowActions = useRowActions({
     data,
     query,
-    ast,
+    queryInfo,
     nodeId,
     selected: rowSelection.selected,
     closeCellMenu: cellContextMenu.closeCellMenu,
   });
-  const canInsert = getEditableTableName(ast) !== null;
+  const canInsert = getEditableTableName(queryInfo) !== null;
   const variableNames = Object.keys(useGetVariablesForNode(nodeId).direct).toSorted();
 
   const { outbound, inbound } = useMemo(() => {
     const outboundMap: Record<string, Reference[]> = {};
     const inboundMap: Record<string, Reference[]> = {};
     headers.forEach(column => {
-      inboundMap[column] = getInboundReferences(ast, schema.references, column);
-      outboundMap[column] = getOutboundReferences(ast, schema.references, column);
+      inboundMap[column] = getInboundReferences(queryInfo, schema.references, column);
+      outboundMap[column] = getOutboundReferences(queryInfo, schema.references, column);
     });
     return { outbound: outboundMap, inbound: inboundMap };
-  }, [headers, ast, schema.references]);
+  }, [headers, queryInfo, schema.references]);
 
   const followReferences = (refs: CellReference[], value: unknown) => {
     const sourceNode = canvas.getNode(nodeId);

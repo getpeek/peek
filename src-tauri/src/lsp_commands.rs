@@ -5,7 +5,7 @@ use std::sync::Arc;
 use lsp_types::{CompletionItem, Diagnostic, Position, Uri};
 use tauri::State;
 
-use crate::lsp::{Backend, SchemaIndex};
+use crate::lsp::{analyze_query, Backend, QueryInfo, SchemaIndex};
 use crate::SchemaCache;
 
 #[tauri::command]
@@ -61,4 +61,15 @@ pub fn lsp_set_schema_cache(
 pub fn lsp_clear_schema_cache(schema_cache: State<'_, SchemaCache>) -> Result<(), String> {
     *schema_cache.write() = SchemaIndex::default();
     Ok(())
+}
+
+/// Inspect a SQL query and return the structural information the Result node
+/// needs (statement type, tables in scope, join status). Replaces the previous
+/// frontend `node-sql-parser` dependency — the same tree-sitter SQL grammar
+/// already used by the LSP serves both. Infallible: a parse failure yields
+/// `{ statementType: "other", tables: [] }`.
+#[tauri::command]
+#[must_use]
+pub fn get_query_info(query: String) -> QueryInfo {
+    analyze_query(&query)
 }

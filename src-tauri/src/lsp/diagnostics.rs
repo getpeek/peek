@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use lsp_types::{Diagnostic, DiagnosticSeverity, Position, Range};
 use tree_sitter::{Node, Tree};
 
@@ -17,8 +19,9 @@ pub fn diagnose(
     if schema.tables.is_empty() {
         return Vec::new();
     }
+    let aliases = collect_select_aliases(tree.root_node(), source);
     let mut out = Vec::new();
-    walk(tree.root_node(), source, scope, schema, &mut out);
+    walk(tree.root_node(), source, scope, schema, &aliases, &mut out);
     out
 }
 
@@ -27,6 +30,7 @@ fn walk(
     source: &[u8],
     scope: &Scope,
     schema: &SchemaIndex,
+    aliases: &HashSet<String>,
     out: &mut Vec<Diagnostic>,
 ) {
     if matches!(node.kind(), "string" | "comment" | "marginalia") {
@@ -40,13 +44,13 @@ fn walk(
 
     match node.kind() {
         "relation" => check_relation(node, source, schema, out),
-        "field" => check_field(node, source, scope, schema, out),
+        "field" => check_field(node, source, scope, schema, aliases, out),
         _ => {}
     }
 
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
-        walk(child, source, scope, schema, out);
+        walk(child, source, scope, schema, aliases, out);
     }
 }
 
@@ -71,6 +75,7 @@ fn check_field(
     source: &[u8],
     scope: &Scope,
     schema: &SchemaIndex,
+    aliases: &HashSet<String>,
     out: &mut Vec<Diagnostic>,
 ) {
     let Some(name_node) = field.child_by_field_name("name") else {
@@ -91,7 +96,7 @@ fn check_field(
     if let Some(qual_ref) = qualifier_ref {
         check_qualified_field(qual_ref, name_node, column, source, scope, schema, out);
     } else {
-        check_unqualified_field(name_node, column, scope, schema, out);
+        check_unqualified_field(field, name_node, column, scope, schema, aliases, out);
     }
 }
 
@@ -134,10 +139,12 @@ fn check_qualified_field(
 }
 
 fn check_unqualified_field(
+    field: Node<'_>,
     name_node: Node<'_>,
     column: &str,
     scope: &Scope,
     schema: &SchemaIndex,
+    aliases: &HashSet<String>,
     out: &mut Vec<Diagnostic>,
 ) {
     if scope.relations.is_empty() {
@@ -153,8 +160,45 @@ fn check_unqualified_field(
             return;
         }
     }
-    if any_known_table {
-        out.push(make_diag(name_node, format!("Unknown column '{column}'")));
+    if !any_known_table {
+        return;
+    }
+    // SELECT-list aliases are valid references in GROUP BY / ORDER BY / HAVING.
+    if aliases.contains(column) && in_alias_clause(field) {
+        return;
+    }
+    out.push(make_diag(name_node, format!("Unknown column '{column}'")));
+}
+
+fn in_alias_clause(node: Node<'_>) -> bool {
+    let mut current = node.parent();
+    while let Some(n) = current {
+        if matches!(n.kind(), "order_by" | "group_by" | "having") {
+            return true;
+        }
+        current = n.parent();
+    }
+    false
+}
+
+fn collect_select_aliases(root: Node<'_>, source: &[u8]) -> HashSet<String> {
+    let mut out = HashSet::new();
+    walk_aliases(root, source, &mut out);
+    out
+}
+
+fn walk_aliases(node: Node<'_>, source: &[u8], out: &mut HashSet<String>) {
+    if node.kind() == "term"
+        && let Some(alias_node) = node.child_by_field_name("alias")
+    {
+        let alias = node_text(alias_node, source);
+        if !alias.is_empty() {
+            out.insert(alias.to_string());
+        }
+    }
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        walk_aliases(child, source, out);
     }
 }
 
@@ -345,6 +389,46 @@ mod tests {
         let schema = fixture_schema();
         let diags = diagnose_for("select @foo from users", &schema);
         assert!(diags.is_empty(), "expected none, got {diags:?}");
+    }
+
+    #[test]
+    fn select_alias_in_order_by_is_allowed() {
+        let schema = fixture_schema();
+        let diags = diagnose_for(
+            "select name as full_name from users order by full_name",
+            &schema,
+        );
+        assert!(diags.is_empty(), "expected none, got {diags:?}");
+    }
+
+    #[test]
+    fn select_alias_in_group_by_is_allowed() {
+        let schema = fixture_schema();
+        let diags = diagnose_for(
+            "select name as full_name, count(*) from users group by full_name",
+            &schema,
+        );
+        assert!(diags.is_empty(), "expected none, got {diags:?}");
+    }
+
+    #[test]
+    fn unknown_column_in_order_by_is_still_flagged() {
+        let schema = fixture_schema();
+        let diags = diagnose_for("select id from users order by naem", &schema);
+        assert_eq!(diags.len(), 1);
+        assert!(diags[0].message.contains("naem"));
+    }
+
+    #[test]
+    fn alias_outside_alias_clause_is_still_flagged() {
+        let schema = fixture_schema();
+        // Aliases aren't valid in WHERE in standard SQL — keep flagging them.
+        let diags = diagnose_for(
+            "select name as full_name from users where full_name = 'x'",
+            &schema,
+        );
+        assert_eq!(diags.len(), 1);
+        assert!(diags[0].message.contains("full_name"));
     }
 
     #[test]

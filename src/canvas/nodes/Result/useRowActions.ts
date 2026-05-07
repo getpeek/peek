@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import type { AST } from "node-sql-parser";
 import type { DatabaseResult } from "../../../state";
 import { exportRows } from "./exportRows";
+import type { QueryInfo } from "./queryInfo";
 import { useCommitDelete } from "./useCommitDelete";
 
 type DeleteConfirmState = {
@@ -14,19 +14,19 @@ type DeleteConfirmState = {
 export function useRowActions({
   data,
   query,
-  ast,
+  queryInfo,
   nodeId,
   selected,
   closeCellMenu,
 }: {
   data: DatabaseResult;
   query: string;
-  ast: AST;
+  queryInfo: QueryInfo | null;
   nodeId: string;
   selected: ReadonlySet<number>;
   closeCellMenu: () => void;
 }) {
-  const commitDelete = useCommitDelete({ data, ast, nodeId });
+  const commitDelete = useCommitDelete({ data, queryInfo, nodeId });
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmState | null>(null);
 
   const baseExportName = useMemo(() => {

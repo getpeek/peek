@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from "react";
 import { useAtomValue } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
-import type { AST } from "node-sql-parser";
 import { schemaAtom } from "../../../state";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { ids } from "../../ids";
 import { edgesAtom, nodesAtom } from "../../state";
 import type { AppNode, ErrorData, QueryErrorNode } from "../../types";
+import type { QueryInfo } from "./queryInfo";
 import {
   buildDeleteSql,
   buildPkAssignments,
@@ -27,11 +27,11 @@ export type DeletePreflight =
 
 export function useCommitDelete({
   data,
-  ast,
+  queryInfo,
   nodeId,
 }: {
   data: DatabaseResult;
-  ast: AST;
+  queryInfo: QueryInfo | null;
   nodeId: string;
 }) {
   const schema = useAtomValue(schemaAtom);
@@ -39,7 +39,7 @@ export function useCommitDelete({
   const nodes = useAtomValue(nodesAtom);
   const edges = useAtomValue(edgesAtom);
   const executeQueries = useExecuteQueries();
-  const editableTable = useMemo(() => getEditableTableName(ast), [ast]);
+  const editableTable = useMemo(() => getEditableTableName(queryInfo), [queryInfo]);
 
   const sourceQueryNode = useMemo<AppNode | null>(() => {
     const edge = edges.find(

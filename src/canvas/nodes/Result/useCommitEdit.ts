@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
-import type { AST } from "node-sql-parser";
 import { schemaAtom, type DatabaseResult } from "../../../state";
 import { useCanvas } from "../../hooks/useCanvas";
 import { resultsAtom } from "../../state";
 import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
 import { substituteVariables } from "../../variables";
+import type { QueryInfo } from "./queryInfo";
 import {
   buildPkAssignments,
   buildUpdateSql,
@@ -27,20 +27,20 @@ export function useCommitEdit({
   setEditing,
   data,
   query,
-  ast,
+  queryInfo,
   nodeId,
 }: {
   editing: EditingState | null;
   setEditing: React.Dispatch<React.SetStateAction<EditingState | null>>;
   data: DatabaseResult;
   query: string;
-  ast: AST;
+  queryInfo: QueryInfo | null;
   nodeId: string;
 }) {
   const schema = useAtomValue(schemaAtom);
   const canvas = useCanvas();
   const setResults = useSetAtom(resultsAtom);
-  const editableTable = useMemo(() => getEditableTableName(ast), [ast]);
+  const editableTable = useMemo(() => getEditableTableName(queryInfo), [queryInfo]);
   const vars = useGetVariablesForNode(nodeId);
 
   return useCallback(async () => {

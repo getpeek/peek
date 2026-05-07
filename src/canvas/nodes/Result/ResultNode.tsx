@@ -11,6 +11,7 @@ import {
 import { useAtomValue } from "jotai";
 import { useRef } from "react";
 import { exportRows } from "./exportRows";
+import { useQueryInfo } from "./queryInfo";
 import { ResultTable } from "./ResultTable";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useCreateChart } from "./useCreateChart";
@@ -42,6 +43,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
   const createChart = useCreateChart();
   const results = useAtomValue(resultsAtom);
   const rows = results[id] ?? [];
+  const queryInfo = useQueryInfo(data.query);
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -171,7 +173,11 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
           <div className='meta'>
             <span className='ok'>●</span>
             <span>{rows.length} rows</span>
-            {queryName && <span>{queryName.slice(0, 20)}...</span>}
+            {queryInfo?.tables.map(t => (
+              <span key={`${t.name}-${t.alias ?? ""}`} className='table-badge'>
+                {t.name}
+              </span>
+            ))}
           </div>
           <div className='actions'>
             {canChart && (
@@ -222,6 +228,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
             nodeId={id}
             data={rows}
             query={data.query}
+            queryInfo={queryInfo}
             columnWidths={data.columnWidths}
           />
         </div>

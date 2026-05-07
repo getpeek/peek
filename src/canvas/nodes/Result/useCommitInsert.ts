@@ -1,7 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useSetAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
-import type { AST } from "node-sql-parser";
 import type { DatabaseResult } from "../../../state";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
@@ -9,6 +8,7 @@ import { ids } from "../../ids";
 import { resultsAtom } from "../../state";
 import type { ErrorData, QueryErrorNode } from "../../types";
 import { substituteVariables } from "../../variables";
+import type { QueryInfo } from "./queryInfo";
 import {
   buildInsertSql,
   formatSqlLiteral,
@@ -32,20 +32,20 @@ export function useCommitInsert({
   inserting,
   setInserting,
   query,
-  ast,
+  queryInfo,
   nodeId,
   columnTypes,
 }: {
   inserting: InsertingState | null;
   setInserting: React.Dispatch<React.SetStateAction<InsertingState | null>>;
   query: string;
-  ast: AST;
+  queryInfo: QueryInfo | null;
   nodeId: string;
   columnTypes: Record<string, string>;
 }) {
   const canvas = useCanvas();
   const setResults = useSetAtom(resultsAtom);
-  const editableTable = useMemo(() => getEditableTableName(ast), [ast]);
+  const editableTable = useMemo(() => getEditableTableName(queryInfo), [queryInfo]);
   const vars = useGetVariablesForNode(nodeId);
 
   return useCallback(async () => {

@@ -61,7 +61,7 @@ export function AiPromptNode({ id, data, selected, width, height }: NodeProps<Ai
 Here is the database schema. It contains all tables and their columns as well as a list of references between foreign keys for different tables.
 ${JSON.stringify(schema)}.
 
-Respond ONLY with the sql in text format, no backticks, markdown, formatting, comments or anything else. Just the sql query as plain text.`,
+Respond ONLY with the sql in text format, no backticks, markdown, formatting, comments or anything else. Just the sql query as plain text. Write readable SQL with proper aliases.`,
           timestamp: Date.now(),
         },
         { type: "user", message: prompt, timestamp: Date.now() },

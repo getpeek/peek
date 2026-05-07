@@ -1,21 +1,17 @@
-import { AST } from "node-sql-parser";
+import type { QueryInfo } from "../../../canvas/nodes/Result/queryInfo";
 
 export type CellReference = { table: string; column: string };
 
 export function getInboundReferences(
-  ast: AST,
+  info: QueryInfo | null,
   schema: Record<string, string[]>,
   column: string,
 ): CellReference[] {
-  if (ast.type !== "select") {
+  if (!info || info.statementType !== "select") {
     return [];
   }
 
-  if (!Array.isArray(ast.from) || !ast.from) {
-    return [];
-  }
-
-  const tables = ast.from.filter(from => "table" in from).map(from => from.table);
+  const tables = info.tables.map(t => t.name);
 
   return tables.flatMap(table => {
     return (schema[`${table}.${column}`] ?? []).map(ref => {
@@ -26,20 +22,15 @@ export function getInboundReferences(
 }
 
 export function getOutboundReferences(
-  ast: AST,
+  info: QueryInfo | null,
   schema: Record<string, string[]>,
   column: string,
 ): CellReference[] {
-  if (ast.type !== "select") {
+  if (!info || info.statementType !== "select") {
     return [];
   }
 
-  if (!Array.isArray(ast.from) || !ast.from) {
-    return [];
-  }
-
-  const tables = ast.from.filter(from => "table" in from).map(from => from.table);
-
+  const tables = info.tables.map(t => t.name);
   const currentTableColumn = tables.map(table => `${table}.${column}`);
 
   return Object.entries(schema).flatMap(([key, refs]) => {

@@ -152,6 +152,7 @@ pub fn run() {
             lsp_commands::lsp_completion,
             lsp_commands::lsp_set_schema_cache,
             lsp_commands::lsp_clear_schema_cache,
+            lsp_commands::get_query_info,
             multiplayer_commands::mp_host_session,
             multiplayer_commands::mp_join_session,
             multiplayer_commands::mp_end_session,
