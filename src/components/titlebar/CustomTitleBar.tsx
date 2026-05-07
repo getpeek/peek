@@ -31,7 +31,7 @@ export const CustomTitleBar = () => {
   return (
     <div className='custom-titlebar'>
       <div className='titlebar-content' data-tauri-drag-region>
-        <div className='titlebar-left'>
+        <div className='titlebar-left' data-tauri-drag-region>
           <div className='window-controls'>
             <button
               className='control-button close-button'
