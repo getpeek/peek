@@ -6,6 +6,7 @@ import { sessionStateAtom } from "../../multiplayer/state";
 import { requestRemoteExecution } from "../../multiplayer/syncBridge";
 import type { CommandPaletteResult } from ".";
 import type { QueryNode } from "../../canvas/types";
+import { RerunQueriesDetails } from "../details/RerunQueriesDetails";
 
 export const useRerunSelectedQueriesCommand = (): CommandPaletteResult => {
   const canvas = useAtomValue(canvasApiAtom);
@@ -15,6 +16,7 @@ export const useRerunSelectedQueriesCommand = (): CommandPaletteResult => {
   return {
     icon: <IconPlayerPlay size={16} />,
     label: "Rerun selected queries",
+    details: <RerunQueriesDetails scope='selected' />,
     onSelect: async () => {
       if (!canvas) {
         return;

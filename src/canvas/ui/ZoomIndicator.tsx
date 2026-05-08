@@ -18,7 +18,10 @@ export function ZoomIndicator() {
         <button onClick={() => rf.zoomIn({ duration: 150 })} title='Zoom in'>
           <IconPlus size={14} />
         </button>
-        <button onClick={() => rf.fitView({ duration: 250, padding: 0.15 })} title='Fit view'>
+        <button
+          onClick={() => rf.fitView({ duration: 250, padding: 0.15, maxZoom: 1 })}
+          title='Fit view'
+        >
           <IconMaximize size={14} />
         </button>
       </div>

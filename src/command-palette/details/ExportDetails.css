@@ -1,0 +1,143 @@
+.details-export {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
+
+  .details-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+
+    .details-title {
+      margin-bottom: 0;
+    }
+  }
+
+  .details-export-glyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 50%);
+    background: var(--pk-node-bg-2);
+    color: var(--pk-fg-muted);
+    flex-shrink: 0;
+  }
+
+  .details-export-list {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+  }
+
+  .details-export-card {
+    border: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 50%);
+    border-radius: var(--pk-radius-card);
+    background: color-mix(in oklab, var(--pk-node-bg-2), transparent 30%);
+    overflow: hidden;
+  }
+
+  .details-export-card-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 60%);
+
+    .details-export-card-title {
+      font: 400 11px var(--pk-font-mono);
+      color: var(--pk-fg);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .details-export-card-meta {
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--pk-fg-subtle);
+      flex-shrink: 0;
+    }
+  }
+
+  .details-export-card-footer {
+    padding: 6px 12px;
+    border-top: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 60%);
+    font-size: 11px;
+    color: var(--pk-fg-subtle);
+    text-align: center;
+  }
+
+  .details-export-table-wrap {
+    overflow-x: auto;
+  }
+
+  .details-export-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: var(--pk-font-mono);
+    font-size: 11px;
+
+    thead th {
+      position: sticky;
+      top: 0;
+      padding: 6px 10px;
+      background: var(--pk-node-bg);
+      color: var(--pk-fg-muted);
+      font-weight: 500;
+      text-align: left;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 50%);
+      white-space: nowrap;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    tbody td {
+      padding: 5px 10px;
+      color: var(--pk-fg);
+      border-bottom: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 70%);
+      white-space: nowrap;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .details-export-overflow {
+      color: var(--pk-fg-subtle);
+      width: 28px;
+      text-align: center;
+    }
+  }
+
+  .details-export-empty {
+    padding: 14px 12px;
+    font-size: 11px;
+    color: var(--pk-fg-subtle);
+    text-align: center;
+  }
+
+  .details-export-more {
+    font-size: 11px;
+    color: var(--pk-fg-subtle);
+    text-align: center;
+    padding: 4px 0;
+  }
+}

@@ -10,6 +10,7 @@ import { canvasApiAtom, resultsAtom } from "../../canvas/state";
 import type { CommandPaletteResult } from ".";
 import type { ResultNode } from "../../canvas/types";
 import { configAtom } from "../../state";
+import { ExportDetails } from "../details/ExportDetails";
 
 export const useExportSelectedDataJsonCommand = (): CommandPaletteResult => {
   const canvas = useAtomValue(canvasApiAtom);
@@ -19,6 +20,7 @@ export const useExportSelectedDataJsonCommand = (): CommandPaletteResult => {
   return {
     icon: <IconTableExport size={16} />,
     label: "Export selected data (JSON)",
+    details: <ExportDetails format='json' />,
     onSelect: async () => {
       if (!canvas) {
         return;

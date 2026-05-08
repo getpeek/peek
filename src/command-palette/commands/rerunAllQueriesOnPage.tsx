@@ -6,7 +6,7 @@ import { sessionStateAtom } from "../../multiplayer/state";
 import { requestRemoteExecution } from "../../multiplayer/syncBridge";
 import type { CommandPaletteResult } from ".";
 import type { QueryNode } from "../../canvas/types";
-import { ReRunAllCommandsDetails } from "../details/ReRunAllCommandsDescription";
+import { RerunQueriesDetails } from "../details/RerunQueriesDetails";
 
 export const useRerunAllQueriesOnPageCommand = (): CommandPaletteResult => {
   const canvas = useAtomValue(canvasApiAtom);
@@ -36,6 +36,6 @@ export const useRerunAllQueriesOnPageCommand = (): CommandPaletteResult => {
         });
       }
     },
-    details: <ReRunAllCommandsDetails />,
+    details: <RerunQueriesDetails scope='all' />,
   };
 };

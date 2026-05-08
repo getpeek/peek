@@ -1,6 +1,7 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import { activeConnectionAtom, workspacesAtom } from "../../Connection/state";
 import { CommandPaletteResult } from ".";
+import { ConnectionDetails } from "../details/ConnectionDetails";
 
 export const useGetConnectionCommands = (): CommandPaletteResult[] => {
   const workspaces = useAtomValue(workspacesAtom);
@@ -13,24 +14,22 @@ export const useGetConnectionCommands = (): CommandPaletteResult[] => {
         connection,
       })),
     )
-    .map(workspace => ({
+    .map(({ workspaceName, connection }) => ({
       icon: (
         <div
           className='connection-color-dot'
           style={{
-            background: workspace.connection.color,
-            boxShadow: `0 0 8px 1px ${workspace.connection.color}`,
+            background: connection.color,
+            boxShadow: `0 0 8px 1px ${connection.color}`,
           }}
         />
       ),
-      label: workspace.connection.name,
-      description: workspace.workspaceName,
-      searchAgainst: "connection",
+      label: connection.name,
+      description: workspaceName,
+      searchAgainst: `connection ${connection.name} ${workspaceName}`,
+      details: <ConnectionDetails workspaceName={workspaceName} connection={connection} />,
       onSelect() {
-        setActiveConnection({
-          workspaceName: workspace.workspaceName,
-          connection: workspace.connection,
-        });
+        setActiveConnection({ workspaceName, connection });
       },
     }));
 };
