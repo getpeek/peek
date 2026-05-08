@@ -27,9 +27,11 @@ export function extractVariableRefs(query: string): string[] {
   return Array.from(seen);
 }
 
+export type VariableValue = string | string[];
+
 export function substituteVariables(
   query: string,
-  vars: Record<string, string>,
+  vars: Record<string, VariableValue>,
 ): { resolved: string; missing: string[] } {
   const sites = scanVariableSites(query);
   const missingSet = new Set<string>();
@@ -38,7 +40,8 @@ export function substituteVariables(
   for (const site of sites) {
     out += query.slice(cursor, site.start);
     if (Object.prototype.hasOwnProperty.call(vars, site.name)) {
-      out += vars[site.name];
+      const value = vars[site.name];
+      out += Array.isArray(value) ? value.join(", ") : value;
     } else {
       missingSet.add(site.name);
       out += query.slice(site.start, site.end);
@@ -53,13 +56,13 @@ export function collectVariablesFromGraph(
   nodes: AppNode[],
   edges: AppEdge[],
   targetId: string,
-): Record<string, string> {
+): Record<string, VariableValue> {
   const incoming = edges
     .filter(e => e.target === targetId)
     .slice()
     .toSorted((a, b) => a.id.localeCompare(b.id));
 
-  const merged: Record<string, string> = {};
+  const merged: Record<string, VariableValue> = {};
   for (const edge of incoming) {
     const source = nodes.find(n => n.id === edge.source);
     if (!source || source.type !== "variable") {
@@ -78,7 +81,7 @@ export function collectVariablesFromGraph(
 export function collectVariablesFor(
   canvas: CanvasApi,
   queryNodeId: string,
-): Record<string, string> {
+): Record<string, VariableValue> {
   return collectVariablesFromGraph(canvas.getNodes(), canvas.getEdges(), queryNodeId);
 }
 

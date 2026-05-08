@@ -18,6 +18,7 @@ import { ResultHeaderMenu, type HeaderMenuState } from "./ResultHeaderMenu";
 import { ResultTableHeader } from "./ResultTableHeader";
 import { ResultTableRow } from "./ResultTableRow";
 import { useCellContextMenu } from "./useCellContextMenu";
+import { useColumnAsVariable } from "./useColumnAsVariable";
 import { useColumnWidths } from "./useColumnWidths";
 import { useCommitEdit, type EditingState } from "./useCommitEdit";
 import { useCommitInsert, type InsertingState } from "./useCommitInsert";
@@ -121,6 +122,8 @@ export function ResultTable({
     },
     [data],
   );
+
+  const spawnVariableFromColumn = useColumnAsVariable({ nodeId, data, headerTypes });
 
   const onContainerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (rowSelection.count === 0) {
@@ -251,6 +254,7 @@ export function ResultTable({
         state={headerMenu}
         onClose={closeHeaderMenu}
         onExportColumn={exportColumn}
+        onUseAsVariable={spawnVariableFromColumn}
       />
 
       <CellContextMenu

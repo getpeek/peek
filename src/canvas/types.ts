@@ -57,7 +57,7 @@ export type TextData = {
   text: string;
 };
 
-export type VariableRow = { name: string; value: string };
+export type VariableRow = { name: string; value: string | string[] };
 
 export type VariableData = {
   rows: VariableRow[];

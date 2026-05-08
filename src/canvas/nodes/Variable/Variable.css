@@ -18,7 +18,7 @@
   width: auto;
 }
 .variable-col-actions {
-  width: 28px;
+  width: 56px;
 }
 
 .app-node .variable-table tbody td {
@@ -73,32 +73,108 @@
 .variable-actions-cell {
   text-align: right;
   padding-right: 6px !important;
+  white-space: nowrap;
 }
 
-.variable-row-delete {
+.variable-row-delete,
+.variable-row-toggle {
   background: transparent;
   border: 0;
   color: var(--pk-fg-subtle);
   width: 22px;
   height: 22px;
   border-radius: 4px;
-  display: grid;
+  display: inline-grid;
   place-items: center;
   cursor: pointer;
   opacity: 0;
+  vertical-align: middle;
   transition:
     opacity 0.1s,
     background 0.1s,
     color 0.1s;
 }
 
-.variable-table tbody tr:hover .variable-row-delete {
+.variable-row-toggle.active {
+  opacity: 1;
+  color: var(--pk-accent);
+}
+
+.variable-table tbody tr:hover .variable-row-delete,
+.variable-table tbody tr:hover .variable-row-toggle {
   opacity: 1;
 }
 
 .variable-row-delete:hover {
   background: var(--pk-node-bg-2);
   color: var(--pk-red);
+}
+
+.variable-row-toggle:hover {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+}
+
+.variable-row-toggle.active:hover {
+  color: var(--pk-accent);
+}
+
+.variable-array-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--pk-accent-bg);
+  color: var(--pk-accent);
+  border: 1px solid var(--pk-accent-bg);
+  border-radius: 999px;
+  padding: 2px 10px;
+  margin: 4px 6px;
+  font: 500 11px var(--pk-font-mono);
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    border-color 0.1s,
+    color 0.1s;
+}
+
+.variable-array-chip:hover {
+  border-color: var(--pk-accent-soft);
+}
+
+.variable-array-chip.empty {
+  color: var(--pk-fg-subtle);
+  background: var(--pk-node-bg-2);
+  border-color: var(--pk-node-border);
+}
+
+.variable-array-dropdown {
+  padding: 6px !important;
+  background: var(--pk-node-bg) !important;
+  border: 1px solid var(--pk-node-border) !important;
+}
+
+.variable-array-textarea {
+  display: block;
+  width: 240px;
+  min-width: 180px;
+  height: 200px;
+  resize: both;
+  background: var(--pk-node-bg-2);
+  border: 1px solid var(--pk-node-border);
+  border-radius: 4px;
+  outline: none;
+  color: var(--pk-fg);
+  font: 400 12px var(--pk-font-mono);
+  padding: 6px 8px;
+  line-height: 1.5;
+}
+
+.variable-array-textarea:focus {
+  border-color: var(--pk-accent-soft);
+}
+
+.variable-array-textarea::placeholder {
+  color: var(--pk-fg-subtle);
 }
 
 .type-variable .type-dot {

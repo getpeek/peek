@@ -1,5 +1,5 @@
 import { Handle, NodeProps, NodeResizer, Position } from "@xyflow/react";
-import { IconPlus, IconTrash, IconWorld } from "@tabler/icons-react";
+import { IconBrackets, IconPlus, IconTrash, IconWorld } from "@tabler/icons-react";
 import { useMemo, useRef } from "react";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
@@ -7,6 +7,7 @@ import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
 import { VARIABLE_NAME_RE } from "../../variables";
 import type { VariableNode as VariableNodeT, VariableRow } from "../../types";
+import { VariableArrayEditor } from "./VariableArrayEditor";
 import "./Variable.css";
 
 const DEFAULT_W = 280;
@@ -23,8 +24,26 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
     canvas.updateNodeData<VariableNodeT["data"]>(id, { rows: next });
   };
 
-  const setField = (index: number, field: "name" | "value", next: string) => {
-    const rows = data.rows.map((r, i) => (i === index ? { ...r, [field]: next } : r));
+  const setName = (index: number, next: string) => {
+    const rows = data.rows.map((r, i) => (i === index ? { ...r, name: next } : r));
+    updateRows(rows);
+  };
+
+  const setValue = (index: number, next: string | string[]) => {
+    const rows = data.rows.map((r, i) => (i === index ? { ...r, value: next } : r));
+    updateRows(rows);
+  };
+
+  const toggleArrayMode = (index: number) => {
+    const rows = data.rows.map((r, i) => {
+      if (i !== index) {
+        return r;
+      }
+      if (Array.isArray(r.value)) {
+        return { ...r, value: r.value.join("\n") };
+      }
+      return { ...r, value: r.value === "" ? [] : r.value.split("\n") };
+    });
     updateRows(rows);
   };
 
@@ -96,6 +115,7 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
                 const nameInvalid =
                   row.name.length > 0 &&
                   (!VARIABLE_NAME_RE.test(row.name) || nameCounts[row.name] > 1);
+                const isArray = Array.isArray(row.value);
                 return (
                   <tr key={i}>
                     <td className='variable-name-cell'>
@@ -108,22 +128,37 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
                           placeholder='name'
                           autoComplete='off'
                           spellCheck={false}
-                          onChange={e => setField(i, "name", e.currentTarget.value)}
+                          onChange={e => setName(i, e.currentTarget.value)}
                         />
                       </div>
                     </td>
                     <td className='variable-value-cell'>
-                      <input
-                        type='text'
-                        className='variable-input'
-                        value={row.value}
-                        placeholder='value'
-                        autoComplete='off'
-                        spellCheck={false}
-                        onChange={e => setField(i, "value", e.currentTarget.value)}
-                      />
+                      {isArray ? (
+                        <VariableArrayEditor
+                          value={row.value as string[]}
+                          onChange={next => setValue(i, next)}
+                        />
+                      ) : (
+                        <input
+                          type='text'
+                          className='variable-input'
+                          value={row.value as string}
+                          placeholder='value'
+                          autoComplete='off'
+                          spellCheck={false}
+                          onChange={e => setValue(i, e.currentTarget.value)}
+                        />
+                      )}
                     </td>
                     <td className='variable-actions-cell'>
+                      <button
+                        type='button'
+                        className={`variable-row-toggle ${isArray ? "active" : ""}`}
+                        onClick={() => toggleArrayMode(i)}
+                        title={isArray ? "Convert to single value" : "Convert to array"}
+                      >
+                        <IconBrackets size={12} />
+                      </button>
                       <button
                         type='button'
                         className='variable-row-delete'

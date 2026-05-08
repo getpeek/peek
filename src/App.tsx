@@ -5,7 +5,7 @@ import { CustomTitleBar } from "./components/titlebar/CustomTitleBar";
 import { CommandPalette } from "./command-palette/CommandPalette";
 import { DropZone } from "./drop-zone/DropZone";
 import { useGetConfig } from "./app/useGetConfig";
-import { useApplyTheme } from "./app/useApplyTheme";
+import { ThemeStylesheet } from "./app/ThemeStylesheet";
 import { ClosePageConfirmModal } from "./canvas/ClosePageConfirmModal";
 import { ReactFlowCanvas } from "./canvas/ReactFlowCanvas";
 import { useAutoSaveDocument } from "./canvas/hooks/useAutoSaveDocument";
@@ -25,7 +25,6 @@ const theme = createTheme({});
 
 function App() {
   useGetConfig();
-  useApplyTheme();
   useAutoSaveDocument();
   useAutoSaveResults();
   useLoadDocument();
@@ -37,6 +36,7 @@ function App() {
 
   return (
     <MantineProvider theme={theme} forceColorScheme={colorScheme}>
+      <ThemeStylesheet />
       <CustomTitleBar />
       <DropZone />
       <MonacoManager />

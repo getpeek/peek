@@ -1,0 +1,26 @@
+/* Mirrored from each theme's per-theme CSS file because only the active theme's
+   tokens are loaded at :root, but the command palette previews all three. */
+
+.pk-theme-pine {
+  --pk-swatch-bg: oklch(14.7% 0.028 278.7);
+  --pk-swatch-node-bg: oklch(20.2% 0.04 280);
+  --pk-swatch-border: oklch(30.9% 0.052 278.4);
+  --pk-swatch-fg: oklch(92.5% 0.023 291.4);
+  --pk-swatch-accent: oklch(65.2% 0.208 294.4);
+}
+
+.pk-theme-midnight {
+  --pk-swatch-bg: oklch(16.3% 0.011 294.4);
+  --pk-swatch-node-bg: oklch(19.7% 0.016 296.4);
+  --pk-swatch-border: oklch(28.1% 0.022 296.4);
+  --pk-swatch-fg: oklch(92.7% 0.015 298.6);
+  --pk-swatch-accent: oklch(58.7% 0.205 301);
+}
+
+.pk-theme-midday {
+  --pk-swatch-bg: oklch(97.6% 0.008 293.9);
+  --pk-swatch-node-bg: oklch(100% 0 0);
+  --pk-swatch-border: oklch(87.4% 0.021 295.1);
+  --pk-swatch-fg: oklch(21.6% 0.02 293.9);
+  --pk-swatch-accent: oklch(49.6% 0.195 293.1);
+}

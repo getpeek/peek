@@ -57,6 +57,16 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
     return registerEditorFocus(id, () => editorRef.current?.focus());
   }, [id, editorReady]);
 
+  useEffect(() => {
+    if (selected || !editorRef.current?.hasTextFocus()) {
+      return;
+    }
+    const textarea = editorRef.current.getDomNode()?.querySelector("textarea");
+    if (textarea instanceof HTMLElement) {
+      textarea.blur();
+    }
+  }, [selected]);
+
   const runQuery = () => {
     const node = canvas.getNode(id);
     if (!node || node.type !== "query") {

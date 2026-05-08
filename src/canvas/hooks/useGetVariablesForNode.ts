@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
 import { edgesAtom, nodesAtom } from "../state";
-import { collectVariablesFromGraph } from "../variables";
+import { collectVariablesFromGraph, type VariableValue } from "../variables";
 
 // Two scopes are exposed:
 //
@@ -12,8 +12,8 @@ import { collectVariablesFromGraph } from "../variables";
 //     (one hop). Use this when re-running the node's underlying query, since
 //     that query was originally authored against the broader scope.
 export function useGetVariablesForNode(nodeId: string): {
-  direct: Record<string, string>;
-  inherited: Record<string, string>;
+  direct: Record<string, VariableValue>;
+  inherited: Record<string, VariableValue>;
 } {
   const nodes = useAtomValue(nodesAtom);
   const edges = useAtomValue(edgesAtom);

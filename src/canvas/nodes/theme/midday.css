@@ -1,0 +1,40 @@
+:root {
+  --pk-bg: oklch(97.6% 0.008 293.9);
+  --pk-bg-grid: oklch(78% 0.8 293.7);
+  --pk-node-bg: oklch(100% 0 0);
+  --pk-node-bg-2: oklch(95.3% 0.012 296.3);
+  --pk-node-border: oklch(87.4% 0.021 295.1);
+  --pk-node-border-strong: oklch(75.8% 0.033 293.6);
+  --pk-node-shadow: 0 4px 12px oklch(19% 0.049 290.1 / 0.08), 0 1px 0 oklch(100% 0 0 / 0.6) inset;
+
+  --pk-fg: oklch(21.6% 0.02 293.9);
+  --pk-fg-muted: oklch(47.8% 0.027 296.1);
+  --pk-fg-subtle: oklch(68.7% 0.03 297.1);
+
+  --pk-accent: oklch(49.6% 0.195 293.1);
+  --pk-accent-soft: oklch(38.6% 0.161 292.1);
+  --pk-accent-bg: oklch(49.6% 0.195 293.1 / 0.1);
+  --pk-accent-line: oklch(49.6% 0.195 293.1 / 0.4);
+  --pk-row-selected-bg: oklch(49.6% 0.195 293.1 / 0.14);
+  --pk-row-selected-bg-hover: oklch(49.6% 0.195 293.1 / 0.22);
+
+  --pk-green: oklch(56.4% 0.127 150.9);
+  --pk-green-soft: oklch(56.4% 0.127 150.9 / 0.14);
+  --pk-yellow: oklch(64.4% 0.134 79.3);
+  --pk-yellow-soft: oklch(64.4% 0.134 79.3 / 0.14);
+  --pk-blue: oklch(50% 0.173 267.3);
+  --pk-blue-soft: oklch(50% 0.173 267.3 / 0.14);
+  --pk-red: oklch(54.9% 0.179 22.5);
+  --pk-red-soft: oklch(54.9% 0.179 22.5 / 0.14);
+
+  --pk-type-query: oklch(49.6% 0.195 293.1);
+  --pk-type-ai: oklch(50% 0.173 267.3);
+  --pk-type-result: oklch(56.4% 0.127 150.9);
+  --pk-type-chart: oklch(64.4% 0.134 79.3);
+  --pk-type-chat: oklch(49.6% 0.195 293.1);
+  --pk-type-error: oklch(54.9% 0.179 22.5);
+
+  --pk-canvas-bg:
+    linear-gradient(180deg, oklch(98.4% 0.005 297.7) 0%, oklch(94.3% 0.011 291.9) 100%),
+    oklch(97% 0.008 293.9);
+}

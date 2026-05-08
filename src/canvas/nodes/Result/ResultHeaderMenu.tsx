@@ -1,5 +1,5 @@
 import { Menu } from "@mantine/core";
-import { IconFileTypeCsv, IconJson } from "@tabler/icons-react";
+import { IconAt, IconFileTypeCsv, IconJson } from "@tabler/icons-react";
 import { PortalAnchor } from "./PortalAnchor";
 
 export type HeaderMenuState = {
@@ -13,18 +13,25 @@ export function ResultHeaderMenu({
   state,
   onClose,
   onExportColumn,
+  onUseAsVariable,
 }: {
   state: HeaderMenuState | null;
   onClose: () => void;
   onExportColumn: (columnIdx: number, header: string, format: "csv" | "json") => void;
+  onUseAsVariable: (columnIdx: number, header: string) => void;
 }) {
   if (!state) {
     return null;
   }
-  const run = (format: "csv" | "json") => {
+  const exportColumn = (format: "csv" | "json") => {
     const { columnIdx, header } = state;
     onClose();
     onExportColumn(columnIdx, header, format);
+  };
+  const useAsVariable = () => {
+    const { columnIdx, header } = state;
+    onClose();
+    onUseAsVariable(columnIdx, header);
   };
   return (
     <Menu
@@ -47,10 +54,13 @@ export function ResultHeaderMenu({
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Label>{state.header}</Menu.Label>
-        <Menu.Item leftSection={<IconFileTypeCsv size={14} />} onClick={() => run("csv")}>
+        <Menu.Item leftSection={<IconAt size={14} />} onClick={useAsVariable}>
+          Use as variable
+        </Menu.Item>
+        <Menu.Item leftSection={<IconFileTypeCsv size={14} />} onClick={() => exportColumn("csv")}>
           Export column as CSV
         </Menu.Item>
-        <Menu.Item leftSection={<IconJson size={14} />} onClick={() => run("json")}>
+        <Menu.Item leftSection={<IconJson size={14} />} onClick={() => exportColumn("json")}>
           Export column as JSON
         </Menu.Item>
       </Menu.Dropdown>
