@@ -73,7 +73,7 @@ export const useHotkey = (keys: Hotkey, callback: (event: KeyboardEvent) => void
     const input = keys.split("-");
     const unit = input.find(key => key.length === 1);
 
-    if (isTextInputFocused()) {
+    if (!input.includes("escape") && isTextInputFocused()) {
       return;
     }
 
