@@ -30,7 +30,6 @@ import { TextNode } from "./nodes/Text/TextNode";
 import { VariableNode } from "./nodes/Variable/VariableNode";
 import { Toolbar } from "./ui/Toolbar";
 import { ZoomIndicator } from "./ui/ZoomIndicator";
-import { KeyboardShortcuts } from "./ui/KeyboardShortcuts";
 import { RemoteCursorsLayer } from "../multiplayer/RemoteCursorsLayer";
 import { useCursorBroadcast } from "../multiplayer/useCursorBroadcast";
 import type { AppEdge, AppNode } from "./types";
@@ -45,6 +44,7 @@ import { useVariableDragHighlight } from "./hooks/useVariableDragHighlight";
 import { getStroke } from "perfect-freehand";
 import { FloatingEdge } from "./edges/FloatingEdge";
 import "./nodes/node.css";
+import { PeekKeyboardShortcuts } from "./ui/KeyboardShortcuts";
 
 const nodeTypes = {
   query: QueryNode,
@@ -254,7 +254,7 @@ function ReactFlowCanvasInner() {
       )}
       <LassoOverlay />
       <CanvasApiPublisher />
-      <KeyboardShortcuts />
+      <PeekKeyboardShortcuts />
     </>
   );
 }

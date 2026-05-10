@@ -9,6 +9,8 @@ export interface PageActions {
   newPage: (name?: string) => string | undefined;
   closePage: (pageId: string) => void;
   closeActivePage: () => void;
+  nextQueryNodeOnPage: () => void;
+  previousQueryNodeOnPage: () => void;
   switchPage: (pageId: string) => void;
   goToPageByIndex: (index: number) => void;
   nextPage: () => void;
@@ -52,6 +54,31 @@ export function usePageActions(): PageActions {
     setPendingClose({ pageId });
   };
 
+  const cycleActiveQueryNode = (direction: 1 | -1) => {
+    if (!canvas) {
+      return;
+    }
+
+    const queries = canvas
+      .getNodes()
+      .filter(n => n.type === "query")
+      .slice()
+      .toSorted((a, b) => a.position.x - b.position.x);
+    if (queries.length === 0) {
+      return;
+    }
+
+    const selected = canvas.getSelectedNodes()[0];
+    let idx = -1;
+    if (selected && selected.type === "query") {
+      idx = queries.findIndex(n => n.id === selected.id);
+    }
+    const nextIdx = (idx + direction + queries.length) % queries.length;
+    const target = queries[nextIdx];
+    canvas.selectOnly(target.id);
+    canvas.panToNode(target.id, { zoom: 1, duration: 300 });
+  };
+
   return {
     pages,
     activePageId: doc.activePageId,
@@ -60,6 +87,12 @@ export function usePageActions(): PageActions {
     closePage: requestClose,
     closeActivePage: () => requestClose(doc.activePageId),
     switchPage: pageId => canvas?.switchPage(pageId),
+    nextQueryNodeOnPage: () => {
+      cycleActiveQueryNode(1);
+    },
+    previousQueryNodeOnPage: () => {
+      cycleActiveQueryNode(-1);
+    },
     goToPageByIndex: index => {
       if (!canvas) {
         return;

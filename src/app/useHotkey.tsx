@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { isTextInputFocused } from "../canvas/ui/KeyboardShortcuts";
 
 type Units =
   | "a"
@@ -48,6 +49,8 @@ type Units =
   | "/"
   | "("
   | ")"
+  | "["
+  | "]"
   | "?"
   | "+";
 
@@ -65,18 +68,12 @@ export type Hotkey =
   | `${HotkeyModifiers}-${Units}`
   | `${HotkeyModifiers}-${HotkeyModifiers}-${Units}`;
 
-export const useHotkey = (keys: Hotkey, callback: () => void) => {
+export const useHotkey = (keys: Hotkey, callback: (event: KeyboardEvent) => void) => {
   const onKeyDown = (event: KeyboardEvent) => {
     const input = keys.split("-");
     const unit = input.find(key => key.length === 1);
 
-    const activeElement = document.activeElement;
-    if (
-      (activeElement instanceof HTMLInputElement ||
-        activeElement instanceof HTMLSelectElement ||
-        activeElement instanceof HTMLTextAreaElement) &&
-      !["escape", "return", "enter"].includes(event.key.toLowerCase())
-    ) {
+    if (isTextInputFocused()) {
       return;
     }
 
@@ -100,7 +97,9 @@ export const useHotkey = (keys: Hotkey, callback: () => void) => {
       return;
     }
 
-    callback();
+    event.preventDefault();
+
+    callback(event);
   };
 
   useEffect(() => {
