@@ -63,6 +63,14 @@ export const usePeekHotkeys = () => {
     canvas.getSelectedNodes().forEach(node => canvas.deleteNode(node.id));
   });
 
+  useHotkey("meta-0", () => {
+    canvas.resetZoom();
+  });
+
+  useHotkey("meta-shift-0", () => {
+    canvas.fitView();
+  });
+
   useHotkey("meta-t", () => {
     pageActions.newPage();
   });

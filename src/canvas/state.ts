@@ -185,7 +185,7 @@ export interface CanvasApi {
   zoomToNode: (id: string, opts?: { duration?: number }) => void;
   zoomToNodes: (ids: string[], opts?: { duration?: number; padding?: number }) => void;
   panToNode: (id: string, opts?: { duration?: number; zoom?: number }) => void;
-  fitView: (opts?: { duration?: number }) => void;
+  fitView: (opts?: { duration?: number; maxZoom?: number }) => void;
   resetZoom: () => void;
   getZoom: () => number;
   screenToFlowPosition: (p: { x: number; y: number }) => {

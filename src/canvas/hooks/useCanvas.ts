@@ -176,7 +176,8 @@ export function useCanvas(): CanvasApi {
         }
       },
 
-      fitView: (opts = {}) => rf.fitView({ duration: opts.duration ?? 300, maxZoom: 1 }),
+      fitView: (opts = {}) =>
+        rf.fitView({ duration: opts.duration ?? 300, maxZoom: opts.maxZoom ?? 1 }),
 
       resetZoom: () => rf.zoomTo(1, { duration: 200 }),
       getZoom: () => rf.getZoom(),
