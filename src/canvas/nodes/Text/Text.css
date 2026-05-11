@@ -9,7 +9,7 @@
   color: var(--pk-fg);
   font-family: var(--pk-font-playful);
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.5;
   letter-spacing: -0.01em;
   cursor: grab;
   transition: border-color 0.12s ease-out;

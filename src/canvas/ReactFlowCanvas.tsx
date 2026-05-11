@@ -16,6 +16,7 @@ import "@xyflow/react/dist/style.css";
 import "./ReactFlowCanvas.css";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { useCallback } from "react";
+import { uiVisibilityAtom } from "../state";
 import { edgesAtom, nodesAtom, placeModeAtom, viewportAtom } from "./state";
 import { CanvasApiPublisher } from "./CanvasApiPublisher";
 import { AiPromptNode } from "./nodes/AiPrompt/AiPromptNode";
@@ -28,6 +29,7 @@ import { ResultNode } from "./nodes/Result/ResultNode";
 import { TableDefinitionNode } from "./nodes/TableDefinition/TableDefinitionNode";
 import { TextNode } from "./nodes/Text/TextNode";
 import { VariableNode } from "./nodes/Variable/VariableNode";
+import { HideUiDot } from "./ui/HideUiDot";
 import { Toolbar } from "./ui/Toolbar";
 import { ZoomIndicator } from "./ui/ZoomIndicator";
 import { RemoteCursorsLayer } from "../multiplayer/RemoteCursorsLayer";
@@ -81,6 +83,7 @@ function ReactFlowCanvasInner() {
   const initialViewport = useAtomValue(viewportAtom);
   const setViewport = useSetAtom(viewportAtom);
   const placeMode = useAtomValue(placeModeAtom);
+  const uiVisible = useAtomValue(uiVisibilityAtom);
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
   const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
@@ -208,8 +211,9 @@ function ReactFlowCanvasInner() {
           gap={28}
           size={1}
         />
-        <Toolbar />
-        <ZoomIndicator />
+        {uiVisible && <Toolbar />}
+        {uiVisible && <ZoomIndicator />}
+        {!uiVisible && <HideUiDot />}
         <RemoteCursorsLayer />
       </ReactFlow>
       {livePoints.length > 1 && (

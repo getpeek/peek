@@ -16,6 +16,7 @@ import { useGoToTableCommands } from "./commands/useGoToTableCommands";
 import { useHostSessionCommand } from "./commands/hostSession";
 import { useJoinSessionCommand } from "./commands/joinSession";
 import { useSetThemeCommands } from "./commands/setTheme";
+import { useToggleUiCommand } from "./commands/toggleUi";
 
 export interface SearchResult {
   command: CommandPaletteResult;
@@ -40,8 +41,10 @@ export const useSearch = (query: string): SearchResult[] => {
   const hostSessionCommand = useHostSessionCommand();
   const joinSessionCommand = useJoinSessionCommand();
   const setThemeCommands = useSetThemeCommands();
+  const toggleUiCommand = useToggleUiCommand();
 
   const searchSpace: CommandPaletteResult[] = [
+    toggleUiCommand,
     rerunAllOnPage,
     rerunSelected,
     exportCsv,

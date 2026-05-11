@@ -85,8 +85,26 @@ pub async fn mp_join_session(
 
 #[tauri::command]
 pub async fn mp_end_session(state: State<'_, Mutex<AppData>>) -> Result<(), String> {
-    let mut state = state.lock().await;
-    state.session.take();
+    // Take both session and node out of `AppData` under the lock, then release
+    // the lock so concurrent commands see a clean "no session" state while we
+    // run the async teardown.
+    //
+    // `_iroh` is held in scope until the function returns: dropping the
+    // `IrohNode` tears down the QUIC `Endpoint` and the protocol `Router`, so
+    // any previously-issued ticket's dial info no longer points at a listening
+    // node. The next host()/join() pays the endpoint-rebind cost (~50–200ms)
+    // and gets a fresh `EndpointId`, invalidating every old ticket at the QUIC
+    // layer regardless of namespace. `session.shutdown()` additionally
+    // `drop_doc`s the namespace from iroh-docs storage so even within a single
+    // app run there's nothing left to reconcile against.
+    let (session, _iroh) = {
+        let mut state = state.lock().await;
+        (state.session.take(), state.iroh.take())
+    };
+
+    if let Some(session) = session {
+        session.shutdown().await.map_err(|e| e.to_string())?;
+    }
     Ok(())
 }
 

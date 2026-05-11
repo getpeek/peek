@@ -1,0 +1,24 @@
+.hide-ui-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--pk-radius-pill);
+  background: var(--pk-fg);
+  border: 3px solid var(--pk-fg);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  padding: 0;
+  pointer-events: auto;
+  transition:
+    background 0.12s,
+    transform 0.12s;
+
+  &:hover {
+    background: var(--pk-bg);
+    transform: scale(1.25);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--pk-accent);
+    outline-offset: 3px;
+  }
+}

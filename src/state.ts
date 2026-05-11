@@ -33,3 +33,5 @@ export const schemaAtom = atom<Schema>(emptySchema());
 export const persistanceAtom = atomWithStorage<string>("persistance", "default");
 
 export const commandPaletteOpenAtom = atom<boolean>(false);
+
+export const uiVisibilityAtom = atom<boolean>(true);

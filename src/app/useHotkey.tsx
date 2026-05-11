@@ -52,7 +52,8 @@ type Units =
   | "["
   | "]"
   | "?"
-  | "+";
+  | "+"
+  | ".";
 
 export type HotkeyModifiers = "meta" | "shift" | "alt" | "ctrl";
 export type HotkeyClosers = "escape" | "enter" | "space" | "tab" | "backspace";

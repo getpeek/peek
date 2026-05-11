@@ -16,6 +16,7 @@ use iroh_docs::{
         Doc,
     },
     engine::LiveEvent,
+    protocol::Docs,
     store::{DownloadPolicy, Query},
     AuthorId, DocTicket, NamespaceId,
 };
@@ -95,6 +96,7 @@ impl NeighborTracker {
 /// to the JS frontend.
 pub struct MultiplayerSession {
     pub doc: Doc,
+    docs: Docs,
     pub author_id: AuthorId,
     pub ticket: String,
     pub namespace_id: NamespaceId,
@@ -177,6 +179,7 @@ impl MultiplayerSession {
         // the reconnect task entirely for hosts.
         Ok(Self {
             doc,
+            docs: node.docs.clone(),
             author_id,
             ticket: ticket_str,
             namespace_id,
@@ -250,6 +253,7 @@ impl MultiplayerSession {
 
         Ok(Self {
             doc,
+            docs: node.docs.clone(),
             author_id,
             ticket: ticket_str.to_string(),
             namespace_id,
@@ -297,6 +301,34 @@ impl MultiplayerSession {
             .broadcast(Bytes::from(bytes))
             .await
             .context("gossip broadcast")?;
+        Ok(())
+    }
+
+    /// Cleanly tear down this session and remove the doc namespace from local
+    /// iroh-docs storage. The async counterpart to `Drop` (which can only
+    /// abort tasks synchronously). Required for ticket revocation: if we only
+    /// drop the handle, the namespace remains in storage and any peer holding
+    /// the old ticket can still reconcile against this host.
+    ///
+    /// # Errors
+    /// Propagates `Docs::drop_doc` failures. Closing the doc handle is
+    /// best-effort.
+    pub async fn shutdown(mut self) -> anyhow::Result<()> {
+        self.shutdown.notify_waiters();
+        if let Some(handle) = self.subscribe_task.take() {
+            handle.abort();
+        }
+        if let Some(handle) = self.gossip_task.take() {
+            handle.abort();
+        }
+        if let Some(handle) = self.reconnect_task.take() {
+            handle.abort();
+        }
+        let _ = self.doc.close().await;
+        self.docs
+            .drop_doc(self.namespace_id)
+            .await
+            .context("drop doc")?;
         Ok(())
     }
 }

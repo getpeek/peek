@@ -1,6 +1,8 @@
 import { useSetAtom, useAtom } from "jotai";
+import { exit } from "@tauri-apps/plugin-process";
 import { useCanvas } from "../hooks/useCanvas";
 import { usePageActions } from "../hooks/usePageActions";
+import { uiVisibilityAtom } from "../../state";
 import { placeModeAtom, selectionToolAtom, clipboardAtom, nodesAtom } from "../state";
 import { useUndoHistory } from "./useUndoHistory";
 import { useHotkey } from "../../app/useHotkey";
@@ -13,8 +15,13 @@ export const usePeekHotkeys = () => {
   const setSelectionTool = useSetAtom(selectionToolAtom);
   const [clipboard, setClipboard] = useAtom(clipboardAtom);
   const setNodes = useSetAtom(nodesAtom);
+  const setUiVisible = useSetAtom(uiVisibilityAtom);
   const pageActions = usePageActions();
   const { undo, redo } = useUndoHistory();
+
+  useHotkey("meta-q", () => {
+    exit(0);
+  });
 
   // Clipboard
   useHotkey("meta-x", () => {
@@ -119,7 +126,17 @@ export const usePeekHotkeys = () => {
     setPlaceMode("text");
   });
 
+  useHotkey("d", () => {
+    setPlaceMode("draw");
+  });
+
   useHotkey("v", () => {
     setPlaceMode("variable");
+  });
+
+  // View
+
+  useHotkey("meta-.", () => {
+    setUiVisible(v => !v);
   });
 };

@@ -21,7 +21,7 @@ P2P collaborative editing built on [iroh](https://docs.iroh.computer/quickstart)
   - The doc-subscribe loop keeps a `pending: HashMap<Hash, Vec<(key, author)>>`. If `get_bytes(content_hash)` fails on `InsertRemote` (blob not yet local), the entry is parked. `LiveEvent::ContentReady` drains the pending list once the bytes arrive.
   - The doc-subscribe loop also owns the `NeighborTracker` and translates `LiveEvent::NeighborUp/NeighborDown` into `multiplayer:peer-disconnected` / `multiplayer:peer-reconnected` events (only when the count crosses 0 — the first ever NeighborUp on initial connect is silenced via a `pending_disconnect` flag).
   - The reconnect loop (joiner only) polls the neighbor count on a 3 → 6 → 12 → 30 s backoff. While disconnected, it re-calls `doc.start_sync(bootstrap.clone())` — idempotent and harmless when peers are already connected. iroh-docs only calls `start_sync` once, on `import` (`iroh_docs::api.rs:223`); without this loop, a host endpoint change after laptop sleep / network switch leaves the joiner permanently wedged.
-- **Tauri commands** (`multiplayer_commands.rs`): `mp_host_session`, `mp_join_session`, `mp_end_session`, `mp_doc_put`, `mp_doc_del`, `mp_gossip_send`. Eager singleton init via `ensure_node`. State stored on `AppData.iroh: Option<IrohNode>` and `AppData.session: Option<MultiplayerSession>`.
+- **Tauri commands** (`multiplayer_commands.rs`): `mp_host_session`, `mp_join_session`, `mp_end_session`, `mp_doc_put`, `mp_doc_del`, `mp_gossip_send`. Eager singleton init via `ensure_node`. State stored on `AppData.iroh: Option<IrohNode>` and `AppData.session: Option<MultiplayerSession>`. `mp_end_session` takes both out of state and runs `session.shutdown()` (which `drop_doc`s the namespace from iroh-docs storage), then drops the `IrohNode` so the endpoint stops accepting connections — see "Ticket revocation on session end" below.
 
 ### Cross-machine gotcha: ticket `AddrInfoOptions`
 
@@ -38,6 +38,17 @@ if !peer.is_empty() {
 With `Id`-only tickets, that branch is skipped, gossip falls back to id-only dials, and across NATs the connection never establishes. The symptom is: initial doc reconciliation works (joiner gets all pages and entries), but **live updates and cursors/presence both stop**. iroh-docs' live entry propagation is gossip-driven, so the moment gossip can't reach a neighbor, edits silently stop syncing — exactly mirroring what app-level cursors do.
 
 `RelayAndAddresses` makes the ticket fully self-describing (relay URL + direct addrs). The address book gets seeded on `import()` and gossip can immediately route through whatever path is reachable.
+
+### Ticket revocation on session end
+
+A `DocTicket` is a bearer credential containing the host's `EndpointId`, dial info (relay URL + direct addrs), namespace id, and write capability. iroh has no built-in revocation, so once a ticket is shared we have to make the dial info stop pointing at a willing host. Two layers do that, both run from `mp_end_session`:
+
+1. **`Docs::drop_doc(namespace_id)`** (called from `MultiplayerSession::shutdown`). Without this, dropping the `Doc` handle just closes the local handle — the namespace stays in `Docs` storage and the engine still answers sync requests for it. `drop_doc` permanently deletes the secret key and all entries, so a peer holding the old ticket reconciles against an empty / non-existent namespace.
+2. **Drop the `IrohNode`.** Even with no docs to serve, the singleton endpoint keeps the same `EndpointId` for the app's lifetime, and the `Router` keeps accepting `DOCS_ALPN`/`GOSSIP_ALPN`/`BLOBS_ALPN`. Taking `state.iroh` out and dropping it tears down the `Endpoint` and `Router`. The next `mp_host_session`/`mp_join_session` re-runs `IrohNode::spawn`, which binds a fresh endpoint with a **new keypair → new `EndpointId`**. Every previously-issued ticket's dial info now points at an `EndpointId` that nothing is listening on, so the connection fails at the QUIC layer regardless of which protocol it was for.
+
+The two layers cover different scenarios: (1) handles "host re-hosts a different document but same app run" — the old namespace is gone. (2) handles "host re-hosts and the new endpoint happens to land at the same relay" — the ticket's `EndpointId` doesn't match.
+
+**Out of scope.** Per-invite revocation (Alice gets a link, Bob doesn't, but Alice forwards it to Bob mid-session) is not handled — both can join while a session is live. If we ever need it, layer a server-issued nonce on top: embed it in `peek://invite/<ticket>?s=<nonce>` and have the host reject joins missing the current nonce.
 
 Tauri events emitted from Rust to JS:
 
@@ -151,7 +162,7 @@ The hook depends on `window.peekMultiplayer` being populated, which `useMultipla
 ### Ending
 
 1. `controls.end()` captures the snapshot up front, then sends a `{type: 'leave'}` gossip message so peers can drop us instantly (best-effort; the gossip task is still alive because `mp_end_session` hasn't run yet).
-2. `invoke("mp_end_session")` → Rust drops `MultiplayerSession`; `Drop` aborts subscribe / gossip / reconnect tasks. Errors here are logged and ignored — the JS-side restore must run regardless.
+2. `invoke("mp_end_session")` → Rust takes both `session` and `iroh` out of `AppData` under the lock, then awaits `session.shutdown()` outside the lock. `shutdown()` aborts subscribe / gossip / reconnect tasks, calls `Doc::close()`, and `Docs::drop_doc(namespace_id)` to permanently delete the namespace from local iroh-docs storage. After it returns, the held `IrohNode` is dropped — the QUIC `Endpoint` and the protocol `Router` go down with it. Errors here are logged and ignored — the JS-side restore must run regardless.
 3. If joiner: restore `preSessionSnapshotAtom` (with `isApplyingRemoteRef.current = true`). Document, results, **and `schemaAtom`** return to pre-session state. The schema restore also calls `pushSchemaToLspCache` to re-sync the Rust-side `SchemaCache` — without this the LSP would keep firing diagnostics against the host's tables after the session ended.
 4. Clear `sessionStateAtom`, `remoteCursorsAtom`, `participantsAtom`, **then** `preSessionSnapshotAtom` last. Order matters:
    - Clearing `sessionStateAtom` flips `useLoadDocument`'s role check from "joiner: skip" to "no session: load from disk" — but `useLoadDocument` _also_ checks `preSessionSnapshotAtom` and bails while it's non-null. That gate is what prevents an async disk-reload from clobbering the snapshot restore in step 3.

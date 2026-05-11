@@ -37,7 +37,7 @@ export function ChatNode({ id, data, selected, width, height }: NodeProps<ChatNo
     handlers,
   });
 
-  useChatContextSync({ nodeId: id, messages: data.messages });
+  useChatContextSync({ nodeId: id });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
