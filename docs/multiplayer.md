@@ -16,12 +16,29 @@ P2P collaborative editing built on [iroh](https://docs.iroh.computer/quickstart)
 
 - **`IrohNode`** (`node.rs`): process-wide singleton lazily created on the first session. Owns `Endpoint`, `MemStore` (blobs), `Gossip`, `Docs`, and a `Router` that wires the three protocols at their respective ALPNs.
 - **`MultiplayerSession`** (`session.rs`): per-session struct. Holds the iroh `Doc` handle, the local `AuthorId`, the ticket string, the namespace id, the gossip `Sender`, an `Arc<Notify>` shutdown signal, and join handles for the doc-subscribe / gossip-receive / reconnect loops.
-  - On `host()`: creates a doc, sets `DownloadPolicy::EverythingExcept(vec![])` (eager blob fetching — without this, blob bytes don't sync), shares as a `DocTicket` with `AddrInfoOptions::RelayAndAddresses` (see "Cross-machine gotcha" below), spawns subscribe + gossip loops. No reconnect task — peers come to the host via the ticket.
-  - On `join(ticket)`: parses the `DocTicket`, keeps the full `Vec<EndpointAddr>` (used by the reconnect loop) **and** extracts host endpoint ids for gossip bootstrap, imports the doc, sets eager download policy, spawns subscribe + gossip + reconnect + a one-shot enumerator (covers entries already present at import time, which the live event stream doesn't replay).
+  - On `host()`: creates a doc, sets `DownloadPolicy::EverythingExcept(vec![])`, **subscribes to the doc's `LiveEvent` stream**, then shares as a `DocTicket` with `AddrInfoOptions::RelayAndAddresses` (see "Cross-machine gotcha" below). Subscribe must happen before `share()` — `share()` internally calls `start_sync(doc_id, vec![])` which puts the namespace into the syncing state, and any `Event::RemoteInsert` fired before our subscriber is attached is dropped by iroh-docs' `Subscribers::send_with` (a no-op when the subscriber list is empty). Spawns subscribe + gossip loops. No reconnect task — peers come to the host via the ticket.
+  - On `join(ticket)`: parses the `DocTicket`, keeps the full `Vec<EndpointAddr>` (used by the reconnect loop) **and** extracts host endpoint ids for gossip bootstrap. Uses `import_namespace(capability)` — **not** `import(ticket)`, which would call `start_sync` internally before we can subscribe (see "Subscribe-before-sync" below). Sets eager download policy, calls `doc.subscribe()`, spawns the subscribe + gossip loops, then explicitly calls `doc.start_sync(nodes)` to kick off reconciliation. Spawns the reconnect loop last.
   - The doc-subscribe loop keeps a `pending: HashMap<Hash, Vec<(key, author)>>`. If `get_bytes(content_hash)` fails on `InsertRemote` (blob not yet local), the entry is parked. `LiveEvent::ContentReady` drains the pending list once the bytes arrive.
   - The doc-subscribe loop also owns the `NeighborTracker` and translates `LiveEvent::NeighborUp/NeighborDown` into `multiplayer:peer-disconnected` / `multiplayer:peer-reconnected` events (only when the count crosses 0 — the first ever NeighborUp on initial connect is silenced via a `pending_disconnect` flag).
   - The reconnect loop (joiner only) polls the neighbor count on a 3 → 6 → 12 → 30 s backoff. While disconnected, it re-calls `doc.start_sync(bootstrap.clone())` — idempotent and harmless when peers are already connected. iroh-docs only calls `start_sync` once, on `import` (`iroh_docs::api.rs:223`); without this loop, a host endpoint change after laptop sleep / network switch leaves the joiner permanently wedged.
 - **Tauri commands** (`multiplayer_commands.rs`): `mp_host_session`, `mp_join_session`, `mp_end_session`, `mp_doc_put`, `mp_doc_del`, `mp_gossip_send`. Eager singleton init via `ensure_node`. State stored on `AppData.iroh: Option<IrohNode>` and `AppData.session: Option<MultiplayerSession>`. `mp_end_session` takes both out of state and runs `session.shutdown()` (which `drop_doc`s the namespace from iroh-docs storage), then drops the `IrohNode` so the endpoint stops accepting connections — see "Ticket revocation on session end" below.
+
+### Subscribe-before-sync
+
+`iroh_docs::api::Docs::import(ticket)` does two things in one call (see iroh-docs `api.rs:220`):
+
+```rust
+pub async fn import(&self, ticket: DocTicket) -> Result<Doc> {
+    let DocTicket { capability, nodes } = ticket;
+    let doc = self.import_namespace(capability).await?;
+    doc.start_sync(nodes).await?;
+    Ok(doc)
+}
+```
+
+That second line kicks off set-reconciliation immediately, and reconciled entries fire `Event::RemoteInsert` through the replica's subscriber list. iroh-docs' `Subscribers::send_with` (in `sync.rs`) is a no-op when the list is empty — events fired before anyone subscribes are dropped on the floor, not buffered. So calling `import(ticket)` and then `doc.subscribe()` opens a race window between sync starting and our subscriber attaching, during which entries silently disappear from the joiner's perspective. The symptom is "joiner sees an empty doc on join" or "joiner sees only some of the host's pages", with whether it manifests depending on how fast the first batch of reconciliation messages reach the local actor vs. how fast our subscribe RPC lands.
+
+The fix is to call `import_namespace(capability)` (which does **not** start sync), then `doc.subscribe()`, then `doc.start_sync(nodes)` explicitly. Same approach on the host side: subscribe before `share()`, since `share()` internally calls `start_sync` to register the namespace as syncing.
 
 ### Cross-machine gotcha: ticket `AddrInfoOptions`
 

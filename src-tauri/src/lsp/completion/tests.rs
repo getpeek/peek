@@ -111,9 +111,9 @@ fn scenario_5_dotted_after_join_offers_organisations_columns() {
 fn scenario_6_join_on_suggests_fk_snippet() {
     let source = "select * from users u inner join organisations o on ";
     let labels = run(source, source.len());
-    let has_fk_snippet = labels.iter().any(|l| {
-        l.contains("u.organisation_id") && l.contains("o.id") && l.contains('=')
-    });
+    let has_fk_snippet = labels
+        .iter()
+        .any(|l| l.contains("u.organisation_id") && l.contains("o.id") && l.contains('='));
     assert!(
         has_fk_snippet,
         "expected FK predicate suggestion, got {labels:?}"
@@ -123,10 +123,7 @@ fn scenario_6_join_on_suggests_fk_snippet() {
 #[test]
 fn scenario_7_empty_offers_select_keyword() {
     let labels = run("", 0);
-    assert!(
-        labels.contains(&"select".to_string()),
-        "got {labels:?}"
-    );
+    assert!(labels.contains(&"select".to_string()), "got {labels:?}");
 }
 
 #[test]

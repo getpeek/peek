@@ -5,7 +5,7 @@ use std::{
 
 use serde_json::Value;
 
-use super::{normalize_column_name, normalize_table_name, ImportError, ImportType, ImportedData};
+use super::{ImportError, ImportType, ImportedData, normalize_column_name, normalize_table_name};
 
 impl super::FileImporter {
     pub fn json(path: PathBuf) -> Result<ImportedData, ImportError> {

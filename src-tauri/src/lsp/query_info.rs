@@ -181,9 +181,8 @@ mod tests {
 
     #[test]
     fn select_with_join_marks_second_table_joined() {
-        let info = analyze(
-            "select * from users u inner join organisations o on u.organisation_id = o.id",
-        );
+        let info =
+            analyze("select * from users u inner join organisations o on u.organisation_id = o.id");
         assert_eq!(info.statement_type, StatementType::Select);
         assert_eq!(info.tables.len(), 2);
         assert_eq!(info.tables[0].name, "users");

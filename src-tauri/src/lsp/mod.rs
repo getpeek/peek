@@ -12,5 +12,5 @@ mod schema;
 mod scope;
 
 pub use backend::Backend;
-pub use query_info::{analyze as analyze_query, QueryInfo};
+pub use query_info::{QueryInfo, analyze as analyze_query};
 pub use schema::SchemaIndex;

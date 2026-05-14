@@ -1,4 +1,4 @@
-use super::{normalize_column_name, ImportType};
+use super::{ImportType, normalize_column_name};
 
 impl super::FileImporter {
     pub fn csv(path: std::path::PathBuf) -> Result<super::ImportedData, super::ImportError> {

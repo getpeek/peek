@@ -12,13 +12,13 @@ mod storage_commands;
 use std::sync::Arc;
 
 use config::SshTunnelConfig;
-use database::{mysql::MysqlDatabase, postgres::PostgresDatabase, Database};
+use database::{Database, mysql::MysqlDatabase, postgres::PostgresDatabase};
 use lsp::{Backend, SchemaIndex};
 use multiplayer::{IrohNode, MultiplayerSession};
 use parking_lot::RwLock;
 use sqlx::Connection;
 use ssh_tunnel::SshTunnel;
-use tauri::{async_runtime::Mutex, Manager, State};
+use tauri::{Manager, State, async_runtime::Mutex};
 use url::Url;
 
 #[derive(Default)]
@@ -32,7 +32,10 @@ pub struct AppData {
 impl std::fmt::Debug for AppData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("AppData")
-            .field("connection", &self.connection.as_ref().map(|_| "<dyn Database>"))
+            .field(
+                "connection",
+                &self.connection.as_ref().map(|_| "<dyn Database>"),
+            )
             .field("tunnel", &self.tunnel)
             .field("iroh", &self.iroh)
             .field("session", &self.session)
@@ -64,8 +67,8 @@ async fn set_connection(
     state.connection.take();
     state.tunnel.take();
 
-    let mut url = Url::parse(&connection_string)
-        .map_err(|e| format!("Invalid connection string: {e}"))?;
+    let mut url =
+        Url::parse(&connection_string).map_err(|e| format!("Invalid connection string: {e}"))?;
 
     let tunnel = if let Some(cfg) = ssh_tunnel {
         let remote_host = url

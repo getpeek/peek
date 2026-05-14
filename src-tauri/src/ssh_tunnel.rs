@@ -2,7 +2,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use russh::client::{self, Handle};
-use russh::keys::{load_secret_key, PrivateKeyWithHashAlg};
+use russh::keys::{PrivateKeyWithHashAlg, load_secret_key};
 use russh::{ChannelMsg, Disconnect};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
@@ -62,7 +62,12 @@ impl SshTunnel {
 
         let mut session = client::connect(config, (cfg.ssh_host.as_str(), cfg.ssh_port), Client)
             .await
-            .map_err(|e| format!("SSH connect to {}:{} failed: {e}", cfg.ssh_host, cfg.ssh_port))?;
+            .map_err(|e| {
+                format!(
+                    "SSH connect to {}:{} failed: {e}",
+                    cfg.ssh_host, cfg.ssh_port
+                )
+            })?;
 
         let hash_alg = session
             .best_supported_rsa_hash()

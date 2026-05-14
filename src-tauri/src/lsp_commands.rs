@@ -5,8 +5,8 @@ use std::sync::Arc;
 use lsp_types::{CompletionItem, Diagnostic, Position, Uri};
 use tauri::State;
 
-use crate::lsp::{analyze_query, Backend, QueryInfo, SchemaIndex};
 use crate::SchemaCache;
+use crate::lsp::{Backend, QueryInfo, SchemaIndex, analyze_query};
 
 #[tauri::command]
 pub fn lsp_did_change(

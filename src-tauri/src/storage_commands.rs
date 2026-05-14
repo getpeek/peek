@@ -122,10 +122,7 @@ pub async fn save(
 /// Load the results sidecar that stores per-result-node rows out-of-band from
 /// the canvas document. Returns `"{}"` when the sidecar is absent.
 #[tauri::command]
-pub async fn load_results(
-    workspace: String,
-    connection_name: String,
-) -> Result<String, String> {
+pub async fn load_results(workspace: String, connection_name: String) -> Result<String, String> {
     let path = std::path::absolute(std::env::var("HOME").unwrap()).unwrap();
     let folder = path.join("peek").join(workspace.to_lowercase());
     let file_path = folder.join(format!("{}.results.json", connection_name.to_lowercase()));

@@ -1,24 +1,24 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Duration;
 
 use anyhow::Context;
-use base64::{engine::general_purpose::STANDARD as B64, Engine as _};
+use base64::{Engine as _, engine::general_purpose::STANDARD as B64};
 use bytes::Bytes;
-use futures_lite::StreamExt;
+use futures_lite::{Stream, StreamExt};
 use iroh::EndpointAddr;
-use iroh_blobs::{store::mem::MemStore, Hash};
+use iroh_blobs::{Hash, store::mem::MemStore};
 use iroh_docs::{
+    AuthorId, DocTicket, NamespaceId,
     api::{
-        protocol::{AddrInfoOptions, ShareMode},
         Doc,
+        protocol::{AddrInfoOptions, ShareMode},
     },
     engine::LiveEvent,
     protocol::Docs,
-    store::{DownloadPolicy, Query},
-    AuthorId, DocTicket, NamespaceId,
+    store::DownloadPolicy,
 };
 use iroh_gossip::{
     api::{Event as GossipEvent, GossipReceiver, GossipSender},
@@ -30,11 +30,11 @@ use tauri::{AppHandle, Emitter};
 use tokio::sync::{Mutex as TokioMutex, Notify};
 use tokio::task::JoinHandle;
 
-use super::events::{
-    DocDeleteEvent, DocUpdateEvent, GossipRecvEvent, PeerDisconnectedEvent,
-    PeerReconnectedEvent, SyncFinishedEvent,
-};
 use super::IrohNode;
+use super::events::{
+    DocDeleteEvent, DocUpdateEvent, GossipRecvEvent, PeerDisconnectedEvent, PeerReconnectedEvent,
+    SyncFinishedEvent,
+};
 
 /// Tracks how many doc-sync neighbors the local replica is currently connected
 /// to. The subscribe loop is the single mutator (via `LiveEvent::NeighborUp`/
@@ -60,11 +60,7 @@ impl NeighborTracker {
         // Only emit a "reconnected" event if we previously emitted a
         // "disconnected" — the first ever NeighborUp on join is just the
         // initial connection, not a recovery.
-        if prev == 0
-            && self
-                .pending_disconnect
-                .swap(false, Ordering::SeqCst)
-        {
+        if prev == 0 && self.pending_disconnect.swap(false, Ordering::SeqCst) {
             let _ = app.emit("multiplayer:peer-reconnected", PeerReconnectedEvent {});
         }
     }
@@ -79,10 +75,7 @@ impl NeighborTracker {
         self.count.store(prev - 1, Ordering::SeqCst);
         if prev == 1 {
             self.pending_disconnect.store(true, Ordering::SeqCst);
-            let _ = app.emit(
-                "multiplayer:peer-disconnected",
-                PeerDisconnectedEvent {},
-            );
+            let _ = app.emit("multiplayer:peer-disconnected", PeerDisconnectedEvent {});
         }
     }
 
@@ -126,13 +119,21 @@ impl MultiplayerSession {
         let doc = node.docs.create().await.context("create doc")?;
         let author_id = node.docs.author_create().await.context("create author")?;
 
-        // Eagerly download all blob content from peers. Default is
-        // `NothingExcept(vec![])` which leaves blobs lazy — fine for an
-        // archival use case but breaks live collaboration where every key
-        // needs its content fetched on arrival.
         doc.set_download_policy(DownloadPolicy::EverythingExcept(vec![]))
             .await
             .context("set download policy")?;
+
+        // Subscribe BEFORE `share()`. `share()` internally calls
+        // `start_sync(doc_id, vec![])` (see iroh-docs `api/actor.rs:doc_share`),
+        // which puts the namespace into the syncing state and makes the host
+        // willing to accept sync requests. Any `Event::RemoteInsert` fired
+        // before our subscriber is attached is dropped by iroh-docs'
+        // `Subscribers::send_with` (it's a no-op when the subscriber list is
+        // empty — see iroh-docs `sync.rs`). In practice the host has no
+        // incoming entries during the initial accept (the joiner starts
+        // empty), but subscribing first is symmetric with `join()` and
+        // future-proof against scenarios where a peer joins with prior writes.
+        let stream = doc.subscribe().await.context("subscribe to doc")?;
 
         // `RelayAndAddresses` is critical for cross-machine sessions. The
         // default (`Id`) puts only our endpoint id in the ticket and relies on
@@ -156,14 +157,12 @@ impl MultiplayerSession {
         let shutdown = Arc::new(Notify::new());
         let tracker = NeighborTracker::new();
         let subscribe_task = spawn_subscribe_loop(
-            doc.clone(),
+            stream,
             node.blobs.clone(),
             app.clone(),
             Arc::clone(&shutdown),
             tracker.clone(),
-            false,
-        )
-        .await?;
+        );
 
         let (gossip_sender, gossip_task) = spawn_gossip(
             &node.gossip,
@@ -196,11 +195,7 @@ impl MultiplayerSession {
     ///
     /// # Errors
     /// Returns an error if the ticket can't be parsed or the doc can't be imported.
-    pub async fn join(
-        node: &IrohNode,
-        ticket_str: &str,
-        app: AppHandle,
-    ) -> anyhow::Result<Self> {
+    pub async fn join(node: &IrohNode, ticket_str: &str, app: AppHandle) -> anyhow::Result<Self> {
         let ticket = ticket_str
             .parse::<DocTicket>()
             .context("parse doc ticket")?;
@@ -209,9 +204,26 @@ impl MultiplayerSession {
         //   - `bootstrap_node_addrs` for `Doc::start_sync`, which needs full
         //     EndpointAddrs and is what the reconnect task re-calls when the
         //     connection drops.
-        let bootstrap_node_addrs: Vec<EndpointAddr> = ticket.nodes.clone();
-        let bootstrap_node_ids: Vec<_> = ticket.nodes.iter().map(|addr| addr.id).collect();
-        let doc = node.docs.import(ticket).await.context("import doc")?;
+        let DocTicket { capability, nodes } = ticket;
+        let bootstrap_node_addrs: Vec<EndpointAddr> = nodes.clone();
+        let bootstrap_node_ids: Vec<_> = nodes.iter().map(|addr| addr.id).collect();
+
+        // Use `import_namespace` (which does *not* start sync) instead of
+        // `import` (which calls `start_sync` internally — see iroh-docs
+        // `api.rs:220`). Subscribing must happen BEFORE sync begins:
+        // `Doc::subscribe` only captures events emitted after the subscriber
+        // is registered, and iroh-docs' replica subscribers drop events when
+        // the list is empty (`Subscribers::send_with` in iroh-docs `sync.rs`
+        // is a no-op when `self.0.is_empty()`). With the old `import()` call
+        // path, reconciliation could deliver entries between when sync
+        // started and when our subscriber attached, and those `RemoteInsert`
+        // events were lost — producing "joiner sees an empty doc" bugs that
+        // depended on race timing.
+        let doc = node
+            .docs
+            .import_namespace(capability)
+            .await
+            .context("import namespace")?;
         let author_id = node.docs.author_create().await.context("create author")?;
         let namespace_id = doc.id();
 
@@ -219,21 +231,19 @@ impl MultiplayerSession {
             .await
             .context("set download policy")?;
 
+        // Subscribe BEFORE `start_sync`. This is the critical ordering that
+        // closes the race described above.
+        let stream = doc.subscribe().await.context("subscribe to doc")?;
+
         let shutdown = Arc::new(Notify::new());
         let tracker = NeighborTracker::new();
-        // Joiners need to enumerate existing entries once reconciliation has
-        // actually happened. The subscribe loop ties enumeration to the first
-        // `LiveEvent::SyncFinished` so it runs against a populated replica
-        // regardless of network speed.
         let subscribe_task = spawn_subscribe_loop(
-            doc.clone(),
+            stream,
             node.blobs.clone(),
             app.clone(),
             Arc::clone(&shutdown),
             tracker.clone(),
-            true,
-        )
-        .await?;
+        );
 
         let (gossip_sender, gossip_task) = spawn_gossip(
             &node.gossip,
@@ -243,6 +253,11 @@ impl MultiplayerSession {
             Arc::clone(&shutdown),
         )
         .await?;
+
+        // Kick off sync now that the subscriber is attached. Every entry
+        // reconciled from the host fires `Event::RemoteInsert` which our
+        // subscribe loop ferries to the JS frontend as `multiplayer:doc-update`.
+        doc.start_sync(nodes).await.context("start sync")?;
 
         let reconnect_task = spawn_reconnect_loop(
             doc.clone(),
@@ -430,25 +445,21 @@ struct PendingFetch {
     author: String,
 }
 
-async fn spawn_subscribe_loop(
-    doc: Doc,
+fn spawn_subscribe_loop<S>(
+    stream: S,
     blobs: MemStore,
     app: AppHandle,
     shutdown: Arc<Notify>,
     tracker: NeighborTracker,
-    enumerate_on_first_sync: bool,
-) -> anyhow::Result<JoinHandle<()>> {
-    let stream = doc.subscribe().await.context("subscribe to doc")?;
-    Ok(tokio::spawn(async move {
+) -> JoinHandle<()>
+where
+    S: Stream<Item = anyhow::Result<LiveEvent>> + Send + Unpin + 'static,
+{
+    tokio::spawn(async move {
         // Hash → list of (key, author) pairs whose blob hasn't yet arrived.
         // ContentReady drains the entry for that hash.
         let mut pending: HashMap<Hash, Vec<PendingFetch>> = HashMap::new();
         let mut stream = stream;
-        // Joiner-only: ensures the post-reconciliation entry enumeration runs
-        // exactly once, on the first `SyncFinished`. Subsequent reconciliation
-        // cycles fire `SyncFinished` again and are picked up by the live
-        // `InsertRemote` path; re-enumerating each time would be wasteful.
-        let mut enumerated = false;
         loop {
             tokio::select! {
                 () = shutdown.notified() => break,
@@ -517,20 +528,6 @@ async fn spawn_subscribe_loop(
                             }
                         }
                         Some(Ok(LiveEvent::SyncFinished(_))) => {
-                            // Joiners drain the reconciled state before
-                            // signalling `sync-finished` so the JS-side status
-                            // pill flips to "active" only when entries are
-                            // actually present. Hosts have nothing to
-                            // enumerate.
-                            if enumerate_on_first_sync && !enumerated {
-                                enumerated = true;
-                                enumerate_doc_entries(
-                                    doc.clone(),
-                                    blobs.clone(),
-                                    app.clone(),
-                                )
-                                .await;
-                            }
                             let _ = app.emit("multiplayer:sync-finished", SyncFinishedEvent {});
                         }
                         Some(Ok(LiveEvent::NeighborUp(_peer))) => {
@@ -547,7 +544,7 @@ async fn spawn_subscribe_loop(
                 }
             }
         }
-    }))
+    })
 }
 
 /// Joiner-only reconnect loop. iroh-docs' `Doc::import` calls `start_sync`
@@ -604,53 +601,3 @@ fn spawn_reconnect_loop(
         }
     })
 }
-
-/// One-shot enumeration of all entries currently in the doc. Used after a
-/// joiner imports a ticket, since the live subscribe stream doesn't replay
-/// entries that arrived during reconciliation.
-async fn enumerate_doc_entries(doc: Doc, blobs: MemStore, app: AppHandle) {
-    let query = Query::single_latest_per_key();
-    let stream = match doc.get_many(query).await {
-        Ok(s) => s,
-        Err(e) => {
-            eprintln!("multiplayer: enumerate get_many failed: {e}");
-            return;
-        }
-    };
-    let mut stream = Box::pin(stream);
-    while let Some(entry) = stream.next().await {
-        let entry = match entry {
-            Ok(e) => e,
-            Err(e) => {
-                eprintln!("multiplayer: enumerate stream error: {e}");
-                continue;
-            }
-        };
-        let key = String::from_utf8_lossy(entry.key()).into_owned();
-        let author = format!("{}", entry.author());
-        if entry.content_len() == 0 {
-            let _ = app.emit(
-                "multiplayer:doc-delete",
-                DocDeleteEvent { key, author },
-            );
-            continue;
-        }
-        match blobs.get_bytes(entry.content_hash()).await {
-            Ok(bytes) => {
-                let _ = app.emit(
-                    "multiplayer:doc-update",
-                    DocUpdateEvent {
-                        key,
-                        value_b64: B64.encode(&bytes),
-                        author,
-                    },
-                );
-            }
-            Err(_) => {
-                // Subscribe loop's pending map will catch this when
-                // ContentReady fires.
-            }
-        }
-    }
-}
-

@@ -1,9 +1,9 @@
-use base64::{engine::general_purpose::STANDARD as B64, Engine as _};
+use base64::{Engine as _, engine::general_purpose::STANDARD as B64};
 use serde::Serialize;
-use tauri::{async_runtime::Mutex, AppHandle, State};
+use tauri::{AppHandle, State, async_runtime::Mutex};
 
-use crate::multiplayer::{IrohNode, MultiplayerSession};
 use crate::AppData;
+use crate::multiplayer::{IrohNode, MultiplayerSession};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -114,7 +114,9 @@ pub async fn mp_doc_put(
     key: String,
     value_b64: String,
 ) -> Result<(), String> {
-    let value = B64.decode(value_b64.as_bytes()).map_err(|e| e.to_string())?;
+    let value = B64
+        .decode(value_b64.as_bytes())
+        .map_err(|e| e.to_string())?;
     let state = state.lock().await;
     let session = state
         .session
@@ -124,10 +126,7 @@ pub async fn mp_doc_put(
 }
 
 #[tauri::command]
-pub async fn mp_doc_del(
-    state: State<'_, Mutex<AppData>>,
-    key: String,
-) -> Result<(), String> {
+pub async fn mp_doc_del(state: State<'_, Mutex<AppData>>, key: String) -> Result<(), String> {
     let state = state.lock().await;
     let session = state
         .session

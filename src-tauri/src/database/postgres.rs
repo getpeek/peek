@@ -1,7 +1,7 @@
 use crate::import::{ImportType, ImportedData};
 
 use super::Database;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::{Column, PgConnection, Row, TypeInfo};
 use std::collections::HashMap;
 

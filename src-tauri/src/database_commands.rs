@@ -1,6 +1,6 @@
 use crate::lsp::SchemaIndex;
-use crate::{import::FileImporter, AppData, SchemaCache};
-use tauri::{async_runtime::Mutex, State};
+use crate::{AppData, SchemaCache, import::FileImporter};
+use tauri::{State, async_runtime::Mutex};
 
 #[tauri::command]
 pub async fn get_schema(

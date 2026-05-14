@@ -1,7 +1,7 @@
 use crate::import::ImportedData;
 
 use super::Database;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sqlx::{Column, Connection, MySqlConnection, Row, TypeInfo};
 use std::collections::HashMap;
 

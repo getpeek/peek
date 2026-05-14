@@ -32,7 +32,9 @@ fn print_node(node: tree_sitter::Node, source: &[u8], depth: usize) {
     );
     let mut cursor = node.walk();
     for (i, child) in node.children(&mut cursor).enumerate() {
-        let field_name = node.field_name_for_child(i.try_into().unwrap()).unwrap_or("");
+        let field_name = node
+            .field_name_for_child(i.try_into().unwrap())
+            .unwrap_or("");
         if !field_name.is_empty() {
             println!("{indent}  (field={field_name})");
         }
