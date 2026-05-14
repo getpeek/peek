@@ -16,11 +16,11 @@ interface ConnectionDetailsProps {
 
 export const ConnectionDetails = ({ workspaceName, connection }: ConnectionDetailsProps) => {
   const url = new URL(connection.url);
-  const protocol = url.protocol.replace(/:$/, "");
+  const protocol = url.protocol.replace(/:$/u, "");
   const host = url.hostname;
   const port = url.port || defaultPortForProtocol(protocol);
   const user = url.username;
-  const database = url.pathname.replace(/^\//, "") || "—";
+  const database = url.pathname.replace(/^\//u, "") || "—";
   const ssh = connection.ssh_tunnel;
 
   return (

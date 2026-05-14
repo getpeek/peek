@@ -13,7 +13,7 @@ export const useGoToQueryCommands = (): CommandPaletteResult[] => {
     .filter((n): n is QueryNode => n.type === "query")
     .map(node => ({
       icon: <IconSql size={16} />,
-      label: node.data.query.replaceAll(/\s/g, " ").slice(0, 60),
+      label: node.data.query.replaceAll(/\s/gu, " ").slice(0, 60),
       searchAgainst: node.data.query.toLowerCase(),
       details: <QueryDetails sql={node.data.query} />,
       onSelect: () => {

@@ -67,8 +67,8 @@ const KEYWORDS = new Set([
 type TokenType = "keyword" | "string" | "number" | "comment" | "operator" | "identifier";
 type Token = { type: TokenType; value: string } | { type: "whitespace"; value: string };
 
-const isWord = (c: string) => /[a-zA-Z0-9_]/.test(c);
-const isWordStart = (c: string) => /[a-zA-Z_]/.test(c);
+const isWord = (c: string) => /[a-zA-Z0-9_]/u.test(c);
+const isWordStart = (c: string) => /[a-zA-Z_]/u.test(c);
 const isDigit = (c: string) => c >= "0" && c <= "9";
 const isQuote = (c: string) => c === "'" || c === '"' || c === "`";
 
@@ -78,9 +78,9 @@ const tokenize = (sql: string): Token[] => {
   while (i < sql.length) {
     const c = sql[i];
 
-    if (/\s/.test(c)) {
+    if (/\s/u.test(c)) {
       let j = i + 1;
-      while (j < sql.length && /\s/.test(sql[j])) {
+      while (j < sql.length && /\s/u.test(sql[j])) {
         j++;
       }
       tokens.push({ type: "whitespace", value: sql.slice(i, j) });

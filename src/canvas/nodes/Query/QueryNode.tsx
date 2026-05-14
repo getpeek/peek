@@ -27,7 +27,7 @@ function firstLine(query: string): string {
     return "";
   }
   return line
-    .replace(/^--\s*/, "")
+    .replace(/^--\s*/u, "")
     .trim()
     .slice(0, 60);
 }

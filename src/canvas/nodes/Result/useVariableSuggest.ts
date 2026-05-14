@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const VARIABLE_TRIGGER_RE = /@(\w*)$/;
+const VARIABLE_TRIGGER_RE = /@(\w*)$/u;
 
 type FieldEl = HTMLInputElement | HTMLTextAreaElement;
 

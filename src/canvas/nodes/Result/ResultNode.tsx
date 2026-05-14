@@ -33,7 +33,7 @@ function firstLineOfQuery(query: string): string {
     return "";
   }
   return line
-    .replace(/^--\s*/, "")
+    .replace(/^--\s*/u, "")
     .trim()
     .slice(0, 60);
 }
@@ -127,7 +127,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
 
   const exportAs = async (format: "csv" | "json") => {
     const baseName =
-      queryName.replaceAll(/[^a-z0-9_-]+/gi, "_").replaceAll(/^_+|_+$/g, "") || "result";
+      queryName.replaceAll(/[^a-z0-9_-]+/giu, "_").replaceAll(/^_+|_+$/gu, "") || "result";
     await exportRows(rows, format, baseName);
   };
 

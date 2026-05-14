@@ -128,7 +128,7 @@ const previewTitle = (node: ResultNode): string => {
   if (query.length === 0) {
     return node.id;
   }
-  const collapsed = query.replaceAll(/\s+/g, " ");
+  const collapsed = query.replaceAll(/\s+/gu, " ");
   return collapsed.length > 60 ? `${collapsed.slice(0, 60)}…` : collapsed;
 };
 

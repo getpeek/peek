@@ -22,7 +22,7 @@ function gitInherit(...args) {
 if (!version) {
   fail("usage: yarn release <version>   e.g. yarn release 2.0.3");
 }
-if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) {
+if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u.test(version)) {
   fail(`invalid version "${version}" — expected semver like 2.0.3 (no leading v).`);
 }
 
@@ -60,7 +60,7 @@ pkg.version = version;
 writeFileSync(pkgPath, `${JSON.stringify(pkg, null, 2)}\n`);
 
 const cargoToml = readFileSync(cargoTomlPath, "utf8");
-const updatedCargoToml = cargoToml.replace(/^version = "[^"]*"$/m, `version = "${version}"`);
+const updatedCargoToml = cargoToml.replace(/^version = "[^"]*"$/mu, `version = "${version}"`);
 if (updatedCargoToml === cargoToml) {
   fail("could not find a version line in src-tauri/Cargo.toml.");
 }
@@ -68,7 +68,7 @@ writeFileSync(cargoTomlPath, updatedCargoToml);
 
 // Update only the [[package]] block whose name = "peek" — leave dependency versions alone.
 const cargoLock = readFileSync(cargoLockPath, "utf8");
-const lockBlockPattern = /(\[\[package\]\]\nname = "peek"\nversion = ")[^"]*(")/;
+const lockBlockPattern = /(\[\[package\]\]\nname = "peek"\nversion = ")[^"]*(")/u;
 const updatedCargoLock = cargoLock.replace(lockBlockPattern, `$1${version}$2`);
 if (updatedCargoLock === cargoLock) {
   fail("could not find peek package entry in src-tauri/Cargo.lock.");

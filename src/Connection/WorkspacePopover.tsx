@@ -51,7 +51,7 @@ export const WorkspacePopover = ({ onClose }: WorkspacePopoverProps) => {
         connectionName: connection.name,
         user: url.username,
         host: url.hostname,
-        dbName: url.pathname.replace(/^\//, ""),
+        dbName: url.pathname.replace(/^\//u, ""),
         connection,
       };
     }),

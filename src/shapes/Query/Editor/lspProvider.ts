@@ -35,7 +35,7 @@ function applyDiagnostics(monaco: Monaco, model: editor.ITextModel, diagnostics:
 }
 
 export function createLspProvider(monaco: Monaco): IDisposable {
-  return monaco.languages.registerCompletionItemProvider("sql", {
+  const provider: languages.CompletionItemProvider = {
     triggerCharacters: [" ", ".", ",", "\n", "\t"],
     async provideCompletionItems(model, position, _ctx, token) {
       const word = model.getWordUntilPosition(position);
@@ -85,7 +85,8 @@ export function createLspProvider(monaco: Monaco): IDisposable {
         return { suggestions: [], incomplete: true };
       }
     },
-  });
+  };
+  return monaco.languages.registerCompletionItemProvider("sql", provider);
 }
 
 /**

@@ -34,9 +34,9 @@ export function useRowActions({
       query
         .trim()
         .split("\n")[0]
-        ?.replace(/^--\s*/, "")
+        ?.replace(/^--\s*/u, "")
         .trim() ?? "";
-    const safe = trimmed.replaceAll(/[^a-z0-9_-]+/gi, "_").replaceAll(/^_+|_+$/g, "");
+    const safe = trimmed.replaceAll(/[^a-z0-9_-]+/giu, "_").replaceAll(/^_+|_+$/gu, "");
     return safe || "result";
   }, [query]);
 

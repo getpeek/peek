@@ -1,8 +1,8 @@
 export type Reference = { table: string; column: string };
 export type ColumnRoles = { isPk: boolean; isFk: boolean };
 
-const PK_COLUMN_PATTERN = /^id$/i;
-const FK_COLUMN_PATTERN = /_id$/i;
+const PK_COLUMN_PATTERN = /^id$/iu;
+const FK_COLUMN_PATTERN = /_id$/iu;
 
 export function classifyColumn(
   column: string,

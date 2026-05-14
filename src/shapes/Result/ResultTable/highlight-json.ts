@@ -17,7 +17,7 @@ export function syntaxHighlight(json: string) {
     .replaceAll(">", "&gt;");
 
   return formattedJson.replaceAll(
-    /("(?:[^"\\]|\\.)*")\s*(:)?|(\btrue\b|\bfalse\b|\bnull\b|\bundefined\b)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|([{}[\],])/g,
+    /("(?:[^"\\]|\\.)*")\s*(:)?|(\btrue\b|\bfalse\b|\bnull\b|\bundefined\b)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|([{}[\],])/gu,
     function (match, string, colon, keyword, number, punctuation) {
       if (string !== undefined) {
         if (colon !== undefined) {

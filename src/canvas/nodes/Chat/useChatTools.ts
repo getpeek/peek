@@ -60,7 +60,7 @@ export function useChatTools(opts: { nodeId: string }): ToolHandlers {
 
       branchToNewConversation: async args => {
         const { query } = args as { query: string };
-        const queryText = await branchToNewConversationTool.func({ query });
+        const queryText = (await branchToNewConversationTool.func({ query })) as string;
         const sourceNode = canvas.getNode(nodeId);
         if (!sourceNode) {
           return "Could not create query node: source not found";

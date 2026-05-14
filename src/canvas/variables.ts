@@ -4,11 +4,11 @@ import type { AppEdge, AppNode, VariableData } from "./types";
 
 export type VariableSite = { name: string; start: number; end: number };
 
-export const VARIABLE_NAME_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
+export const VARIABLE_NAME_RE = /^[A-Za-z_][A-Za-z0-9_]*$/u;
 // `@name` only matches when not preceded by a word char, so emails like
 // `users@email.com` are not treated as references to a variable named `email`,
 // while `'@email'` and bare `@email` still substitute.
-const VARIABLE_RE = /(?<!\w)@([A-Za-z_][A-Za-z0-9_]*)/g;
+const VARIABLE_RE = /(?<!\w)@([A-Za-z_][A-Za-z0-9_]*)/gu;
 
 export function scanVariableSites(query: string): VariableSite[] {
   const sites: VariableSite[] = [];

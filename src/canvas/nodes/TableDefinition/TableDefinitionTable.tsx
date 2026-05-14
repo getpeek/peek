@@ -25,16 +25,16 @@ export function TableDefinitionTable({ table, columns }: Props) {
       if (declaredPks.has(col)) {
         return true;
       }
-      if (/^id$/i.test(col)) {
+      if (/^id$/iu.test(col)) {
         return true;
       }
-      if (index === 0 && /_id$/i.test(col)) {
+      if (index === 0 && /_id$/iu.test(col)) {
         return true;
       }
       return false;
     };
     const foreignKey = (col: string, index: number) =>
-      fkSet.has(col) || (/_id$/i.test(col) && !primaryKey(col, index));
+      fkSet.has(col) || (/_id$/iu.test(col) && !primaryKey(col, index));
     return { isPk: primaryKey, isFk: foreignKey };
   }, [schema.primaryKeys, schema.references, table]);
 

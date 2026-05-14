@@ -25,7 +25,7 @@ function parseInviteUrl(raw: string): { ticket: string } | null {
     if (u.hostname !== "invite") {
       return null;
     }
-    const ticket = u.pathname.replace(/^\//, "").trim();
+    const ticket = u.pathname.replace(/^\//u, "").trim();
     return ticket ? { ticket } : null;
   } catch {
     return null;

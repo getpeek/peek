@@ -1,5 +1,5 @@
 import Editor, { Monaco } from "@monaco-editor/react";
-import { editor } from "monaco-editor";
+import { editor, languages } from "monaco-editor";
 import "../Query.css";
 import { useEffect, useRef } from "react";
 import { useAtomValue } from "jotai";
@@ -31,7 +31,7 @@ function ensureVariableProvider(monaco: Monaco) {
     return;
   }
   variableProviderRegistered = true;
-  monaco.languages.registerCompletionItemProvider("sql", {
+  const provider: languages.CompletionItemProvider = {
     triggerCharacters: ["@"],
     provideCompletionItems(model, position) {
       const uri = model.uri.toString();
@@ -42,7 +42,7 @@ function ensureVariableProvider(monaco: Monaco) {
 
       const lineText = model.getLineContent(position.lineNumber);
       const before = lineText.slice(0, position.column - 1);
-      const match = before.match(/@(\w*)$/);
+      const match = before.match(/@(\w*)$/u);
       if (!match) {
         return { suggestions: [] };
       }
@@ -66,7 +66,8 @@ function ensureVariableProvider(monaco: Monaco) {
         })),
       };
     },
-  });
+  };
+  monaco.languages.registerCompletionItemProvider("sql", provider);
 }
 
 export const SqlEditor = ({
