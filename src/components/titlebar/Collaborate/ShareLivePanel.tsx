@@ -59,7 +59,12 @@ export function ShareLivePanel({ session, onClose }: Props) {
 
       <div className='collab-divider' />
 
-      <ShareParticipantList session={session} peers={peerEntries} count={collaboratorCount} />
+      <ShareParticipantList
+        session={session}
+        peers={peerEntries}
+        count={collaboratorCount}
+        onClose={onClose}
+      />
 
       <button type='button' className='collab-end-button' onClick={endSession} disabled={busy}>
         <IconX size={14} stroke={2} />

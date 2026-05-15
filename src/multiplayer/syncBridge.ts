@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getDefaultStore, useAtomValue } from "jotai";
 import { useEffect } from "react";
+import { documentAtom, subscribeDocumentMutations } from "../canvas/state";
 import { participantsAtom, remoteCursorsAtom, sessionStateAtom } from "./state";
 import { type MultiplayerControls, requestRemoteExecution } from "./syncBridgeUtils";
 import { useSyncBridge } from "./useSyncBridge";
@@ -64,6 +65,7 @@ function useGossipBridge(): void {
         const name = typeof payload.name === "string" ? payload.name : "Peer";
         const color = typeof payload.color === "string" ? payload.color : "#888";
         const isHost = Boolean(payload.isHost);
+        const currentPageId = typeof payload.pageId === "string" ? payload.pageId : "";
         store.set(participantsAtom, prev => ({
           ...prev,
           [author]: {
@@ -71,6 +73,7 @@ function useGossipBridge(): void {
             name,
             color,
             isHost,
+            currentPageId,
             lastSeen: now,
           } satisfies Peer,
         }));
@@ -110,18 +113,27 @@ function useGossipBridge(): void {
     }
 
     const sendPresence = () => {
+      const pageId = getDefaultStore().get(documentAtom).activePageId;
       invoke("mp_gossip_send", {
         payload: {
           type: "presence",
           name: session.myName,
           color: session.myColor,
           isHost: session.role === "host",
+          pageId,
         },
       }).catch(() => {});
     };
 
     sendPresence();
     const heartbeat = window.setInterval(sendPresence, PRESENCE_HEARTBEAT_MS);
+    // Push presence immediately on local page switch so peers reflect the new
+    // page within ms instead of waiting up to 5s for the next heartbeat.
+    const unsubMutations = subscribeDocumentMutations((prev, next) => {
+      if (prev.activePageId !== next.activePageId) {
+        sendPresence();
+      }
+    });
     const prune = window.setInterval(() => {
       const store = getDefaultStore();
       const cutoff = Date.now() - PEER_STALE_MS;
@@ -154,6 +166,7 @@ function useGossipBridge(): void {
     return () => {
       window.clearInterval(heartbeat);
       window.clearInterval(prune);
+      unsubMutations();
     };
   }, [session]);
 }

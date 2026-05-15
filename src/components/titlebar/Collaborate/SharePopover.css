@@ -321,6 +321,35 @@
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 12px;
+  padding: 2px 4px;
+  margin: 0 -4px;
+  border-radius: 8px;
+  transition: background 0.12s;
+}
+
+.collab-row--clickable {
+  cursor: pointer;
+}
+
+.collab-row--clickable:hover,
+.collab-row--clickable:has(.collab-row-button:focus-visible) {
+  background: var(--pk-node-bg-2);
+}
+
+.collab-row-button {
+  display: contents;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: inherit;
+}
+
+.collab-row-button:disabled {
+  cursor: default;
 }
 
 .collab-avatar {
@@ -356,7 +385,7 @@
   white-space: nowrap;
 }
 
-.collab-you {
+.collab-page {
   color: var(--pk-fg-muted);
   font-weight: 400;
 }

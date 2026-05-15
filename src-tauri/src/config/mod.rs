@@ -1,6 +1,12 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
+
+const SETTINGS_SCHEMA: &str = include_str!("./settings.schema.json");
+
+fn default_schema_ref() -> String {
+    "./settings.schema.json".to_string()
+}
 
 #[tauri::command]
 pub fn get_config() -> Result<String, String> {
@@ -30,14 +36,30 @@ impl Default for Theme {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PeekConfig {
+    #[serde(rename = "$schema", default = "default_schema_ref")]
+    schema: String,
+    #[serde(default)]
     workspaces: Vec<Workspace>,
+    #[serde(default)]
     ai: AIConfig,
     #[serde(default)]
     name: Option<String>,
     #[serde(default)]
     theme: Theme,
+}
+
+impl Default for PeekConfig {
+    fn default() -> Self {
+        Self {
+            schema: default_schema_ref(),
+            workspaces: Vec::new(),
+            ai: AIConfig::default(),
+            name: None,
+            theme: Theme::default(),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -68,27 +90,54 @@ impl PeekConfig {
         config
     }
 
-    fn load_from_disk() -> Self {
-        let Ok(home_dir) = std::env::var("HOME") else {
-            return PeekConfig::default();
-        };
+    /// Ensures `~/peek/` exists, that `settings.schema.json` is up to date,
+    /// and that `settings.json` exists (creating it with defaults if not).
+    /// Called once at app startup so editors can resolve the `$schema`
+    /// reference and first-run users get a discoverable settings file.
+    pub fn ensure_initialized_on_disk() -> Result<(), String> {
+        let dir = Self::config_dir()?;
+        std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
 
-        let Ok(config_file) =
-            std::fs::read_to_string(format!("{home_dir}/.config/peek/config.toml"))
-        else {
+        // Always overwrite the schema so it stays in sync with the binary.
+        std::fs::write(dir.join("settings.schema.json"), SETTINGS_SCHEMA)
+            .map_err(|e| e.to_string())?;
+
+        let settings_path = dir.join("settings.json");
+        if !settings_path.exists() {
+            let default_config = PeekConfig::default();
+            let serialized =
+                serde_json::to_string_pretty(&default_config).map_err(|e| e.to_string())?;
+            std::fs::write(&settings_path, serialized).map_err(|e| e.to_string())?;
+        }
+
+        Ok(())
+    }
+
+    fn config_dir() -> Result<PathBuf, String> {
+        let home_dir = std::env::var("HOME").map_err(|e| e.to_string())?;
+        Ok(Path::new(&home_dir).join("peek"))
+    }
+
+    fn settings_path() -> Result<PathBuf, String> {
+        Ok(Self::config_dir()?.join("settings.json"))
+    }
+
+    fn load_from_disk() -> Self {
+        let Ok(path) = Self::settings_path() else {
             return PeekConfig::default();
         };
-        toml::from_str(&config_file).unwrap_or(PeekConfig::default())
+        let Ok(contents) = std::fs::read_to_string(&path) else {
+            return PeekConfig::default();
+        };
+        serde_json::from_str(&contents).unwrap_or_else(|_| PeekConfig::default())
     }
 
     fn save_to_disk(&self) -> Result<(), String> {
-        let home_dir = std::env::var("HOME").map_err(|e| e.to_string())?;
-        let config_dir = PathBuf::from(format!("{home_dir}/.config/peek"));
-        std::fs::create_dir_all(&config_dir).map_err(|e| e.to_string())?;
+        let dir = Self::config_dir()?;
+        std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
 
-        let config_path = config_dir.join("config.toml");
-        let serialized = toml::to_string_pretty(self).map_err(|e| e.to_string())?;
-        std::fs::write(&config_path, serialized).map_err(|e| e.to_string())
+        let serialized = serde_json::to_string_pretty(self).map_err(|e| e.to_string())?;
+        std::fs::write(dir.join("settings.json"), serialized).map_err(|e| e.to_string())
     }
 }
 

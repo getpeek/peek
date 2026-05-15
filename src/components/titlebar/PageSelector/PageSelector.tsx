@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { IconPlus } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
 import { usePageActions } from "../../../canvas/hooks/usePageActions";
+import { participantsAtom, sessionStateAtom } from "../../../multiplayer/state";
+import type { Peer } from "../../../multiplayer/types";
+import { PageTabAvatars } from "./PageTabAvatars";
 import { siblingSlideX, useTabDragReorder } from "./useTabDragReorder";
 import "./PageSelector.css";
 
@@ -10,10 +14,36 @@ const EXIT_MS = 140;
 export function PageSelector() {
   const { pages, activePageId, canClose, newPage, closePage, switchPage, renamePage, reorderPage } =
     usePageActions();
+  const session = useAtomValue(sessionStateAtom);
+  const participants = useAtomValue(participantsAtom);
   const [renameId, setRenameId] = useState<string | null>(null);
   const [enteringIds, setEnteringIds] = useState<Set<string>>(new Set());
   const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
   const prevPageIds = useRef<Set<string>>(new Set(pages.map(p => p.id)));
+
+  const peersByPage = new Map<string, Peer[]>();
+  if (session) {
+    const selfPeer: Peer = {
+      author: session.myAuthor,
+      name: session.myName,
+      color: session.myColor,
+      isHost: session.role === "host",
+      currentPageId: activePageId,
+      lastSeen: Date.now(),
+    };
+    peersByPage.set(activePageId, [selfPeer]);
+    for (const peer of Object.values(participants)) {
+      if (peer.author === session.myAuthor || !peer.currentPageId) {
+        continue;
+      }
+      const list = peersByPage.get(peer.currentPageId);
+      if (list) {
+        list.push(peer);
+      } else {
+        peersByPage.set(peer.currentPageId, [peer]);
+      }
+    }
+  }
 
   useEffect(() => {
     const currentIds = new Set(pages.map(p => p.id));
@@ -111,6 +141,7 @@ export function PageSelector() {
           >
             {active && <span className='dot' />}
             <span className='page-tab-label'>{page.name}</span>
+            <PageTabAvatars peers={peersByPage.get(page.id) ?? []} />
             {active && canClose && (
               <span
                 className='close'

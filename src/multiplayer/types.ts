@@ -17,6 +17,7 @@ export interface Peer {
   name: string;
   color: string;
   isHost: boolean;
+  currentPageId: string;
   lastSeen: number;
 }
 

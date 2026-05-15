@@ -176,6 +176,10 @@ export function useCanvas(): CanvasApi {
         }
       },
 
+      panToPoint: (x, y, opts = {}) => {
+        rf.setCenter(x, y, { zoom: opts.zoom, duration: opts.duration ?? 300 });
+      },
+
       fitView: (opts = {}) =>
         rf.fitView({ duration: opts.duration ?? 300, maxZoom: opts.maxZoom ?? 1 }),
 

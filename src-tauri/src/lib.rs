@@ -11,7 +11,7 @@ mod storage_commands;
 
 use std::sync::Arc;
 
-use config::SshTunnelConfig;
+use config::{PeekConfig, SshTunnelConfig};
 use database::{Database, mysql::MysqlDatabase, postgres::PostgresDatabase};
 use lsp::{Backend, SchemaIndex};
 use multiplayer::{IrohNode, MultiplayerSession};
@@ -120,6 +120,10 @@ async fn set_connection(
 pub fn run() {
     let schema_cache: SchemaCache = Arc::new(RwLock::new(SchemaIndex::default()));
     let backend = Arc::new(Backend::new(Arc::clone(&schema_cache)));
+
+    if let Err(e) = PeekConfig::ensure_initialized_on_disk() {
+        eprintln!("Failed to initialize peek settings on disk: {e}");
+    }
 
     tauri::Builder::default()
         // Single-instance must be registered before deep-link so its `deep-link`

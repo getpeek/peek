@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://peek.local/settings.schema.json",
+  "title": "Peek Settings",
+  "description": "User settings for the Peek database GUI.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this JSON Schema file. Lets editors provide autocomplete and validation."
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name used in multiplayer sessions. Defaults to the system $USER."
+    },
+    "theme": {
+      "type": "string",
+      "enum": ["pine", "midnight", "midday"],
+      "default": "pine",
+      "description": "UI color theme."
+    },
+    "ai": {
+      "type": "object",
+      "description": "Local AI model configuration. Peek talks to an Ollama-compatible endpoint.",
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "type": "string",
+          "default": "gemma4:e2b",
+          "description": "Model identifier passed to the AI endpoint."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "default": "http://localhost:11434",
+          "description": "Base URL of the Ollama-compatible AI server."
+        }
+      },
+      "required": ["model", "url"]
+    },
+    "workspaces": {
+      "type": "array",
+      "description": "Workspaces shown in the connection picker. Each groups one or more database connections.",
+      "items": {
+        "$ref": "#/$defs/workspace"
+      }
+    }
+  },
+  "$defs": {
+    "workspace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Workspace name shown in the UI."
+        },
+        "connections": {
+          "type": "array",
+          "description": "Database connections belonging to this workspace.",
+          "items": {
+            "$ref": "#/$defs/connection"
+          }
+        }
+      },
+      "required": ["name", "connections"]
+    },
+    "connection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Connection name shown in the UI."
+        },
+        "color": {
+          "type": "string",
+          "description": "Accent color (CSS color string) used to mark this connection in the UI."
+        },
+        "url": {
+          "type": "string",
+          "description": "Database connection URL, e.g. postgres://user:pass@host:5432/dbname or mysql://..."
+        },
+        "ssh_tunnel": {
+          "anyOf": [{ "$ref": "#/$defs/sshTunnel" }, { "type": "null" }],
+          "description": "Optional SSH tunnel used to reach the database through a bastion host."
+        }
+      },
+      "required": ["name", "color", "url"]
+    },
+    "sshTunnel": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ssh_host": {
+          "type": "string",
+          "description": "SSH bastion host (hostname or IP)."
+        },
+        "ssh_user": {
+          "type": "string",
+          "description": "SSH username on the bastion host."
+        },
+        "key_path": {
+          "type": "string",
+          "description": "Absolute path to the SSH private key file (e.g. a .pem)."
+        },
+        "ssh_port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 22,
+          "description": "SSH port on the bastion host."
+        },
+        "local_port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "default": 15432,
+          "description": "Local port the tunnel binds to. Set to 0 to let the OS pick a free port."
+        }
+      },
+      "required": ["ssh_host", "ssh_user", "key_path"]
+    }
+  }
+}

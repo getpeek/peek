@@ -5481,7 +5481,6 @@ dependencies = [
  "tauri-plugin-updater",
  "tiberius",
  "tokio",
- "toml 0.9.12+spec-1.1.0",
  "tree-sitter",
  "tree-sitter-language",
  "url",

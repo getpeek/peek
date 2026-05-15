@@ -1,14 +1,37 @@
+import { useAtomValue } from "jotai";
+import { canvasApiAtom, documentAtom } from "../../../canvas/state";
 import { initialFromName } from "../../../multiplayer/identity";
+import { remoteCursorsAtom } from "../../../multiplayer/state";
 import type { Peer, SessionState } from "../../../multiplayer/types";
 
 interface Props {
   session: SessionState;
   peers: Peer[];
   count: number;
+  onClose?: () => void;
 }
 
-export function ShareParticipantList({ session, peers, count }: Props) {
+export function ShareParticipantList({ session, peers, count, onClose }: Props) {
   const isHost = session.role === "host";
+  const doc = useAtomValue(documentAtom);
+  const canvasApi = useAtomValue(canvasApiAtom);
+  const cursors = useAtomValue(remoteCursorsAtom);
+
+  const pageNameFor = (pageId: string) => doc.pages[pageId]?.name ?? "—";
+
+  const handlePeerClick = (peer: Peer) => {
+    if (!canvasApi || !doc.pages[peer.currentPageId]) {
+      return;
+    }
+    canvasApi.switchPage(peer.currentPageId);
+    const cursor = cursors[peer.author];
+    if (cursor && cursor.pageId === peer.currentPageId) {
+      requestAnimationFrame(() =>
+        canvasApi.panToPoint(cursor.flowX, cursor.flowY, { duration: 300 }),
+      );
+    }
+    onClose?.();
+  };
 
   return (
     <section className='collab-section'>
@@ -23,20 +46,34 @@ export function ShareParticipantList({ session, peers, count }: Props) {
             <span className='collab-presence' />
           </span>
           <span className='collab-name'>
-            {session.myName} <span className='collab-you'>(you)</span>
+            {session.myName} <span className='collab-page'>{pageNameFor(doc.activePageId)}</span>
           </span>
           <span className='collab-role'>{isHost ? "HOST" : "EDITOR"}</span>
         </li>
-        {peers.map(p => (
-          <li className='collab-row' key={p.author}>
-            <span className='collab-avatar' style={{ backgroundColor: p.color }}>
-              {initialFromName(p.name)}
-              <span className='collab-presence' />
-            </span>
-            <span className='collab-name'>{p.name}</span>
-            <span className='collab-role'>{p.isHost ? "HOST" : "EDITOR"}</span>
-          </li>
-        ))}
+        {peers.map(p => {
+          const known = !!doc.pages[p.currentPageId];
+          return (
+            <li className={`collab-row ${known ? "collab-row--clickable" : ""}`} key={p.author}>
+              <button
+                type='button'
+                className='collab-row-button'
+                onClick={() => handlePeerClick(p)}
+                disabled={!known}
+                title={known ? `Jump to ${p.name} on ${pageNameFor(p.currentPageId)}` : p.name}
+              >
+                <span className='collab-avatar' style={{ backgroundColor: p.color }}>
+                  {initialFromName(p.name)}
+                  <span className='collab-presence' />
+                </span>
+                <span className='collab-name'>
+                  {p.name}{" "}
+                  <span className='collab-page'>{known ? pageNameFor(p.currentPageId) : ""}</span>
+                </span>
+                <span className='collab-role'>{p.isHost ? "HOST" : "EDITOR"}</span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
