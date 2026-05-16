@@ -103,7 +103,7 @@ jobs:
 
           cd src-tauri
           echo "Building for Apple Silicon (ARM64)..."
-          yarn tauri build --target aarch64-apple-darwin
+          yarn tauri build --target aarch64-apple-darwin --verbose
 
       - name: Verify signing, notarization, and stapling
         run: |

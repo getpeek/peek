@@ -86,18 +86,21 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
     });
   };
 
+  // Capture the latest tick implementation in a ref so the polling effect
+  // below only re-runs when `liveIntervalMs` changes. Including `canvas` /
+  // `executeQueries` / `session` directly in the deps caused the effect to
+  // tear down on every re-render (executeQueries is a fresh closure each
+  // render), firing tick() immediately each time `isRunning` flipped — which
+  // made queries run back-to-back instead of every `liveIntervalMs`.
+  const tickRef = useRef<() => void>(() => {});
   useEffect(() => {
-    const interval = data.liveIntervalMs;
-    if (interval === null || interval === undefined) {
-      return;
-    }
-    // Only the host runs the query executor in a session; joiners observe
-    // streamed results.
-    if (session?.role === "joiner") {
-      return;
-    }
-    const tick = () => {
+    tickRef.current = () => {
       if (editorFocusedRef.current) {
+        return;
+      }
+      // Only the host runs the query executor in a session; joiners observe
+      // streamed results.
+      if (session?.role === "joiner") {
         return;
       }
       const node = canvas.getNode(id);
@@ -113,10 +116,18 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
       }
       executeQueries(node, [queryData.query]);
     };
+  });
+
+  useEffect(() => {
+    const interval = data.liveIntervalMs;
+    if (interval === null || interval === undefined) {
+      return;
+    }
+    const tick = () => tickRef.current();
     tick();
     const handle = window.setInterval(tick, interval);
     return () => window.clearInterval(handle);
-  }, [id, data.liveIntervalMs, canvas, executeQueries, session]);
+  }, [data.liveIntervalMs]);
 
   const formatQuery = () => {
     const node = canvas.getNode(id);
