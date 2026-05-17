@@ -15,9 +15,14 @@ export interface PageActions {
   goToPageByIndex: (index: number) => void;
   nextPage: () => void;
   previousPage: () => void;
+  nodeInDirection: (direction: "up" | "down" | "left" | "right") => void;
   renamePage: (pageId: string, name: string) => void;
   reorderPage: (pageId: string, toIndex: number) => void;
 }
+
+const distance = (p1: { x: number; y: number }, p2: { x: number; y: number }) => {
+  return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+};
 
 export function usePageActions(): PageActions {
   const canvas = useAtomValue(canvasApiAtom);
@@ -92,6 +97,46 @@ export function usePageActions(): PageActions {
     },
     previousQueryNodeOnPage: () => {
       cycleActiveQueryNode(-1);
+    },
+    nodeInDirection: (direction: "up" | "down" | "left" | "right") => {
+      if (!canvas) {
+        return;
+      }
+
+      const selected = canvas.getSelectedNodes().at(0);
+      if (!selected) {
+        return;
+      }
+
+      const { x, y } = selected.position;
+      const candidates = canvas.getNodes().filter(node => {
+        if (node.id === selected.id) {
+          return false;
+        }
+        if (direction === "up") {
+          return node.position.y < y;
+        }
+        if (direction === "down") {
+          return node.position.y > y;
+        }
+        if (direction === "left") {
+          return node.position.x < x;
+        }
+        return node.position.x > x;
+      });
+
+      if (candidates.length === 0) {
+        return;
+      }
+
+      const closest = candidates.reduce((best, node) =>
+        distance(node.position, selected.position) < distance(best.position, selected.position)
+          ? node
+          : best,
+      );
+
+      canvas.selectOnly(closest.id);
+      canvas.panToNode(closest.id, { zoom: 1 });
     },
     goToPageByIndex: index => {
       if (!canvas) {

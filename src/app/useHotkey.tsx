@@ -69,10 +69,12 @@ export type Hotkey =
   | `${HotkeyModifiers}-${Units}`
   | `${HotkeyModifiers}-${HotkeyModifiers}-${Units}`;
 
+const MODIFIER_KEYS: readonly string[] = ["meta", "shift", "alt", "ctrl"];
+
 export const useHotkey = (keys: Hotkey, callback: (event: KeyboardEvent) => void) => {
   const onKeyDown = (event: KeyboardEvent) => {
     const input = keys.split("-");
-    const unit = input.find(key => key.length === 1);
+    const trigger = input.find(key => !MODIFIER_KEYS.includes(key)) ?? input.at(-1);
 
     if (!input.includes("escape") && isTextInputFocused()) {
       return;
@@ -82,6 +84,7 @@ export const useHotkey = (keys: Hotkey, callback: (event: KeyboardEvent) => void
       ["meta", event.metaKey],
       ["shift", event.shiftKey],
       ["alt", event.altKey],
+      ["ctrl", event.ctrlKey],
     ];
 
     for (const [check, modifier] of checks) {
@@ -90,11 +93,7 @@ export const useHotkey = (keys: Hotkey, callback: (event: KeyboardEvent) => void
       }
     }
 
-    if (unit && event.key.toLowerCase() !== unit) {
-      return;
-    }
-
-    if (!input.includes(event.key.toLowerCase())) {
+    if (event.key.toLowerCase() !== trigger) {
       return;
     }
 

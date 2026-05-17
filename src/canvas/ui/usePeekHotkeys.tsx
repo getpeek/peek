@@ -98,6 +98,19 @@ export const usePeekHotkeys = () => {
     pageActions.nextQueryNodeOnPage();
   });
 
+  useHotkey("meta-arrowright", () => {
+    pageActions.nodeInDirection("right");
+  });
+  useHotkey("meta-arrowleft", () => {
+    pageActions.nodeInDirection("left");
+  });
+  useHotkey("meta-arrowup", () => {
+    pageActions.nodeInDirection("up");
+  });
+  useHotkey("meta-arrowdown", () => {
+    pageActions.nodeInDirection("down");
+  });
+
   // Tools
 
   useHotkey("escape", () => {
