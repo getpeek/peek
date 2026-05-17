@@ -1,60 +1,93 @@
-import { Group, Stack, Text } from "@mantine/core";
-import { Connection } from "./types";
-import type { ConnectionHighlights } from "./WorkspacePopover";
+import { IconCopy, IconPencil, IconTerminal, IconTrash } from "@tabler/icons-react";
+import { DotMenu } from "./DotMenu";
 import { highlightMatch } from "./highlightMatch";
-import "./WorkspacePanel.css";
-import { IconTerminal } from "@tabler/icons-react";
+import type { ConnectionHighlights } from "./WorkspaceList";
+import type { Connection } from "./types";
+import { parseConnectionUrl } from "./urlParts";
 
 interface ConnectionItemProps {
+  connection: Connection;
   isActive: boolean;
   isHighlighted: boolean;
-  connection: Connection;
   highlights: ConnectionHighlights;
   onActivate: () => void;
   onHover: () => void;
+  onEdit: () => void;
+  onDuplicate: () => void;
+  onRemove: () => void;
 }
 
 export const ConnectionItem = ({
+  connection,
   isActive,
   isHighlighted,
-  connection,
   highlights,
   onActivate,
   onHover,
+  onEdit,
+  onDuplicate,
+  onRemove,
 }: ConnectionItemProps) => {
-  const url = new URL(connection.url);
+  const parsed = parseConnectionUrl(connection.url);
 
   return (
     <div
-      onClick={onActivate}
-      onMouseEnter={onHover}
-      className='connection'
+      className='picker-conn'
       data-is-active={isActive}
       data-is-highlighted={isHighlighted}
-      style={{ "--pk-active-color": connection.color } as React.CSSProperties}
+      onClick={onActivate}
+      onMouseEnter={onHover}
+      style={{ "--cdot": connection.color } as React.CSSProperties}
     >
-      <Group gap='sm' wrap='nowrap' align='flex-start' flex='1 1 auto' miw={0}>
-        <div className='color' style={{ backgroundColor: connection.color }} />
-        <Stack gap='xs' flex='1 1 auto' miw={0}>
-          <Text size='xs' fw='bold' truncate='end' c='var(--pk-fg)' className='connection-name'>
+      <span className='picker-conn-dot' />
+      <div className='picker-conn-body'>
+        <div className='picker-conn-row1'>
+          <span className='picker-conn-name'>
             {highlightMatch(highlights.connectionName, connection.name)}
-          </Text>
-          <Text size='xs' truncate='end' c='var(--pk-fg-subtle)'>
-            {highlightMatch(highlights.user, url.username)}@
-            {highlightMatch(highlights.host, url.hostname)}
-          </Text>
-        </Stack>
-        <div className='ssh'>
+          </span>
           {connection.ssh_tunnel ? (
-            <>
-              <IconTerminal size={14} />
-              <Text fz={10} c='var(--pk-fg-subtle)'>
-                SSH
-              </Text>
-            </>
+            <span className='picker-conn-env'>
+              <IconTerminal size={10} /> SSH
+            </span>
           ) : null}
+          <span className='picker-conn-actions'>
+            <DotMenu
+              ariaLabel='Connection actions'
+              items={[
+                {
+                  icon: <IconPencil size={13} />,
+                  label: "Edit connection",
+                  onClick: onEdit,
+                },
+                {
+                  icon: <IconCopy size={13} />,
+                  label: "Duplicate",
+                  onClick: onDuplicate,
+                },
+                "divider",
+                {
+                  icon: <IconTrash size={13} />,
+                  label: "Remove…",
+                  onClick: onRemove,
+                  danger: true,
+                },
+              ]}
+            />
+          </span>
         </div>
-      </Group>
+        <div className='picker-conn-row2'>
+          <span className='picker-conn-host'>
+            {parsed ? (
+              <>
+                {highlightMatch(highlights.user, parsed.user)}@
+                {highlightMatch(highlights.host, parsed.host)}
+              </>
+            ) : (
+              connection.url
+            )}
+          </span>
+        </div>
+      </div>
     </div>
   );
 };

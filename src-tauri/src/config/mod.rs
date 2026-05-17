@@ -22,6 +22,13 @@ pub fn set_theme(theme: Theme) -> Result<(), String> {
     config.save_to_disk()
 }
 
+#[tauri::command]
+pub fn set_workspaces(workspaces: Vec<Workspace>) -> Result<(), String> {
+    let mut config = PeekConfig::get_or_default();
+    config.workspaces = workspaces;
+    config.save_to_disk()
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
@@ -143,8 +150,8 @@ impl PeekConfig {
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Workspace {
-    name: String,
-    connections: Vec<DatabaseConnection>,
+    pub name: String,
+    pub connections: Vec<DatabaseConnection>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Default)]
