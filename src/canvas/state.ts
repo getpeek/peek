@@ -95,6 +95,8 @@ export const activePageAtom = atom<PageState>(get => {
   return doc.pages[doc.activePageId];
 });
 
+export const activePageIdAtom = atom<string>(get => get(documentAtom).activePageId);
+
 type Updater<T> = T | ((prev: T) => T);
 
 function applyUpdater<T>(prev: T, updater: Updater<T>): T {

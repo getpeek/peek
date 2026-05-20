@@ -12,6 +12,7 @@ export function useAutoSaveDocument() {
   const hasObservedInitialRef = useRef(false);
   const lastSavedJsonRef = useRef<string>("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSaveRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
     if (!conn) {
@@ -38,7 +39,8 @@ export function useAutoSaveDocument() {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
-    debounceRef.current = setTimeout(async () => {
+    const flush = async () => {
+      pendingSaveRef.current = null;
       try {
         await invoke("save", {
           workspace: conn.workspaceName,
@@ -49,6 +51,10 @@ export function useAutoSaveDocument() {
       } catch (e) {
         console.error("Failed to save canvas:", e);
       }
+    };
+    pendingSaveRef.current = flush;
+    debounceRef.current = setTimeout(() => {
+      void flush();
     }, 3000);
 
     return () => {
@@ -58,10 +64,23 @@ export function useAutoSaveDocument() {
     };
   }, [doc, conn, session]);
 
-  // Reset observation flag on connection change so the next load doesn't
-  // get re-saved as a "user change".
+  // On connection change, fire any in-flight debounced save against the
+  // *previous* conn (the closure captured it) before resetting observation
+  // state. Without this, viewport (and any other) edits made inside the
+  // debounce window would be silently dropped on switch.
   useEffect(() => {
-    hasObservedInitialRef.current = false;
-    lastSavedJsonRef.current = "";
+    return () => {
+      const pending = pendingSaveRef.current;
+      if (pending) {
+        pendingSaveRef.current = null;
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+          debounceRef.current = null;
+        }
+        void pending();
+      }
+      hasObservedInitialRef.current = false;
+      lastSavedJsonRef.current = "";
+    };
   }, [conn?.workspaceName, conn?.connection.name]);
 }

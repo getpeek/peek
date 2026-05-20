@@ -15,9 +15,16 @@ import {
 import "@xyflow/react/dist/style.css";
 import "./ReactFlowCanvas.css";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { uiVisibilityAtom } from "../state";
-import { edgesAtom, nodesAtom, placeModeAtom, viewportAtom } from "./state";
+import {
+  activePageIdAtom,
+  edgesAtom,
+  loadEpochAtom,
+  nodesAtom,
+  placeModeAtom,
+  viewportAtom,
+} from "./state";
 import { CanvasApiPublisher } from "./CanvasApiPublisher";
 import { AiPromptNode } from "./nodes/AiPrompt/AiPromptNode";
 import { BarChartNode } from "./nodes/BarChart/BarChartNode";
@@ -80,12 +87,35 @@ export function ReactFlowCanvas() {
 function ReactFlowCanvasInner() {
   const [nodes, setNodes] = useAtom(nodesAtom);
   const [edges, setEdges] = useAtom(edgesAtom);
-  const initialViewport = useAtomValue(viewportAtom);
+  const viewport = useAtomValue(viewportAtom);
   const setViewport = useSetAtom(viewportAtom);
+  const loadEpoch = useAtomValue(loadEpochAtom);
+  const activePageId = useAtomValue(activePageIdAtom);
   const placeMode = useAtomValue(placeModeAtom);
   const uiVisible = useAtomValue(uiVisibilityAtom);
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
+
+  // `defaultViewport` only takes effect on mount. After that, restoring
+  // viewport (on connection load *or* in-document page switch) requires an
+  // imperative setViewport — otherwise the camera stays where the user last
+  // left it visually, even though the atom holds the right value.
+  const viewportSyncRef = useRef<{ epoch: number; pageId: string } | null>(null);
+  useEffect(() => {
+    const last = viewportSyncRef.current;
+    if (last === null) {
+      // First mount — defaultViewport already wired this up.
+      viewportSyncRef.current = { epoch: loadEpoch, pageId: activePageId };
+      return;
+    }
+    if (last.epoch === loadEpoch && last.pageId === activePageId) {
+      // Pan/zoom — `viewport` changed but neither load nor page did. Don't
+      // re-apply; that would fight the user.
+      return;
+    }
+    viewportSyncRef.current = { epoch: loadEpoch, pageId: activePageId };
+    rf.setViewport(viewport);
+  }, [loadEpoch, activePageId, viewport, rf]);
   const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
   usePlaceTool();
   const { rect: selectionRect } = useRubberBandSelect();
@@ -172,7 +202,7 @@ function ReactFlowCanvasInner() {
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
         onMoveEnd={(_, vp) => setViewport(vp)}
-        defaultViewport={initialViewport}
+        defaultViewport={viewport}
         colorMode={"dark"}
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode='Shift'
