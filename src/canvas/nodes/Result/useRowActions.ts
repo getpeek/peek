@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import type { DatabaseResult } from "../../../state";
+import { copyRows } from "./copyRows";
 import { exportRows } from "./exportRows";
 import type { QueryInfo } from "./queryInfo";
 import { useCommitDelete } from "./useCommitDelete";
@@ -40,6 +41,11 @@ export function useRowActions({
     return safe || "result";
   }, [query]);
 
+  const selectedRows = useCallback((): DatabaseResult => {
+    const indices = [...selected].toSorted((a, b) => a - b);
+    return indices.map(i => data[i]).filter(Boolean) as DatabaseResult;
+  }, [data, selected]);
+
   const exportSingleRow = useCallback(
     (rowIndex: number, format: "csv" | "json") => {
       const row = data[rowIndex];
@@ -53,14 +59,31 @@ export function useRowActions({
 
   const exportSelectedRows = useCallback(
     (format: "csv" | "json") => {
-      const indices = [...selected].toSorted((a, b) => a - b);
-      const rows = indices.map(i => data[i]).filter(Boolean) as DatabaseResult;
+      const rows = selectedRows();
       if (rows.length === 0) {
         return;
       }
       void exportRows(rows, format, `${baseExportName}-${rows.length}-rows`);
     },
-    [data, baseExportName, selected],
+    [baseExportName, selectedRows],
+  );
+
+  const copyRow = useCallback(
+    (rowIndex: number, format: "csv" | "json") => {
+      const row = data[rowIndex];
+      if (!row) {
+        return;
+      }
+      void copyRows([row], format);
+    },
+    [data],
+  );
+
+  const copySelectedRows = useCallback(
+    (format: "csv" | "json") => {
+      void copyRows(selectedRows(), format);
+    },
+    [selectedRows],
   );
 
   const requestDelete = useCallback(() => {
@@ -104,6 +127,8 @@ export function useRowActions({
     deleteConfirm,
     exportSingleRow,
     exportSelectedRows,
+    copyRow,
+    copySelectedRows,
     requestDelete,
     cancelDelete,
     confirmDelete,

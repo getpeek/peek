@@ -1,7 +1,41 @@
 import { Menu } from "@mantine/core";
-import { IconAt, IconCopy, IconFileTypeCsv, IconJson, IconTrash } from "@tabler/icons-react";
+import {
+  IconAt,
+  IconCopy,
+  IconDownload,
+  IconFileTypeCsv,
+  IconJson,
+  IconTrash,
+} from "@tabler/icons-react";
+import type { ReactNode } from "react";
 import { PortalAnchor } from "./PortalAnchor";
 import type { CellMenuState } from "./useCellContextMenu";
+
+function FormatSubmenu({
+  label,
+  icon,
+  onSelect,
+}: {
+  label: string;
+  icon: ReactNode;
+  onSelect: (format: "csv" | "json") => void;
+}) {
+  return (
+    <Menu.Sub>
+      <Menu.Sub.Target>
+        <Menu.Sub.Item leftSection={icon}>{label}</Menu.Sub.Item>
+      </Menu.Sub.Target>
+      <Menu.Sub.Dropdown>
+        <Menu.Item leftSection={<IconJson size={14} />} onClick={() => onSelect("json")}>
+          JSON
+        </Menu.Item>
+        <Menu.Item leftSection={<IconFileTypeCsv size={14} />} onClick={() => onSelect("csv")}>
+          CSV
+        </Menu.Item>
+      </Menu.Sub.Dropdown>
+    </Menu.Sub>
+  );
+}
 
 export function CellContextMenu({
   cellMenu,
@@ -9,6 +43,8 @@ export function CellContextMenu({
   onClose,
   onUseAsVariable,
   onCopyValue,
+  onCopyRow,
+  onCopySelected,
   onExportRow,
   onExportSelected,
   onRequestDelete,
@@ -18,6 +54,8 @@ export function CellContextMenu({
   onClose: () => void;
   onUseAsVariable: () => void;
   onCopyValue: () => void;
+  onCopyRow: (format: "csv" | "json") => void;
+  onCopySelected: (format: "csv" | "json") => void;
   onExportRow: (format: "csv" | "json") => void;
   onExportSelected: (format: "csv" | "json") => void;
   onRequestDelete: () => void;
@@ -28,9 +66,12 @@ export function CellContextMenu({
 
   const rowInSelection = selected.has(cellMenu.rowIndex);
   const selectionCount = selected.size;
-  const showSelectionExport = rowInSelection && selectionCount >= 2;
-  const showDelete = rowInSelection && selectionCount >= 1;
-  const deleteLabel = selectionCount >= 2 ? `Delete ${selectionCount} selected rows` : "Delete row";
+  const showSelectionActions = rowInSelection && selectionCount >= 2;
+  const showSingleRow = !showSelectionActions;
+  const selectedRowsLabel = `${selectionCount} rows`;
+  const deleteLabel = selectionCount >= 2 ? `Delete ${selectionCount} rows` : "Delete row";
+  const copyIcon = <IconCopy size={14} />;
+  const exportIcon = <IconDownload size={14} />;
 
   return (
     <Menu
@@ -38,7 +79,7 @@ export function CellContextMenu({
       onClose={onClose}
       position='bottom-start'
       withinPortal
-      width={240}
+      width={280}
       offset={4}
       radius='md'
       classNames={{
@@ -52,37 +93,40 @@ export function CellContextMenu({
         <PortalAnchor x={cellMenu.x} y={cellMenu.y} />
       </Menu.Target>
       <Menu.Dropdown>
-        <Menu.Item leftSection={<IconCopy size={14} />} onClick={onCopyValue}>
-          Copy value
-        </Menu.Item>
-        <Menu.Item leftSection={<IconAt size={14} />} onClick={onUseAsVariable}>
-          Use as variable
-        </Menu.Item>
-        <Menu.Divider />
-        <Menu.Item leftSection={<IconFileTypeCsv size={14} />} onClick={() => onExportRow("csv")}>
-          Export row as CSV
-        </Menu.Item>
-        <Menu.Item leftSection={<IconJson size={14} />} onClick={() => onExportRow("json")}>
-          Export row as JSON
-        </Menu.Item>
-        {showSelectionExport && (
-          <>
-            <Menu.Divider />
-            <Menu.Item
-              leftSection={<IconFileTypeCsv size={14} />}
-              onClick={() => onExportSelected("csv")}
-            >
-              Export {selectionCount} selected rows as CSV
-            </Menu.Item>
-            <Menu.Item
-              leftSection={<IconJson size={14} />}
-              onClick={() => onExportSelected("json")}
-            >
-              Export {selectionCount} selected rows as JSON
-            </Menu.Item>
-          </>
+        {showSingleRow && (
+          <Menu.Item leftSection={<IconAt size={14} />} onClick={onUseAsVariable}>
+            Use as variable
+          </Menu.Item>
         )}
-        {showDelete && (
+
+        <Menu.Label>Copy</Menu.Label>
+        {showSingleRow && (
+          <Menu.Item leftSection={copyIcon} onClick={onCopyValue}>
+            Copy cell value
+          </Menu.Item>
+        )}
+        {showSingleRow && <FormatSubmenu label='Copy row' icon={copyIcon} onSelect={onCopyRow} />}
+        {showSelectionActions && (
+          <FormatSubmenu
+            label={`Copy ${selectedRowsLabel}`}
+            icon={copyIcon}
+            onSelect={onCopySelected}
+          />
+        )}
+
+        <Menu.Label>Export</Menu.Label>
+        {showSingleRow && (
+          <FormatSubmenu label='Export row' icon={exportIcon} onSelect={onExportRow} />
+        )}
+        {showSelectionActions && (
+          <FormatSubmenu
+            label={`Export ${selectedRowsLabel}`}
+            icon={exportIcon}
+            onSelect={onExportSelected}
+          />
+        )}
+
+        {rowInSelection && (
           <>
             <Menu.Divider />
             <Menu.Item color='red' leftSection={<IconTrash size={14} />} onClick={onRequestDelete}>

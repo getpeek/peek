@@ -1,7 +1,6 @@
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
-import { toCsv } from "../../../tools/export/csv";
-import { toJson } from "../../../tools/export/json";
+import { serializeRows } from "./serializeRows";
 import type { DatabaseResult } from "../../../state";
 
 export async function exportRows(
@@ -19,6 +18,5 @@ export async function exportRows(
   if (!path) {
     return;
   }
-  const output = format === "csv" ? toCsv(rows) : JSON.stringify(toJson(rows), null, 2);
-  await writeTextFile(path, output);
+  await writeTextFile(path, serializeRows(rows, format));
 }

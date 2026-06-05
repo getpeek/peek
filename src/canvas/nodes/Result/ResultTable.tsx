@@ -169,6 +169,21 @@ export function ResultTable({
     setHeaderMenu({ x: e.clientX, y: e.clientY, columnIdx, header });
   };
 
+  const onRowAction =
+    (action: (rowIndex: number, format: "csv" | "json") => void) => (format: "csv" | "json") => {
+      const rowIndex = cellContextMenu.cellMenu?.rowIndex;
+      cellContextMenu.closeCellMenu();
+      if (rowIndex !== undefined) {
+        action(rowIndex, format);
+      }
+    };
+
+  const onSelectionAction =
+    (action: (format: "csv" | "json") => void) => (format: "csv" | "json") => {
+      cellContextMenu.closeCellMenu();
+      action(format);
+    };
+
   return (
     <div
       style={{
@@ -263,17 +278,10 @@ export function ResultTable({
         onClose={cellContextMenu.closeCellMenu}
         onUseAsVariable={cellContextMenu.createVariableFromCell}
         onCopyValue={cellContextMenu.copyCellValue}
-        onExportRow={format => {
-          const rowIndex = cellContextMenu.cellMenu?.rowIndex;
-          cellContextMenu.closeCellMenu();
-          if (rowIndex !== undefined) {
-            rowActions.exportSingleRow(rowIndex, format);
-          }
-        }}
-        onExportSelected={format => {
-          cellContextMenu.closeCellMenu();
-          rowActions.exportSelectedRows(format);
-        }}
+        onCopyRow={onRowAction(rowActions.copyRow)}
+        onCopySelected={onSelectionAction(rowActions.copySelectedRows)}
+        onExportRow={onRowAction(rowActions.exportSingleRow)}
+        onExportSelected={onSelectionAction(rowActions.exportSelectedRows)}
         onRequestDelete={rowActions.requestDelete}
       />
       <DeleteConfirmModal
