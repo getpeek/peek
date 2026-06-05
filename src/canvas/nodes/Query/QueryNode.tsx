@@ -21,14 +21,12 @@ const DEFAULT_W = 420;
 const DEFAULT_H = 320;
 const LIVE_POLL_MS = 10_000;
 
-function firstLine(query: string): string {
-  const line = query.split("\n").find(l => l.trim().length > 0);
-  if (!line) {
-    return "";
-  }
-  return line
+function nodeHeading(query: string): string {
+  return query
     .replace(/^--\s*/u, "")
-    .trim()
+    .split("\n")
+    .map(l => l.trim())
+    .join(" ")
     .slice(0, 60);
 }
 
@@ -155,7 +153,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
       >
         <NodeHeader
           nodeId={id}
-          name={firstLine(data.query) || "untitled.sql"}
+          name={nodeHeading(data.query) || "untitled.sql"}
           indicator={<NodeIndicator kind='query' />}
         >
           <button

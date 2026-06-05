@@ -14,6 +14,7 @@ import { useLoadDocument } from "./canvas/hooks/useLoadDocument";
 import { InviteConfirmModal } from "./multiplayer/InviteConfirmModal";
 import { useMultiplayer } from "./multiplayer/syncBridge";
 import { useDeepLinkInvite } from "./multiplayer/useDeepLinkInvite";
+import { useMcpBridge } from "./mcp/useMcpBridge";
 import { UpdateDialog } from "./updater/UpdateDialog";
 import { configAtom } from "./state";
 import "@mantine/core/styles.css";
@@ -30,6 +31,7 @@ function App() {
   useLoadDocument();
   useMultiplayer();
   useDeepLinkInvite();
+  useMcpBridge();
 
   const config = useAtomValue(configAtom);
   const colorScheme = config?.theme === "midday" ? "light" : "dark";

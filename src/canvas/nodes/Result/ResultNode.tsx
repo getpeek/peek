@@ -27,15 +27,15 @@ import "./Result.css";
 const DEFAULT_W = 620;
 const DEFAULT_H = 640;
 
-function firstLineOfQuery(query: string): string {
-  const line = query.split("\n").find(l => l.trim().length > 0);
-  if (!line) {
-    return "";
-  }
-  return line
-    .replace(/^--\s*/u, "")
-    .trim()
-    .slice(0, 60);
+function nodeHeading(query: string): string {
+  return (
+    query
+      .replace(/^--\s*/u, "")
+      .split("\n")
+      .map(l => l.trim())
+      .join(" ")
+      .slice(0, 60) + "..."
+  );
 }
 
 export function ResultNode({ id, data, selected, width, height }: NodeProps<ResultNodeT>) {
@@ -123,7 +123,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
     canvas.zoomToNode(chatId, { duration: 200 });
   };
 
-  const queryName = firstLineOfQuery(data.query);
+  const queryName = nodeHeading(data.query);
 
   const exportAs = async (format: "csv" | "json") => {
     const baseName =

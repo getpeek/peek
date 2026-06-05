@@ -99,7 +99,6 @@ export function CellContextMenu({
           </Menu.Item>
         )}
 
-        <Menu.Label>Copy</Menu.Label>
         {showSingleRow && (
           <Menu.Item leftSection={copyIcon} onClick={onCopyValue}>
             Copy cell value
@@ -114,7 +113,6 @@ export function CellContextMenu({
           />
         )}
 
-        <Menu.Label>Export</Menu.Label>
         {showSingleRow && (
           <FormatSubmenu label='Export row' icon={exportIcon} onSelect={onExportRow} />
         )}

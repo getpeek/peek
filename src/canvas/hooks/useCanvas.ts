@@ -156,6 +156,17 @@ export function useCanvas(): CanvasApi {
         }
       },
 
+      fitNode: (id, opts = {}) => {
+        const fit = () =>
+          rf.fitView({ nodes: [{ id }], duration: opts.duration ?? 300, padding: 0.2, maxZoom: 1 });
+        // The node may not be in React Flow yet (e.g. just after a page switch) — retry next frame.
+        if (rf.getNode(id)) {
+          fit();
+        } else {
+          requestAnimationFrame(fit);
+        }
+      },
+
       panToNode: (id, opts = {}) => {
         const center = () => {
           const node = rf.getNode(id);
@@ -184,6 +195,7 @@ export function useCanvas(): CanvasApi {
         rf.fitView({ duration: opts.duration ?? 300, maxZoom: opts.maxZoom ?? 1 }),
 
       resetZoom: () => rf.zoomTo(1, { duration: 200 }),
+      setZoom: (zoom, opts = {}) => rf.zoomTo(zoom, { duration: opts.duration ?? 200 }),
       getZoom: () => rf.getZoom(),
       screenToFlowPosition: p => rf.screenToFlowPosition(p),
 

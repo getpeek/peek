@@ -4,6 +4,8 @@ mod database_commands;
 mod import;
 mod lsp;
 mod lsp_commands;
+mod mcp;
+mod mcp_commands;
 mod multiplayer;
 mod multiplayer_commands;
 mod ssh_tunnel;
@@ -125,6 +127,10 @@ pub fn run() {
         eprintln!("Failed to initialize peek settings on disk: {e}");
     }
 
+    let mcp = PeekConfig::get_or_default().ai.mcp;
+    let pending: mcp_commands::PendingRequests =
+        Arc::new(parking_lot::Mutex::new(std::collections::HashMap::new()));
+
     tauri::Builder::default()
         // Single-instance must be registered before deep-link so its `deep-link`
         // feature can forward `peek://` URLs from a duplicate launch into the
@@ -141,9 +147,25 @@ pub fn run() {
         .manage(Mutex::new(AppData::default()))
         .manage(schema_cache)
         .manage(backend)
+        .manage(Arc::clone(&pending))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+        .setup(move |app| {
+            if mcp.enable {
+                let port = mcp.port;
+                let bridge: mcp::SharedBridge = Arc::new(mcp_commands::TauriBridge::new(
+                    app.handle().clone(),
+                    Arc::clone(&pending),
+                ));
+                tauri::async_runtime::spawn(async move {
+                    if let Err(e) = mcp::serve(port, bridge).await {
+                        eprintln!("MCP server failed to start: {e}");
+                    }
+                });
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             database_commands::get_results,
             database_commands::get_schema,
@@ -167,6 +189,7 @@ pub fn run() {
             multiplayer_commands::mp_doc_put,
             multiplayer_commands::mp_doc_del,
             multiplayer_commands::mp_gossip_send,
+            mcp_commands::mcp_respond,
             set_connection
         ])
         .run(tauri::generate_context!())

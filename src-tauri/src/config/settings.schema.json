@@ -35,6 +35,25 @@
           "format": "uri",
           "default": "http://localhost:11434",
           "description": "Base URL of the Ollama-compatible AI server."
+        },
+        "mcp": {
+          "type": "object",
+          "description": "Model Context Protocol server. Lets AI agents drive Peek. Takes effect on restart.",
+          "additionalProperties": false,
+          "properties": {
+            "enable": {
+              "type": "boolean",
+              "default": false,
+              "description": "Run the MCP server at startup."
+            },
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535,
+              "default": 13315,
+              "description": "Port the MCP server listens on (binds 0.0.0.0)."
+            }
+          }
         }
       },
       "required": ["model", "url"]

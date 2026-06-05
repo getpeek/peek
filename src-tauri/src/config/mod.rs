@@ -29,18 +29,13 @@ pub fn set_workspaces(workspaces: Vec<Workspace>) -> Result<(), String> {
     config.save_to_disk()
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
+    #[default]
     Pine,
     Midnight,
     Midday,
-}
-
-impl Default for Theme {
-    fn default() -> Self {
-        Theme::Pine
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -50,7 +45,7 @@ pub struct PeekConfig {
     #[serde(default)]
     workspaces: Vec<Workspace>,
     #[serde(default)]
-    ai: AIConfig,
+    pub ai: AIConfig,
     #[serde(default)]
     name: Option<String>,
     #[serde(default)]
@@ -70,9 +65,35 @@ impl Default for PeekConfig {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct McpConfig {
+    /// Run the MCP server at startup. Changing this takes effect on restart.
+    #[serde(default)]
+    pub enable: bool,
+    #[serde(default = "McpConfig::default_port")]
+    pub port: u16,
+}
+
+impl McpConfig {
+    fn default_port() -> u16 {
+        13315
+    }
+}
+
+impl Default for McpConfig {
+    fn default() -> Self {
+        Self {
+            enable: false,
+            port: Self::default_port(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AIConfig {
     model: String,
     url: String,
+    #[serde(default)]
+    pub mcp: McpConfig,
 }
 
 impl Default for AIConfig {
@@ -80,6 +101,7 @@ impl Default for AIConfig {
         Self {
             model: "gemma4:e2b".to_string(),
             url: "http://localhost:11434".to_string(),
+            mcp: McpConfig::default(),
         }
     }
 }

@@ -8,6 +8,10 @@ export interface Config {
   ai: {
     model: string;
     url: string;
+    mcp: {
+      enable: boolean;
+      port: number;
+    };
   };
   workspaces: Workspace[];
   name: string;
