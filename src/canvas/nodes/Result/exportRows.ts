@@ -1,12 +1,13 @@
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
-import { serializeRows } from "./serializeRows";
+import { serializeRows, type ExportFormat } from "./serializeRows";
 import type { DatabaseResult } from "../../../state";
 
 export async function exportRows(
   rows: DatabaseResult,
-  format: "csv" | "json",
+  format: ExportFormat,
   defaultName: string,
+  tableName?: string,
 ): Promise<void> {
   if (rows.length === 0) {
     return;
@@ -18,5 +19,5 @@ export async function exportRows(
   if (!path) {
     return;
   }
-  await writeTextFile(path, serializeRows(rows, format));
+  await writeTextFile(path, serializeRows(rows, format, tableName));
 }

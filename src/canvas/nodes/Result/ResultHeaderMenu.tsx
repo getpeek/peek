@@ -1,6 +1,7 @@
 import { Menu } from "@mantine/core";
-import { IconAt, IconFileTypeCsv, IconJson } from "@tabler/icons-react";
+import { IconAt, IconFileTypeCsv, IconFileTypeSql, IconJson } from "@tabler/icons-react";
 import { PortalAnchor } from "./PortalAnchor";
+import type { ExportFormat } from "./serializeRows";
 
 export type HeaderMenuState = {
   x: number;
@@ -17,13 +18,13 @@ export function ResultHeaderMenu({
 }: {
   state: HeaderMenuState | null;
   onClose: () => void;
-  onExportColumn: (columnIdx: number, header: string, format: "csv" | "json") => void;
+  onExportColumn: (columnIdx: number, header: string, format: ExportFormat) => void;
   onUseAsVariable: (columnIdx: number, header: string) => void;
 }) {
   if (!state) {
     return null;
   }
-  const exportColumn = (format: "csv" | "json") => {
+  const exportColumn = (format: ExportFormat) => {
     const { columnIdx, header } = state;
     onClose();
     onExportColumn(columnIdx, header, format);
@@ -62,6 +63,9 @@ export function ResultHeaderMenu({
         </Menu.Item>
         <Menu.Item leftSection={<IconJson size={14} />} onClick={() => exportColumn("json")}>
           Export column as JSON
+        </Menu.Item>
+        <Menu.Item leftSection={<IconFileTypeSql size={14} />} onClick={() => exportColumn("sql")}>
+          Export column as SQL
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

@@ -4,11 +4,13 @@ import {
   IconCopy,
   IconDownload,
   IconFileTypeCsv,
+  IconFileTypeSql,
   IconJson,
   IconTrash,
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { PortalAnchor } from "./PortalAnchor";
+import type { ExportFormat } from "./serializeRows";
 import type { CellMenuState } from "./useCellContextMenu";
 
 function FormatSubmenu({
@@ -18,7 +20,7 @@ function FormatSubmenu({
 }: {
   label: string;
   icon: ReactNode;
-  onSelect: (format: "csv" | "json") => void;
+  onSelect: (format: ExportFormat) => void;
 }) {
   return (
     <Menu.Sub>
@@ -31,6 +33,9 @@ function FormatSubmenu({
         </Menu.Item>
         <Menu.Item leftSection={<IconFileTypeCsv size={14} />} onClick={() => onSelect("csv")}>
           CSV
+        </Menu.Item>
+        <Menu.Item leftSection={<IconFileTypeSql size={14} />} onClick={() => onSelect("sql")}>
+          SQL
         </Menu.Item>
       </Menu.Sub.Dropdown>
     </Menu.Sub>
@@ -54,10 +59,10 @@ export function CellContextMenu({
   onClose: () => void;
   onUseAsVariable: () => void;
   onCopyValue: () => void;
-  onCopyRow: (format: "csv" | "json") => void;
-  onCopySelected: (format: "csv" | "json") => void;
-  onExportRow: (format: "csv" | "json") => void;
-  onExportSelected: (format: "csv" | "json") => void;
+  onCopyRow: (format: ExportFormat) => void;
+  onCopySelected: (format: ExportFormat) => void;
+  onExportRow: (format: ExportFormat) => void;
+  onExportSelected: (format: ExportFormat) => void;
   onRequestDelete: () => void;
 }) {
   if (!cellMenu) {

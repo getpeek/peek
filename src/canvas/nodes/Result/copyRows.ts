@@ -1,9 +1,13 @@
-import { serializeRows } from "./serializeRows";
+import { serializeRows, type ExportFormat } from "./serializeRows";
 import type { DatabaseResult } from "../../../state";
 
-export async function copyRows(rows: DatabaseResult, format: "csv" | "json"): Promise<void> {
+export async function copyRows(
+  rows: DatabaseResult,
+  format: ExportFormat,
+  tableName?: string,
+): Promise<void> {
   if (rows.length === 0) {
     return;
   }
-  await navigator.clipboard.writeText(serializeRows(rows, format));
+  await navigator.clipboard.writeText(serializeRows(rows, format, tableName));
 }

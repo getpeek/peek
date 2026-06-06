@@ -2,7 +2,9 @@ import { useCallback, useMemo, useState } from "react";
 import type { DatabaseResult } from "../../../state";
 import { copyRows } from "./copyRows";
 import { exportRows } from "./exportRows";
+import { getExportTableName } from "./inlineEdit";
 import type { QueryInfo } from "./queryInfo";
+import type { ExportFormat } from "./serializeRows";
 import { useCommitDelete } from "./useCommitDelete";
 
 type DeleteConfirmState = {
@@ -41,49 +43,51 @@ export function useRowActions({
     return safe || "result";
   }, [query]);
 
+  const exportTableName = getExportTableName(queryInfo, baseExportName);
+
   const selectedRows = useCallback((): DatabaseResult => {
     const indices = [...selected].toSorted((a, b) => a - b);
     return indices.map(i => data[i]).filter(Boolean) as DatabaseResult;
   }, [data, selected]);
 
   const exportSingleRow = useCallback(
-    (rowIndex: number, format: "csv" | "json") => {
+    (rowIndex: number, format: ExportFormat) => {
       const row = data[rowIndex];
       if (!row) {
         return;
       }
-      void exportRows([row], format, `${baseExportName}-row-${rowIndex + 1}`);
+      void exportRows([row], format, `${baseExportName}-row-${rowIndex + 1}`, exportTableName);
     },
-    [data, baseExportName],
+    [data, baseExportName, exportTableName],
   );
 
   const exportSelectedRows = useCallback(
-    (format: "csv" | "json") => {
+    (format: ExportFormat) => {
       const rows = selectedRows();
       if (rows.length === 0) {
         return;
       }
-      void exportRows(rows, format, `${baseExportName}-${rows.length}-rows`);
+      void exportRows(rows, format, `${baseExportName}-${rows.length}-rows`, exportTableName);
     },
-    [baseExportName, selectedRows],
+    [baseExportName, exportTableName, selectedRows],
   );
 
   const copyRow = useCallback(
-    (rowIndex: number, format: "csv" | "json") => {
+    (rowIndex: number, format: ExportFormat) => {
       const row = data[rowIndex];
       if (!row) {
         return;
       }
-      void copyRows([row], format);
+      void copyRows([row], format, exportTableName);
     },
-    [data],
+    [data, exportTableName],
   );
 
   const copySelectedRows = useCallback(
-    (format: "csv" | "json") => {
-      void copyRows(selectedRows(), format);
+    (format: ExportFormat) => {
+      void copyRows(selectedRows(), format, exportTableName);
     },
-    [selectedRows],
+    [selectedRows, exportTableName],
   );
 
   const requestDelete = useCallback(() => {

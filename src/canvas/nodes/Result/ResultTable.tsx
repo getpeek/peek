@@ -23,11 +23,12 @@ import { useColumnWidths } from "./useColumnWidths";
 import { useCommitEdit, type EditingState } from "./useCommitEdit";
 import { useCommitInsert, type InsertingState } from "./useCommitInsert";
 import type { QueryInfo } from "./queryInfo";
+import type { ExportFormat } from "./serializeRows";
 import { useRowActions } from "./useRowActions";
 import { useRowSelection } from "./useRowSelection";
 import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
 import type { Reference } from "./columnRoles";
-import { getEditableTableName } from "./inlineEdit";
+import { getEditableTableName, getExportTableName } from "./inlineEdit";
 import "../../../shapes/Result/ResultShape.css";
 
 export function ResultTable({
@@ -111,16 +112,16 @@ export function ResultTable({
   };
 
   const exportColumn = useCallback(
-    async (columnIdx: number, header: string, format: "csv" | "json") => {
+    async (columnIdx: number, header: string, format: ExportFormat) => {
       const columnData: DatabaseResult = data
         .map(row => (row[columnIdx] ? [row[columnIdx]] : []))
         .filter(row => row.length > 0);
       if (columnData.length === 0) {
         return;
       }
-      await exportRows(columnData, format, header);
+      await exportRows(columnData, format, header, getExportTableName(queryInfo, header));
     },
-    [data],
+    [data, queryInfo],
   );
 
   const spawnVariableFromColumn = useColumnAsVariable({ nodeId, data, headerTypes });
@@ -170,7 +171,7 @@ export function ResultTable({
   };
 
   const onRowAction =
-    (action: (rowIndex: number, format: "csv" | "json") => void) => (format: "csv" | "json") => {
+    (action: (rowIndex: number, format: ExportFormat) => void) => (format: ExportFormat) => {
       const rowIndex = cellContextMenu.cellMenu?.rowIndex;
       cellContextMenu.closeCellMenu();
       if (rowIndex !== undefined) {
@@ -178,11 +179,10 @@ export function ResultTable({
       }
     };
 
-  const onSelectionAction =
-    (action: (format: "csv" | "json") => void) => (format: "csv" | "json") => {
-      cellContextMenu.closeCellMenu();
-      action(format);
-    };
+  const onSelectionAction = (action: (format: ExportFormat) => void) => (format: ExportFormat) => {
+    cellContextMenu.closeCellMenu();
+    action(format);
+  };
 
   return (
     <div

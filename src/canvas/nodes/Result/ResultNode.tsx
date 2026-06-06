@@ -4,6 +4,7 @@ import {
   IconChartBar,
   IconDownload,
   IconFileTypeCsv,
+  IconFileTypeSql,
   IconGitFork,
   IconJson,
   IconMessageChatbot,
@@ -11,9 +12,12 @@ import {
 import { useAtomValue } from "jotai";
 import { useRef } from "react";
 import { exportRows } from "./exportRows";
+import { getExportTableName } from "./inlineEdit";
 import { useQueryInfo } from "./queryInfo";
+import type { ExportFormat } from "./serializeRows";
 import { ResultTable } from "./ResultTable";
 import { useCanvas } from "../../hooks/useCanvas";
+import { useChartSync } from "./useChartSync";
 import { useCreateChart } from "./useCreateChart";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
@@ -43,6 +47,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
   const createChart = useCreateChart();
   const results = useAtomValue(resultsAtom);
   const rows = results[id] ?? [];
+  useChartSync({ nodeId: id, rows });
   const queryInfo = useQueryInfo(data.query);
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
@@ -125,10 +130,10 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
 
   const queryName = nodeHeading(data.query);
 
-  const exportAs = async (format: "csv" | "json") => {
+  const exportAs = async (format: ExportFormat) => {
     const baseName =
       queryName.replaceAll(/[^a-z0-9_-]+/giu, "_").replaceAll(/^_+|_+$/gu, "") || "result";
-    await exportRows(rows, format, baseName);
+    await exportRows(rows, format, baseName, getExportTableName(queryInfo, baseName));
   };
 
   return (
@@ -218,6 +223,12 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
                 </Menu.Item>
                 <Menu.Item leftSection={<IconJson size={14} />} onClick={() => exportAs("json")}>
                   Export as JSON
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconFileTypeSql size={14} />}
+                  onClick={() => exportAs("sql")}
+                >
+                  Export as SQL
                 </Menu.Item>
               </Menu.Dropdown>
             </Menu>

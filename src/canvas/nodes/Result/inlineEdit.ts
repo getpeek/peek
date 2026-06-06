@@ -14,6 +14,13 @@ export function getEditableTableName(info: QueryInfo | null | undefined): string
   return table.name;
 }
 
+// SQL exports need a target table even for joins/aggregates the user can't edit
+// in place, so this falls back to the first base table and then a generic name.
+export function getExportTableName(info: QueryInfo | null | undefined, fallback: string): string {
+  const base = info?.tables.find(t => !t.isJoined) ?? info?.tables[0];
+  return base?.name ?? fallback;
+}
+
 const NUMERIC_TYPES = new Set([
   "INT2",
   "INT4",
