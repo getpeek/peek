@@ -25,6 +25,7 @@ const DEFAULT_H = 400;
 export function AgentNode({ id, data, selected, width, height }: NodeProps<AgentNodeT>) {
   const [question, setQuestion] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   useScrollFallthrough(bodyRef);
 
@@ -68,8 +69,12 @@ export function AgentNode({ id, data, selected, width, height }: NodeProps<Agent
         <NodeHeader nodeId={id} name={modelName} indicator={<NodeIndicator kind='agent' />} />
         <div className='app-node-body nodrag' ref={bodyRef}>
           <div className='chat-container'>
-            <div className='messages-container'>
-              {hasVisibleMessages ? <MessageList messages={data.messages} /> : <ChatEmptyState />}
+            <div className='messages-container' ref={messagesScrollRef}>
+              {hasVisibleMessages ? (
+                <MessageList messages={data.messages} scrollRef={messagesScrollRef} />
+              ) : (
+                <ChatEmptyState />
+              )}
               {incomingMessage && (
                 <MessageItem
                   message={{

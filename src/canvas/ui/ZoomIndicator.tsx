@@ -1,9 +1,14 @@
-import { Panel, useReactFlow, useStore } from "@xyflow/react";
+import { Panel, useReactFlow } from "@xyflow/react";
 import { IconMaximize, IconMinus, IconPlus } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
+import { viewportAtom } from "../state";
 import "./Toolbar.css";
 
 export function ZoomIndicator() {
-  const zoom = useStore(s => s.transform[2]);
+  // Read from the atom (written on `onMoveEnd`) rather than the xyflow store's
+  // live transform — the percentage settles on gesture-release instead of
+  // re-rendering this panel every frame of a pan/zoom.
+  const zoom = useAtomValue(viewportAtom).zoom;
   const rf = useReactFlow();
 
   return (

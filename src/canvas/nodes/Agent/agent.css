@@ -51,6 +51,14 @@
   animation: messageSlideIn 0.25s ease-out;
 }
 
+/* Virtualized history rows mount/unmount as you scroll, so suppress the
+   one-shot entry animation — it would otherwise re-fire on every scroll. New
+   replies still animate via the live incoming bubble, which isn't virtualized. */
+.messages-virtual .msg,
+.messages-virtual .ev {
+  animation: none;
+}
+
 @keyframes messageSlideIn {
   from {
     opacity: 0;

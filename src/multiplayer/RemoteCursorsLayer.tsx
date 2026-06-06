@@ -2,25 +2,28 @@ import { Panel, useStore } from "@xyflow/react";
 import { useAtomValue } from "jotai";
 import { documentAtom } from "../canvas/state";
 import { participantsAtom, remoteCursorsAtom, sessionStateAtom } from "./state";
+import type { Peer, RemoteCursor } from "./types";
 import "./RemoteCursorsLayer.css";
 
 /**
  * Renders one cursor per remote peer using the cached `remoteCursorsAtom`
  * positions. Cursors live in flow space; we apply the local viewport
  * transform manually so they track pan/zoom on this peer.
+ *
+ * Split in two: the gate reads only atoms (no per-frame work) and bails when
+ * there's nothing to draw, so the live viewport subscription in `RemoteCursors`
+ * only mounts when remote cursors are actually on screen. Solo sessions and
+ * peers on other pages pay nothing during pan/zoom.
  */
 export function RemoteCursorsLayer() {
   const session = useAtomValue(sessionStateAtom);
   const cursors = useAtomValue(remoteCursorsAtom);
   const participants = useAtomValue(participantsAtom);
   const activePageId = useAtomValue(documentAtom).activePageId;
-  // Subscribe to viewport so we re-render on pan/zoom.
-  const transform = useStore(s => s.transform);
 
   if (!session) {
     return null;
   }
-  const [tx, ty, tz] = transform;
 
   const entries = Object.entries(cursors).filter(
     ([author, cur]) => author !== session.myAuthor && cur.pageId === activePageId,
@@ -28,6 +31,20 @@ export function RemoteCursorsLayer() {
   if (entries.length === 0) {
     return null;
   }
+
+  return <RemoteCursors entries={entries} participants={participants} />;
+}
+
+interface RemoteCursorsProps {
+  entries: [string, RemoteCursor][];
+  participants: Record<string, Peer>;
+}
+
+function RemoteCursors({ entries, participants }: RemoteCursorsProps) {
+  // Subscribe to the live viewport so cursors stay glued to canvas content
+  // during this peer's own pan/zoom. Frame-accurate by design — throttling
+  // would make remote pointers visibly drift behind the canvas.
+  const [tx, ty, tz] = useStore(s => s.transform);
 
   return (
     <Panel position='top-left' className='remote-cursors-panel'>

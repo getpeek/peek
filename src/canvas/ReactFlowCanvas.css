@@ -14,3 +14,36 @@ body.is-rubber-band-selecting * {
   user-select: none !important;
   -webkit-user-select: none !important;
 }
+
+/* ============================================================
+   Interaction-time paint reduction
+   While panning / zooming / dragging, `useInteractionState` sets
+   `data-interacting` on the root. We trade visual fidelity for paint
+   cost *only during motion*: drop the shadow transition, flatten the
+   blurred shadows to a cheap single-layer one, and pause the infinite
+   animations that would otherwise repaint every frame. Everything
+   restores the moment the canvas is still.
+   ============================================================ */
+.react-flow[data-interacting] .app-node {
+  transition: none;
+  box-shadow: var(--pk-node-shadow-cheap);
+}
+
+.react-flow[data-interacting] .app-node.selected,
+.react-flow[data-interacting] .react-flow__node.connected .app-node {
+  box-shadow: var(--pk-node-shadow-cheap);
+}
+
+.react-flow[data-interacting] .app-node.is-live::before,
+.react-flow[data-interacting] .react-flow__edge.connection-active .react-flow__edge-path,
+.react-flow[data-interacting] .react-flow__edge.flowing .react-flow__edge-path,
+.react-flow[data-interacting] .react-flow__edge.query-live .react-flow__edge-path {
+  animation-play-state: paused;
+}
+
+/* Hint the single transformed pane onto its own compositor layer for the
+   gesture so panning is a GPU translate, not a repaint. Scoped to interaction
+   only — no permanent layer/memory cost at rest. */
+.react-flow[data-interacting] .react-flow__viewport {
+  will-change: transform;
+}

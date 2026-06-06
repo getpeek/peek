@@ -43,6 +43,7 @@ import { useCursorBroadcast } from "../multiplayer/useCursorBroadcast";
 import type { AppEdge, AppNode } from "./types";
 import { useCanvas } from "./hooks/useCanvas";
 import { useDrawTool } from "./hooks/useDrawTool";
+import { useInteractionState } from "./hooks/useInteractionState";
 import { usePlaceTool } from "./hooks/usePlaceTool";
 import { useRubberBandSelect } from "./hooks/useRubberBandSelect";
 import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
@@ -93,6 +94,7 @@ function ReactFlowCanvasInner() {
   const uiVisible = useAtomValue(uiVisibilityAtom);
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
+  const interaction = useInteractionState();
 
   // `defaultViewport` only takes effect on mount. After that, restoring
   // viewport (on connection load *or* in-document page switch) requires an
@@ -199,7 +201,11 @@ function ReactFlowCanvasInner() {
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
-        onMoveEnd={(_, vp) => setViewport(vp)}
+        onMoveStart={interaction.begin}
+        onMoveEnd={(_, vp) => {
+          setViewport(vp);
+          interaction.endDebounced();
+        }}
         defaultViewport={viewport}
         colorMode={"dark"}
         deleteKeyCode={["Backspace", "Delete"]}

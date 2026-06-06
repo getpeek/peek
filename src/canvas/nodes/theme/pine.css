@@ -7,6 +7,7 @@
   --pk-node-border: oklch(30.9% 0.052 278.4);
   --pk-node-border-strong: oklch(37.2% 0.057 279.3);
   --pk-node-shadow: 0 8px 24px oklch(0% 0 0 / 0.5), 0 1px 0 oklch(100% 0 0 / 0.04) inset;
+  --pk-node-shadow-cheap: 0 1px 3px oklch(0% 0 0 / 0.4), 0 1px 0 oklch(100% 0 0 / 0.04) inset;
 
   --pk-fg: oklch(92.5% 0.023 291.4);
   --pk-fg-muted: oklch(67.5% 0.044 294.4);

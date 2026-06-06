@@ -8,6 +8,7 @@ import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { useGetVariables } from "./useGetVariables";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
+import { useZoomTier } from "../../hooks/useZoomTier";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
@@ -15,6 +16,7 @@ import { sessionStateAtom } from "../../../multiplayer/state";
 import { formatPreservingVars } from "../../variables";
 import type { QueryNode as QueryNodeT } from "../../types";
 import { registerEditorFocus } from "../editorFocusRegistry";
+import { QueryPreview } from "./QueryPreview";
 import "./Query.css";
 
 const DEFAULT_W = 420;
@@ -41,6 +43,12 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   const editorFocusedRef = useRef(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [editorReady, setEditorReady] = useState(false);
+  // Once the editor has been opened (zoomed in past the LOD threshold, or
+  // activated from the preview) keep Monaco mounted regardless of zoom, so
+  // editing never loses cursor/scroll/undo state to a remount.
+  const [hasActivated, setHasActivated] = useState(false);
+  const pendingFocusRef = useRef(false);
+  const tier = useZoomTier();
   useScrollFallthrough(bodyRef);
   const session = useAtomValue(sessionStateAtom);
   const variables = useGetVariables(id);
@@ -143,6 +151,8 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
     } catch {}
   };
 
+  const showEditor = tier === "near" || hasActivated;
+
   return (
     <>
       <NodeResizer isVisible={!!selected} minWidth={320} minHeight={200} />
@@ -168,32 +178,51 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
           </button>
         </NodeHeader>
         <div className='app-node-body nodrag' ref={bodyRef}>
-          <SqlEditor
-            query={data.query}
-            variables={Object.keys(variables)}
-            onMount={(editor, monaco) => {
-              editorRef.current = editor;
-              setEditorReady(true);
-              editor.onDidFocusEditorWidget(() => {
-                editorFocusedRef.current = true;
-              });
-              editor.onDidBlurEditorWidget(() => {
-                editorFocusedRef.current = false;
-              });
-              editor.onKeyDown(e => {
-                const isMod = e.metaKey || e.ctrlKey;
-                if (isMod && e.keyCode === monaco.KeyCode.Enter) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  runQuery();
+          {showEditor ? (
+            <SqlEditor
+              query={data.query}
+              variables={Object.keys(variables)}
+              onMount={(editor, monaco) => {
+                editorRef.current = editor;
+                setEditorReady(true);
+                if (pendingFocusRef.current) {
+                  pendingFocusRef.current = false;
+                  editor.focus();
                 }
-                if (isMod && e.keyCode === monaco.KeyCode.KeyS) {
-                  formatQuery();
-                }
-              });
-            }}
-            onQueryChange={query => canvas.updateNodeData<QueryNodeT["data"]>(id, { query })}
-          />
+                editor.onDidDispose(() => {
+                  editorRef.current = null;
+                  setEditorReady(false);
+                });
+                editor.onDidFocusEditorWidget(() => {
+                  editorFocusedRef.current = true;
+                  setHasActivated(true);
+                });
+                editor.onDidBlurEditorWidget(() => {
+                  editorFocusedRef.current = false;
+                });
+                editor.onKeyDown(e => {
+                  const isMod = e.metaKey || e.ctrlKey;
+                  if (isMod && e.keyCode === monaco.KeyCode.Enter) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    runQuery();
+                  }
+                  if (isMod && e.keyCode === monaco.KeyCode.KeyS) {
+                    formatQuery();
+                  }
+                });
+              }}
+              onQueryChange={query => canvas.updateNodeData<QueryNodeT["data"]>(id, { query })}
+            />
+          ) : (
+            <QueryPreview
+              query={data.query}
+              onActivate={() => {
+                pendingFocusRef.current = true;
+                setHasActivated(true);
+              }}
+            />
+          )}
         </div>
         <div className='app-node-footer nodrag'>
           <button className='btn btn-ghost' onClick={formatQuery} title='Format query (⌘⇧I)'>
