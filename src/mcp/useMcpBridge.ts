@@ -6,7 +6,14 @@ import { activeConnectionAtom } from "../Connection/state";
 import { documentAtom } from "../canvas/state";
 import { schemaAtom } from "../state";
 import type { AppNode } from "../canvas/types";
-import { connectNodes, createQueryNode, createVarsNode } from "./createNodes";
+import {
+  connectNodes,
+  createQueryNode,
+  createVarsNode,
+  updateQueryNode,
+  updateVarsNode,
+} from "./createNodes";
+import { createTextNode, updateTextNode } from "./textNodes";
 import { cameraFitNode, cameraPanTo, cameraSetZoom, selectNodes } from "./viewTools";
 import { createPage } from "./pageTools";
 
@@ -71,6 +78,14 @@ function handleRequest(method: string, params: Record<string, unknown>): unknown
       return createQueryNode(params);
     case "create_vars_node":
       return createVarsNode(params);
+    case "update_query_node":
+      return updateQueryNode(params);
+    case "update_vars_node":
+      return updateVarsNode(params);
+    case "create_text_node":
+      return createTextNode(params);
+    case "update_text_node":
+      return updateTextNode(params);
     case "connect_nodes":
       return connectNodes(params);
     case "camera_pan_to":

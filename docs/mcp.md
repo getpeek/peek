@@ -2,7 +2,7 @@
 
 Peek can expose a [Model Context Protocol](https://modelcontextprotocol.io) server from the Rust host (`src-tauri/src/mcp/`) so AI agents can drive the app — there is no separate sidecar process. The server runs in-process on Tauri's async runtime and is **off by default**; it boots at startup only when `ai.mcp.enable` is set in `~/peek/settings.json`. It speaks Streamable HTTP with JSON, **no authentication**, and permissive CORS, so a local agent can connect without credentials or preflight friction. Origin validation is disabled for the same reason. Tools are built on [`tower-mcp`](https://docs.rs/tower-mcp).
 
-The server exposes five **read-only** inspection tools so an agent can learn the lay of the land before acting, and eight **write** tools that edit the canvas — creating pages and nodes, wiring nodes together, and driving the camera and selection (see [Tools](#tools)). Most of that state lives in the React frontend, not the host, so the tools reach it through a host→frontend [bridge](#frontend-bridge) — the same channel the write tools use to mutate the board.
+The server exposes five **read-only** inspection tools so an agent can learn the lay of the land before acting, and twelve **write** tools that edit the canvas — creating pages and nodes, editing existing nodes, wiring nodes together, and driving the camera and selection (see [Tools](#tools)). Most of that state lives in the React frontend, not the host, so the tools reach it through a host→frontend [bridge](#frontend-bridge) — the same channel the write tools use to mutate the board.
 
 ## Transport
 
@@ -49,7 +49,7 @@ Both keys default independently, so `"ai": { "mcp": { "enable": true } }` is eno
 
 ## Tools
 
-The inspection tools are read-only; the write tools (`create_page`, `create_query_node`, `create_vars_node`, `connect_nodes`, `camera_pan_to`, `camera_set_zoom`, `camera_fit_node`, `select_nodes`) edit the canvas. All return their payload as JSON text (the agent parses it); a failure comes back as a `CallToolResult` with `is_error: true` rather than a protocol error.
+The inspection tools are read-only; the write tools (`create_page`, `create_query_node`, `create_vars_node`, `update_query_node`, `update_vars_node`, `create_text_node`, `update_text_node`, `connect_nodes`, `camera_pan_to`, `camera_set_zoom`, `camera_fit_node`, `select_nodes`) edit the canvas. All return their payload as JSON text (the agent parses it); a failure comes back as a `CallToolResult` with `is_error: true` rather than a protocol error.
 
 | Tool                  | Input         | Returns                                                                                                                                              |
 | --------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -65,16 +65,24 @@ The inspection tools are read-only; the write tools (`create_page`, `create_quer
 
 The write tools run on the frontend (the host only forwards the request) and reply with the created id plus its page. For the node creators, `page_id` is optional — omit it or pass `null` to target the active page; an unknown id is an error, and placing a node reveals (activates) its page. `position` and `size` are `[x, y]` and `[width, height]` in flow coordinates.
 
-| Tool                | Input                                             | Returns                                                                                 |
-| ------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `create_page`       | `{ name, order }`                                 | `{ id, name, order }`; creates an empty page at `order` (clamped) and switches to it.   |
-| `create_query_node` | `{ page_id?, query, position, size }`             | `{ nodeId, pageId }`; error when the page id is unknown.                                |
-| `create_vars_node`  | `{ page_id?, variables, global, position, size }` | `{ nodeId, pageId }`; error on an unknown page, an empty map, or an invalid name.       |
-| `connect_nodes`     | `{ from, to }`                                    | `{ edgeId, pageId }`; error if either node is missing or they're on different pages.    |
-| `camera_pan_to`     | `{ position }`                                    | `{ ok: true }`; centers the camera on `[x, y]` (flow coords), keeping the current zoom. |
-| `camera_set_zoom`   | `{ zoom }`                                        | `{ zoom }`; sets zoom (1.0 = 100%), clamped to 0.1–4.0, and returns the applied value.  |
-| `camera_fit_node`   | `{ node_id }`                                     | `{ nodeId, pageId }`; frames the node at ≤100% zoom; error if the id is unknown.        |
-| `select_nodes`      | `{ node_ids }`                                    | `{ selected, pageId }`; replaces the selection; error if the first id is unknown.       |
+`update_query_node` and `update_vars_node` edit an existing node found by `node_id` (on any page) — every field but `node_id` is optional, and only the ones you pass change. Unlike the creators they **don't** change the active page; they patch the node wherever the user left it. Passing `variables` to `update_vars_node` replaces the whole map; setting `global: true` auto-wires the node to every query on its page (idempotent), while `global: false` leaves existing edges in place (mirroring the in-app toggle).
+
+A Text node is a free-form caption with an unusual layout model the agent must reason about: its **height sets the font size** (a tall node renders large text, a short one small), and its **width is not settable** — text is laid out on a single line (newlines break it; there is no wrapping) and the node widens to fit, starting at 100px. So `create_text_node` and `update_text_node` take only `text`, `position`, and `height` — to make a heading, use a tall node; for a small label, a short one. `update_text_node` follows the same per-field, active-page-preserving rules as the other updaters.
+
+| Tool                | Input                                                | Returns                                                                                                                                |
+| ------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `create_page`       | `{ name, order }`                                    | `{ id, name, order }`; creates an empty page at `order` (clamped) and switches to it.                                                  |
+| `create_query_node` | `{ page_id?, query, position, size }`                | `{ nodeId, pageId }`; error when the page id is unknown.                                                                               |
+| `create_vars_node`  | `{ page_id?, variables, global, position, size }`    | `{ nodeId, pageId }`; error on an unknown page, an empty map, or an invalid name.                                                      |
+| `update_query_node` | `{ node_id, query?, position?, size? }`              | `{ nodeId, pageId }`; patches only the fields you pass; error on an unknown id or a non-query node.                                    |
+| `update_vars_node`  | `{ node_id, variables?, global?, position?, size? }` | `{ nodeId, pageId }`; patches only the fields you pass; error on an unknown id, a non-variable node, an empty map, or an invalid name. |
+| `create_text_node`  | `{ page_id?, text, position, height }`               | `{ nodeId, pageId }`; height sets the font size and the width auto-fits the text; error when the page id is unknown.                   |
+| `update_text_node`  | `{ node_id, text?, position?, height? }`             | `{ nodeId, pageId }`; patches only the fields you pass; error on an unknown id or a non-text node.                                     |
+| `connect_nodes`     | `{ from, to }`                                       | `{ edgeId, pageId }`; error if either node is missing or they're on different pages.                                                   |
+| `camera_pan_to`     | `{ position }`                                       | `{ ok: true }`; centers the camera on `[x, y]` (flow coords), keeping the current zoom.                                                |
+| `camera_set_zoom`   | `{ zoom }`                                           | `{ zoom }`; sets zoom (1.0 = 100%), clamped to 0.1–4.0, and returns the applied value.                                                 |
+| `camera_fit_node`   | `{ node_id }`                                        | `{ nodeId, pageId }`; frames the node at ≤100% zoom; error if the id is unknown.                                                       |
+| `select_nodes`      | `{ node_ids }`                                       | `{ selected, pageId }`; replaces the selection; error if the first id is unknown.                                                      |
 
 A Variable node holds reusable named values — ids, timestamps, status filters — that queries reference with `@name`, so a value lives in one place. `variables` is a map of name → value, where each value is a string or a list of strings. Variables apply to a query **only through an edge** (`variable → query`), so `create_query_node` auto-connects the new query to existing global variable nodes, and `create_vars_node` with `global: true` auto-connects the new node to every query on the page. `connect_nodes` makes that wiring explicit — e.g. attach a non-global variable node to a specific query. Both endpoints must be on one page (edges don't span pages); the call is idempotent and doesn't change the active page.
 
@@ -99,7 +107,7 @@ The connection, pages, and schema all live in the React frontend (jotai atoms), 
 - `mcp/mod.rs` — public surface. Re-exports `serve` and `FrontendBridge`/`SharedBridge`.
 - `mcp/bridge.rs` — the `FrontendBridge` trait (Tauri-free), a process-global `OnceLock<SharedBridge>`, and the `init` / `request` helpers tools call.
 - `mcp/server.rs` — `serve(port, bridge)`: installs the bridge, builds the `McpRouter` from the tools' generated `*_tool()` constructors, wraps in `HttpTransport`, applies CORS, binds, serves.
-- `mcp/connection.rs`, `mcp/schema.rs`, `mcp/pages.rs`, `mcp/nodes.rs`, `mcp/view.rs` — one file per tool concern; each is one or more `#[tool_fn]` async handlers plus their `schemars` input structs. `nodes.rs` holds the node/edge write-tools (`create_query_node` / `create_vars_node` / `connect_nodes`); `view.rs` holds the camera/selection write-tools (`camera_pan_to` / `camera_set_zoom` / `camera_fit_node` / `select_nodes`).
+- `mcp/connection.rs`, `mcp/schema.rs`, `mcp/pages.rs`, `mcp/nodes.rs`, `mcp/view.rs` — one file per tool concern; each is one or more `#[tool_fn]` async handlers plus their `schemars` input structs. `nodes.rs` holds the node/edge write-tools (`create_query_node` / `create_vars_node` / `update_query_node` / `update_vars_node` / `create_text_node` / `update_text_node` / `connect_nodes`); `view.rs` holds the camera/selection write-tools (`camera_pan_to` / `camera_set_zoom` / `camera_fit_node` / `select_nodes`).
 - `mcp/reply.rs` — the shared `tool_result` helper that maps a frontend `{ error }` reply to a tool error and any other payload to a text result.
 - `mcp_commands.rs` (crate-level, has Tauri) — `TauriBridge` (the `FrontendBridge` impl), the `PendingRequests` registry type, and the `mcp_respond` command.
 
@@ -132,6 +140,6 @@ The server is spawned from the `.setup(...)` closure in `lib.rs::run`: it reads 
 
 - **No auth, wide bind.** The server binds `0.0.0.0` with no authentication. Fine on a trusted network or a single machine; a token/loopback-only mode is future work if remote exposure is needed.
 - **The frontend must be running to answer.** Every tool round-trips to the webview; if no window is answering, `request` times out after 5 s and the tool returns an `is_error` result. Tools reflect the live in-memory board (no disk staleness).
-- **Writes cover content and view so far.** `create_page` adds pages, `create_query_node` / `create_vars_node` place nodes, `connect_nodes` wires them, and `camera_pan_to` / `camera_set_zoom` / `camera_fit_node` / `select_nodes` drive the view and selection. Page rename/delete/reorder and result analysis remain planned write-tools — they dispatch through the same `FrontendBridge`.
+- **Writes cover content and view so far.** `create_page` adds pages, `create_query_node` / `create_vars_node` / `create_text_node` place nodes, `update_query_node` / `update_vars_node` / `update_text_node` edit them, `connect_nodes` wires them, and `camera_pan_to` / `camera_set_zoom` / `camera_fit_node` / `select_nodes` drive the view and selection. Node delete, page rename/delete/reorder, and result analysis remain planned write-tools — they dispatch through the same `FrontendBridge`.
 - **Restart to apply config.** `enable`/`port` are read once at startup. Live reconfiguration would require tearing down and rebinding the server on a config change.
 - **Deferred crate split.** `mcp/` (and `lsp/`) are slated to move into their own workspace member crates to cut incremental compile times. The module is already `crate::`- and Tauri-free to make that move mechanical.
