@@ -1,10 +1,6 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
-import { ChatEmptyState } from "../../../shapes/Chat/EmptyState";
-import { MessageItem } from "../../../shapes/Chat/MessageItem";
-import { MessageList } from "../../../shapes/Chat/MessageList";
-import { ThinkingIndicator } from "../../../shapes/Chat/ThinkingIndicator";
 import { useExecutePrompt } from "../../../shapes/Ai/useExecutePrompt";
 import { configAtom } from "../../../state";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
@@ -12,12 +8,16 @@ import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
 import { ChatInput } from "./ChatInput";
+import { ChatEmptyState } from "./EmptyState";
+import { MessageItem } from "./MessageItem";
+import { MessageList } from "./MessageList";
+import { ThinkingIndicator } from "./ThinkingIndicator";
 import { AGENT_SYSTEM_PROMPT, AGENT_TOOLS } from "./agentTools";
 import { useAgentContextSync } from "./useAgentContextSync";
 import { useAgentStream } from "./useAgentStream";
 import { useAgentTools } from "./useAgentTools";
 import type { AgentNode as AgentNodeT } from "../../types";
-import "../../../shapes/Chat/Chat.css";
+import "./agent.css";
 
 const DEFAULT_W = 540;
 const DEFAULT_H = 400;
@@ -54,6 +54,12 @@ export function AgentNode({ id, data, selected, width, height }: NodeProps<Agent
     ask(q);
   };
 
+  // Schema context is injected silently for the model, so it doesn't count as a
+  // user-facing message — a from-scratch agent should still show the empty state.
+  const hasVisibleMessages = data.messages.some(
+    m => !(m.type === "context" && m.contextKind === "schema"),
+  );
+
   return (
     <>
       <NodeResizer isVisible={!!selected} minWidth={400} minHeight={300} />
@@ -63,11 +69,7 @@ export function AgentNode({ id, data, selected, width, height }: NodeProps<Agent
         <div className='app-node-body nodrag' ref={bodyRef}>
           <div className='chat-container'>
             <div className='messages-container'>
-              {data.messages.length === 0 ? (
-                <ChatEmptyState />
-              ) : (
-                <MessageList messages={data.messages} />
-              )}
+              {hasVisibleMessages ? <MessageList messages={data.messages} /> : <ChatEmptyState />}
               {incomingMessage && (
                 <MessageItem
                   message={{

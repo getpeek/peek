@@ -1,4 +1,7 @@
 import { IconPlayerStop, IconSend } from "@tabler/icons-react";
+import { useLayoutEffect, useRef } from "react";
+
+const MAX_HEIGHT = 160;
 
 interface ChatInputProps {
   value: string;
@@ -9,10 +12,22 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ value, onChange, onSubmit, onStop, isLoading }: ChatInputProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) {
+      return;
+    }
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, MAX_HEIGHT)}px`;
+  }, [value]);
+
   return (
     <div className='chat-input-container'>
       <div className='input-wrapper'>
         <textarea
+          ref={textareaRef}
           value={value}
           onChange={e => onChange(e.target.value)}
           onKeyDown={e => {

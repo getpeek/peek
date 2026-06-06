@@ -21,6 +21,7 @@ export function useAgentContextSync(opts: { nodeId: string }) {
     if (Object.keys(schema.tables).length > 0) {
       candidates.push({
         type: "context",
+        contextKind: "schema",
         message: `Database schema:\n${JSON.stringify(schema)}`,
         contextKey: sha1({ kind: "schema", schema }),
         timestamp: Date.now(),
@@ -43,6 +44,7 @@ export function useAgentContextSync(opts: { nodeId: string }) {
       const body = rows.map(row => row.map(([, v]) => v)).join(";");
       candidates.push({
         type: "context",
+        contextKind: "result",
         message: `\n      Query: ${source.data.query}\n\n      result:\n      ${headers}\n      ${body}\n      `,
         contextKey: sha1({ resultId: source.id, data: rows }),
         timestamp: Date.now(),

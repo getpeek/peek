@@ -58,10 +58,6 @@ body {
   --outbound-key-hover: var(--pk-blue-soft);
   --user-label: var(--pk-fg-muted);
   --assistant-label: var(--pk-accent);
-  --context-message: var(--pk-green);
-  --context-message-subtle: var(--pk-fg-subtle);
-  --system-message: var(--pk-blue);
-  --system-message-subtle: var(--pk-fg-subtle);
   --selected-tool-color: var(--pk-accent);
   --tool-color: var(--pk-fg-muted);
 }

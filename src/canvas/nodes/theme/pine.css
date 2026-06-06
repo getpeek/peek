@@ -3,6 +3,7 @@
   --pk-bg-grid: oklch(25.8% 0.043 279.1);
   --pk-node-bg: oklch(20.2% 0.04 280);
   --pk-node-bg-2: oklch(24.6% 0.046 278.9);
+  --pk-node-inset: oklch(16% 0.034 280);
   --pk-node-border: oklch(30.9% 0.052 278.4);
   --pk-node-border-strong: oklch(37.2% 0.057 279.3);
   --pk-node-shadow: 0 8px 24px oklch(0% 0 0 / 0.5), 0 1px 0 oklch(100% 0 0 / 0.04) inset;
