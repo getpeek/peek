@@ -41,6 +41,8 @@ pub struct CreateVarsNodeInput {
     pub page_id: Option<String>,
     #[schemars(
         description = "Map of variable name -> value. Each value is a string or a list of strings. \
+                       String-y values such as strings, uuids, dates must be enclosed in single-quotes \
+                       while numeric values are written plain. \
                        Names must match [A-Za-z_][A-Za-z0-9_]* and are referenced inside queries \
                        as @name."
     )]
@@ -76,12 +78,16 @@ pub struct UpdateQueryNodeInput {
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub struct UpdateVarsNodeInput {
-    #[schemars(description = "Id of the variable node to update, as returned by create_vars_node.")]
+    #[schemars(
+        description = "Id of the variable node to update, as returned by create_vars_node."
+    )]
     pub node_id: String,
     #[schemars(
         description = "New map of variable name -> value, replacing the node's current variables. \
                        Each value is a string or a list of strings; names must match \
-                       [A-Za-z_][A-Za-z0-9_]*. Omit to leave the variables unchanged."
+                       [A-Za-z_][A-Za-z0-9_]*. Omit to leave the variables unchanged. \
+                       String-y values such as strings, uuids, dates must be enclosed in single-quotes \
+                       while numeric values are written plain."
     )]
     pub variables: Option<HashMap<String, VarValue>>,
     #[schemars(
@@ -106,8 +112,10 @@ pub struct CreateTextNodeInput {
                        the currently active page."
     )]
     pub page_id: Option<String>,
-    #[schemars(description = "The text to display. Rendered on a single line — newlines, not \
-                              wrapping, are the only way to break it.")]
+    #[schemars(
+        description = "The text to display. Rendered on a single line — newlines, not \
+                              wrapping, are the only way to break it."
+    )]
     pub text: String,
     #[schemars(description = "Canvas position as [x, y] in flow coordinates.")]
     pub position: [f64; 2],
@@ -346,4 +354,3 @@ pub async fn connect_nodes(input: ConnectNodesInput) -> Result<CallToolResult, t
         },
     )
 }
-
