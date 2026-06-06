@@ -7,12 +7,10 @@ export function newIdForType(type: AppNodeType): string {
   switch (type) {
     case "query":
       return ids.query();
-    case "ai-prompt":
-      return ids.ai();
+    case "agent":
+      return ids.agent();
     case "result":
       return ids.result(ids.query());
-    case "chat":
-      return ids.chat(ids.query());
     case "barchart":
       return ids.chart(ids.query());
     case "query-error":

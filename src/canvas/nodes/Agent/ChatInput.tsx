@@ -23,7 +23,7 @@ export function ChatInput({ value, onChange, onSubmit, onStop, isLoading }: Chat
               }
             }
           }}
-          placeholder='Ask a question about your dataset...'
+          placeholder='Ask about your data, or describe what to build...'
           className={`chat-input ${isLoading ? "loading" : ""}`}
           rows={1}
           disabled={isLoading}

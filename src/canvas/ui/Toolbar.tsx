@@ -29,9 +29,9 @@ const tools: ToolDef[] = [
     Icon: IconCode,
   },
   {
-    label: "AI prompt",
+    label: "Agent",
     hotkey: "A",
-    mode: "ai-prompt",
+    mode: "agent",
     Icon: IconSparkles,
   },
   {

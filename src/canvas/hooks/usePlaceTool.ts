@@ -101,7 +101,7 @@ export function usePlaceTool() {
         const x = Math.min(a.x, b.x);
         const y = Math.min(a.y, b.y);
         rf.setCenter(x + width / 2, y + height / 2, { zoom: 1, duration: 300 });
-        if (mode === "query" || mode === "ai-prompt") {
+        if (mode === "query") {
           focusEditor(placedId);
         }
         setPlaceMode(null);
@@ -117,7 +117,7 @@ export function usePlaceTool() {
       canvas.addNode(node);
       canvas.selectOnly(node.id);
       rf.setCenter(flowPos.x, flowPos.y, { zoom: 1, duration: 300 });
-      if (node.type === "query" || node.type === "ai-prompt") {
+      if (node.type === "query") {
         focusEditor(node.id);
       }
       setPlaceMode(null);

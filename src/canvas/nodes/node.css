@@ -136,11 +136,8 @@
 .type-result .type-dot {
   background: var(--pk-type-result);
 }
-.type-ai-prompt .type-dot {
-  background: var(--pk-type-ai);
-}
-.type-chat .type-dot {
-  background: var(--pk-type-chat);
+.type-agent .type-dot {
+  background: var(--pk-type-agent);
 }
 .type-barchart .type-dot {
   background: var(--pk-type-chart);

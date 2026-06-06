@@ -8,14 +8,48 @@
   font-family: var(--pk-font-sans);
 }
 
-.chat-container.loading::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 30%, var(--pk-accent-bg) 50%, transparent 70%);
-  background-size: 200% 100%;
-  animation: pk-shimmer 1.4s infinite;
-  pointer-events: none;
+.message.thinking {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.thinking-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.thinking-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--pk-accent);
+  animation: pk-thinking 1s ease-in-out infinite;
+}
+
+.thinking-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.thinking-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes pk-thinking {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+.thinking-label {
+  font: 500 11px var(--pk-font-mono);
+  color: var(--pk-fg-muted);
 }
 
 .messages-container {

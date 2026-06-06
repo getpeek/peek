@@ -28,10 +28,9 @@
   --pk-red-soft: oklch(54.9% 0.179 22.5 / 0.14);
 
   --pk-type-query: oklch(49.6% 0.195 293.1);
-  --pk-type-ai: oklch(50% 0.173 267.3);
+  --pk-type-agent: oklch(50% 0.173 267.3);
   --pk-type-result: oklch(56.4% 0.127 150.9);
   --pk-type-chart: oklch(64.4% 0.134 79.3);
-  --pk-type-chat: oklch(49.6% 0.195 293.1);
   --pk-type-error: oklch(54.9% 0.179 22.5);
 
   --pk-canvas-bg:

@@ -135,7 +135,7 @@ export const usePeekHotkeys = () => {
   });
 
   useHotkey("a", () => {
-    setPlaceMode("ai-prompt");
+    setPlaceMode("agent");
   });
 
   useHotkey("t", () => {

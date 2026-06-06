@@ -1,47 +1,49 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
+import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { ChatEmptyState } from "../../../shapes/Chat/EmptyState";
 import { MessageItem } from "../../../shapes/Chat/MessageItem";
 import { MessageList } from "../../../shapes/Chat/MessageList";
+import { ThinkingIndicator } from "../../../shapes/Chat/ThinkingIndicator";
 import { useExecutePrompt } from "../../../shapes/Ai/useExecutePrompt";
+import { configAtom } from "../../../state";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
 import { ChatInput } from "./ChatInput";
-import { useChatContextSync } from "./useChatContextSync";
-import { useChatStream } from "./useChatStream";
-import { useChatTools } from "./useChatTools";
-import type { ChatNode as ChatNodeT } from "../../types";
+import { AGENT_SYSTEM_PROMPT, AGENT_TOOLS } from "./agentTools";
+import { useAgentContextSync } from "./useAgentContextSync";
+import { useAgentStream } from "./useAgentStream";
+import { useAgentTools } from "./useAgentTools";
+import type { AgentNode as AgentNodeT } from "../../types";
 import "../../../shapes/Chat/Chat.css";
 
 const DEFAULT_W = 540;
 const DEFAULT_H = 400;
 
-function firstLine(text: string): string {
-  const line = text.split("\n").find(l => l.trim().length > 0);
-  return line ? line.trim().slice(0, 40) : "";
-}
-
-export function ChatNode({ id, data, selected, width, height }: NodeProps<ChatNodeT>) {
+export function AgentNode({ id, data, selected, width, height }: NodeProps<AgentNodeT>) {
   const [question, setQuestion] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   useScrollFallthrough(bodyRef);
 
-  const runPrompt = useExecutePrompt("advanced");
-  const handlers = useChatTools({ nodeId: id });
-  const { ask, stop, isLoading, incomingMessage } = useChatStream({
+  const config = useAtomValue(configAtom);
+  const modelName = config?.ai.model ?? "model";
+
+  const runPrompt = useExecutePrompt({ tools: AGENT_TOOLS, systemPrompt: AGENT_SYSTEM_PROMPT });
+  const handlers = useAgentTools({ nodeId: id });
+  const { ask, stop, isLoading, incomingMessage } = useAgentStream({
     nodeId: id,
     runPrompt,
     handlers,
   });
 
-  useChatContextSync({ nodeId: id });
+  useAgentContextSync({ nodeId: id });
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [data.messages.length, incomingMessage]);
+  }, [data.messages.length, incomingMessage, isLoading]);
 
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
@@ -56,15 +58,8 @@ export function ChatNode({ id, data, selected, width, height }: NodeProps<ChatNo
     <>
       <NodeResizer isVisible={!!selected} minWidth={400} minHeight={300} />
       <HiddenHandles connectableTarget />
-      <div
-        className={`app-node ${selected ? "selected" : ""} ${isLoading ? "loading" : ""}`}
-        style={{ width: w, height: h }}
-      >
-        <NodeHeader
-          nodeId={id}
-          name={data.query ? `chat · ${firstLine(data.query)}` : "new conversation"}
-          indicator={<NodeIndicator kind='chat' />}
-        />
+      <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
+        <NodeHeader nodeId={id} name={modelName} indicator={<NodeIndicator kind='agent' />} />
         <div className='app-node-body nodrag' ref={bodyRef}>
           <div className='chat-container'>
             <div className='messages-container'>
@@ -83,6 +78,7 @@ export function ChatNode({ id, data, selected, width, height }: NodeProps<ChatNo
                   index={data.messages.length}
                 />
               )}
+              {isLoading && !incomingMessage && <ThinkingIndicator />}
               <div ref={messagesEndRef} />
             </div>
             <ChatInput

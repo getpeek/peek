@@ -1,16 +1,16 @@
 import { useRef, useState } from "react";
 import { useCanvas } from "../../hooks/useCanvas";
-import type { ChatData } from "../../types";
+import type { AgentData } from "../../types";
 import {
   type Message,
   type ToolCall,
   type useExecutePrompt,
 } from "../../../shapes/Ai/useExecutePrompt";
-import type { ToolHandlers } from "./useChatTools";
+import type { ToolHandlers } from "./useAgentTools";
 
 type RunPrompt = ReturnType<typeof useExecutePrompt>;
 
-const MAX_TOOL_ITERATIONS = 5;
+const MAX_TOOL_ITERATIONS = 8;
 
 async function callTool(
   call: ToolCall,
@@ -31,9 +31,9 @@ async function callTool(
 }
 
 const POST_TOOL_INSTRUCTION =
-  "Now respond to the user using the tool result(s) above. Do not call any more tools unless absolutely necessary to answer.";
+  "Continue using tools as needed to finish the user's request, then summarize what you did. If the tool results already answer the request, respond to the user instead of calling more tools.";
 
-export function useChatStream(opts: {
+export function useAgentStream(opts: {
   nodeId: string;
   runPrompt: RunPrompt;
   handlers: ToolHandlers;
@@ -45,7 +45,7 @@ export function useChatStream(opts: {
   const abortRef = useRef(false);
 
   const appendMessage = (msg: Message) => {
-    canvas.updateNodeData<ChatData>(nodeId, d => ({
+    canvas.updateNodeData<AgentData>(nodeId, d => ({
       ...d,
       messages: [...d.messages, msg],
     }));
@@ -60,7 +60,7 @@ export function useChatStream(opts: {
       return;
     }
     const node = canvas.getNode(nodeId);
-    if (!node || node.type !== "chat") {
+    if (!node || node.type !== "agent") {
       return;
     }
 
@@ -74,7 +74,7 @@ export function useChatStream(opts: {
     setIsLoading(true);
     appendMessage(userMessage);
 
-    let working: Message[] = [...(node.data as ChatData).messages, userMessage];
+    let working: Message[] = [...(node.data as AgentData).messages, userMessage];
     let iterations = 0;
     const seenCallSignatures = new Set<string>();
 
@@ -194,7 +194,7 @@ export function useChatStream(opts: {
         setIncomingMessage("");
       }
     } catch (e) {
-      console.error("Chat stream error:", e);
+      console.error("Agent stream error:", e);
     } finally {
       setIncomingMessage("");
       setIsLoading(false);

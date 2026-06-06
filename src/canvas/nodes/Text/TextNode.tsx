@@ -77,6 +77,13 @@ export function TextNode({ id, data, selected, width, height }: NodeProps<TextNo
             autoCorrect='off'
             spellCheck={false}
             wrap='off'
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                e.currentTarget.blur();
+                canvas.deselectAll();
+              }
+            }}
             onChange={e =>
               canvas.updateNodeData<TextNodeT["data"]>(id, {
                 text: e.currentTarget.value,

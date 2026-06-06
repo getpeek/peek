@@ -23,9 +23,8 @@ import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
-import { ids } from "../../ids";
 import { resultsAtom } from "../../state";
-import type { ChatNode, QueryNode, ResultNode as ResultNodeT } from "../../types";
+import type { AgentNode, QueryNode, ResultNode as ResultNodeT } from "../../types";
 import "./Result.css";
 
 const DEFAULT_W = 620;
@@ -104,12 +103,12 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
       return;
     }
 
-    const chatId = ids.chat(id);
-    const existing = canvas.getNode(chatId);
+    const agentId = `${id}-agent`;
+    const existing = canvas.getNode(agentId);
     if (!existing) {
-      const chatNode: ChatNode = {
-        id: chatId,
-        type: "chat",
+      const agentNode: AgentNode = {
+        id: agentId,
+        type: "agent",
         position: {
           x: node.position.x + (node.width ?? DEFAULT_W) + 50,
           y: node.position.y,
@@ -121,11 +120,11 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
           messages: [],
         },
       };
-      canvas.addNode(chatNode);
-      canvas.connect(id, chatId);
+      canvas.addNode(agentNode);
+      canvas.connect(id, agentId);
     }
-    canvas.selectOnly(chatId);
-    canvas.zoomToNode(chatId, { duration: 200 });
+    canvas.selectOnly(agentId);
+    canvas.zoomToNode(agentId, { duration: 200 });
   };
 
   const queryName = nodeHeading(data.query);

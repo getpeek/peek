@@ -26,9 +26,8 @@ import {
   viewportAtom,
 } from "./state";
 import { CanvasApiPublisher } from "./CanvasApiPublisher";
-import { AiPromptNode } from "./nodes/AiPrompt/AiPromptNode";
+import { AgentNode } from "./nodes/Agent/AgentNode";
 import { BarChartNode } from "./nodes/BarChart/BarChartNode";
-import { ChatNode } from "./nodes/Chat/ChatNode";
 import { DrawNode, getSvgPathFromStroke } from "./nodes/Draw/DrawNode";
 import { QueryErrorNode } from "./nodes/QueryError/QueryErrorNode";
 import { QueryNode } from "./nodes/Query/QueryNode";
@@ -58,8 +57,7 @@ import { PeekKeyboardShortcuts } from "./ui/KeyboardShortcuts";
 const nodeTypes = {
   query: QueryNode,
   result: ResultNode,
-  "ai-prompt": AiPromptNode,
-  chat: ChatNode,
+  agent: AgentNode,
   barchart: BarChartNode,
   "query-error": QueryErrorNode,
   "table-definition": TableDefinitionNode,
@@ -149,7 +147,7 @@ function ReactFlowCanvasInner() {
       if (source.type === "variable" && (target.type === "query" || target.type === "result")) {
         return true;
       }
-      if (source.type === "result" && target.type === "chat") {
+      if (source.type === "result" && target.type === "agent") {
         return true;
       }
       return false;

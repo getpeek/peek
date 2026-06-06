@@ -4,10 +4,10 @@ import { useAtomValue } from "jotai";
 import { useCanvas } from "../../hooks/useCanvas";
 import { edgesAtom, nodesAtom, resultsAtom } from "../../state";
 import { schemaAtom } from "../../../state";
-import type { ChatData, ResultNode } from "../../types";
+import type { AgentData, ResultNode } from "../../types";
 import type { Message } from "../../../shapes/Ai/useExecutePrompt";
 
-export function useChatContextSync(opts: { nodeId: string }) {
+export function useAgentContextSync(opts: { nodeId: string }) {
   const { nodeId } = opts;
   const canvas = useCanvas();
   const nodes = useAtomValue(nodesAtom);
@@ -53,12 +53,12 @@ export function useChatContextSync(opts: { nodeId: string }) {
       return;
     }
 
-    const chatNode = nodes.find(n => n.id === nodeId && n.type === "chat");
-    if (!chatNode) {
+    const agentNode = nodes.find(n => n.id === nodeId && n.type === "agent");
+    if (!agentNode) {
       return;
     }
     const currentKeys = new Set(
-      (chatNode.data as ChatData).messages.flatMap(m =>
+      (agentNode.data as AgentData).messages.flatMap(m =>
         m.type === "context" && m.contextKey ? [m.contextKey] : [],
       ),
     );
@@ -67,7 +67,7 @@ export function useChatContextSync(opts: { nodeId: string }) {
       return;
     }
 
-    canvas.updateNodeData<ChatData>(nodeId, d => {
+    canvas.updateNodeData<AgentData>(nodeId, d => {
       const existing = new Set(
         d.messages.flatMap(m => (m.type === "context" && m.contextKey ? [m.contextKey] : [])),
       );

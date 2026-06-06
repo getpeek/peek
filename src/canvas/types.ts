@@ -4,8 +4,7 @@ import type { Message } from "../shapes/Ai/useExecutePrompt";
 export type AppNodeType =
   | "query"
   | "result"
-  | "ai-prompt"
-  | "chat"
+  | "agent"
   | "barchart"
   | "query-error"
   | "table-definition"
@@ -24,13 +23,7 @@ export type ResultData = {
   columnWidths?: Record<string, number>;
 };
 
-export type AiPromptData = {
-  prompt: string;
-  isLoading: boolean;
-  reason: string;
-};
-
-export type ChatData = {
+export type AgentData = {
   query: string;
   messages: Message[];
 };
@@ -74,8 +67,7 @@ export type DrawData = {
 
 export type QueryNode = Node<QueryData, "query">;
 export type ResultNode = Node<ResultData, "result">;
-export type AiPromptNode = Node<AiPromptData, "ai-prompt">;
-export type ChatNode = Node<ChatData, "chat">;
+export type AgentNode = Node<AgentData, "agent">;
 export type BarChartNode = Node<BarChartData, "barchart">;
 export type QueryErrorNode = Node<ErrorData, "query-error">;
 export type TableDefinitionNode = Node<TableDefinitionData, "table-definition">;
@@ -86,8 +78,7 @@ export type DrawNode = Node<DrawData, "draw">;
 export type AppNode =
   | QueryNode
   | ResultNode
-  | AiPromptNode
-  | ChatNode
+  | AgentNode
   | BarChartNode
   | QueryErrorNode
   | TableDefinitionNode

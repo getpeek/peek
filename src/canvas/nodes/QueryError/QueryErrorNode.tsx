@@ -18,7 +18,7 @@ const DEFAULT_H = 300;
 
 export function QueryErrorNode({ id, data, selected, width, height }: NodeProps<QueryErrorNodeT>) {
   const canvas = useCanvas();
-  const runPrompt = useExecutePrompt("fast");
+  const runPrompt = useExecutePrompt({ tools: [], systemPrompt: "" });
   const schema = useAtomValue(schemaAtom);
   const suggestionRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);

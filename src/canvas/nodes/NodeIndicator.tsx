@@ -8,8 +8,7 @@ interface NodeIndicatorProps {
 const KIND_LABELS: Record<AppNodeType, string> = {
   query: "QUERY",
   result: "RESULT",
-  "ai-prompt": "AI",
-  chat: "CHAT",
+  agent: "AGENT",
   barchart: "CHART",
   "query-error": "ERROR",
   "table-definition": "TABLE",
