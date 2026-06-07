@@ -118,7 +118,7 @@ function ReactFlowCanvasInner() {
   }, [loadEpoch, activePageId, viewport, rf]);
   const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
   usePlaceTool();
-  const { rect: selectionRect } = useRubberBandSelect();
+  const { rectRef: selectionRectRef } = useRubberBandSelect();
   useCursorBroadcast();
   const { onSchemaNodeDragStart, onSchemaNodeDrag, onSchemaNodeDragStop } = useSchemaForceLayout();
 
@@ -274,22 +274,7 @@ function ReactFlowCanvasInner() {
           />
         </svg>
       )}
-      {selectionRect && (
-        <div
-          style={{
-            position: "fixed",
-            left: selectionRect.x,
-            top: selectionRect.y,
-            width: selectionRect.w,
-            height: selectionRect.h,
-            pointerEvents: "none",
-            zIndex: 1000,
-            border: "1px dashed var(--pk-accent)",
-            background: "var(--pk-accent-bg)",
-            borderRadius: 4,
-          }}
-        />
-      )}
+      <div ref={selectionRectRef} className='rubber-band-rect' />
       <LassoOverlay />
       <CanvasApiPublisher />
       <PeekKeyboardShortcuts />

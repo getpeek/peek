@@ -37,13 +37,18 @@
 }
 
 .react-flow__edge-path {
-  stroke: var(--pk-node-border-strong);
-  stroke-width: 1.25;
+  stroke: var(--pk-edge-color, var(--pk-node-border-strong));
+  stroke-width: 1.5;
+  stroke-opacity: 0.55;
   fill: none;
+  filter: drop-shadow(
+    0 0 3px color-mix(in oklab, var(--pk-edge-color, transparent) 35%, transparent)
+  );
 }
 .react-flow__edge.selected .react-flow__edge-path,
 .react-flow__edge:focus .react-flow__edge-path {
-  stroke: var(--pk-accent);
+  stroke: var(--pk-edge-color, var(--pk-accent));
+  stroke-opacity: 1;
 }
 
 /* xyflow's node wrapper: transparent so .app-node owns the visible card */
@@ -144,6 +149,9 @@
 }
 .type-query-error .type-dot {
   background: var(--pk-type-error);
+}
+.type-variable .type-dot {
+  background: var(--pk-type-variable);
 }
 .type-text .type-dot {
   background: var(--pk-fg-muted);
@@ -391,7 +399,8 @@
    Edge animation
    ============================================================ */
 .react-flow__edge.flowing .react-flow__edge-path {
-  stroke: var(--pk-accent);
+  stroke: var(--pk-edge-color, var(--pk-accent));
+  stroke-opacity: 1;
   stroke-dasharray: 4 6;
   animation: pk-flow 1.4s linear infinite;
 }
@@ -402,7 +411,8 @@
 }
 
 .react-flow__edge.query-live .react-flow__edge-path {
-  stroke: var(--pk-accent);
+  stroke: var(--pk-edge-color, var(--pk-accent));
+  stroke-opacity: 1;
   stroke-width: 2;
   stroke-dasharray: 4 6;
   animation: pk-flow 1.4s linear infinite;
@@ -448,18 +458,19 @@
 }
 
 .react-flow__edge.connection-active .react-flow__edge-path {
-  stroke: var(--pk-accent);
-  stroke-width: 1.75;
+  stroke: var(--pk-edge-color, var(--pk-accent));
+  stroke-opacity: 1;
+  stroke-width: 2.5;
   animation: pk-edge-pulse 1.6s ease-in-out infinite;
 }
 @keyframes pk-edge-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 2px var(--pk-accent));
+    filter: drop-shadow(0 0 3px var(--pk-edge-color, var(--pk-accent)));
     opacity: 0.85;
   }
   50% {
-    filter: drop-shadow(0 0 6px var(--pk-accent));
+    filter: drop-shadow(0 0 6px var(--pk-edge-color, var(--pk-accent)));
     opacity: 1;
   }
 }

@@ -13,7 +13,7 @@ use objc2::runtime::{AnyClass, AnyObject, Bool};
 use tauri::WebviewWindow;
 
 // Matches the `#root` border-radius in index.html.
-const CORNER_RADIUS: f64 = 8.0;
+const CORNER_RADIUS: f64 = 12.0;
 
 #[allow(unsafe_code)]
 pub(crate) fn apply_rounded_corners(window: &WebviewWindow) {

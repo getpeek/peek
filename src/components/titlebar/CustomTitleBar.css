@@ -4,8 +4,8 @@
   left: 0;
   right: 0;
   height: 50px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
   z-index: 10000;
   user-select: none;
   display: flex;

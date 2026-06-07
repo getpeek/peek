@@ -41,6 +41,11 @@ body.is-rubber-band-selecting * {
   animation-play-state: paused;
 }
 
+/* Per-edge colored glow is the priciest edge paint; drop it while moving. */
+.react-flow[data-interacting] .react-flow__edge-path {
+  filter: none;
+}
+
 /* Hint the single transformed pane onto its own compositor layer for the
    gesture so panning is a GPU translate, not a repaint. Scoped to interaction
    only — no permanent layer/memory cost at rest. */
@@ -48,13 +53,18 @@ body.is-rubber-band-selecting * {
   will-change: transform;
 }
 
-/* The toolbar and zoom indicator float *above* the canvas, so their
-   `backdrop-filter` re-blurs the scrolling content every frame — the priciest
-   thing WebKit does mid-gesture. Drop the blur and fall back to an opaque fill
-   while moving (the zoom indicator's resting background is transparent, hence
-   the explicit fill); the blur returns the instant the canvas settles. */
-.react-flow[data-interacting] .canvas-toolbar,
-.react-flow[data-interacting] .zoom-indicator {
-  backdrop-filter: none;
-  background: var(--pk-node-bg);
+/* Rubber-band selection box. Driven imperatively from `useRubberBandSelect`
+   (transform/size written on the ref), so it never goes through React state.
+   Positioned via `transform` to keep updates on the compositor. */
+.rubber-band-rect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  pointer-events: none;
+  border: 1px dashed var(--pk-accent);
+  background: var(--pk-accent-bg);
+  border-radius: 4px;
+  will-change: transform, width, height;
 }

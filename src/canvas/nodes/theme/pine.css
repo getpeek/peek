@@ -1,5 +1,5 @@
 :root {
-  --pk-bg: oklch(14.7% 0.028 278.7);
+  --pk-bg: oklch(11.5% 0.028 280);
   --pk-bg-grid: oklch(25.8% 0.043 279.1);
   --pk-node-bg: oklch(20.2% 0.04 280);
   --pk-node-bg-2: oklch(24.6% 0.046 278.9);
@@ -29,19 +29,17 @@
   --pk-red: oklch(63.4% 0.177 13.6);
   --pk-red-soft: oklch(63.4% 0.177 13.6 / 0.16);
 
-  --pk-type-query: oklch(65.2% 0.208 294.4);
-  --pk-type-agent: oklch(66.5% 0.173 269.8);
-  --pk-type-result: oklch(65.5% 0.12 153.8);
-  --pk-type-chart: oklch(83.5% 0.13 84.9);
+  --pk-type-query: oklch(68% 0.16 305);
+  --pk-type-agent: oklch(60.5% 0.17 263);
+  --pk-type-result: oklch(75% 0.12 156);
+  --pk-type-chart: oklch(88% 0.16 108);
   --pk-type-error: oklch(63.4% 0.177 13.6);
+  --pk-type-variable: oklch(63.5% 0.055 357);
 
   --pk-canvas-bg:
+    radial-gradient(closest-side at 80% 90%, oklch(63.5% 0.055 357 / 0.14), transparent 70%),
     radial-gradient(closest-side at 10% 100%, oklch(61.7% 0.163 263.7 / 0.1), transparent 70%),
     radial-gradient(140% 100% at 50% 0%, oklch(61.7% 0.163 263.7 / 0.1) 0%, transparent 50%),
-    linear-gradient(
-      180deg,
-      oklch(18.1% 0.033 279.9 / 0.5) 0%,
-      oklch(14.7% 0.028 278.7 / 0.95) 100%
-    ),
-    oklch(12.4% 0.029 281.3);
+    linear-gradient(180deg, oklch(15% 0.03 280 / 0.9) 0%, oklch(11% 0.03 281 / 0.95) 100%),
+    oklch(9% 0.03 281);
 }

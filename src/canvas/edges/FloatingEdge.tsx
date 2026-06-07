@@ -1,5 +1,7 @@
 import { BaseEdge, getBezierPath, useInternalNode, type EdgeProps } from "@xyflow/react";
+import type { CSSProperties } from "react";
 import { getEdgeParams } from "./floatingEdgeUtils";
+import { edgeColorForType } from "./edgeColor";
 
 // Custom edge that always connects to the closest sides of the source/target
 // nodes, regardless of which fixed handles each node exposes. Endpoints are
@@ -25,7 +27,18 @@ export function FloatingEdge(props: EdgeProps) {
     targetPosition: targetPos,
   });
 
+  const edgeColor = edgeColorForType(targetNode.type);
+  const edgeStyle = edgeColor
+    ? ({ ...style, "--pk-edge-color": edgeColor } as CSSProperties)
+    : style;
+
   return (
-    <BaseEdge id={id} path={path} markerEnd={markerEnd} markerStart={markerStart} style={style} />
+    <BaseEdge
+      id={id}
+      path={path}
+      markerEnd={markerEnd}
+      markerStart={markerStart}
+      style={edgeStyle}
+    />
   );
 }
