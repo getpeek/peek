@@ -4,7 +4,6 @@
   border-radius: var(--pk-radius-pill);
   background: var(--pk-fg);
   border: 3px solid var(--pk-fg);
-  backdrop-filter: blur(12px);
   cursor: pointer;
   padding: 0;
   pointer-events: auto;

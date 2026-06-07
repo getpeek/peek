@@ -47,3 +47,14 @@ body.is-rubber-band-selecting * {
 .react-flow[data-interacting] .react-flow__viewport {
   will-change: transform;
 }
+
+/* The toolbar and zoom indicator float *above* the canvas, so their
+   `backdrop-filter` re-blurs the scrolling content every frame — the priciest
+   thing WebKit does mid-gesture. Drop the blur and fall back to an opaque fill
+   while moving (the zoom indicator's resting background is transparent, hence
+   the explicit fill); the blur returns the instant the canvas settles. */
+.react-flow[data-interacting] .canvas-toolbar,
+.react-flow[data-interacting] .zoom-indicator {
+  backdrop-filter: none;
+  background: var(--pk-node-bg);
+}

@@ -8,6 +8,8 @@ mod multiplayer;
 mod multiplayer_commands;
 mod ssh_tunnel;
 mod storage_commands;
+#[cfg(target_os = "macos")]
+mod window_chrome;
 
 use std::sync::Arc;
 
@@ -152,6 +154,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_macos_fps::init())
         .setup(move |app| {
             if mcp.enable {
                 let port = mcp.port;
@@ -165,6 +168,12 @@ pub fn run() {
                     }
                 });
             }
+
+            #[cfg(target_os = "macos")]
+            if let Some(window) = app.get_webview_window("main") {
+                window_chrome::apply_rounded_corners(&window);
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
