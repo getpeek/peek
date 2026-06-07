@@ -6,21 +6,21 @@ use super::parser::new_parser;
 /// `name` is the identifier the user can type to refer to the relation —
 /// the alias if present, otherwise the table name.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Relation {
-    pub table: String,
-    pub alias: Option<String>,
+pub(crate) struct Relation {
+    pub(crate) table: String,
+    pub(crate) alias: Option<String>,
 }
 
 impl Relation {
     #[must_use]
-    pub fn name(&self) -> &str {
+    pub(crate) fn name(&self) -> &str {
         self.alias.as_deref().unwrap_or(&self.table)
     }
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct Scope {
-    pub relations: Vec<Relation>,
+pub(crate) struct Scope {
+    pub(crate) relations: Vec<Relation>,
 }
 
 impl Scope {
@@ -32,7 +32,7 @@ impl Scope {
     /// can fail to produce any `relation` nodes. We retry once with a sentinel
     /// inserted at every dangling dot, which gives the parser something to chew on.
     #[must_use]
-    pub fn collect(tree: &Tree, source: &[u8]) -> Self {
+    pub(crate) fn collect(tree: &Tree, source: &[u8]) -> Self {
         let mut relations = Vec::new();
         walk(tree.root_node(), source, &mut relations);
         if relations.is_empty() {
@@ -42,7 +42,7 @@ impl Scope {
     }
 
     #[must_use]
-    pub fn resolve(&self, name: &str) -> Option<&Relation> {
+    pub(crate) fn resolve(&self, name: &str) -> Option<&Relation> {
         self.relations.iter().find(|r| r.name() == name)
     }
 }
@@ -108,7 +108,7 @@ fn relation_from_node(node: Node<'_>, source: &[u8]) -> Option<Relation> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lsp::parser::new_parser;
+    use crate::parser::new_parser;
 
     fn scope_for(source: &str) -> Scope {
         let mut parser = new_parser();

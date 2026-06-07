@@ -6,7 +6,7 @@ use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DocUpdateEvent {
+pub(crate) struct DocUpdateEvent {
     pub key: String,
     pub value_b64: String,
     pub author: String,
@@ -14,33 +14,33 @@ pub struct DocUpdateEvent {
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DocDeleteEvent {
+pub(crate) struct DocDeleteEvent {
     pub key: String,
     pub author: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GossipRecvEvent {
+pub(crate) struct GossipRecvEvent {
     pub payload: serde_json::Value,
     pub author: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PeerPresenceEvent {
+pub(crate) struct PeerPresenceEvent {
     pub author: String,
     pub status: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct SyncFinishedEvent {}
+pub(crate) struct SyncFinishedEvent {}
 
 #[derive(Debug, Clone, Serialize)]
-pub struct SessionEndedEvent {}
+pub(crate) struct SessionEndedEvent {}
 
 #[derive(Debug, Clone, Serialize)]
-pub struct PeerDisconnectedEvent {}
+pub(crate) struct PeerDisconnectedEvent {}
 
 #[derive(Debug, Clone, Serialize)]
-pub struct PeerReconnectedEvent {}
+pub(crate) struct PeerReconnectedEvent {}

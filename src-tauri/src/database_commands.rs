@@ -1,9 +1,9 @@
-use crate::lsp::SchemaIndex;
 use crate::{AppData, SchemaCache, import::FileImporter};
+use peek_lsp::SchemaIndex;
 use tauri::{State, async_runtime::Mutex};
 
 #[tauri::command]
-pub async fn get_schema(
+pub(crate) async fn get_schema(
     state: State<'_, Mutex<AppData>>,
     schema_cache: State<'_, SchemaCache>,
 ) -> Result<String, String> {
@@ -28,7 +28,7 @@ pub async fn get_schema(
 }
 
 #[tauri::command]
-pub async fn execute_statement(
+pub(crate) async fn execute_statement(
     state: State<'_, Mutex<AppData>>,
     query: String,
 ) -> Result<String, String> {
@@ -42,7 +42,7 @@ pub async fn execute_statement(
 }
 
 #[tauri::command]
-pub async fn get_results(
+pub(crate) async fn get_results(
     state: State<'_, Mutex<AppData>>,
     query: String,
 ) -> Result<String, String> {
@@ -58,7 +58,10 @@ pub async fn get_results(
 }
 
 #[tauri::command]
-pub async fn import_file(state: State<'_, Mutex<AppData>>, path: String) -> Result<String, String> {
+pub(crate) async fn import_file(
+    state: State<'_, Mutex<AppData>>,
+    path: String,
+) -> Result<String, String> {
     let mut state = state.lock().await;
 
     let file_path = std::path::Path::new(&path);
@@ -69,7 +72,7 @@ pub async fn import_file(state: State<'_, Mutex<AppData>>, path: String) -> Resu
 
     let Ok(imported_data) = (match extension {
         "csv" => FileImporter::csv(file_path.to_path_buf()),
-        "json" => FileImporter::json(file_path.to_path_buf()),
+        "json" => FileImporter::json(file_path),
         _ => return Err(format!("Unknown file format {extension}")),
     }) else {
         return Err("could not parse input data".to_string());

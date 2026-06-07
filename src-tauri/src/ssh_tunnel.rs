@@ -24,7 +24,7 @@ impl client::Handler for Client {
     }
 }
 
-pub struct SshTunnel {
+pub(crate) struct SshTunnel {
     local_port: u16,
     shutdown: Arc<Notify>,
     accept_task: Option<JoinHandle<()>>,
@@ -35,7 +35,7 @@ impl fmt::Debug for SshTunnel {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SshTunnel")
             .field("local_port", &self.local_port)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -47,13 +47,13 @@ impl SshTunnel {
     ///
     /// Returns an error string if the SSH key cannot be loaded, the bastion is unreachable,
     /// authentication fails, or the local listener cannot be bound.
-    pub async fn open(
+    pub(crate) async fn open(
         cfg: &SshTunnelConfig,
         remote_host: &str,
         remote_port: u16,
     ) -> Result<Self, String> {
         let key_pair = load_secret_key(&cfg.key_path, None)
-            .map_err(|e| format!("Failed to load SSH key {:?}: {e}", cfg.key_path))?;
+            .map_err(|e| format!("Failed to load SSH key {}: {e}", cfg.key_path.display()))?;
 
         let config = Arc::new(client::Config {
             nodelay: true,
@@ -119,7 +119,7 @@ impl SshTunnel {
     }
 
     #[must_use]
-    pub fn local_port(&self) -> u16 {
+    pub(crate) fn local_port(&self) -> u16 {
         self.local_port
     }
 }
@@ -225,7 +225,6 @@ async fn forward(
                         }
                         break;
                     }
-                    ChannelMsg::WindowAdjusted { .. } => {}
                     _ => {}
                 }
             }

@@ -2,12 +2,12 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
 pub struct SchemaIndex {
-    /// table name → ordered list of (column_name, column_type)
+    /// table name → ordered list of `(column_name, column_type)`
     pub tables: HashMap<String, Vec<Column>>,
-    /// (referenced_table, referenced_column) → list of (referencing_table, referencing_column)
+    /// `(referenced_table, referenced_column)` → list of `(referencing_table, referencing_column)`
     /// i.e. "who points at me" — read straight from the upstream `references` map.
     pub fk_incoming: HashMap<(String, String), Vec<(String, String)>>,
-    /// (referencing_table, referencing_column) → list of (referenced_table, referenced_column)
+    /// `(referencing_table, referencing_column)` → list of `(referenced_table, referenced_column)`
     /// i.e. "what I point at" — derived by inverting `fk_incoming`.
     pub fk_outgoing: HashMap<(String, String), Vec<(String, String)>>,
     /// table name → ordered primary-key columns
@@ -21,6 +21,7 @@ pub struct Column {
 }
 
 impl SchemaIndex {
+    #[must_use]
     pub fn from_raw(
         tables: HashMap<String, Vec<(String, String)>>,
         references: HashMap<String, Vec<String>>,
@@ -39,22 +40,19 @@ impl SchemaIndex {
 
         let mut fk_incoming: HashMap<(String, String), Vec<(String, String)>> = HashMap::new();
         let mut fk_outgoing: HashMap<(String, String), Vec<(String, String)>> = HashMap::new();
-        for (referenced_key, referencers) in references {
-            let Some(referenced) = parse_table_column(&referenced_key) else {
+        for (to_key, sources) in references {
+            let Some(to) = parse_table_column(&to_key) else {
                 continue;
             };
-            for referencer_key in referencers {
-                let Some(referencer) = parse_table_column(&referencer_key) else {
+            for source_key in sources {
+                let Some(from) = parse_table_column(&source_key) else {
                     continue;
                 };
                 fk_incoming
-                    .entry(referenced.clone())
+                    .entry(to.clone())
                     .or_default()
-                    .push(referencer.clone());
-                fk_outgoing
-                    .entry(referencer)
-                    .or_default()
-                    .push(referenced.clone());
+                    .push(from.clone());
+                fk_outgoing.entry(from).or_default().push(to.clone());
             }
         }
 

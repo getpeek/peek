@@ -1,6 +1,6 @@
 use std::{
     collections::{HashMap, HashSet},
-    path::PathBuf,
+    path::Path,
 };
 
 use serde_json::Value;
@@ -8,8 +8,8 @@ use serde_json::Value;
 use super::{ImportError, ImportType, ImportedData, normalize_column_name, normalize_table_name};
 
 impl super::FileImporter {
-    pub fn json(path: PathBuf) -> Result<ImportedData, ImportError> {
-        let file = std::fs::read_to_string(path.clone()).map_err(|_| ImportError::FileNotFound)?;
+    pub(crate) fn json(path: &Path) -> Result<ImportedData, ImportError> {
+        let file = std::fs::read_to_string(path).map_err(|_| ImportError::FileNotFound)?;
 
         let json: Vec<HashMap<String, Value>> =
             serde_json::from_str(&file).map_err(|_| ImportError::BadData)?;
@@ -26,36 +26,35 @@ impl super::FileImporter {
         let mut fields: Vec<Vec<(String, ImportType)>> = vec![];
         for row in json {
             let mut current = vec![];
-            for key in all_keys.iter() {
+            for key in &all_keys {
                 if let Some(value) = row.get(key) {
                     if matches!(value, Value::String(_)) {
                         current.push((
-                            key.to_string(),
+                            key.clone(),
                             ImportType::Text(value.as_str().unwrap().to_string()),
                         ));
                     } else if matches!(value, Value::Bool(_)) {
-                        current.push((
-                            key.to_string(),
-                            ImportType::Boolean(value.as_bool().unwrap()),
-                        ));
+                        current.push((key.clone(), ImportType::Boolean(value.as_bool().unwrap())));
                     } else if matches!(value, Value::Object(_)) || matches!(value, Value::Array(_))
                     {
-                        current.push((key.to_string(), ImportType::Json(value.clone())));
+                        current.push((key.clone(), ImportType::Json(value.clone())));
                     } else if matches!(value, Value::Number(_)) {
                         current.push((
-                            key.to_string(),
-                            ImportType::Number(value.as_i64().unwrap_or(0) as isize),
+                            key.clone(),
+                            ImportType::Number(
+                                isize::try_from(value.as_i64().unwrap_or(0)).unwrap_or(0),
+                            ),
                         ));
                     }
                 } else {
-                    current.push((key.to_string(), ImportType::Null));
+                    current.push((key.clone(), ImportType::Null));
                 }
             }
             fields.push(current);
         }
 
         Ok(ImportedData {
-            table_name: normalize_table_name(&path),
+            table_name: normalize_table_name(path),
             fields,
         })
     }

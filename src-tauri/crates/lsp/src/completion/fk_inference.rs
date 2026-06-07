@@ -1,13 +1,13 @@
 use lsp_types::{CompletionItem, CompletionItemKind, InsertTextFormat};
 
-use crate::lsp::schema::SchemaIndex;
-use crate::lsp::scope::Relation;
+use crate::schema::SchemaIndex;
+use crate::scope::Relation;
 
 /// For a JOIN predicate context like `JOIN organisations o ON <cur>`, find a
 /// foreign-key pair between the right relation and any left relation. Returns
 /// a snippet completion `<lalias>.<lcol> = <ralias>.<rcol>`.
 #[must_use]
-pub fn infer_join_predicate(
+pub(crate) fn infer_join_predicate(
     left: &[Relation],
     right: &Relation,
     schema: &SchemaIndex,

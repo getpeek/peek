@@ -5,12 +5,12 @@ use serde_json::{Value, json};
 use sqlx::{Column, Connection, MySqlConnection, Row, TypeInfo};
 use std::collections::HashMap;
 
-pub struct MysqlDatabase {
+pub(crate) struct MysqlDatabase {
     connection_string: String,
 }
 
 impl MysqlDatabase {
-    pub fn new(connection_string: &str) -> Self {
+    pub(crate) fn new(connection_string: &str) -> Self {
         Self {
             connection_string: connection_string.to_string(),
         }
@@ -40,111 +40,79 @@ impl Database for MysqlDatabase {
                 let value: Value = match type_name {
                     "VARCHAR" | "CHAR" | "TEXT" | "TINYTEXT" | "MEDIUMTEXT" | "LONGTEXT" => row
                         .try_get::<String, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |v| json!(v)),
 
                     "DATE" => row
                         .try_get::<chrono::NaiveDate, _>(i)
-                        .map(|v| json!(v.format("%Y-%m-%d").to_string()))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |v| json!(v.format("%Y-%m-%d").to_string())),
 
                     "DATETIME" | "TIMESTAMP" => row
                         .try_get::<chrono::NaiveDateTime, _>(i)
-                        .map(|dt| json!(dt.format("%Y-%m-%dT%H:%M:%S").to_string()))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |dt| {
+                            json!(dt.format("%Y-%m-%dT%H:%M:%S").to_string())
+                        }),
 
                     "TIME" => row
                         .try_get::<chrono::NaiveTime, _>(i)
-                        .map(|t| json!(t.format("%H:%M:%S").to_string()))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |t| json!(t.format("%H:%M:%S").to_string())),
 
                     "TINYINT" => {
                         if col.type_info().to_string().contains("(1)") {
-                            row.try_get::<bool, _>(i)
-                                .map(|v| json!(v))
-                                .unwrap_or(Value::Null)
+                            row.try_get::<bool, _>(i).map_or(Value::Null, |v| json!(v))
                         } else {
-                            row.try_get::<i8, _>(i)
-                                .map(|v| json!(v))
-                                .unwrap_or(Value::Null)
+                            row.try_get::<i8, _>(i).map_or(Value::Null, |v| json!(v))
                         }
                     }
 
-                    "SMALLINT" => row
-                        .try_get::<i16, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "SMALLINT" => row.try_get::<i16, _>(i).map_or(Value::Null, |v| json!(v)),
 
-                    "INT" | "MEDIUMINT" => row
-                        .try_get::<i32, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "INT" | "MEDIUMINT" => {
+                        row.try_get::<i32, _>(i).map_or(Value::Null, |v| json!(v))
+                    }
 
-                    "BIGINT" => row
-                        .try_get::<i64, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "BIGINT" => row.try_get::<i64, _>(i).map_or(Value::Null, |v| json!(v)),
 
                     // MySQL Unsigned Integer types
-                    "UNSIGNED TINYINT" => row
-                        .try_get::<u8, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "UNSIGNED TINYINT" => row.try_get::<u8, _>(i).map_or(Value::Null, |v| json!(v)),
 
-                    "UNSIGNED SMALLINT" => row
-                        .try_get::<u16, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "UNSIGNED SMALLINT" => {
+                        row.try_get::<u16, _>(i).map_or(Value::Null, |v| json!(v))
+                    }
 
-                    "UNSIGNED INT" | "UNSIGNED MEDIUMINT" => row
-                        .try_get::<u32, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "UNSIGNED INT" | "UNSIGNED MEDIUMINT" => {
+                        row.try_get::<u32, _>(i).map_or(Value::Null, |v| json!(v))
+                    }
 
-                    "UNSIGNED BIGINT" => row
-                        .try_get::<u64, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "UNSIGNED BIGINT" => row.try_get::<u64, _>(i).map_or(Value::Null, |v| json!(v)),
 
-                    "FLOAT" => row
-                        .try_get::<f32, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "FLOAT" => row.try_get::<f32, _>(i).map_or(Value::Null, |v| json!(v)),
 
-                    "DOUBLE" => row
-                        .try_get::<f64, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "DOUBLE" => row.try_get::<f64, _>(i).map_or(Value::Null, |v| json!(v)),
 
                     "DECIMAL" | "NUMERIC" => row
                         .try_get::<rust_decimal::Decimal, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |v| json!(v)),
 
                     "JSON" => row.try_get::<Value, _>(i).unwrap_or(Value::Null),
 
-                    "BINARY" | "VARBINARY" | "BLOB" | "TINYBLOB" | "MEDIUMBLOB" | "LONGBLOB" => row
-                        .try_get::<Vec<u8>, _>(i)
-                        .map(|bytes| {
+                    "BINARY" | "VARBINARY" | "BLOB" | "TINYBLOB" | "MEDIUMBLOB" | "LONGBLOB" => {
+                        row.try_get::<Vec<u8>, _>(i).map_or(Value::Null, |bytes| {
                             use base64::Engine;
                             json!(base64::engine::general_purpose::STANDARD.encode(bytes))
                         })
-                        .unwrap_or(Value::Null),
+                    }
 
                     "UUID" | "CHAR(36)" => row
                         .try_get::<String, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |v| json!(v)),
 
                     "ENUM" | "SET" => row
                         .try_get::<String, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |v| json!(v)),
 
                     _ => row
                         .try_get::<String, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |v| json!(v)),
                 };
 
                 fields.push((col_name.to_string(), value, type_name));

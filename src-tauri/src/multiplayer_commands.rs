@@ -7,7 +7,7 @@ use crate::multiplayer::{IrohNode, MultiplayerSession};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct HostSessionInfo {
+pub(crate) struct HostSessionInfo {
     pub ticket: String,
     pub author: String,
     pub namespace_id: String,
@@ -15,7 +15,7 @@ pub struct HostSessionInfo {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct JoinSessionInfo {
+pub(crate) struct JoinSessionInfo {
     pub author: String,
     pub namespace_id: String,
 }
@@ -32,7 +32,7 @@ async fn ensure_node(state: &mut AppData) -> Result<&IrohNode, String> {
 }
 
 #[tauri::command]
-pub async fn mp_host_session(
+pub(crate) async fn mp_host_session(
     app: AppHandle,
     state: State<'_, Mutex<AppData>>,
 ) -> Result<HostSessionInfo, String> {
@@ -58,7 +58,7 @@ pub async fn mp_host_session(
 }
 
 #[tauri::command]
-pub async fn mp_join_session(
+pub(crate) async fn mp_join_session(
     app: AppHandle,
     state: State<'_, Mutex<AppData>>,
     ticket: String,
@@ -84,7 +84,7 @@ pub async fn mp_join_session(
 }
 
 #[tauri::command]
-pub async fn mp_end_session(state: State<'_, Mutex<AppData>>) -> Result<(), String> {
+pub(crate) async fn mp_end_session(state: State<'_, Mutex<AppData>>) -> Result<(), String> {
     // Take both session and node out of `AppData` under the lock, then release
     // the lock so concurrent commands see a clean "no session" state while we
     // run the async teardown.
@@ -109,7 +109,7 @@ pub async fn mp_end_session(state: State<'_, Mutex<AppData>>) -> Result<(), Stri
 }
 
 #[tauri::command]
-pub async fn mp_doc_put(
+pub(crate) async fn mp_doc_put(
     state: State<'_, Mutex<AppData>>,
     key: String,
     value_b64: String,
@@ -126,7 +126,10 @@ pub async fn mp_doc_put(
 }
 
 #[tauri::command]
-pub async fn mp_doc_del(state: State<'_, Mutex<AppData>>, key: String) -> Result<(), String> {
+pub(crate) async fn mp_doc_del(
+    state: State<'_, Mutex<AppData>>,
+    key: String,
+) -> Result<(), String> {
     let state = state.lock().await;
     let session = state
         .session
@@ -136,7 +139,7 @@ pub async fn mp_doc_del(state: State<'_, Mutex<AppData>>, key: String) -> Result
 }
 
 #[tauri::command]
-pub async fn mp_gossip_send(
+pub(crate) async fn mp_gossip_send(
     state: State<'_, Mutex<AppData>>,
     payload: serde_json::Value,
 ) -> Result<(), String> {

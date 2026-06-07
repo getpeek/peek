@@ -8,6 +8,8 @@ fn default_schema_ref() -> String {
     "./settings.schema.json".to_string()
 }
 
+/// # Errors
+/// Returns an error if the config cannot be serialized to JSON.
 #[tauri::command]
 pub fn get_config() -> Result<String, String> {
     let config = PeekConfig::get_or_default();
@@ -15,6 +17,8 @@ pub fn get_config() -> Result<String, String> {
     serde_json::to_string(&config).map_err(|_| "Can't serialize config".to_string())
 }
 
+/// # Errors
+/// Returns an error if the updated config cannot be written to disk.
 #[tauri::command]
 pub fn set_theme(theme: Theme) -> Result<(), String> {
     let mut config = PeekConfig::get_or_default();
@@ -22,6 +26,8 @@ pub fn set_theme(theme: Theme) -> Result<(), String> {
     config.save_to_disk()
 }
 
+/// # Errors
+/// Returns an error if the updated config cannot be written to disk.
 #[tauri::command]
 pub fn set_workspaces(workspaces: Vec<Workspace>) -> Result<(), String> {
     let mut config = PeekConfig::get_or_default();
@@ -107,6 +113,7 @@ impl Default for AIConfig {
 }
 
 impl PeekConfig {
+    #[must_use]
     pub fn get_or_default() -> Self {
         let mut config = Self::load_from_disk();
         if config.name.is_none() {
@@ -123,6 +130,9 @@ impl PeekConfig {
     /// and that `settings.json` exists (creating it with defaults if not).
     /// Called once at app startup so editors can resolve the `$schema`
     /// reference and first-run users get a discoverable settings file.
+    ///
+    /// # Errors
+    /// Returns an error if the config directory or its files cannot be created or written.
     pub fn ensure_initialized_on_disk() -> Result<(), String> {
         let dir = Self::config_dir()?;
         std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;

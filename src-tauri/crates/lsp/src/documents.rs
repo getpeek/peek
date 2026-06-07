@@ -5,26 +5,26 @@ use tree_sitter::Tree;
 use super::parser::new_parser;
 
 #[derive(Debug)]
-pub struct DocumentEntry {
-    pub text: String,
-    pub tree: Tree,
+pub(crate) struct DocumentEntry {
+    pub(crate) text: String,
+    pub(crate) tree: Tree,
 }
 
 #[derive(Debug, Default)]
-pub struct DocumentStore {
+pub(crate) struct DocumentStore {
     docs: DashMap<Uri, DocumentEntry>,
 }
 
 impl DocumentStore {
     #[must_use]
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self::default()
     }
 
     /// Replace the document text and reparse from scratch.
     /// (Phase 1: full reparse on every change. Incremental reparse can be added
     /// later by passing the prior `Tree` and `InputEdit` info to `Parser::parse`.)
-    pub fn upsert(&self, uri: Uri, text: String) {
+    pub(crate) fn upsert(&self, uri: Uri, text: String) {
         let mut parser = new_parser();
         let Some(tree) = parser.parse(&text, None) else {
             return;
@@ -32,12 +32,12 @@ impl DocumentStore {
         self.docs.insert(uri, DocumentEntry { text, tree });
     }
 
-    pub fn with<R>(&self, uri: &Uri, f: impl FnOnce(&DocumentEntry) -> R) -> Option<R> {
+    pub(crate) fn with<R>(&self, uri: &Uri, f: impl FnOnce(&DocumentEntry) -> R) -> Option<R> {
         self.docs.get(uri).map(|entry| f(entry.value()))
     }
 
     #[allow(dead_code)] // wired up via Backend::did_close in a follow-up
-    pub fn remove(&self, uri: &Uri) {
+    pub(crate) fn remove(&self, uri: &Uri) {
         self.docs.remove(uri);
     }
 }

@@ -2,9 +2,7 @@ pub mod config;
 mod database;
 mod database_commands;
 mod import;
-mod lsp;
 mod lsp_commands;
-mod mcp;
 mod mcp_commands;
 mod multiplayer;
 mod multiplayer_commands;
@@ -15,9 +13,9 @@ use std::sync::Arc;
 
 use config::{PeekConfig, SshTunnelConfig};
 use database::{Database, mysql::MysqlDatabase, postgres::PostgresDatabase};
-use lsp::{Backend, SchemaIndex};
 use multiplayer::{IrohNode, MultiplayerSession};
 use parking_lot::RwLock;
+use peek_lsp::{Backend, SchemaIndex};
 use sqlx::Connection;
 use ssh_tunnel::SshTunnel;
 use tauri::{Manager, State, async_runtime::Mutex};
@@ -118,6 +116,9 @@ async fn set_connection(
     Ok(())
 }
 
+/// # Panics
+///
+/// Panics if the Tauri application fails to build or run.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let schema_cache: SchemaCache = Arc::new(RwLock::new(SchemaIndex::default()));
@@ -154,12 +155,12 @@ pub fn run() {
         .setup(move |app| {
             if mcp.enable {
                 let port = mcp.port;
-                let bridge: mcp::SharedBridge = Arc::new(mcp_commands::TauriBridge::new(
+                let bridge: peek_mcp::SharedBridge = Arc::new(mcp_commands::TauriBridge::new(
                     app.handle().clone(),
                     Arc::clone(&pending),
                 ));
                 tauri::async_runtime::spawn(async move {
-                    if let Err(e) = mcp::serve(port, bridge).await {
+                    if let Err(e) = peek_mcp::serve(port, bridge).await {
                         eprintln!("MCP server failed to start: {e}");
                     }
                 });

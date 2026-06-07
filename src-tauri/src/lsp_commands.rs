@@ -1,3 +1,8 @@
+// Every function here is a `#[tauri::command]`: Tauri deserializes arguments
+// into owned values and hands `State` over by value, so these signatures cannot
+// take references.
+#![allow(clippy::needless_pass_by_value)]
+
 use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -6,10 +11,10 @@ use lsp_types::{CompletionItem, Diagnostic, Position, Uri};
 use tauri::State;
 
 use crate::SchemaCache;
-use crate::lsp::{Backend, QueryInfo, SchemaIndex, analyze_query};
+use peek_lsp::{Backend, QueryInfo, SchemaIndex, analyze_query};
 
 #[tauri::command]
-pub fn lsp_did_change(
+pub(crate) fn lsp_did_change(
     backend: State<'_, Arc<Backend>>,
     uri: String,
     text: String,
@@ -20,7 +25,7 @@ pub fn lsp_did_change(
 }
 
 #[tauri::command]
-pub fn lsp_completion(
+pub(crate) fn lsp_completion(
     backend: State<'_, Arc<Backend>>,
     uri: String,
     text: Option<String>,
@@ -44,23 +49,21 @@ pub fn lsp_completion(
 /// (`primaryKeys` camelCase from the JS side maps to `primary_keys` here via
 /// Tauri's default arg renaming).
 #[tauri::command]
-pub fn lsp_set_schema_cache(
+pub(crate) fn lsp_set_schema_cache(
     schema_cache: State<'_, SchemaCache>,
     tables: HashMap<String, Vec<(String, String)>>,
     references: HashMap<String, Vec<String>>,
     primary_keys: HashMap<String, Vec<String>>,
-) -> Result<(), String> {
+) {
     *schema_cache.write() = SchemaIndex::from_raw(tables, references, primary_keys);
-    Ok(())
 }
 
 /// Drop the LSP's schema cache. Called by joiners on session end so stale
 /// host-schema entries don't keep firing diagnostics against tables that
 /// don't exist in the joiner's local DB (or no DB at all).
 #[tauri::command]
-pub fn lsp_clear_schema_cache(schema_cache: State<'_, SchemaCache>) -> Result<(), String> {
+pub(crate) fn lsp_clear_schema_cache(schema_cache: State<'_, SchemaCache>) {
     *schema_cache.write() = SchemaIndex::default();
-    Ok(())
 }
 
 /// Inspect a SQL query and return the structural information the Result node
@@ -70,6 +73,6 @@ pub fn lsp_clear_schema_cache(schema_cache: State<'_, SchemaCache>) -> Result<()
 /// `{ statementType: "other", tables: [] }`.
 #[tauri::command]
 #[must_use]
-pub fn get_query_info(query: String) -> QueryInfo {
+pub(crate) fn get_query_info(query: String) -> QueryInfo {
     analyze_query(&query)
 }

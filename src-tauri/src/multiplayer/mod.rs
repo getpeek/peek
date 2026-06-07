@@ -1,6 +1,6 @@
-pub mod events;
-pub mod node;
-pub mod session;
+pub(crate) mod events;
+pub(crate) mod node;
+pub(crate) mod session;
 
-pub use node::IrohNode;
-pub use session::MultiplayerSession;
+pub(crate) use node::IrohNode;
+pub(crate) use session::MultiplayerSession;

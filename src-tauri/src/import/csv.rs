@@ -1,7 +1,7 @@
 use super::{ImportType, normalize_column_name};
 
 impl super::FileImporter {
-    pub fn csv(path: std::path::PathBuf) -> Result<super::ImportedData, super::ImportError> {
+    pub(crate) fn csv(path: std::path::PathBuf) -> Result<super::ImportedData, super::ImportError> {
         let table_name = super::normalize_table_name(&path);
         let meta = qsv_sniffer::Sniffer::new()
             .sniff_path(&path)
@@ -15,7 +15,7 @@ impl super::FileImporter {
 
         let fields: Vec<Vec<(String, ImportType)>> = reader
             .records()
-            .filter_map(|record| record.ok())
+            .filter_map(std::result::Result::ok)
             .map(|record| {
                 record
                     .iter()
@@ -23,10 +23,7 @@ impl super::FileImporter {
                     .map(|(index, field)| {
                         let f = normalize_column_name(meta.fields[index].clone());
                         let value = match meta.types[index] {
-                            qsv_sniffer::Type::Unsigned => {
-                                ImportType::Number(field.parse::<isize>().unwrap_or_default())
-                            }
-                            qsv_sniffer::Type::Signed => {
+                            qsv_sniffer::Type::Unsigned | qsv_sniffer::Type::Signed => {
                                 ImportType::Number(field.parse::<isize>().unwrap_or_default())
                             }
                             qsv_sniffer::Type::Text => ImportType::Text(field.to_string()),

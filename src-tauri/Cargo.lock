@@ -5461,13 +5461,10 @@ version = "2.5.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "axum",
  "base64 0.22.1",
  "bytes",
- "cc",
  "chrono",
  "csv",
- "dashmap",
  "data-encoding",
  "futures-lite",
  "hex",
@@ -5480,10 +5477,11 @@ dependencies = [
  "objc2-app-kit",
  "parking_lot",
  "parquet",
+ "peek-lsp",
+ "peek-mcp",
  "qsv-sniffer",
  "russh",
  "rust_decimal",
- "schemars 1.2.1",
  "serde",
  "serde_json",
  "sqlx",
@@ -5499,12 +5497,37 @@ dependencies = [
  "tauri-plugin-updater",
  "tiberius",
  "tokio",
- "tower-http",
- "tower-mcp",
- "tree-sitter",
- "tree-sitter-language",
  "url",
  "uuid",
+]
+
+[[package]]
+name = "peek-lsp"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "dashmap",
+ "lsp-types",
+ "parking_lot",
+ "serde",
+ "serde_json",
+ "tree-sitter",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "peek-mcp"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "schemars 1.2.1",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tower-http",
+ "tower-mcp",
 ]
 
 [[package]]

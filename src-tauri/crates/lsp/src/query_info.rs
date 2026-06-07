@@ -54,7 +54,7 @@ pub fn analyze(query: &str) -> QueryInfo {
     }
 }
 
-fn first_statement<'tree>(node: Node<'tree>) -> Option<Node<'tree>> {
+fn first_statement(node: Node<'_>) -> Option<Node<'_>> {
     if node.kind() == "statement" {
         return Some(node);
     }

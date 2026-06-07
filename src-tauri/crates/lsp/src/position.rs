@@ -4,7 +4,7 @@ use lsp_types::Position;
 /// in the source string. Returns `None` if the position is past the end of the
 /// document.
 #[must_use]
-pub fn position_to_byte_offset(source: &str, pos: Position) -> Option<usize> {
+pub(crate) fn position_to_byte_offset(source: &str, pos: Position) -> Option<usize> {
     let line_start = if pos.line == 0 {
         0
     } else {

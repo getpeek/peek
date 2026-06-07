@@ -10,7 +10,7 @@ use super::scope::Scope;
 /// Returns an empty vec when the schema is empty (still loading) so the user
 /// doesn't see a sea of red on first connect.
 #[must_use]
-pub fn diagnose(
+pub(crate) fn diagnose(
     tree: &Tree,
     source: &[u8],
     scope: &Scope,
@@ -237,7 +237,7 @@ fn make_diag(node: Node<'_>, message: String) -> Diagnostic {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lsp::parser::new_parser;
+    use crate::parser::new_parser;
     use std::collections::HashMap;
 
     fn fixture_schema() -> SchemaIndex {

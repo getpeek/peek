@@ -1,19 +1,24 @@
 use tree_sitter::{Language, Parser};
 use tree_sitter_language::LanguageFn;
 
+// Audited FFI boundary to the vendored tree-sitter SQL grammar compiled in
+// build.rs. The symbol and its ABI are fixed by tree-sitter-language; the only
+// `unsafe` in this crate.
+#[allow(unsafe_code)]
 unsafe extern "C" {
     fn tree_sitter_sql() -> *const ();
 }
 
+#[allow(unsafe_code)]
 const LANGUAGE_FN: LanguageFn = unsafe { LanguageFn::from_raw(tree_sitter_sql) };
 
 #[must_use]
-pub fn sql_language() -> Language {
+pub(crate) fn sql_language() -> Language {
     Language::new(LANGUAGE_FN)
 }
 
 #[must_use]
-pub fn new_parser() -> Parser {
+pub(crate) fn new_parser() -> Parser {
     let mut parser = Parser::new();
     parser
         .set_language(&sql_language())

@@ -1,5 +1,5 @@
-pub mod mysql;
-pub mod postgres;
+pub(crate) mod mysql;
+pub(crate) mod postgres;
 
 use async_trait::async_trait;
 use serde_json::Value;
@@ -9,10 +9,10 @@ use crate::import::ImportedData;
 
 /// Trait defining the interface for database operations
 #[async_trait]
-pub trait Database: Send + Sync {
+pub(crate) trait Database: Send + Sync {
     /// Execute a query and return results as JSON
     /// The format will be a vector of tuples, where the tuple is in the format of
-    /// [column_name, value, column_type]
+    /// [`column_name`, value, `column_type`]
     async fn get_results(&mut self, query: &str) -> Result<Vec<Value>, String>;
 
     /// Execute an sql statement and return whatever the statement returns

@@ -105,7 +105,7 @@ impl fmt::Debug for MultiplayerSession {
         f.debug_struct("MultiplayerSession")
             .field("namespace_id", &self.namespace_id)
             .field("author_id", &self.author_id)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -409,7 +409,6 @@ fn spawn_gossip_recv_loop(
                         None => break,
                         Some(Err(e)) => {
                             eprintln!("multiplayer: gossip recv error: {e}");
-                            continue;
                         }
                         Some(Ok(GossipEvent::Received(msg))) => {
                             let payload: JsonValue = match serde_json::from_slice(&msg.content) {
@@ -468,7 +467,6 @@ where
                         None => break,
                         Some(Err(e)) => {
                             eprintln!("multiplayer: doc subscribe error: {e}");
-                            continue;
                         }
                         Some(Ok(LiveEvent::InsertRemote { from, entry, .. })) => {
                             let key = String::from_utf8_lossy(entry.key()).into_owned();
@@ -563,20 +561,21 @@ fn spawn_reconnect_loop(
     shutdown: Arc<Notify>,
 ) -> JoinHandle<()> {
     tokio::spawn(async move {
+        const BACKOFF_STEPS_SECS: [u64; 4] = [3, 6, 12, 30];
+
         if bootstrap.is_empty() {
             // Should not happen for joiners, but guard against an empty
             // bootstrap list anyway — we have nobody to call start_sync against.
             return;
         }
 
-        const BACKOFF_STEPS_SECS: [u64; 4] = [3, 6, 12, 30];
         let mut step: usize = 0;
 
         loop {
             let wait = Duration::from_secs(BACKOFF_STEPS_SECS[step]);
             tokio::select! {
                 () = shutdown.notified() => break,
-                _ = tokio::time::sleep(wait) => {}
+                () = tokio::time::sleep(wait) => {}
             }
 
             if tracker.is_connected() {

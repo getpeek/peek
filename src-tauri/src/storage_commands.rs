@@ -3,7 +3,7 @@
 /// case. The host never authors documents — `emptyDocument()` mints `nanoid`
 /// page ids that can't be replicated here.
 #[tauri::command]
-pub async fn load(workspace: String, connection_name: String) -> Result<String, String> {
+pub(crate) async fn load(workspace: String, connection_name: String) -> Result<String, String> {
     let path = std::path::absolute(std::env::var("HOME").unwrap()).unwrap();
     let folder = path.join("peek").join(workspace.to_lowercase());
     let file_path = folder.join(format!("{}.json", connection_name.to_lowercase()));
@@ -17,7 +17,7 @@ pub async fn load(workspace: String, connection_name: String) -> Result<String, 
 }
 
 #[tauri::command]
-pub async fn save(
+pub(crate) async fn save(
     workspace: String,
     connection_name: String,
     contents: String,
@@ -37,7 +37,10 @@ pub async fn save(
 /// Load the results sidecar that stores per-result-node rows out-of-band from
 /// the canvas document. Returns `"{}"` when the sidecar is absent.
 #[tauri::command]
-pub async fn load_results(workspace: String, connection_name: String) -> Result<String, String> {
+pub(crate) async fn load_results(
+    workspace: String,
+    connection_name: String,
+) -> Result<String, String> {
     let path = std::path::absolute(std::env::var("HOME").unwrap()).unwrap();
     let folder = path.join("peek").join(workspace.to_lowercase());
     let file_path = folder.join(format!("{}.results.json", connection_name.to_lowercase()));
@@ -52,7 +55,7 @@ pub async fn load_results(workspace: String, connection_name: String) -> Result<
 
 /// Save the results sidecar (`<connection>.results.json`).
 #[tauri::command]
-pub async fn save_results(
+pub(crate) async fn save_results(
     workspace: String,
     connection_name: String,
     contents: String,

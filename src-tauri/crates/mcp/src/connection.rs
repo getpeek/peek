@@ -13,7 +13,9 @@ pub(crate) struct NoInput {}
     description = "Name and engine (postgresql/mysql) of the active database connection. \
                    Never returns credentials or the connection URL. Null when no connection is open."
 )]
-pub async fn get_connection_info(_input: NoInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn get_connection_info(
+    _input: NoInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(match bridge::request("connection_info", json!({})).await {
         Ok(info) => CallToolResult::text(info.to_string()),
         Err(e) => CallToolResult::error(e),

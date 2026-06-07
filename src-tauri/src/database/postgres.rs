@@ -5,12 +5,12 @@ use serde_json::{Value, json};
 use sqlx::{Column, PgConnection, Row, TypeInfo};
 use std::collections::HashMap;
 
-pub struct PostgresDatabase {
+pub(crate) struct PostgresDatabase {
     connection: PgConnection,
 }
 
 impl PostgresDatabase {
-    pub fn new(connection: PgConnection) -> Self {
+    pub(crate) fn new(connection: PgConnection) -> Self {
         Self { connection }
     }
 }
@@ -34,70 +34,48 @@ impl Database for PostgresDatabase {
                 let value: Value = match type_name {
                     "UUID" => row
                         .try_get::<uuid::Uuid, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |v| json!(v)),
 
                     "TEXT" | "VARCHAR" | "CHAR" => row
                         .try_get::<String, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |v| json!(v)),
 
                     "DATE" => row
                         .try_get::<chrono::NaiveDate, _>(i)
-                        .map(|v| json!(v.format("%Y-%m-%d").to_string()))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |v| json!(v.format("%Y-%m-%d").to_string())),
 
                     "TIMESTAMP" => row
                         .try_get::<chrono::NaiveDateTime, _>(i)
-                        .map(|dt| json!(dt.format("%Y-%m-%dT%H:%M:%S").to_string()))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |dt| {
+                            json!(dt.format("%Y-%m-%dT%H:%M:%S").to_string())
+                        }),
 
                     "TIMESTAMPTZ" => row
                         .try_get::<chrono::DateTime<chrono::Utc>, _>(i)
-                        .map(|dt| json!(dt.to_rfc3339()))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |dt| json!(dt.to_rfc3339())),
 
-                    "INT2" => row
-                        .try_get::<i16, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "INT2" => row.try_get::<i16, _>(i).map_or(Value::Null, |v| json!(v)),
 
-                    "INT4" => row
-                        .try_get::<i32, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "INT4" => row.try_get::<i32, _>(i).map_or(Value::Null, |v| json!(v)),
 
-                    "INT8" => row
-                        .try_get::<i64, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "INT8" => row.try_get::<i64, _>(i).map_or(Value::Null, |v| json!(v)),
 
-                    "FLOAT4" => row
-                        .try_get::<f32, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "FLOAT4" => row.try_get::<f32, _>(i).map_or(Value::Null, |v| json!(v)),
 
-                    "FLOAT8" => row
-                        .try_get::<f64, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "FLOAT8" => row.try_get::<f64, _>(i).map_or(Value::Null, |v| json!(v)),
 
                     "NUMERIC" => row
                         .try_get::<rust_decimal::Decimal, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                        .map_or(Value::Null, |v| json!(v)),
 
                     "JSON" | "JSONB" => row.try_get::<Value, _>(i).unwrap_or(Value::Null),
 
-                    "BOOL" => row
-                        .try_get::<bool, _>(i)
-                        .map(|v| json!(v))
-                        .unwrap_or(Value::Null),
+                    "BOOL" => row.try_get::<bool, _>(i).map_or(Value::Null, |v| json!(v)),
 
                     _ => match row
                         .try_get_raw(i)
                         .map(|raw| raw.as_bytes())
-                        .map_err(|_| "".to_string())?
+                        .map_err(|_| String::new())?
                     {
                         Ok(bytes) => match std::str::from_utf8(bytes) {
                             Ok(s) => json!(s),
@@ -136,7 +114,7 @@ impl Database for PostgresDatabase {
         String,
     > {
         let columns = sqlx::query(
-            r#"SELECT
+            r"SELECT
                 c.table_name,
                 c.column_name,
                 c.udt_name AS pg_type
@@ -155,7 +133,7 @@ impl Database for PostgresDatabase {
             JOIN pg_type t ON t.oid = a.atttypid
             WHERE c.relpersistence = 't'
               AND a.attnum > 0
-              AND NOT a.attisdropped;"#,
+              AND NOT a.attisdropped;",
         )
         .fetch_all(&mut self.connection)
         .await
@@ -182,7 +160,7 @@ impl Database for PostgresDatabase {
         }
 
         let fk_rows = sqlx::query(
-            r#"
+            r"
                 SELECT
                     tc.table_name AS referencing_table,
                     kcu.column_name AS referencing_column,
@@ -198,7 +176,7 @@ impl Database for PostgresDatabase {
                     AND ccu.table_schema = tc.table_schema
                 WHERE tc.constraint_type = 'FOREIGN KEY'
                   AND tc.table_schema = 'public';
-                "#,
+                ",
         )
         .fetch_all(&mut self.connection)
         .await
@@ -212,8 +190,8 @@ impl Database for PostgresDatabase {
             let referenced_table: String = row.get("referenced_table");
             let referenced_column: String = row.get("referenced_column");
 
-            let referenced_key = format!("{}.{}", referenced_table, referenced_column);
-            let referencing_key = format!("{}.{}", referencing_table, referencing_column);
+            let referenced_key = format!("{referenced_table}.{referenced_column}");
+            let referencing_key = format!("{referencing_table}.{referencing_column}");
 
             fk_map
                 .entry(referenced_key)
@@ -222,7 +200,7 @@ impl Database for PostgresDatabase {
         }
 
         let pk_rows = sqlx::query(
-            r#"
+            r"
                 SELECT
                     tc.table_name,
                     kcu.column_name,
@@ -234,7 +212,7 @@ impl Database for PostgresDatabase {
                 WHERE tc.constraint_type = 'PRIMARY KEY'
                   AND tc.table_schema    = 'public'
                 ORDER BY tc.table_name, kcu.ordinal_position;
-                "#,
+                ",
         )
         .fetch_all(&mut self.connection)
         .await
@@ -285,11 +263,11 @@ impl Database for PostgresDatabase {
                     .iter()
                     .map(|(_, value)| match value {
                         ImportType::Uuid(uuid) => format!("'{uuid}'"),
-                        ImportType::Date(date) => format!("'{date}'"),
-                        ImportType::DateTime(date) => format!("'{date}'"),
+                        ImportType::Date(date_val) => format!("'{date_val}'"),
+                        ImportType::DateTime(datetime_val) => format!("'{datetime_val}'"),
                         ImportType::Text(text) => format!("'{text}'"),
                         ImportType::Number(number) => format!("{number}"),
-                        ImportType::Float(float) => format!("{float}",),
+                        ImportType::Float(float) => format!("{float}"),
                         ImportType::Boolean(boolean) => format!("{boolean}"),
                         ImportType::Null => "NULL".to_string(),
                         ImportType::Json(json) => format!("'{json}'"),
@@ -297,7 +275,7 @@ impl Database for PostgresDatabase {
                     .collect::<Vec<String>>()
                     .join(",");
 
-                format!("({})", formatted_values)
+                format!("({formatted_values})")
             })
             .collect::<Vec<_>>();
 
@@ -337,8 +315,8 @@ pub(crate) fn sanitize_table_name(name: &str) -> String {
         .replace('-', " ")
         .to_lowercase();
 
-    if sanitized.chars().next().is_some_and(|c| c.is_numeric()) {
-        format!("t_{}", sanitized)
+    if sanitized.chars().next().is_some_and(char::is_numeric) {
+        format!("t_{sanitized}")
     } else if sanitized.is_empty() {
         "imported_table".to_string()
     } else {

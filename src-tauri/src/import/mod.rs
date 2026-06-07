@@ -1,14 +1,14 @@
 use serde_json::Value;
 
-pub mod csv;
-pub mod json;
+pub(crate) mod csv;
+pub(crate) mod json;
 mod test;
 
 #[derive(Debug)]
-pub struct FileImporter;
+pub(crate) struct FileImporter;
 
 #[derive(Debug)]
-pub enum ImportType {
+pub(crate) enum ImportType {
     #[allow(unused)]
     Uuid(uuid::Uuid),
     Date(chrono::NaiveDate),
@@ -22,35 +22,34 @@ pub enum ImportType {
 }
 
 #[derive(Debug)]
-pub struct ImportedData {
+pub(crate) struct ImportedData {
     pub table_name: String,
     pub fields: Vec<Vec<(String, ImportType)>>,
 }
 
 #[derive(Debug)]
-pub enum ImportError {
+pub(crate) enum ImportError {
     FileNotFound,
     #[allow(unused)]
     UnknownFormat,
     BadData,
 }
 
-pub fn normalize_column_name(name: impl std::fmt::Display) -> String {
+pub(crate) fn normalize_column_name(name: impl std::fmt::Display) -> String {
     name.to_string()
         .to_ascii_lowercase()
-        .replace(" ", "_")
+        .replace(' ', "_")
         .chars()
         .filter(|c| c.is_ascii_lowercase() || c == &'_')
         .collect()
 }
 
-pub fn normalize_table_name(path: &std::path::Path) -> String {
+pub(crate) fn normalize_table_name(path: &std::path::Path) -> String {
     path.file_stem()
         .and_then(|name| name.to_str())
         .unwrap_or("table_name")
         .to_ascii_lowercase()
-        .replace(" ", "_")
-        .replace("-", "_")
+        .replace([' ', '-'], "_")
         .chars()
         .filter(|c| c.is_ascii_lowercase() || c == &'_')
         .collect()

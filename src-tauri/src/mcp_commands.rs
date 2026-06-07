@@ -1,3 +1,7 @@
+// `mcp_respond` is a `#[tauri::command]`: Tauri hands `State` over by value, so
+// the signature cannot take a reference.
+#![allow(clippy::needless_pass_by_value)]
+
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -8,21 +12,21 @@ use serde_json::{Value, json};
 use tauri::{AppHandle, Emitter, State};
 use tokio::sync::oneshot;
 
-use crate::mcp::FrontendBridge;
+use peek_mcp::FrontendBridge;
 
 /// In-flight host→frontend requests, keyed by id. The `request` side inserts a
 /// sender before emitting; `mcp_respond` removes and fulfils it.
-pub type PendingRequests = Arc<Mutex<HashMap<u64, oneshot::Sender<Value>>>>;
+pub(crate) type PendingRequests = Arc<Mutex<HashMap<u64, oneshot::Sender<Value>>>>;
 
 #[derive(Debug)]
-pub struct TauriBridge {
+pub(crate) struct TauriBridge {
     app: AppHandle,
     pending: PendingRequests,
     counter: AtomicU64,
 }
 
 impl TauriBridge {
-    pub fn new(app: AppHandle, pending: PendingRequests) -> Self {
+    pub(crate) fn new(app: AppHandle, pending: PendingRequests) -> Self {
         Self {
             app,
             pending,
@@ -59,13 +63,8 @@ impl FrontendBridge for TauriBridge {
 }
 
 #[tauri::command]
-pub fn mcp_respond(
-    pending: State<'_, PendingRequests>,
-    id: u64,
-    result: Value,
-) -> Result<(), String> {
+pub(crate) fn mcp_respond(pending: State<'_, PendingRequests>, id: u64, result: Value) {
     if let Some(tx) = pending.lock().remove(&id) {
         let _ = tx.send(result);
     }
-    Ok(())
 }

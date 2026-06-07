@@ -10,7 +10,11 @@ use super::schema::{Column, SchemaIndex};
 use super::scope::{Relation, Scope};
 
 #[must_use]
-pub fn complete(ctx: &CursorContext, scope: &Scope, schema: &SchemaIndex) -> Vec<CompletionItem> {
+pub(crate) fn complete(
+    ctx: &CursorContext,
+    scope: &Scope,
+    schema: &SchemaIndex,
+) -> Vec<CompletionItem> {
     match ctx {
         CursorContext::StatementStart => keywords::leading_keyword_items(),
         CursorContext::Table | CursorContext::TableForJoin => {

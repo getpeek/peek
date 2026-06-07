@@ -12,33 +12,33 @@ use super::reply::tool_result;
 /// frontend `VariableRow.value: string | string[]`.
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(untagged)]
-pub enum VarValue {
+pub(crate) enum VarValue {
     Single(String),
     List(Vec<String>),
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct CreateQueryNodeInput {
+pub(crate) struct CreateQueryNodeInput {
     #[schemars(
         description = "Id of the page to place the node on, as returned by get_pages. Null to use \
                        the currently active page."
     )]
-    pub page_id: Option<String>,
+    pub(crate) page_id: Option<String>,
     #[schemars(description = "SQL query text for the node. May reference variables as @name.")]
-    pub query: String,
+    pub(crate) query: String,
     #[schemars(description = "Canvas position as [x, y] in flow coordinates.")]
-    pub position: [f64; 2],
+    pub(crate) position: [f64; 2],
     #[schemars(description = "Node size as [width, height] in pixels.")]
-    pub size: [f64; 2],
+    pub(crate) size: [f64; 2],
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct CreateVarsNodeInput {
+pub(crate) struct CreateVarsNodeInput {
     #[schemars(
         description = "Id of the page to place the node on, as returned by get_pages. Null to use \
                        the currently active page."
     )]
-    pub page_id: Option<String>,
+    pub(crate) page_id: Option<String>,
     #[schemars(
         description = "Map of variable name -> value. Each value is a string or a list of strings. \
                        String-y values such as strings, uuids, dates must be enclosed in single-quotes \
@@ -46,42 +46,42 @@ pub struct CreateVarsNodeInput {
                        Names must match [A-Za-z_][A-Za-z0-9_]* and are referenced inside queries \
                        as @name."
     )]
-    pub variables: HashMap<String, VarValue>,
+    pub(crate) variables: HashMap<String, VarValue>,
     #[schemars(
         description = "When true the node is global: it auto-connects to every query node on the \
                        page so its variables apply everywhere without manual wiring."
     )]
-    pub global: bool,
+    pub(crate) global: bool,
     #[schemars(description = "Canvas position as [x, y] in flow coordinates.")]
-    pub position: [f64; 2],
+    pub(crate) position: [f64; 2],
     #[schemars(description = "Node size as [width, height] in pixels.")]
-    pub size: [f64; 2],
+    pub(crate) size: [f64; 2],
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct UpdateQueryNodeInput {
+pub(crate) struct UpdateQueryNodeInput {
     #[schemars(description = "Id of the query node to update, as returned by create_query_node.")]
-    pub node_id: String,
+    pub(crate) node_id: String,
     #[schemars(
         description = "New SQL query text. Omit to leave the query unchanged. May reference \
                        variables as @name."
     )]
-    pub query: Option<String>,
+    pub(crate) query: Option<String>,
     #[schemars(
         description = "New canvas position as [x, y] in flow coordinates. Omit to leave it where \
                        it is."
     )]
-    pub position: Option<[f64; 2]>,
+    pub(crate) position: Option<[f64; 2]>,
     #[schemars(description = "New node size as [width, height] in pixels. Omit to keep the size.")]
-    pub size: Option<[f64; 2]>,
+    pub(crate) size: Option<[f64; 2]>,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct UpdateVarsNodeInput {
+pub(crate) struct UpdateVarsNodeInput {
     #[schemars(
         description = "Id of the variable node to update, as returned by create_vars_node."
     )]
-    pub node_id: String,
+    pub(crate) node_id: String,
     #[schemars(
         description = "New map of variable name -> value, replacing the node's current variables. \
                        Each value is a string or a list of strings; names must match \
@@ -89,68 +89,68 @@ pub struct UpdateVarsNodeInput {
                        String-y values such as strings, uuids, dates must be enclosed in single-quotes \
                        while numeric values are written plain."
     )]
-    pub variables: Option<HashMap<String, VarValue>>,
+    pub(crate) variables: Option<HashMap<String, VarValue>>,
     #[schemars(
         description = "Set the global flag. Setting it true auto-connects the node to every query \
                        node on the page; setting it false leaves existing edges in place. Omit to \
                        leave the flag unchanged."
     )]
-    pub global: Option<bool>,
+    pub(crate) global: Option<bool>,
     #[schemars(
         description = "New canvas position as [x, y] in flow coordinates. Omit to leave it where \
                        it is."
     )]
-    pub position: Option<[f64; 2]>,
+    pub(crate) position: Option<[f64; 2]>,
     #[schemars(description = "New node size as [width, height] in pixels. Omit to keep the size.")]
-    pub size: Option<[f64; 2]>,
+    pub(crate) size: Option<[f64; 2]>,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct CreateTextNodeInput {
+pub(crate) struct CreateTextNodeInput {
     #[schemars(
         description = "Id of the page to place the node on, as returned by get_pages. Null to use \
                        the currently active page."
     )]
-    pub page_id: Option<String>,
+    pub(crate) page_id: Option<String>,
     #[schemars(
         description = "The text to display. Rendered on a single line — newlines, not \
                               wrapping, are the only way to break it."
     )]
-    pub text: String,
+    pub(crate) text: String,
     #[schemars(description = "Canvas position as [x, y] in flow coordinates.")]
-    pub position: [f64; 2],
+    pub(crate) position: [f64; 2],
     #[schemars(
         description = "Node height in pixels, which sets the font size — a tall node renders huge \
                        text, a short one renders small text. There is no width: the width is fixed \
                        to fit the text on one line, so longer text yields a wider node."
     )]
-    pub height: f64,
+    pub(crate) height: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct UpdateTextNodeInput {
+pub(crate) struct UpdateTextNodeInput {
     #[schemars(description = "Id of the text node to update, as returned by create_text_node.")]
-    pub node_id: String,
+    pub(crate) node_id: String,
     #[schemars(description = "New text. Omit to leave it unchanged. Rendered on a single line.")]
-    pub text: Option<String>,
+    pub(crate) text: Option<String>,
     #[schemars(
         description = "New canvas position as [x, y] in flow coordinates. Omit to leave it where \
                        it is."
     )]
-    pub position: Option<[f64; 2]>,
+    pub(crate) position: Option<[f64; 2]>,
     #[schemars(
         description = "New node height in pixels, which sets the font size (taller = larger text). \
                        Omit to keep the height. Width is not settable — it tracks the text."
     )]
-    pub height: Option<f64>,
+    pub(crate) height: Option<f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct ConnectNodesInput {
+pub(crate) struct ConnectNodesInput {
     #[schemars(description = "Id of the node where the edge starts (the source).")]
-    pub from: String,
+    pub(crate) from: String,
     #[schemars(description = "Id of the node where the edge connects (the target).")]
-    pub to: String,
+    pub(crate) to: String,
 }
 
 #[tool_fn(
@@ -158,7 +158,7 @@ pub struct ConnectNodesInput {
     description = "Create a SQL Query node on the canvas at the given position and size. The page is \
                    revealed and the node is placed on it; returns { nodeId, pageId }."
 )]
-pub async fn create_query_node(
+pub(crate) async fn create_query_node(
     input: CreateQueryNodeInput,
 ) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
@@ -173,7 +173,7 @@ pub async fn create_query_node(
         )
         .await
         {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -189,7 +189,7 @@ pub async fn create_query_node(
                    { nodeId, pageId }. If global is false the node can be manually connected to \
                    Other nodes by using the `connect_nodes` tool."
 )]
-pub async fn create_vars_node(
+pub(crate) async fn create_vars_node(
     input: CreateVarsNodeInput,
 ) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
@@ -205,7 +205,7 @@ pub async fn create_vars_node(
         )
         .await
         {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -218,7 +218,7 @@ pub async fn create_vars_node(
                    them as they are. Does not change the active page. Returns { nodeId, pageId }; \
                    errors when the id is unknown or names a non-query node."
 )]
-pub async fn update_query_node(
+pub(crate) async fn update_query_node(
     input: UpdateQueryNodeInput,
 ) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
@@ -233,7 +233,7 @@ pub async fn update_query_node(
         )
         .await
         {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -249,7 +249,7 @@ pub async fn update_query_node(
                    change the active page. Returns { nodeId, pageId }; errors when the id is \
                    unknown or names a non-variable node."
 )]
-pub async fn update_vars_node(
+pub(crate) async fn update_vars_node(
     input: UpdateVarsNodeInput,
 ) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
@@ -265,7 +265,7 @@ pub async fn update_vars_node(
         )
         .await
         {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -282,7 +282,7 @@ pub async fn update_vars_node(
                    the width starts at 100px and grows to fit. The page is revealed and the node \
                    placed on it; returns { nodeId, pageId }; error when the page id is unknown."
 )]
-pub async fn create_text_node(
+pub(crate) async fn create_text_node(
     input: CreateTextNodeInput,
 ) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
@@ -297,7 +297,7 @@ pub async fn create_text_node(
         )
         .await
         {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -313,7 +313,7 @@ pub async fn create_text_node(
                    page. Returns { nodeId, pageId }; errors when the id is unknown or names a \
                    non-text node."
 )]
-pub async fn update_text_node(
+pub(crate) async fn update_text_node(
     input: UpdateTextNodeInput,
 ) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
@@ -328,7 +328,7 @@ pub async fn update_text_node(
         )
         .await
         {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -341,7 +341,9 @@ pub async fn update_text_node(
                    values available to that query as @name. Returns { edgeId, pageId }; a no-op if \
                    the edge already exists."
 )]
-pub async fn connect_nodes(input: ConnectNodesInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn connect_nodes(
+    input: ConnectNodesInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
         match bridge::request(
             "connect_nodes",
@@ -349,7 +351,7 @@ pub async fn connect_nodes(input: ConnectNodesInput) -> Result<CallToolResult, t
         )
         .await
         {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )

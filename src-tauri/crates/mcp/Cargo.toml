@@ -1,0 +1,26 @@
+[package]
+name = "peek-mcp"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tower-mcp = { version = "0.12", features = ["http", "macros"] }
+axum = "0.8"
+tower-http = { version = "0.6", features = ["cors"] }
+tokio = { version = "1", features = [
+  "net",
+  "io-util",
+  "macros",
+  "rt",
+  "rt-multi-thread",
+  "sync",
+  "time",
+] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+schemars = "1"
+async-trait = "0.1"
+anyhow = "1"
+
+[lints]
+workspace = true

@@ -7,30 +7,32 @@ use super::bridge;
 use super::reply::tool_result;
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct NoInput {}
+pub(crate) struct NoInput {}
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct PageContentInput {
+pub(crate) struct PageContentInput {
     #[schemars(description = "Id of the page to fetch, as returned by get_pages.")]
-    pub page_id: String,
+    pub(crate) page_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct CreatePageInput {
+pub(crate) struct CreatePageInput {
     #[schemars(description = "Name for the new page.")]
-    pub name: String,
+    pub(crate) name: String,
     #[schemars(
         description = "Zero-based position in the page list. Clamped to the current page count \
                        (appended at the end when larger)."
     )]
-    pub order: u32,
+    pub(crate) order: u32,
 }
 
 #[tool_fn(
     name = "get_active_page_id",
     description = "Id of the page currently selected on the canvas."
 )]
-pub async fn get_active_page_id(_input: NoInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn get_active_page_id(
+    _input: NoInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(match bridge::request("active_page_id", json!({})).await {
         Ok(active) => CallToolResult::text(active.to_string()),
         Err(e) => CallToolResult::error(e),
@@ -41,7 +43,7 @@ pub async fn get_active_page_id(_input: NoInput) -> Result<CallToolResult, tower
     name = "get_pages",
     description = "All pages on the current connection as a list of { id, name, order }."
 )]
-pub async fn get_pages(_input: NoInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn get_pages(_input: NoInput) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(match bridge::request("pages", json!({})).await {
         Ok(pages) => CallToolResult::text(pages.to_string()),
         Err(e) => CallToolResult::error(e),
@@ -53,10 +55,12 @@ pub async fn get_pages(_input: NoInput) -> Result<CallToolResult, tower_mcp::Err
     description = "Serialized content of one page (nodes, edges, viewport). Query result rows are \
                    excluded — this never exposes database content."
 )]
-pub async fn get_page_content(input: PageContentInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn get_page_content(
+    input: PageContentInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
         match bridge::request("page_content", json!({ "pageId": input.page_id })).await {
-            Ok(content) => page_content_result(content, &input.page_id),
+            Ok(content) => page_content_result(&content, &input.page_id),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -67,7 +71,9 @@ pub async fn get_page_content(input: PageContentInput) -> Result<CallToolResult,
     description = "Create a new empty page on the current connection at the given position and \
                    switch to it. Returns the created { id, name, order }."
 )]
-pub async fn create_page(input: CreatePageInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn create_page(
+    input: CreatePageInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
         match bridge::request(
             "create_page",
@@ -75,7 +81,7 @@ pub async fn create_page(input: CreatePageInput) -> Result<CallToolResult, tower
         )
         .await
         {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -83,7 +89,7 @@ pub async fn create_page(input: CreatePageInput) -> Result<CallToolResult, tower
 
 /// An unknown page id comes back as JSON `null` from the frontend; surface that
 /// as a tool error rather than handing the agent a bare `null`.
-fn page_content_result(content: Value, page_id: &str) -> CallToolResult {
+fn page_content_result(content: &Value, page_id: &str) -> CallToolResult {
     if content.is_null() {
         return CallToolResult::error(format!("page {page_id} not found"));
     }
@@ -97,11 +103,11 @@ mod tests {
 
     #[test]
     fn missing_page_is_error() {
-        assert!(page_content_result(Value::Null, "page_missing").is_error);
+        assert!(page_content_result(&Value::Null, "page_missing").is_error);
     }
 
     #[test]
     fn present_page_is_ok() {
-        assert!(!page_content_result(json!({ "id": "page_1", "nodes": [] }), "page_1").is_error);
+        assert!(!page_content_result(&json!({ "id": "page_1", "nodes": [] }), "page_1").is_error);
     }
 }

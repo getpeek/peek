@@ -7,37 +7,37 @@ use super::bridge;
 use super::reply::tool_result;
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct CameraPanToInput {
+pub(crate) struct CameraPanToInput {
     #[schemars(description = "Point to center the camera on, as [x, y] in flow coordinates.")]
-    pub position: [f64; 2],
+    pub(crate) position: [f64; 2],
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct CameraSetZoomInput {
+pub(crate) struct CameraSetZoomInput {
     #[schemars(
         description = "Zoom level; 1.0 is 100%. Clamped to the canvas range 0.1–4.0.",
         range(min = 0.1, max = 4.0)
     )]
-    pub zoom: f64,
+    pub(crate) zoom: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct CameraFitNodeInput {
+pub(crate) struct CameraFitNodeInput {
     #[schemars(
         description = "Id of the node to bring into view. If it lives on another page the canvas \
                        switches to that page first."
     )]
-    pub node_id: String,
+    pub(crate) node_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub struct SelectNodesInput {
+pub(crate) struct SelectNodesInput {
     #[schemars(
         description = "Ids of the nodes to select; this replaces the current selection. An empty \
                        list clears the selection. All ids should be on one page; the canvas \
                        switches to that page first."
     )]
-    pub node_ids: Vec<String>,
+    pub(crate) node_ids: Vec<String>,
 }
 
 #[tool_fn(
@@ -45,10 +45,12 @@ pub struct SelectNodesInput {
     description = "Pan the camera to center on a point in flow coordinates, keeping the current \
                    zoom. Use coordinates from a node's position (see get_page_content)."
 )]
-pub async fn camera_pan_to(input: CameraPanToInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn camera_pan_to(
+    input: CameraPanToInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
         match bridge::request("camera_pan_to", json!({ "position": input.position })).await {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -59,10 +61,12 @@ pub async fn camera_pan_to(input: CameraPanToInput) -> Result<CallToolResult, to
     description = "Set the camera zoom level (1.0 = 100%), clamped to 0.1–4.0. Returns the applied \
                    zoom."
 )]
-pub async fn camera_set_zoom(input: CameraSetZoomInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn camera_set_zoom(
+    input: CameraSetZoomInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
         match bridge::request("camera_set_zoom", json!({ "zoom": input.zoom })).await {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -73,10 +77,12 @@ pub async fn camera_set_zoom(input: CameraSetZoomInput) -> Result<CallToolResult
     description = "Bring a node into view: fit its bounds in the viewport, never zooming closer than \
                    100%. Switches to the node's page if needed. Returns { nodeId, pageId }."
 )]
-pub async fn camera_fit_node(input: CameraFitNodeInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn camera_fit_node(
+    input: CameraFitNodeInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
         match bridge::request("camera_fit_node", json!({ "nodeId": input.node_id })).await {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )
@@ -87,10 +93,12 @@ pub async fn camera_fit_node(input: CameraFitNodeInput) -> Result<CallToolResult
     description = "Select the given nodes, replacing the current selection; an empty list clears it. \
                    Switches to the nodes' page if needed. Returns { selected, pageId }."
 )]
-pub async fn select_nodes(input: SelectNodesInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn select_nodes(
+    input: SelectNodesInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
         match bridge::request("select_nodes", json!({ "nodeIds": input.node_ids })).await {
-            Ok(v) => tool_result(v),
+            Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },
     )

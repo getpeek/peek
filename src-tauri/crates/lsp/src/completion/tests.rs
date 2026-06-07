@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use crate::lsp::context::{CursorContext, analyze_cursor};
-use crate::lsp::parser::new_parser;
-use crate::lsp::schema::SchemaIndex;
-use crate::lsp::scope::Scope;
+use crate::context::{CursorContext, analyze_cursor};
+use crate::parser::new_parser;
+use crate::schema::SchemaIndex;
+use crate::scope::Scope;
 
 use super::complete;
 

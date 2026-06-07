@@ -3,7 +3,7 @@ use tree_sitter::{Node, Tree, TreeCursor};
 /// What the cursor is "looking at" — used by the completion module to pick a
 /// strategy. This enum is the v1 surface; v2 adds CTE and subquery scopes.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CursorContext {
+pub(crate) enum CursorContext {
     /// Cursor at the very start of the document (or after a `;` with no other
     /// tokens). Suggest leading SQL keywords.
     StatementStart,
@@ -27,7 +27,7 @@ pub enum CursorContext {
 }
 
 #[must_use]
-pub fn analyze_cursor(tree: &Tree, source: &[u8], byte_offset: usize) -> CursorContext {
+pub(crate) fn analyze_cursor(tree: &Tree, source: &[u8], byte_offset: usize) -> CursorContext {
     if is_in_string_or_comment(tree.root_node(), byte_offset) {
         return CursorContext::General; // suppress completions in strings/comments
     }
@@ -328,7 +328,7 @@ fn update_target_for(node: Node<'_>, source: &[u8]) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lsp::parser::new_parser;
+    use crate::parser::new_parser;
 
     fn analyze(source: &str, byte_offset: usize) -> CursorContext {
         let mut parser = new_parser();

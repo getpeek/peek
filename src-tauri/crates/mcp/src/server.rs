@@ -9,6 +9,11 @@ use super::bridge::SharedBridge;
 use super::{connection, nodes, pages, schema, view};
 
 /// Bind the MCP server to `0.0.0.0:port` and serve until the process exits.
+///
+/// # Errors
+///
+/// Returns an error if the port cannot be bound (e.g. already in use) or the
+/// HTTP server stops with an error.
 pub async fn serve(port: u16, bridge: SharedBridge) -> anyhow::Result<()> {
     super::bridge::init(bridge);
 
