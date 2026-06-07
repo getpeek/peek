@@ -5,15 +5,16 @@
 //! pan/zoom performance. To keep that win *and* the rounded-corner look transparency
 //! used to give us, we round only the corners here: the `NSWindow` is made
 //! non-opaque with a clear backdrop, and the still-opaque web-content layer is
-//! clipped to a rounded rect — so just the four corner triangles fall through to the
-//! desktop while the bulk of the surface stays on the fast opaque path.
+//! clipped to a squircle (continuous corner curve, matching native window chrome)
+//! — so just the four corner regions fall through to the desktop while the bulk of
+//! the surface stays on the fast opaque path.
 
 use objc2::msg_send;
 use objc2::runtime::{AnyClass, AnyObject, Bool};
 use tauri::WebviewWindow;
 
 // Matches the `#root` border-radius in index.html.
-const CORNER_RADIUS: f64 = 12.0;
+const CORNER_RADIUS: f64 = 16.0;
 
 #[allow(unsafe_code)]
 pub(crate) fn apply_rounded_corners(window: &WebviewWindow) {
@@ -43,6 +44,15 @@ pub(crate) fn apply_rounded_corners(window: &WebviewWindow) {
             let layer: *mut AnyObject = msg_send![view, layer];
             if !layer.is_null() {
                 let _: () = msg_send![layer, setCornerRadius: CORNER_RADIUS];
+                // `kCACornerCurveContinuous` is the string "continuous"; it swaps the
+                // default circular-arc corner for the superellipse "squircle" Apple
+                // uses on native window chrome. Referencing the literal avoids linking
+                // the QuartzCore symbol just for one constant.
+                if let Some(ns_string) = AnyClass::get(c"NSString") {
+                    let continuous: *mut AnyObject =
+                        msg_send![ns_string, stringWithUTF8String: c"continuous".as_ptr()];
+                    let _: () = msg_send![layer, setCornerCurve: continuous];
+                }
                 let _: () = msg_send![layer, setMasksToBounds: Bool::new(true)];
             }
         }
