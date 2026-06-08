@@ -7,6 +7,9 @@
   --pk-radius-node: 10px;
   --pk-radius-card: 10px;
   --pk-radius-pill: 999px;
+  /* Matches CORNER_RADIUS in src-tauri/src/window_chrome.rs — the native squircle the
+     webview is clipped to. The window-edge border (WindowBorder) follows it. */
+  --pk-radius-window: 16px;
 
   --pk-font-sans: "Monaspace Krypton", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --pk-font-mono: "Monaspace Krypton", "SF Mono", ui-monospace, Menlo, monospace;

@@ -16,6 +16,12 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
+      /* Painted before the bundle and the JS-injected theme stylesheet load, so a
+         fast resize exposes a backing-store region the engine hasn't repainted yet
+         — without a background that shows as a white flash. The active theme's
+         --pk-bg drives this once loaded (matching whatever theme is set, including
+         during resize); the literal is pine's --pk-bg, used only pre-load. */
+      background: var(--pk-bg, oklch(11.5% 0.028 280));
     }
   </style>
 

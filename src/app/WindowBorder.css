@@ -1,0 +1,12 @@
+/* The window is frameless (decorations disabled in Tauri), so on backgrounds close
+   to --pk-bg the app's edges vanish. This non-interactive overlay traces a hairline
+   along the window edge — mirroring the demo canvas frame on the marketing site — so
+   the boundary reads even against similar backdrops. */
+.window-border {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  pointer-events: none;
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-window);
+}
