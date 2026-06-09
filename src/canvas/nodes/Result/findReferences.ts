@@ -1,4 +1,4 @@
-import type { QueryInfo } from "../../../canvas/nodes/Result/queryInfo";
+import type { QueryInfo } from "./queryInfo";
 
 export type CellReference = { table: string; column: string };
 

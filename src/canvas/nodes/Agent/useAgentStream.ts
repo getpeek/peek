@@ -1,11 +1,7 @@
 import { useRef, useState } from "react";
 import { useCanvas } from "../../hooks/useCanvas";
 import type { AgentData } from "../../types";
-import {
-  type Message,
-  type ToolCall,
-  type useExecutePrompt,
-} from "../../../shapes/Ai/useExecutePrompt";
+import { type Message, type ToolCall, type useExecutePrompt } from "../../hooks/useExecutePrompt";
 import type { ToolHandlers } from "./useAgentTools";
 
 type RunPrompt = ReturnType<typeof useExecutePrompt>;

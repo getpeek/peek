@@ -1,6 +1,6 @@
 import { createTheme, MantineProvider } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import { MonacoManager } from "./shapes/Query/Editor/MonacoManager";
+import { MonacoManager } from "./canvas/nodes/Query/Editor/MonacoManager";
 import { CustomTitleBar } from "./components/titlebar/CustomTitleBar";
 import { CommandPalette } from "./command-palette/CommandPalette";
 import { DropZone } from "./drop-zone/DropZone";

@@ -1,11 +1,11 @@
 import Editor, { Monaco } from "@monaco-editor/react";
 import { editor, languages } from "monaco-editor";
-import "../Query.css";
+import "./editor.css";
 import { useEffect, useRef } from "react";
 import { useAtomValue } from "jotai";
-import { scanVariableSites } from "../../../canvas/variables";
+import { scanVariableSites } from "../../../variables";
 import { attachLspDocumentSync } from "./lspProvider";
-import { configAtom } from "../../../state";
+import { configAtom } from "../../../../state";
 
 let overflowWidgetsDomNode: HTMLElement | null = null;
 const getOverflowWidgetsDomNode = () => {

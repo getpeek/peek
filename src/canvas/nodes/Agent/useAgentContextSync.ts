@@ -5,7 +5,7 @@ import { useCanvas } from "../../hooks/useCanvas";
 import { edgesAtom, nodesAtom, resultsAtom } from "../../state";
 import { schemaAtom } from "../../../state";
 import type { AgentData, ResultNode } from "../../types";
-import type { Message } from "../../../shapes/Ai/useExecutePrompt";
+import type { Message } from "../../hooks/useExecutePrompt";
 
 export function useAgentContextSync(opts: { nodeId: string }) {
   const { nodeId } = opts;

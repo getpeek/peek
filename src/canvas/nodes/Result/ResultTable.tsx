@@ -3,11 +3,7 @@ import { useAtomValue } from "jotai";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { schemaAtom, type DatabaseResult } from "../../../state";
-import {
-  getInboundReferences,
-  getOutboundReferences,
-  type CellReference,
-} from "../../../shapes/Result/ResultTable/findReferences";
+import { getInboundReferences, getOutboundReferences, type CellReference } from "./findReferences";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { CellContextMenu } from "./CellContextMenu";
@@ -29,7 +25,6 @@ import { useRowSelection } from "./useRowSelection";
 import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
 import type { Reference } from "./columnRoles";
 import { getEditableTableName, getExportTableName } from "./inlineEdit";
-import "../../../shapes/Result/ResultShape.css";
 
 export function ResultTable({
   nodeId,

@@ -11,6 +11,7 @@ import type {
   ResultNode,
 } from "./types";
 import { collectVariablesFor, substituteVariables } from "./variables";
+import { isNumericType, isTimestampType, isUuidType } from "./nodes/Result/inlineEdit";
 
 export type SetResults = (
   updater:
@@ -45,6 +46,9 @@ const DEFAULT_RESULT_HEIGHT = 440;
 const EMPTY_RESULT_WIDTH = 400;
 const EMPTY_RESULT_HEIGHT = 600;
 const RESULT_COLUMN_WIDTH = 250;
+const UUID_COLUMN_WIDTH = 440;
+const TIMESTAMP_COLUMN_WIDTH = 280;
+const NUMERIC_COLUMN_WIDTH = 130;
 const MIN_RESULT_WIDTH = 200;
 const RESULT_ROW_HEIGHT = 50;
 const RESULT_HEIGHT_PADDING = 140;
@@ -73,13 +77,27 @@ function nextPosition(
   };
 }
 
+function columnWidthForType(type: string): number {
+  if (isUuidType(type)) {
+    return UUID_COLUMN_WIDTH;
+  }
+  if (isTimestampType(type)) {
+    return TIMESTAMP_COLUMN_WIDTH;
+  }
+  if (isNumericType(type)) {
+    return NUMERIC_COLUMN_WIDTH;
+  }
+  return RESULT_COLUMN_WIDTH;
+}
+
 function resultNodeDimensions(result: DatabaseResult): { width: number; height: number } {
   if (result.length === 0) {
     return { width: EMPTY_RESULT_WIDTH, height: EMPTY_RESULT_HEIGHT };
   }
-  const columnCount = result[0]?.length ?? 0;
+  const columns = result[0] ?? [];
+  const width = columns.reduce((sum, [, , type]) => sum + columnWidthForType(type), 0);
   return {
-    width: Math.max(columnCount * RESULT_COLUMN_WIDTH, MIN_RESULT_WIDTH),
+    width: Math.max(width, MIN_RESULT_WIDTH),
     height: Math.min(result.length * RESULT_ROW_HEIGHT + RESULT_HEIGHT_PADDING, MAX_RESULT_HEIGHT),
   };
 }

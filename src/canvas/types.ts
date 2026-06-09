@@ -1,5 +1,5 @@
 import type { Node, Edge } from "@xyflow/react";
-import type { Message } from "../shapes/Ai/useExecutePrompt";
+import type { Message } from "./hooks/useExecutePrompt";
 
 export type AppNodeType =
   | "query"

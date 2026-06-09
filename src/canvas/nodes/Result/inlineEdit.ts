@@ -47,6 +47,16 @@ export function isNumericType(sqlType: string): boolean {
   return NUMERIC_TYPES.has(sqlType.toUpperCase());
 }
 
+export function isUuidType(sqlType: string): boolean {
+  return sqlType.toUpperCase() === "UUID";
+}
+
+const TIMESTAMP_TYPES = new Set(["TIMESTAMP", "TIMESTAMPTZ", "DATETIME"]);
+
+export function isTimestampType(sqlType: string): boolean {
+  return TIMESTAMP_TYPES.has(sqlType.toUpperCase());
+}
+
 export function formatSqlLiteral(value: unknown, sqlType: string): string {
   if (value === null || value === undefined) {
     return "NULL";

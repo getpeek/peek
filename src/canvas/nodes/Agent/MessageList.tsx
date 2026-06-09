@@ -2,7 +2,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { memo, useMemo, type RefObject } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { Message, ToolCall } from "../../../shapes/Ai/useExecutePrompt";
+import type { Message, ToolCall } from "../../hooks/useExecutePrompt";
 import { MessageItem } from "./MessageItem";
 import { ToolBlock } from "./ToolBlock";
 

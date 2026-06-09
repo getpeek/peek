@@ -4,14 +4,14 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { format } from "sql-formatter";
 import { useAtomValue } from "jotai";
 import { schemaAtom } from "../../../state";
-import { useExecutePrompt } from "../../../shapes/Ai/useExecutePrompt";
+import { useExecutePrompt } from "../../hooks/useExecutePrompt";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
 import type { QueryErrorNode as QueryErrorNodeT, QueryNode } from "../../types";
-import "../../../shapes/Error/ErrorShape.css";
+import "./QueryError.css";
 
 const DEFAULT_W = 400;
 const DEFAULT_H = 300;

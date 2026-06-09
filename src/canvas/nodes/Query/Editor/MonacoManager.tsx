@@ -2,8 +2,8 @@ import { useRef } from "react";
 import Editor, { Monaco } from "@monaco-editor/react";
 import { createLspProvider } from "./lspProvider";
 import { editor, IDisposable } from "monaco-editor";
-import { rosePineTheme } from "../../../themes/rosePineTheme";
-import { rosePineDawnTheme } from "../../../themes/rosePineDawnTheme";
+import { rosePineTheme } from "../../../../themes/rosePineTheme";
+import { rosePineDawnTheme } from "../../../../themes/rosePineDawnTheme";
 
 export const MonacoManager = () => {
   const monacoRef = useRef<Monaco | null>(null);

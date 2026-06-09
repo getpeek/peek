@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IconAlertTriangle, IconChevronRight, IconTool } from "@tabler/icons-react";
-import type { ToolCall } from "../../../shapes/Ai/useExecutePrompt";
+import type { ToolCall } from "../../hooks/useExecutePrompt";
 
 interface ToolBlockProps {
   call: ToolCall;

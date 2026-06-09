@@ -1,7 +1,7 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
-import { useExecutePrompt } from "../../../shapes/Ai/useExecutePrompt";
+import { useExecutePrompt } from "../../hooks/useExecutePrompt";
 import { configAtom } from "../../../state";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";

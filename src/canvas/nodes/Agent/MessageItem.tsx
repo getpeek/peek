@@ -1,7 +1,7 @@
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { IconDatabaseImport, IconRobot } from "@tabler/icons-react";
-import type { Message } from "../../../shapes/Ai/useExecutePrompt";
+import type { Message } from "../../hooks/useExecutePrompt";
 
 interface MessageItemProps {
   message: Message;

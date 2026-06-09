@@ -1,7 +1,7 @@
 import { Table } from "@mantine/core";
 import { forwardRef } from "react";
 import type { DatabaseResult } from "../../../state";
-import type { CellReference } from "../../../shapes/Result/ResultTable/findReferences";
+import type { CellReference } from "./findReferences";
 import { DataCell } from "./Cell";
 import { EditCell } from "./EditCell";
 import { classifyColumn, type Reference } from "./columnRoles";
@@ -121,6 +121,7 @@ export const ResultTableRow = forwardRef<
               <DataCell
                 value={value}
                 type={type}
+                isKey={isPk || isFk}
                 outbound={outbound[column]}
                 inbound={inbound[column]}
                 onInboundClick={onFollowReferences}

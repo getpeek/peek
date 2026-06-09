@@ -3,7 +3,7 @@ import { IconIndentIncrease, IconLoader2, IconPlayerPlay } from "@tabler/icons-r
 import { useEffect, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 import type { editor as MonacoEditor } from "monaco-editor";
-import { SqlEditor } from "../../../shapes/Query/Editor/SqlEditor";
+import { SqlEditor } from "./Editor/SqlEditor";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { useGetVariables } from "./useGetVariables";
