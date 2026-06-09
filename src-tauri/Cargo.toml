@@ -1,6 +1,6 @@
 [package]
 name = "peek"
-version = "2.5.3"
+version = "2.5.4"
 description = "A Database GUI"
 authors = ["Damoon Rashidi"]
 edition = "2024"
