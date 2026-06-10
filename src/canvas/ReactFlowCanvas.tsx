@@ -44,6 +44,7 @@ import type { AppEdge, AppNode } from "./types";
 import { useCanvas } from "./hooks/useCanvas";
 import { useDrawTool } from "./hooks/useDrawTool";
 import { useInteractionState } from "./hooks/useInteractionState";
+import { useMetaKeyHeld } from "./hooks/useMetaKeyHeld";
 import { usePlaceTool } from "./hooks/usePlaceTool";
 import { useRubberBandSelect } from "./hooks/useRubberBandSelect";
 import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
@@ -122,6 +123,7 @@ function ReactFlowCanvasInner() {
   const { rectRef: selectionRectRef } = useRubberBandSelect();
   useZoomVariable();
   useCursorBroadcast();
+  const metaHeld = useMetaKeyHeld();
   const { onSchemaNodeDragStart, onSchemaNodeDrag, onSchemaNodeDragStop } = useSchemaForceLayout();
 
   const onNodesChange = useCallback(
@@ -213,7 +215,9 @@ function ReactFlowCanvasInner() {
         deleteKeyCode={["Backspace", "Delete"]}
         multiSelectionKeyCode='Shift'
         onlyRenderVisibleElements
+        selectionKeyCode={null}
         selectionOnDrag={false}
+        noDragClassName={metaHeld ? "nodrag-disabled" : "nodrag"}
         nodesDraggable={placeMode === null}
         elementsSelectable={placeMode === null}
         selectionMode={SelectionMode.Partial}
@@ -235,6 +239,7 @@ function ReactFlowCanvasInner() {
                 : "",
             variableDragHighlight.active ? "connecting-from-variable" : "",
             variableDragHighlight.connecting ? "connecting" : "",
+            metaHeld ? "drag-anywhere" : "",
           ]
             .filter(Boolean)
             .join(" ") || undefined

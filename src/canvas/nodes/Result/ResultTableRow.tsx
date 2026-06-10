@@ -60,7 +60,7 @@ export const ResultTableRow = forwardRef<
       data-index={rowIndex}
       className={rowClasses.join(" ") || undefined}
       onMouseDown={e => {
-        if (e.metaKey || e.ctrlKey) {
+        if (e.shiftKey) {
           onSelectMouseDown(rowIndex, e);
         }
       }}

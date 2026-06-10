@@ -41,9 +41,12 @@
 
 .react-flow__edge-path {
   stroke: var(--pk-edge-color, var(--pk-node-border-strong));
-  stroke-width: 1.6;
+  stroke-width: 2.6;
   fill: none;
-  filter: drop-shadow(0 0 6px var(--pk-edge-color, transparent));
+  /* Two passes — a tight core plus a soft bloom — read as a distinct colored
+     glow rather than the faint single-pass halo a thin stroke gives. */
+  filter: drop-shadow(0 0 2px var(--pk-edge-color, transparent))
+    drop-shadow(0 0 7px var(--pk-edge-color, transparent));
 }
 .react-flow__edge.selected .react-flow__edge-path,
 .react-flow__edge:focus .react-flow__edge-path {
@@ -125,6 +128,13 @@
   box-shadow:
     0 0 0 3px var(--pk-accent),
     0 0 12px color-mix(in oklab, var(--pk-accent) 15%, transparent);
+}
+
+/* While Cmd is held, the whole node is a drag surface (see useMetaKeyHeld),
+   so surface the grab affordance everywhere instead of only on the header. */
+.drag-anywhere .react-flow__node,
+.drag-anywhere .react-flow__node .app-node {
+  cursor: grab;
 }
 
 /* ============================================================
@@ -481,19 +491,24 @@
   }
 }
 
+/* Edges touching a selected node (tagged by useSelectionHighlight): brighter
+   and thicker so the selection's connections pop. --pk-edge-bright lightens the
+   inline --pk-edge-color toward white; defined here (a fresh name) since the
+   stylesheet can't override the inline custom property itself. */
 .react-flow__edge.connection-active .react-flow__edge-path {
-  stroke: var(--pk-edge-color, var(--pk-accent));
-  stroke-width: 2.5;
+  --pk-edge-bright: color-mix(in oklab, var(--pk-edge-color, var(--pk-accent)), white 38%);
+  stroke: var(--pk-edge-bright);
+  stroke-width: 3.4;
   animation: pk-edge-pulse 1.6s ease-in-out infinite;
 }
 @keyframes pk-edge-pulse {
   0%,
   100% {
-    filter: drop-shadow(0 0 6px var(--pk-edge-color, var(--pk-accent)));
+    filter: drop-shadow(0 0 6px var(--pk-edge-bright, var(--pk-accent)));
     opacity: 0.9;
   }
   50% {
-    filter: drop-shadow(0 0 12px var(--pk-edge-color, var(--pk-accent)));
+    filter: drop-shadow(0 0 12px var(--pk-edge-bright, var(--pk-accent)));
     opacity: 1;
   }
 }
