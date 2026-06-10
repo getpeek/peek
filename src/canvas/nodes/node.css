@@ -39,18 +39,20 @@
   display: none;
 }
 
+/* Resting edges are muted — dimmed with a soft single-pass glow — so they read
+   as quiet background structure. The active states below (selected connection,
+   flowing, live) restore full opacity and a stronger glow to stand out. */
 .react-flow__edge-path {
   stroke: var(--pk-edge-color, var(--pk-node-border-strong));
   stroke-width: 2.6;
   fill: none;
-  /* Two passes — a tight core plus a soft bloom — read as a distinct colored
-     glow rather than the faint single-pass halo a thin stroke gives. */
-  filter: drop-shadow(0 0 2px var(--pk-edge-color, transparent))
-    drop-shadow(0 0 7px var(--pk-edge-color, transparent));
+  opacity: 0.55;
+  filter: drop-shadow(0 0 4px var(--pk-edge-color, transparent));
 }
 .react-flow__edge.selected .react-flow__edge-path,
 .react-flow__edge:focus .react-flow__edge-path {
   stroke: var(--pk-edge-color, var(--pk-accent));
+  opacity: 1;
 }
 
 /* xyflow's node wrapper: transparent so .app-node owns the visible card.
@@ -437,6 +439,7 @@
 .react-flow__edge.flowing .react-flow__edge-path {
   stroke: var(--pk-edge-color, var(--pk-accent));
   stroke-dasharray: 4 6;
+  opacity: 1;
   animation: pk-flow 1.4s linear infinite;
 }
 @keyframes pk-flow {
@@ -447,8 +450,9 @@
 
 .react-flow__edge.query-live .react-flow__edge-path {
   stroke: var(--pk-edge-color, var(--pk-accent));
-  stroke-width: 2;
+  stroke-width: 2.6;
   stroke-dasharray: 4 6;
+  opacity: 1;
   animation: pk-flow 1.4s linear infinite;
 }
 

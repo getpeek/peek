@@ -98,11 +98,11 @@ export function useLassoSelect() {
 
       const inside: string[] = [];
       for (const n of rf.getNodes() as AppNode[]) {
-        const nw = n.measured?.width ?? n.width ?? 0;
-        const nh = n.measured?.height ?? n.height ?? 0;
-        const cx = n.position.x + nw / 2;
-        const cy = n.position.y + nh / 2;
-        if (pointInPolygon([cx, cy], flowPolygon)) {
+        const width = n.measured?.width ?? n.width ?? 0;
+        const height = n.measured?.height ?? n.height ?? 0;
+        if (
+          polygonIntersectsRect(flowPolygon, { x: n.position.x, y: n.position.y, width, height })
+        ) {
           inside.push(n.id);
         }
       }
@@ -145,6 +145,55 @@ export function useLassoSelect() {
   }, [placeMode, selectionTool, rf, canvas]);
 
   return { points };
+}
+
+interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+function polygonIntersectsRect(polygon: [number, number][], rect: Rect): boolean {
+  const corners: [number, number][] = [
+    [rect.x, rect.y],
+    [rect.x + rect.width, rect.y],
+    [rect.x + rect.width, rect.y + rect.height],
+    [rect.x, rect.y + rect.height],
+  ];
+  if (corners.some(corner => pointInPolygon(corner, polygon))) {
+    return true;
+  }
+  if (
+    polygon.some(
+      ([px, py]) =>
+        px >= rect.x && px <= rect.x + rect.width && py >= rect.y && py <= rect.y + rect.height,
+    )
+  ) {
+    return true;
+  }
+  // The lasso is implicitly closed, so the edge from the last point back to the first counts too.
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i++) {
+    for (let k = 0; k < 4; k++) {
+      if (segmentsIntersect(polygon[j], polygon[i], corners[k], corners[(k + 1) % 4])) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function cross(o: [number, number], p: [number, number], q: [number, number]): number {
+  return (p[0] - o[0]) * (q[1] - o[1]) - (p[1] - o[1]) * (q[0] - o[0]);
+}
+
+function segmentsIntersect(
+  a: [number, number],
+  b: [number, number],
+  c: [number, number],
+  d: [number, number],
+): boolean {
+  return cross(c, d, a) * cross(c, d, b) < 0 && cross(a, b, c) * cross(a, b, d) < 0;
 }
 
 function pointInPolygon(point: [number, number], polygon: [number, number][]): boolean {
