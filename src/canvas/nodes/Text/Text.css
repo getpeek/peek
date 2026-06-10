@@ -16,7 +16,10 @@
 }
 
 .text-node.selected {
-  border-color: var(--pk-accent);
+  outline: calc(2.5px / var(--pk-zoom, 1)) solid var(--pk-node-type-color);
+  outline-offset: calc(3px / var(--pk-zoom, 1));
+  box-shadow: 0 0 calc(18px / var(--pk-zoom, 1)) calc(3px / var(--pk-zoom, 1))
+    color-mix(in oklab, var(--pk-node-type-color) 70%, transparent);
 }
 
 .text-node.editing {

@@ -50,12 +50,34 @@
   stroke: var(--pk-edge-color, var(--pk-accent));
 }
 
-/* xyflow's node wrapper: transparent so .app-node owns the visible card */
+/* xyflow's node wrapper: transparent so .app-node owns the visible card.
+   --pk-node-type-color drives the selection ring; the default resolves to the
+   accent and each react-flow__node-<type> override (below) tints it by kind. */
 .react-flow__node {
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
   box-shadow: none !important;
+  --pk-node-type-color: var(--pk-accent);
+}
+
+.react-flow__node-query {
+  --pk-node-type-color: var(--pk-type-query);
+}
+.react-flow__node-result {
+  --pk-node-type-color: var(--pk-type-result);
+}
+.react-flow__node-agent {
+  --pk-node-type-color: var(--pk-type-agent);
+}
+.react-flow__node-barchart {
+  --pk-node-type-color: var(--pk-type-chart);
+}
+.react-flow__node-query-error {
+  --pk-node-type-color: var(--pk-type-error);
+}
+.react-flow__node-variable {
+  --pk-node-type-color: var(--pk-type-variable);
 }
 
 /* ============================================================
@@ -78,10 +100,15 @@
   line-height: 1.5;
 }
 
+/* The ring counter-scales by --pk-zoom (mirrored from the viewport by
+   useZoomVariable) so its width, gap, and glow stay constant on screen instead
+   of scaling with zoom — matching how a native selection indicator behaves. */
 .app-node.selected {
-  border-color: var(--pk-accent);
+  outline: calc(2.5px / var(--pk-zoom, 1)) solid var(--pk-node-type-color);
+  outline-offset: calc(3px / var(--pk-zoom, 1));
   box-shadow:
-    0 0 0 1px var(--pk-accent),
+    0 0 calc(18px / var(--pk-zoom, 1)) calc(3px / var(--pk-zoom, 1))
+      color-mix(in oklab, var(--pk-node-type-color) 70%, transparent),
     0 12px 32px oklch(0% 0 0 / 0.45);
 }
 
@@ -474,10 +501,58 @@
 /* Resize handles (xyflow NodeResizer) */
 .react-flow__resize-control.handle {
   background: transparent;
-  border-color: transparent;
-  width: 8px;
-  height: 8px;
+  border: none;
+  width: 13px;
+  height: 13px;
 }
+/* Push each handle outward from the corner so the bracket wraps just past the
+   node edge, roughly on the selection ring. xyflow keeps the handle a constant
+   screen size via an inline `scale: 1/zoom` transform, but margin is layout —
+   it lands in scaled-viewport space and would render as `4px * zoom`. Divide by
+   --pk-zoom so the gap stays a fixed on-screen distance at any zoom level. */
+.react-flow__resize-control.handle.top {
+  margin-top: calc(-4px / var(--pk-zoom, 1));
+}
+.react-flow__resize-control.handle.bottom {
+  margin-top: calc(4px / var(--pk-zoom, 1));
+}
+.react-flow__resize-control.handle.left {
+  margin-left: calc(-4px / var(--pk-zoom, 1));
+}
+.react-flow__resize-control.handle.right {
+  margin-left: calc(4px / var(--pk-zoom, 1));
+}
+
+/* Corner-bracket handles: two adjacent borders + a rounded outer corner, so
+   each reads as the rounded corner of the node it grabs (└ bottom-left,
+   ┘ bottom-right, etc.) rather than a square dot. */
 .react-flow__node.selected .react-flow__resize-control.handle {
-  background: var(--pk-accent);
+  background: transparent;
+  border: 2px solid var(--pk-node-type-color);
+}
+.react-flow__node.selected .react-flow__resize-control.handle.top.left {
+  border-right: none;
+  border-bottom: none;
+  border-top-left-radius: 9px;
+}
+.react-flow__node.selected .react-flow__resize-control.handle.top.right {
+  border-left: none;
+  border-bottom: none;
+  border-top-right-radius: 9px;
+}
+.react-flow__node.selected .react-flow__resize-control.handle.bottom.left {
+  border-right: none;
+  border-top: none;
+  border-bottom-left-radius: 9px;
+}
+.react-flow__node.selected .react-flow__resize-control.handle.bottom.right {
+  border-left: none;
+  border-top: none;
+  border-bottom-right-radius: 9px;
+}
+
+/* The resizer's edge lines would draw a second rectangle right on the node
+   border — hide them so only our offset ring reads as the selection. */
+.react-flow__resize-control.line {
+  border-color: transparent;
 }

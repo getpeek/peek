@@ -48,6 +48,7 @@ import { usePlaceTool } from "./hooks/usePlaceTool";
 import { useRubberBandSelect } from "./hooks/useRubberBandSelect";
 import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
 import { useSelectionHighlight } from "./hooks/useSelectionHighlight";
+import { useZoomVariable } from "./hooks/useZoomVariable";
 import { LassoOverlay } from "./LassoOverlay";
 import { useVariableDragHighlight } from "./hooks/useVariableDragHighlight";
 import { getStroke } from "perfect-freehand";
@@ -119,6 +120,7 @@ function ReactFlowCanvasInner() {
   const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
   usePlaceTool();
   const { rectRef: selectionRectRef } = useRubberBandSelect();
+  useZoomVariable();
   useCursorBroadcast();
   const { onSchemaNodeDragStart, onSchemaNodeDrag, onSchemaNodeDragStop } = useSchemaForceLayout();
 
