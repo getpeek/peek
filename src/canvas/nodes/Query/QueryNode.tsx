@@ -181,7 +181,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
           {showEditor ? (
             <SqlEditor
               query={data.query}
-              variables={Object.keys(variables)}
+              variables={variables}
               onMount={(editor, monaco) => {
                 editorRef.current = editor;
                 setEditorReady(true);
