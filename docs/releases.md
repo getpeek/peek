@@ -61,10 +61,10 @@ Outputs:
 - `~/.tauri/peek.key` — encrypted private key (DO NOT commit, DO NOT paste anywhere)
 - `~/.tauri/peek.key.pub` — public key (single line of base64; commit into `tauri.conf.json`)
 
-Set the secrets — **the private key MUST be base64-encoded with no line wrapping** (see gotcha):
+Set the secrets — **the key file is already base64 (single line); set its contents verbatim, do NOT re-encode** (see gotcha):
 
 ```nu
-^openssl base64 -A -in ~/.tauri/peek.key | gh secret set TAURI_SIGNING_PRIVATE_KEY --env default --repo getpeek/peek
+open --raw ~/.tauri/peek.key | gh secret set TAURI_SIGNING_PRIVATE_KEY --env default --repo getpeek/peek
 gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --env default --repo getpeek/peek   # interactive prompt
 ```
 
@@ -82,20 +82,25 @@ cargo tauri signer sign --private-key-path ~/.tauri/peek.key --password "<your-p
 
 If it produces `/tmp/anything.txt.sig`, the keypair is valid. Any CI failure after that is purely a secret-encoding issue.
 
-## Gotcha: base64 line wrapping
+## Gotcha: the key file is already base64
 
-macOS `base64 -i file` wraps output at 76 chars. After round-tripping through GitHub Secrets, those internal newlines confuse Tauri's minisign parser and you get errors like:
+`cargo tauri signer generate` writes `~/.tauri/peek.key` as a **single line of base64** (it encodes the minisign "untrusted comment: …" file for you). The secret must be exactly that line — adding another base64 layer or stripping one both break CI:
 
-- `failed to decode base64 secret key: Invalid symbol 46, offset 21` — secret was set as raw key contents (not base64-encoded at all). The "untrusted comment:" header is not valid base64.
-- `incorrect updater private key password: Missing encoded key in secret key` — secret was base64-encoded _with_ line wrapping. The wrapper mistakenly reports it as a password issue, but the real cause is a mangled key file post-decode.
+- `incorrect updater private key password: Missing encoded key in secret key` — secret was base64-encoded _again_ (e.g. `openssl base64 -A -in peek.key`). Reported as a password issue, but the real cause is the extra encoding layer.
+- `failed to decode base64 secret key: failed to convert base64 to utf8: invalid utf-8 sequence` — secret decodes to binary instead of the minisign text; the value wasn't the key file's own base64 line.
+- `incorrect updater private key password: Wrong password for that key` — the key itself is fine; only `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` is wrong.
 
-**Always set the private key with `openssl base64 -A` (the `-A` is "single line, no wrapping"):**
+**Set the file contents verbatim:**
 
 ```nu
-^openssl base64 -A -in ~/.tauri/peek.key | gh secret set TAURI_SIGNING_PRIVATE_KEY --env default --repo getpeek/peek
+open --raw ~/.tauri/peek.key | gh secret set TAURI_SIGNING_PRIVATE_KEY --env default --repo getpeek/peek
 ```
 
-`base64 -i file | tr -d '\n'` works equivalently if you don't have openssl handy.
+To verify an encoding candidate locally without knowing CI state, sign with a deliberately wrong password — `Wrong password for that key` means the key parsed correctly:
+
+```nu
+TAURI_SIGNING_PRIVATE_KEY=(open --raw ~/.tauri/peek.key) TAURI_SIGNING_PRIVATE_KEY_PASSWORD=wrong yarn tauri signer sign /tmp/anything.txt
+```
 
 ## Rotating the updater keypair
 

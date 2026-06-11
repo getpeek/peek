@@ -8,6 +8,7 @@ import { NodeIndicator } from "../NodeIndicator";
 import { VARIABLE_NAME_RE } from "../../variables";
 import type { VariableNode as VariableNodeT, VariableRow } from "../../types";
 import { VariableArrayEditor } from "./VariableArrayEditor";
+import { VariableTextInput } from "./VariableTextInput";
 import "./Variable.css";
 
 const DEFAULT_W = 280;
@@ -121,14 +122,11 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
                     <td className='variable-name-cell'>
                       <div className='variable-name-wrap'>
                         <span className='at-sigil'>@</span>
-                        <input
-                          type='text'
+                        <VariableTextInput
                           className={`variable-input ${nameInvalid ? "invalid" : ""}`}
                           value={row.name}
                           placeholder='name'
-                          autoComplete='off'
-                          spellCheck={false}
-                          onChange={e => setName(i, e.currentTarget.value)}
+                          onChange={next => setName(i, next)}
                         />
                       </div>
                     </td>
@@ -139,14 +137,11 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
                           onChange={next => setValue(i, next)}
                         />
                       ) : (
-                        <input
-                          type='text'
+                        <VariableTextInput
                           className='variable-input'
                           value={row.value as string}
                           placeholder='value'
-                          autoComplete='off'
-                          spellCheck={false}
-                          onChange={e => setValue(i, e.currentTarget.value)}
+                          onChange={next => setValue(i, next)}
                         />
                       )}
                     </td>
