@@ -17,7 +17,7 @@ The `v2.0.4` tag fires `.github/workflows/build-macos.yml`, which builds, signs,
 | `Peek.app.tar.gz` + `Peek.app.tar.gz.sig` | The auto-updater payload + minisign signature.                                      |
 | `latest.json`                             | Updater manifest — endpoint that running apps poll on launch.                       |
 
-Existing installs check `https://github.com/damoonrashidi/peek/releases/latest/download/latest.json` on every launch and prompt the user to update if the manifest version is higher than the running version.
+Existing installs check `https://github.com/getpeek/peek/releases/latest/download/latest.json` on every launch and prompt the user to update if the manifest version is higher than the running version.
 
 ## The two distinct keys
 
@@ -64,8 +64,8 @@ Outputs:
 Set the secrets — **the private key MUST be base64-encoded with no line wrapping** (see gotcha):
 
 ```nu
-^openssl base64 -A -in ~/.tauri/peek.key | gh secret set TAURI_SIGNING_PRIVATE_KEY --env default --repo damoonrashidi/peek
-gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --env default --repo damoonrashidi/peek   # interactive prompt
+^openssl base64 -A -in ~/.tauri/peek.key | gh secret set TAURI_SIGNING_PRIVATE_KEY --env default --repo getpeek/peek
+gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD --env default --repo getpeek/peek   # interactive prompt
 ```
 
 Paste the contents of `~/.tauri/peek.key.pub` into `src-tauri/tauri.conf.json` at `plugins.updater.pubkey`, commit.
@@ -92,7 +92,7 @@ macOS `base64 -i file` wraps output at 76 chars. After round-tripping through Gi
 **Always set the private key with `openssl base64 -A` (the `-A` is "single line, no wrapping"):**
 
 ```nu
-^openssl base64 -A -in ~/.tauri/peek.key | gh secret set TAURI_SIGNING_PRIVATE_KEY --env default --repo damoonrashidi/peek
+^openssl base64 -A -in ~/.tauri/peek.key | gh secret set TAURI_SIGNING_PRIVATE_KEY --env default --repo getpeek/peek
 ```
 
 `base64 -i file | tr -d '\n'` works equivalently if you don't have openssl handy.
