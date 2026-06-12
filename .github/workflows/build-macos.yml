@@ -218,11 +218,30 @@ jobs:
             src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
             ${{ env.APP_ZIP }}
 
+      - name: Extract release notes from tag message
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -euo pipefail
+          # actions/checkout clobbers annotated tag objects (actions/checkout#290);
+          # re-fetch the real tag so its message is readable.
+          git fetch --force origin "refs/tags/${GITHUB_REF_NAME}:refs/tags/${GITHUB_REF_NAME}"
+          NOTES_FILE="$RUNNER_TEMP/release-notes.md"
+          # A lightweight tag (release script's claude fallback) points straight at
+          # the commit, where %(contents) would yield the commit message — leave the
+          # body empty there so the release falls back to auto-generated notes only.
+          if [ "$(git cat-file -t "$GITHUB_REF_NAME")" = "tag" ]; then
+            git tag -l --format='%(contents)' "$GITHUB_REF_NAME" > "$NOTES_FILE"
+          else
+            : > "$NOTES_FILE"
+          fi
+          cat "$NOTES_FILE"
+
       - name: Create Release (if tag)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           draft: false
+          body_path: ${{ runner.temp }}/release-notes.md
           generate_release_notes: true
           files: |
             src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg

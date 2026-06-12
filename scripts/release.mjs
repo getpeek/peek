@@ -2,6 +2,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { createInterface } from "node:readline/promises";
 
 const root = resolve(import.meta.dirname, "..");
 const version = process.argv[2];
@@ -17,6 +18,46 @@ function git(...args) {
 
 function gitInherit(...args) {
   execFileSync("git", args, { cwd: root, stdio: "inherit" });
+}
+
+function generateReleaseNotes(previousTag, newTag) {
+  const commitLog = git("log", `${previousTag}..HEAD`, "--pretty=format:%h %s%n%b");
+  if (commitLog === "") {
+    console.warn(`release: no commits since ${previousTag} — skipping AI release notes.`);
+    return "";
+  }
+
+  const prompt = [
+    "You are writing release notes for Peek, a Figma-like database GUI desktop app.",
+    `Stdin contains the git log between the previous release (${previousTag}) and the new release (${newTag}).`,
+    "Write concise, user-facing release notes in GitHub-flavored markdown:",
+    '- Group bullets under "### Features", "### Fixes", "### Other" — omit empty groups.',
+    "- One bullet per meaningful change; merge related commits; skip version-bump, CI, and chore noise.",
+    "- Output only the notes — no version heading, no preamble, no closing remarks.",
+  ].join("\n");
+
+  try {
+    return execFileSync("claude", ["-p", prompt], {
+      cwd: root,
+      input: commitLog,
+      encoding: "utf8",
+      timeout: 120_000,
+      stdio: ["pipe", "pipe", "inherit"],
+    }).trim();
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    console.warn(
+      `release: claude CLI unavailable (${reason}) — falling back to GitHub auto-generated notes.`,
+    );
+    return "";
+  }
+}
+
+async function confirm(question) {
+  const readline = createInterface({ input: process.stdin, output: process.stdout });
+  const answer = (await readline.question(question)).trim().toLowerCase();
+  readline.close();
+  return answer === "y" || answer === "yes";
 }
 
 if (!version) {
@@ -50,6 +91,24 @@ if (remoteTags !== "") {
   fail(`tag ${tag} already exists on origin.`);
 }
 
+const previousTag = (() => {
+  try {
+    return git("describe", "--tags", "--abbrev=0", "--match", "v*");
+  } catch {
+    console.warn("release: no previous v* tag found — skipping AI release notes.");
+    return "";
+  }
+})();
+const releaseNotes = previousTag === "" ? "" : generateReleaseNotes(previousTag, tag);
+
+if (releaseNotes !== "") {
+  console.log(`\nRelease notes (${previousTag} → ${tag}):\n\n${releaseNotes}\n`);
+}
+if (!(await confirm(`Proceed with release ${tag}? [y/N] `))) {
+  console.log("release: aborted — nothing was changed.");
+  process.exit(0);
+}
+
 const pkgPath = resolve(root, "package.json");
 const cargoTomlPath = resolve(root, "src-tauri/Cargo.toml");
 const cargoLockPath = resolve(root, "src-tauri/Cargo.lock");
@@ -79,7 +138,18 @@ console.log(`Bumping ${previous} → ${version}`);
 
 gitInherit("add", "package.json", "src-tauri/Cargo.toml", "src-tauri/Cargo.lock");
 gitInherit("commit", "-m", `Release ${tag}`);
-gitInherit("tag", tag);
+if (releaseNotes === "") {
+  gitInherit("tag", tag);
+} else {
+  // The notes ride in the annotated tag message; the build-macos workflow
+  // turns them into the GitHub release body. --cleanup=whitespace keeps
+  // markdown "###" headings that the default strip mode would treat as comments.
+  execFileSync("git", ["tag", "-a", tag, "--cleanup=whitespace", "-F", "-"], {
+    cwd: root,
+    input: releaseNotes,
+    stdio: ["pipe", "inherit", "inherit"],
+  });
+}
 gitInherit("push", "origin", "main");
 gitInherit("push", "origin", tag);
 
