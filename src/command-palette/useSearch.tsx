@@ -17,6 +17,7 @@ import { useHostSessionCommand } from "./commands/hostSession";
 import { useJoinSessionCommand } from "./commands/joinSession";
 import { useSetThemeCommands } from "./commands/setTheme";
 import { useToggleUiCommand } from "./commands/toggleUi";
+import { useAboutCommand } from "./commands/about";
 
 export interface SearchResult {
   command: CommandPaletteResult;
@@ -42,6 +43,7 @@ export const useSearch = (query: string): SearchResult[] => {
   const joinSessionCommand = useJoinSessionCommand();
   const setThemeCommands = useSetThemeCommands();
   const toggleUiCommand = useToggleUiCommand();
+  const aboutCommand = useAboutCommand();
 
   const searchSpace: CommandPaletteResult[] = [
     toggleUiCommand,
@@ -62,6 +64,7 @@ export const useSearch = (query: string): SearchResult[] => {
     hostSessionCommand,
     ...(joinSessionCommand ? [joinSessionCommand] : []),
     ...setThemeCommands,
+    aboutCommand,
   ];
 
   if (query.trim().length === 0) {

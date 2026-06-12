@@ -18,6 +18,7 @@
     "core:window:allow-toggle-maximize",
     "deep-link:default",
     "process:default",
-    "process:allow-exit"
+    "process:allow-exit",
+    "updater:default"
   ]
 }
