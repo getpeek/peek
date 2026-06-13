@@ -1,105 +1,33 @@
 <div align="center">
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/4fc87548-4fa8-446d-ad23-23dcc20dcf53">
-  <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/4fc87548-4fa8-446d-ad23-23dcc20dcf53">
-  <img alt="Helix" height="128" src="https://github.com/user-attachments/assets/4fc87548-4fa8-446d-ad23-23dcc20dcf53">
-</picture>
-
+    <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="/public/logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="/public/logo.png">
+    <img alt="Peek" height="128" src="/public/logo-dark.png">
+    </picture>
 </div>
 
 # Peek
 
-Peek is an Infinite Canvas based database client. Users can add query nodes, which when executed will spawn Result nodes. Foreign keys and references are clickable, which when clicked on spawn new result nodes.
+Peek is an Infinite Canvas Database GUI. Users can add query nodes, which when executed will spawn Result nodes. Foreign keys and references are clickable, which when clicked on spawn new result nodes. You can also interact with AI agent nodes, freehand draw on the canvas, place variable nodes connected to queries and a lot more.
+
+![Peek Screenshot](/public/peek.png)
 
 ## Demo
 
-https://github.com/user-attachments/assets/fe88693b-4741-42bc-9286-67db0c44a084
+There is an interactive demo on the [Peek website](https://getpeek.dev), as well as [demo videos](https://getpeek.dev/#features) on various features.
 
 ## Installation
 
-1. Clone this repo
-2. yarn tauri build
+Either grab a prebuilt .dmg from the releases page or run
 
-You'll need to set up a workspace by creating a ~/.config/peek/config.toml file. Here is an example
-
-```toml
-[ai]
-model = "qwen3:8b"
-url = "http://localhost:11434"
-
-[[workspaces]]
-name = 'My project'
-
-[[workspaces.connections]]
-name = 'local'
-color = 'blue'
-url = 'postgres://dbuser:dbpassword@localhost/dbname'
-
-[[workspaces.connections]]
-name = 'production'
-color = 'red'
-url = 'postgres://dbuser:dbpassword@123.45.56.11/dbname'
-
-[[workspaces]]
-name = 'Another project'
-
-[[workspaces.connections]]
-name = 'dev'
-color = 'blue'
-url = 'postgres://dbuser:dbpassword@rds-host.biz/dbname'
+```sh
+git clone git@github.com/getpeek/peek.git
+cd peek
+yarn tauri build
 ```
 
-## TODO
+## Configuration
 
-# V.1
+Most of Peek can be configured in the UI, but a `~/peek/settings.json` will be generated on launch with a companion `~/peek/settings.schema.json` for IDE autocomplete support.
 
-## Workspaces
-
-- [x] Save/Load canvas (queries + connection) -> Workspaces
-- [x] Save/Load connections -> Workspaces
-- [x] UI to manage workspaces
-
-## Introspection
-
-- [x] Show schema graph
-- [x] Better completions based on query concrete syntax tree
-- [ ] Query meta info (execution time, tables)
-
-## UI
-
-- [ ] Pagination on query results if limit/offset in query
-- [x] Charts
-- [x] Virtualization for tables for large result shape performance
-
-## Tools
-
-- [x] Live Queries
-- [x] AI integration -> Query -> Result
-- [ ] BYOK for external AI solutions
-
-## Export
-
-- [x] Context menu on result shape to export to json, csv
-- [x] export result as json/csv
-
-## Misc
-
-- [x] Performance improvements somehow
-- [ ] Get rid of AST parser in the frontend
-- [x] Maybe move completion suggestions to backend via wasm
-
-# V.2
-
-Support for more databases
-
-- [x] Postgres
-- [x] MySQL
-- [ ] Sqlite
-- [ ] DuckDB
-- [ ] Meiliserach
-- [ ] Elasticsearch
-
-# V.3
-
-- [ ] Support for more datasources (hubspot, salesforce, etc., or just cURL + variables / environment)
+For a full configuration reference see [the configuration page](http://getpeek.dev/docs/configuration).
