@@ -2,12 +2,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { DatabaseResult } from "../../../state";
 
 type DragState = {
-  anchor: number;
+  anchorPos: number;
   baseline: ReadonlySet<number>;
   prevUserSelect: string;
 };
 
-export function useRowSelection(data: DatabaseResult) {
+export function useRowSelection(data: DatabaseResult, visibleIndices: number[]) {
   const [selected, setSelected] = useState<Set<number>>(() => new Set());
   const dragRef = useRef<DragState | null>(null);
 
@@ -47,12 +47,16 @@ export function useRowSelection(data: DatabaseResult) {
       // Snapshot current selection so the in-flight range is computed against
       // a stable baseline; toggling on click vs. dragging share this state.
       const baseline = new Set(selected);
-      dragRef.current = { anchor: rowIndex, baseline, prevUserSelect };
+      // The drag range walks *display positions* (the row's data-index), not raw
+      // data indices — otherwise a range over a filtered table would sweep in the
+      // hidden rows between two visible ones.
+      const anchorPos = visibleIndices.indexOf(rowIndex);
+      dragRef.current = { anchorPos, baseline, prevUserSelect };
 
       let moved = false;
-      let lastTarget = rowIndex;
+      let lastTarget = anchorPos;
 
-      const rowFromPoint = (x: number, y: number): number | null => {
+      const positionFromPoint = (x: number, y: number): number | null => {
         const tr = document.elementFromPoint(x, y)?.closest("tr[data-index]");
         if (!tr) {
           return null;
@@ -61,32 +65,35 @@ export function useRowSelection(data: DatabaseResult) {
         if (!raw) {
           return null;
         }
-        const idx = Number(raw);
-        return Number.isFinite(idx) ? idx : null;
+        const pos = Number(raw);
+        return Number.isFinite(pos) ? pos : null;
       };
 
-      const applyRange = (current: number) => {
+      const applyRange = (currentPos: number) => {
         const drag = dragRef.current;
         if (!drag) {
           return;
         }
-        const lo = Math.min(drag.anchor, current);
-        const hi = Math.max(drag.anchor, current);
+        const lo = Math.min(drag.anchorPos, currentPos);
+        const hi = Math.max(drag.anchorPos, currentPos);
         const next = new Set(drag.baseline);
-        for (let i = lo; i <= hi; i++) {
-          next.add(i);
+        for (let pos = lo; pos <= hi; pos++) {
+          const rowAtPos = visibleIndices[pos];
+          if (rowAtPos !== undefined) {
+            next.add(rowAtPos);
+          }
         }
         setSelected(next);
       };
 
       const onMove = (ev: MouseEvent) => {
-        const idx = rowFromPoint(ev.clientX, ev.clientY);
-        if (idx === null || idx === lastTarget) {
+        const pos = positionFromPoint(ev.clientX, ev.clientY);
+        if (pos === null || pos === lastTarget) {
           return;
         }
         moved = true;
-        lastTarget = idx;
-        applyRange(idx);
+        lastTarget = pos;
+        applyRange(pos);
       };
 
       const onUp = () => {
@@ -114,7 +121,7 @@ export function useRowSelection(data: DatabaseResult) {
       document.addEventListener("mousemove", onMove);
       document.addEventListener("mouseup", onUp);
     },
-    [selected],
+    [selected, visibleIndices],
   );
 
   return {

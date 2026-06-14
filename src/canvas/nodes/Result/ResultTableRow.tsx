@@ -15,6 +15,8 @@ export const ResultTableRow = forwardRef<
   {
     row: RowData;
     rowIndex: number;
+    /** Position in the (possibly filtered) virtual list — drives `data-index` and striping. */
+    virtualIndex: number;
     editing: EditingState | null;
     setEditing: React.Dispatch<React.SetStateAction<EditingState | null>>;
     commitEdit: () => void;
@@ -22,6 +24,7 @@ export const ResultTableRow = forwardRef<
     inbound: Record<string, Reference[]>;
     outbound: Record<string, Reference[]>;
     isSelected: boolean;
+    matchedCols?: Set<number>;
     onSelectMouseDown: (rowIndex: number, e: React.MouseEvent) => void;
     onFollowReferences: (refs: CellReference[], value: unknown) => void;
     onCellContextMenu: (
@@ -35,6 +38,7 @@ export const ResultTableRow = forwardRef<
   {
     row,
     rowIndex,
+    virtualIndex,
     editing,
     setEditing,
     commitEdit,
@@ -42,13 +46,14 @@ export const ResultTableRow = forwardRef<
     inbound,
     outbound,
     isSelected,
+    matchedCols,
     onSelectMouseDown,
     onFollowReferences,
     onCellContextMenu,
   },
   ref,
 ) {
-  const isEvenRow = rowIndex % 2 === 0;
+  const isEvenRow = virtualIndex % 2 === 0;
   const rowClasses: string[] = [];
   if (isSelected) {
     rowClasses.push("selected");
@@ -57,7 +62,7 @@ export const ResultTableRow = forwardRef<
   return (
     <Table.Tr
       ref={ref}
-      data-index={rowIndex}
+      data-index={virtualIndex}
       className={rowClasses.join(" ") || undefined}
       onMouseDown={e => {
         if (e.shiftKey) {
@@ -77,6 +82,9 @@ export const ResultTableRow = forwardRef<
         }
         if (isEvenRow) {
           cellClasses.push("even");
+        }
+        if (matchedCols?.has(columnIdx)) {
+          cellClasses.push("search-match");
         }
         if (isEditing) {
           cellClasses.push("editing");

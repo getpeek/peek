@@ -8,6 +8,7 @@ import {
   IconGitFork,
   IconJson,
   IconMessageChatbot,
+  IconSearch,
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useRef } from "react";
@@ -15,7 +16,11 @@ import { exportRows } from "./exportRows";
 import { getExportTableName } from "./inlineEdit";
 import { useQueryInfo } from "./queryInfo";
 import type { ExportFormat } from "./serializeRows";
+import { ResultSearchBar } from "./ResultSearchBar";
 import { ResultTable } from "./ResultTable";
+import { useResultSearch } from "./useResultSearch";
+import { useResultSearchMatches } from "./useResultSearchMatches";
+import { useHotkey } from "../../../app/useHotkey";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useChartSync } from "./useChartSync";
 import { useCreateChart } from "./useCreateChart";
@@ -52,6 +57,14 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
   const h = height ?? DEFAULT_H;
   const bodyRef = useRef<HTMLDivElement>(null);
   useScrollFallthrough(bodyRef);
+
+  const search = useResultSearch();
+  const matches = useResultSearchMatches(rows, search.query, search.active);
+  useHotkey("meta-f", () => {
+    if (selected) {
+      search.open();
+    }
+  });
 
   const canChart =
     rows.length > 0 &&
@@ -174,64 +187,86 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
           indicator={<NodeIndicator kind='result' />}
         />
         <div className='app-node-subtoolbar nodrag'>
-          <div className='meta'>
-            <span className='ok'>●</span>
-            <span>{rows.length} rows</span>
-            {queryInfo?.tables.map(t => (
-              <span key={`${t.name}-${t.alias ?? ""}`} className='table-badge'>
-                {t.name}
-              </span>
-            ))}
-          </div>
-          <div className='actions'>
-            {canChart && (
-              <button className='icon-btn' title='Create chart' onClick={runCreateChart}>
-                <IconChartBar size={14} />
-              </button>
-            )}
-            <button className='icon-btn' title='Ask about this result' onClick={ask}>
-              <IconMessageChatbot size={14} />
-            </button>
-            <button className='icon-btn' title='Fork query' onClick={fork}>
-              <IconGitFork size={14} />
-            </button>
-            <Menu
-              position='bottom-end'
-              offset={4}
-              radius='md'
-              width={180}
-              withinPortal
-              classNames={{
-                dropdown: "column-menu-dropdown",
-                item: "column-menu-item",
-                label: "column-menu-label",
-                itemSection: "column-menu-item-section",
-              }}
-            >
-              <Menu.Target>
-                <button className='icon-btn' title='Export' disabled={rows.length === 0}>
-                  <IconDownload size={14} />
+          {search.active ? (
+            <ResultSearchBar
+              query={search.query}
+              matchCount={matches.visibleIndices.length}
+              onChange={search.setQuery}
+              onClose={search.close}
+            />
+          ) : (
+            <>
+              <div className='meta'>
+                <span className='ok'>●</span>
+                <span>{rows.length} rows</span>
+                {queryInfo?.tables.map(t => (
+                  <span key={`${t.name}-${t.alias ?? ""}`} className='table-badge'>
+                    {t.name}
+                  </span>
+                ))}
+              </div>
+              <div className='actions'>
+                {canChart && (
+                  <button className='icon-btn' title='Create chart' onClick={runCreateChart}>
+                    <IconChartBar size={14} />
+                  </button>
+                )}
+                <button className='icon-btn' title='Ask about this result' onClick={ask}>
+                  <IconMessageChatbot size={14} />
                 </button>
-              </Menu.Target>
-              <Menu.Dropdown>
-                <Menu.Item
-                  leftSection={<IconFileTypeCsv size={14} />}
-                  onClick={() => exportAs("csv")}
+                <button className='icon-btn' title='Fork query' onClick={fork}>
+                  <IconGitFork size={14} />
+                </button>
+                <button
+                  className='icon-btn'
+                  title='Search results'
+                  onClick={search.open}
+                  disabled={rows.length === 0}
                 >
-                  Export as CSV
-                </Menu.Item>
-                <Menu.Item leftSection={<IconJson size={14} />} onClick={() => exportAs("json")}>
-                  Export as JSON
-                </Menu.Item>
-                <Menu.Item
-                  leftSection={<IconFileTypeSql size={14} />}
-                  onClick={() => exportAs("sql")}
+                  <IconSearch size={14} />
+                </button>
+                <Menu
+                  position='bottom-end'
+                  offset={4}
+                  radius='md'
+                  width={180}
+                  withinPortal
+                  classNames={{
+                    dropdown: "column-menu-dropdown",
+                    item: "column-menu-item",
+                    label: "column-menu-label",
+                    itemSection: "column-menu-item-section",
+                  }}
                 >
-                  Export as SQL
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
-          </div>
+                  <Menu.Target>
+                    <button className='icon-btn' title='Export' disabled={rows.length === 0}>
+                      <IconDownload size={14} />
+                    </button>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item
+                      leftSection={<IconFileTypeCsv size={14} />}
+                      onClick={() => exportAs("csv")}
+                    >
+                      Export as CSV
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<IconJson size={14} />}
+                      onClick={() => exportAs("json")}
+                    >
+                      Export as JSON
+                    </Menu.Item>
+                    <Menu.Item
+                      leftSection={<IconFileTypeSql size={14} />}
+                      onClick={() => exportAs("sql")}
+                    >
+                      Export as SQL
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              </div>
+            </>
+          )}
         </div>
         <div className='app-node-body nodrag' ref={bodyRef}>
           <ResultTable
@@ -240,6 +275,7 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
             query={data.query}
             queryInfo={queryInfo}
             columnWidths={data.columnWidths}
+            matches={matches}
           />
         </div>
       </div>

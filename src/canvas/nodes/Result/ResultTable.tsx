@@ -1,4 +1,4 @@
-import { Table, Text } from "@mantine/core";
+import { Table } from "@mantine/core";
 import { useAtomValue } from "jotai";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -10,6 +10,9 @@ import { CellContextMenu } from "./CellContextMenu";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
 import { exportRows } from "./exportRows";
 import { InsertRow } from "./InsertRow";
+import { ResultEmpty } from "./ResultEmpty";
+import { SpacerRow } from "./SpacerRow";
+import type { SearchMatches } from "./useResultSearchMatches";
 import { ResultHeaderMenu, type HeaderMenuState } from "./ResultHeaderMenu";
 import { ResultTableHeader } from "./ResultTableHeader";
 import { ResultTableRow } from "./ResultTableRow";
@@ -32,13 +35,16 @@ export function ResultTable({
   query,
   queryInfo,
   columnWidths,
+  matches,
 }: {
   nodeId: string;
   data: DatabaseResult;
   query: string;
   queryInfo: QueryInfo | null;
   columnWidths?: Record<string, number>;
+  matches: SearchMatches;
 }) {
+  const { visibleIndices, matchedCols, isSearching } = matches;
   const schema = useAtomValue(schemaAtom);
   const canvas = useCanvas();
   const executeQueries = useExecuteQueries();
@@ -47,7 +53,7 @@ export function ResultTable({
   const [inserting, setInserting] = useState<InsertingState | null>(null);
   const [headerMenu, setHeaderMenu] = useState<HeaderMenuState | null>(null);
   const cellContextMenu = useCellContextMenu(nodeId);
-  const rowSelection = useRowSelection(data);
+  const rowSelection = useRowSelection(data, visibleIndices);
 
   const firstRow = data[0] ?? [];
   const headers = firstRow.map(([key]) => key);
@@ -139,19 +145,11 @@ export function ResultTable({
   };
 
   const rowVirtualizer = useVirtualizer({
-    count: data.length,
+    count: visibleIndices.length,
     getScrollElement: () => scrollContainerRef.current,
     overscan: 8,
     estimateSize: () => 38,
   });
-
-  if (data.length === 0) {
-    return (
-      <div className='no-results' style={{ padding: 16 }}>
-        <Text c='var(--pk-fg-muted)'>No results</Text>
-      </div>
-    );
-  }
 
   const virtualItems = rowVirtualizer.getVirtualItems();
   const firstItem = virtualItems[0];
@@ -179,6 +177,14 @@ export function ResultTable({
     action(format);
   };
 
+  const noRows = data.length === 0;
+  const noMatches = isSearching && visibleIndices.length === 0;
+  const showEmpty = noRows || noMatches;
+
+  // The scroll container must stay mounted even when empty: useColumnWidths
+  // measures it (and attaches a ResizeObserver) in a one-shot layout effect, so
+  // if the container only appears once rows arrive, the width is never measured
+  // and the table renders too narrow to fill the node.
   return (
     <div
       style={{
@@ -191,103 +197,100 @@ export function ResultTable({
       ref={scrollContainerRef}
       onMouseDown={onContainerMouseDown}
     >
-      <Table style={{ width: totalWidth, tableLayout: "fixed" }}>
-        <colgroup>
-          {headers.map((header, columnIdx) => (
-            <col key={columnIdx} style={{ width: widthFor(header) }} />
-          ))}
-        </colgroup>
-        <Table.Thead>
-          <Table.Tr>
-            {headers.map((header, columnIdx) => (
-              <ResultTableHeader
-                key={columnIdx}
-                header={header}
-                columnIdx={columnIdx}
-                colType={headerTypes[columnIdx] || ""}
-                inbound={inbound[header]}
-                outbound={outbound[header]}
-                onResizeStart={startResize}
-                onContextMenu={openHeaderMenu}
-              />
-            ))}
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {paddingTop > 0 && (
-            <tr>
-              <td
-                colSpan={headers.length}
-                style={{ height: paddingTop, padding: 0, border: "none" }}
-              />
-            </tr>
-          )}
-          {virtualItems.map(virtualRow => (
-            <ResultTableRow
-              key={virtualRow.key}
-              ref={rowVirtualizer.measureElement}
-              row={data[virtualRow.index]}
-              rowIndex={virtualRow.index}
-              editing={editing}
-              setEditing={setEditing}
-              commitEdit={commitEdit}
-              variableNames={variableNames}
-              inbound={inbound}
-              outbound={outbound}
-              isSelected={rowSelection.isSelected(virtualRow.index)}
-              onSelectMouseDown={rowSelection.onSelectMouseDown}
-              onFollowReferences={followReferences}
-              onCellContextMenu={cellContextMenu.openCellMenu}
-            />
-          ))}
-          {paddingBottom > 0 && (
-            <tr>
-              <td
-                colSpan={headers.length}
-                style={{ height: paddingBottom, padding: 0, border: "none" }}
-              />
-            </tr>
-          )}
-          {canInsert && (
-            <InsertRow
-              headers={headers}
-              columnTypes={columnTypes}
-              variableNames={variableNames}
-              inserting={inserting}
-              setInserting={setInserting}
-              onCommit={commitInsert}
-            />
-          )}
-        </Table.Tbody>
-      </Table>
-      <ResultHeaderMenu
-        state={headerMenu}
-        onClose={closeHeaderMenu}
-        onExportColumn={exportColumn}
-        onUseAsVariable={spawnVariableFromColumn}
-      />
+      {showEmpty ? (
+        <ResultEmpty message={noRows ? "No results" : "No matching rows"} />
+      ) : (
+        <>
+          <Table style={{ width: totalWidth, tableLayout: "fixed" }}>
+            <colgroup>
+              {headers.map((header, columnIdx) => (
+                <col key={columnIdx} style={{ width: widthFor(header) }} />
+              ))}
+            </colgroup>
+            <Table.Thead>
+              <Table.Tr>
+                {headers.map((header, columnIdx) => (
+                  <ResultTableHeader
+                    key={columnIdx}
+                    header={header}
+                    columnIdx={columnIdx}
+                    colType={headerTypes[columnIdx] || ""}
+                    inbound={inbound[header]}
+                    outbound={outbound[header]}
+                    onResizeStart={startResize}
+                    onContextMenu={openHeaderMenu}
+                  />
+                ))}
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {paddingTop > 0 && <SpacerRow height={paddingTop} colSpan={headers.length} />}
+              {virtualItems.map(virtualRow => {
+                const rowIndex = visibleIndices[virtualRow.index];
+                return (
+                  <ResultTableRow
+                    key={virtualRow.key}
+                    ref={rowVirtualizer.measureElement}
+                    virtualIndex={virtualRow.index}
+                    row={data[rowIndex]}
+                    rowIndex={rowIndex}
+                    editing={editing}
+                    setEditing={setEditing}
+                    commitEdit={commitEdit}
+                    variableNames={variableNames}
+                    inbound={inbound}
+                    outbound={outbound}
+                    isSelected={rowSelection.isSelected(rowIndex)}
+                    matchedCols={matchedCols.get(rowIndex)}
+                    onSelectMouseDown={rowSelection.onSelectMouseDown}
+                    onFollowReferences={followReferences}
+                    onCellContextMenu={cellContextMenu.openCellMenu}
+                  />
+                );
+              })}
+              {paddingBottom > 0 && <SpacerRow height={paddingBottom} colSpan={headers.length} />}
+              {canInsert && !isSearching && (
+                <InsertRow
+                  headers={headers}
+                  columnTypes={columnTypes}
+                  variableNames={variableNames}
+                  inserting={inserting}
+                  setInserting={setInserting}
+                  onCommit={commitInsert}
+                />
+              )}
+            </Table.Tbody>
+          </Table>
+          <ResultHeaderMenu
+            state={headerMenu}
+            onClose={closeHeaderMenu}
+            onExportColumn={exportColumn}
+            onUseAsVariable={spawnVariableFromColumn}
+          />
 
-      <CellContextMenu
-        cellMenu={cellContextMenu.cellMenu}
-        selected={rowSelection.selected}
-        onClose={cellContextMenu.closeCellMenu}
-        onUseAsVariable={cellContextMenu.createVariableFromCell}
-        onCopyValue={cellContextMenu.copyCellValue}
-        onCopyRow={onRowAction(rowActions.copyRow)}
-        onCopySelected={onSelectionAction(rowActions.copySelectedRows)}
-        onExportRow={onRowAction(rowActions.exportSingleRow)}
-        onExportSelected={onSelectionAction(rowActions.exportSelectedRows)}
-        onRequestDelete={rowActions.requestDelete}
-      />
-      <DeleteConfirmModal
-        opened={!!rowActions.deleteConfirm}
-        rowCount={rowActions.deleteConfirm?.rowCount ?? 0}
-        table={rowActions.deleteConfirm?.table || null}
-        saving={rowActions.deleteConfirm?.saving ?? false}
-        error={rowActions.deleteConfirm?.error ?? null}
-        onCancel={rowActions.cancelDelete}
-        onConfirm={rowActions.confirmDelete}
-      />
+          <CellContextMenu
+            cellMenu={cellContextMenu.cellMenu}
+            selected={rowSelection.selected}
+            onClose={cellContextMenu.closeCellMenu}
+            onUseAsVariable={cellContextMenu.createVariableFromCell}
+            onCopyValue={cellContextMenu.copyCellValue}
+            onCopyRow={onRowAction(rowActions.copyRow)}
+            onCopySelected={onSelectionAction(rowActions.copySelectedRows)}
+            onExportRow={onRowAction(rowActions.exportSingleRow)}
+            onExportSelected={onSelectionAction(rowActions.exportSelectedRows)}
+            onRequestDelete={rowActions.requestDelete}
+          />
+          <DeleteConfirmModal
+            opened={!!rowActions.deleteConfirm}
+            rowCount={rowActions.deleteConfirm?.rowCount ?? 0}
+            table={rowActions.deleteConfirm?.table || null}
+            saving={rowActions.deleteConfirm?.saving ?? false}
+            error={rowActions.deleteConfirm?.error ?? null}
+            onCancel={rowActions.cancelDelete}
+            onConfirm={rowActions.confirmDelete}
+          />
+        </>
+      )}
     </div>
   );
 }
