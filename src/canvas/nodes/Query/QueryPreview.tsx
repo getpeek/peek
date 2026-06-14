@@ -1,3 +1,5 @@
+import { Tooltip } from "../../../components/Tooltip/Tooltip";
+
 const PREVIEW_LINE_COUNT = 8;
 
 interface QueryPreviewProps {
@@ -15,13 +17,10 @@ export function QueryPreview({ query, onActivate }: QueryPreviewProps) {
   const lines = query.split("\n").slice(0, PREVIEW_LINE_COUNT).join("\n").trim();
 
   return (
-    <button
-      type='button'
-      className='query-preview nodrag'
-      onClick={onActivate}
-      title='Click to edit'
-    >
-      <span className='query-preview-code'>{lines || "-- empty query"}</span>
-    </button>
+    <Tooltip label='Click to edit'>
+      <button type='button' className='query-preview nodrag' onClick={onActivate}>
+        <span className='query-preview-code'>{lines || "-- empty query"}</span>
+      </button>
+    </Tooltip>
   );
 }

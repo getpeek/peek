@@ -2,6 +2,7 @@ import { Panel, useReactFlow } from "@xyflow/react";
 import { IconMaximize, IconMinus, IconPlus } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { viewportAtom } from "../state";
+import { Tooltip } from "../../components/Tooltip/Tooltip";
 import "./Toolbar.css";
 
 export function ZoomIndicator() {
@@ -14,21 +15,26 @@ export function ZoomIndicator() {
   return (
     <Panel position='bottom-left'>
       <div className='zoom-indicator'>
-        <button onClick={() => rf.zoomOut({ duration: 150 })} title='Zoom out'>
-          <IconMinus size={14} />
-        </button>
-        <span className='lvl' onClick={() => rf.zoomTo(1, { duration: 200 })} title='Reset zoom'>
-          {Math.round(zoom * 100)}%
-        </span>
-        <button onClick={() => rf.zoomIn({ duration: 150 })} title='Zoom in'>
-          <IconPlus size={14} />
-        </button>
-        <button
-          onClick={() => rf.fitView({ duration: 250, padding: 0.15, maxZoom: 1 })}
-          title='Fit view'
-        >
-          <IconMaximize size={14} />
-        </button>
+        <Tooltip label='Zoom out'>
+          <button onClick={() => rf.zoomOut({ duration: 150 })}>
+            <IconMinus size={14} />
+          </button>
+        </Tooltip>
+        <Tooltip label='Reset zoom'>
+          <span className='lvl' onClick={() => rf.zoomTo(1, { duration: 200 })}>
+            {Math.round(zoom * 100)}%
+          </span>
+        </Tooltip>
+        <Tooltip label='Zoom in'>
+          <button onClick={() => rf.zoomIn({ duration: 150 })}>
+            <IconPlus size={14} />
+          </button>
+        </Tooltip>
+        <Tooltip label='Fit view'>
+          <button onClick={() => rf.fitView({ duration: 250, padding: 0.15, maxZoom: 1 })}>
+            <IconMaximize size={14} />
+          </button>
+        </Tooltip>
       </div>
     </Panel>
   );

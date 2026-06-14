@@ -28,6 +28,7 @@ import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
+import { Tooltip } from "../../../components/Tooltip/Tooltip";
 import { resultsAtom } from "../../state";
 import type { AgentNode, QueryNode, ResultNode as ResultNodeT } from "../../types";
 import "./Result.css";
@@ -207,24 +208,27 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
               </div>
               <div className='actions'>
                 {canChart && (
-                  <button className='icon-btn' title='Create chart' onClick={runCreateChart}>
-                    <IconChartBar size={14} />
-                  </button>
+                  <Tooltip label='Create chart'>
+                    <button className='icon-btn' onClick={runCreateChart}>
+                      <IconChartBar size={14} />
+                    </button>
+                  </Tooltip>
                 )}
-                <button className='icon-btn' title='Ask about this result' onClick={ask}>
-                  <IconMessageChatbot size={14} />
-                </button>
-                <button className='icon-btn' title='Fork query' onClick={fork}>
-                  <IconGitFork size={14} />
-                </button>
-                <button
-                  className='icon-btn'
-                  title='Search results'
-                  onClick={search.open}
-                  disabled={rows.length === 0}
-                >
-                  <IconSearch size={14} />
-                </button>
+                <Tooltip label='Ask about this result'>
+                  <button className='icon-btn' onClick={ask}>
+                    <IconMessageChatbot size={14} />
+                  </button>
+                </Tooltip>
+                <Tooltip label='Fork query'>
+                  <button className='icon-btn' onClick={fork}>
+                    <IconGitFork size={14} />
+                  </button>
+                </Tooltip>
+                <Tooltip label='Search results'>
+                  <button className='icon-btn' onClick={search.open} disabled={rows.length === 0}>
+                    <IconSearch size={14} />
+                  </button>
+                </Tooltip>
                 <Menu
                   position='bottom-end'
                   offset={4}

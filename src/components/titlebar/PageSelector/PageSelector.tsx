@@ -6,6 +6,7 @@ import { participantsAtom, sessionStateAtom } from "../../../multiplayer/state";
 import type { Peer } from "../../../multiplayer/types";
 import { PageTabAvatars } from "./PageTabAvatars";
 import { siblingSlideX, useTabDragReorder } from "./useTabDragReorder";
+import { Tooltip } from "../../Tooltip/Tooltip";
 import "./PageSelector.css";
 
 const ENTER_MS = 180;
@@ -143,24 +144,27 @@ export function PageSelector() {
             <span className='page-tab-label'>{page.name}</span>
             <PageTabAvatars peers={peersByPage.get(page.id) ?? []} />
             {active && canClose && (
-              <span
-                className='close'
-                onPointerDown={e => e.stopPropagation()}
-                onClick={e => {
-                  e.stopPropagation();
-                  handleClosePage(page.id);
-                }}
-                title='Delete page'
-              >
-                ×
-              </span>
+              <Tooltip label='Delete page' position='bottom'>
+                <span
+                  className='close'
+                  onPointerDown={e => e.stopPropagation()}
+                  onClick={e => {
+                    e.stopPropagation();
+                    handleClosePage(page.id);
+                  }}
+                >
+                  ×
+                </span>
+              </Tooltip>
             )}
           </button>
         );
       })}
-      <button className='page-tab add-btn' onClick={() => newPage()} title='New page'>
-        <IconPlus size={13} />
-      </button>
+      <Tooltip label='New page' position='bottom'>
+        <button className='page-tab add-btn' onClick={() => newPage()}>
+          <IconPlus size={13} />
+        </button>
+      </Tooltip>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { initialFromName } from "../../../multiplayer/identity";
 import type { Peer } from "../../../multiplayer/types";
+import { Tooltip } from "../../Tooltip/Tooltip";
 
 const MAX_AVATARS = 3;
 
@@ -17,14 +18,11 @@ export function PageTabAvatars({ peers }: Props) {
   return (
     <span className='page-tab-avatars' aria-hidden>
       {visible.map(p => (
-        <span
-          key={p.author}
-          className='page-tab-avatar'
-          style={{ backgroundColor: p.color }}
-          title={p.name}
-        >
-          {initialFromName(p.name)}
-        </span>
+        <Tooltip key={p.author} label={p.name} position='bottom'>
+          <span className='page-tab-avatar' style={{ backgroundColor: p.color }}>
+            {initialFromName(p.name)}
+          </span>
+        </Tooltip>
       ))}
       {overflow > 0 && <span className='page-tab-avatar overflow'>+{overflow}</span>}
     </span>

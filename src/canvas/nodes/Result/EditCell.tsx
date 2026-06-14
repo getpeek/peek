@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { isBooleanType, isNumericType } from "./inlineEdit";
 import { VariableInput, type VariableInputKind } from "./VariableInput";
+import { Tooltip } from "../../../components/Tooltip/Tooltip";
 
 function parseBooleanDraft(draft: string): "true" | "false" | "null" {
   const value = draft.toLowerCase();
@@ -145,19 +146,20 @@ export function EditCell({
           onKeyDown={onKeyDown}
           onClick={e => e.stopPropagation()}
         />
-        <button
-          type='button'
-          className='edit-clear-null'
-          disabled={saving}
-          onMouseDown={e => e.preventDefault()}
-          onClick={e => {
-            e.stopPropagation();
-            clearToNull();
-          }}
-          title='Set value to NULL'
-        >
-          NULL
-        </button>
+        <Tooltip label='Set value to NULL'>
+          <button
+            type='button'
+            className='edit-clear-null'
+            disabled={saving}
+            onMouseDown={e => e.preventDefault()}
+            onClick={e => {
+              e.stopPropagation();
+              clearToNull();
+            }}
+          >
+            NULL
+          </button>
+        </Tooltip>
       </div>
       {error && <div className='edit-error'>{error}</div>}
     </div>

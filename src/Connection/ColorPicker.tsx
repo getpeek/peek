@@ -1,3 +1,5 @@
+import { Tooltip } from "../components/Tooltip/Tooltip";
+
 export const CONNECTION_COLOR_PRESETS = [
   "#5584E8",
   "hsl(60deg, 70%, 55%)",
@@ -31,15 +33,20 @@ export const ColorPicker = ({ value, onChange }: ColorPickerProps) => {
           aria-label={`Color ${color}`}
         />
       ))}
-      <label
-        className='picker-color picker-color-custom'
-        data-active={isCustom}
-        style={isCustom ? { background: value } : undefined}
-        title='Custom color'
-        aria-label='Custom color'
-      >
-        <input type='color' value={nativeValue} onChange={event => onChange(event.target.value)} />
-      </label>
+      <Tooltip label='Custom color'>
+        <label
+          className='picker-color picker-color-custom'
+          data-active={isCustom}
+          style={isCustom ? { background: value } : undefined}
+          aria-label='Custom color'
+        >
+          <input
+            type='color'
+            value={nativeValue}
+            onChange={event => onChange(event.target.value)}
+          />
+        </label>
+      </Tooltip>
     </div>
   );
 };

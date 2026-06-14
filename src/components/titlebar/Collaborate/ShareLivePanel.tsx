@@ -6,6 +6,7 @@ import type { SessionState } from "../../../multiplayer/types";
 import { ShareLiveHeader } from "./ShareLiveHeader";
 import { ShareParticipantList } from "./ShareParticipantList";
 import { useCollaborateActions } from "./useCollaborateActions";
+import { Tooltip } from "../../Tooltip/Tooltip";
 
 interface Props {
   session: SessionState;
@@ -30,28 +31,34 @@ export function ShareLivePanel({ session, onClose }: Props) {
           <code className='collab-ticket'>{session.ticket}</code>
           <CopyButton value={session.ticket} timeout={1500}>
             {({ copied, copy }) => (
-              <button
-                type='button'
-                className='collab-copy-button'
-                onClick={copy}
-                title='Copy ticket'
-              >
-                {copied ? <IconCheck size={13} stroke={2} /> : <IconCopy size={13} stroke={1.75} />}
-                <span>{copied ? "Copied" : "Copy"}</span>
-              </button>
+              <Tooltip label='Copy ticket'>
+                <button type='button' className='collab-copy-button' onClick={copy}>
+                  {copied ? (
+                    <IconCheck size={13} stroke={2} />
+                  ) : (
+                    <IconCopy size={13} stroke={1.75} />
+                  )}
+                  <span>{copied ? "Copied" : "Copy"}</span>
+                </button>
+              </Tooltip>
             )}
           </CopyButton>
           <CopyButton value={inviteUrl} timeout={1500}>
             {({ copied, copy }) => (
-              <button
-                type='button'
-                className='collab-copy-button collab-copy-button--icon'
-                onClick={copy}
-                title='Copy invite link'
-                aria-label='Copy invite link'
-              >
-                {copied ? <IconCheck size={14} stroke={2} /> : <IconLink size={14} stroke={1.75} />}
-              </button>
+              <Tooltip label='Copy invite link'>
+                <button
+                  type='button'
+                  className='collab-copy-button collab-copy-button--icon'
+                  onClick={copy}
+                  aria-label='Copy invite link'
+                >
+                  {copied ? (
+                    <IconCheck size={14} stroke={2} />
+                  ) : (
+                    <IconLink size={14} stroke={1.75} />
+                  )}
+                </button>
+              </Tooltip>
             )}
           </CopyButton>
         </div>

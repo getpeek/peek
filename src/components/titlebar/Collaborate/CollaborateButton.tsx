@@ -8,6 +8,7 @@ import {
 } from "../../../multiplayer/state";
 import { initialFromName } from "../../../multiplayer/identity";
 import { SharePopover } from "./SharePopover";
+import { Tooltip } from "../../Tooltip/Tooltip";
 import "./CollaborateButton.css";
 
 const MAX_AVATARS = 3;
@@ -52,14 +53,11 @@ export function CollaborateButton() {
           {session ? (
             <span className='collab-avatars' aria-hidden>
               {visible.map(a => (
-                <span
-                  key={a.key}
-                  className='collab-avatar'
-                  style={{ backgroundColor: a.color }}
-                  title={a.name}
-                >
-                  {initialFromName(a.name)}
-                </span>
+                <Tooltip key={a.key} label={a.name} position='bottom'>
+                  <span className='collab-avatar' style={{ backgroundColor: a.color }}>
+                    {initialFromName(a.name)}
+                  </span>
+                </Tooltip>
               ))}
               {overflow > 0 && <span className='collab-avatar overflow'>+{overflow}</span>}
             </span>

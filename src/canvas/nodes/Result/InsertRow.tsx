@@ -3,6 +3,7 @@ import { useCallback, useLayoutEffect, useRef } from "react";
 import { isBooleanType, isNumericType } from "./inlineEdit";
 import type { InsertingState } from "./useCommitInsert";
 import { VariableInput, type VariableInputKind } from "./VariableInput";
+import { Tooltip } from "../../../components/Tooltip/Tooltip";
 
 export function InsertRow({
   headers,
@@ -167,19 +168,20 @@ export function InsertRow({
                   onKeyDown={onCommitKey}
                   onClick={e => e.stopPropagation()}
                 />
-                <button
-                  type='button'
-                  className={`insert-null-toggle ${isNull ? "active" : ""}`}
-                  disabled={inserting.saving}
-                  onMouseDown={e => e.preventDefault()}
-                  onClick={e => {
-                    e.stopPropagation();
-                    toggleNull(header);
-                  }}
-                  title={isNull ? "Clear NULL" : "Set value to NULL"}
-                >
-                  NULL
-                </button>
+                <Tooltip label={isNull ? "Clear NULL" : "Set value to NULL"}>
+                  <button
+                    type='button'
+                    className={`insert-null-toggle ${isNull ? "active" : ""}`}
+                    disabled={inserting.saving}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={e => {
+                      e.stopPropagation();
+                      toggleNull(header);
+                    }}
+                  >
+                    NULL
+                  </button>
+                </Tooltip>
               </div>
             </Table.Td>
           );

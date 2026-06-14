@@ -9,6 +9,7 @@ import { VARIABLE_NAME_RE } from "../../variables";
 import type { VariableNode as VariableNodeT, VariableRow } from "../../types";
 import { VariableArrayEditor } from "./VariableArrayEditor";
 import { VariableTextInput } from "./VariableTextInput";
+import { Tooltip } from "../../../components/Tooltip/Tooltip";
 import "./Variable.css";
 
 const DEFAULT_W = 280;
@@ -146,22 +147,24 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
                       )}
                     </td>
                     <td className='variable-actions-cell'>
-                      <button
-                        type='button'
-                        className={`variable-row-toggle ${isArray ? "active" : ""}`}
-                        onClick={() => toggleArrayMode(i)}
-                        title={isArray ? "Convert to single value" : "Convert to array"}
-                      >
-                        <IconBrackets size={12} />
-                      </button>
-                      <button
-                        type='button'
-                        className='variable-row-delete'
-                        onClick={() => removeRow(i)}
-                        title='Remove row'
-                      >
-                        <IconTrash size={12} />
-                      </button>
+                      <Tooltip label={isArray ? "Convert to single value" : "Convert to array"}>
+                        <button
+                          type='button'
+                          className={`variable-row-toggle ${isArray ? "active" : ""}`}
+                          onClick={() => toggleArrayMode(i)}
+                        >
+                          <IconBrackets size={12} />
+                        </button>
+                      </Tooltip>
+                      <Tooltip label='Remove row'>
+                        <button
+                          type='button'
+                          className='variable-row-delete'
+                          onClick={() => removeRow(i)}
+                        >
+                          <IconTrash size={12} />
+                        </button>
+                      </Tooltip>
                     </td>
                   </tr>
                 );
@@ -174,26 +177,27 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
             <IconPlus size={13} />
             Add variable
           </button>
-          <button
-            type='button'
-            className={`variable-global-toggle ${data.isGlobal ? "active" : ""}`}
-            title='Make this variable node global'
-            onClick={() => {
-              const next = !data.isGlobal;
-              canvas.updateNodeData<VariableNodeT["data"]>(id, {
-                isGlobal: next,
-              });
-              if (next) {
-                for (const n of canvas.getNodes()) {
-                  if (n.type === "query") {
-                    canvas.connect(id, n.id);
+          <Tooltip label='Make this variable node global'>
+            <button
+              type='button'
+              className={`variable-global-toggle ${data.isGlobal ? "active" : ""}`}
+              onClick={() => {
+                const next = !data.isGlobal;
+                canvas.updateNodeData<VariableNodeT["data"]>(id, {
+                  isGlobal: next,
+                });
+                if (next) {
+                  for (const n of canvas.getNodes()) {
+                    if (n.type === "query") {
+                      canvas.connect(id, n.id);
+                    }
                   }
                 }
-              }
-            }}
-          >
-            <IconWorld size={14} />
-          </button>
+              }}
+            >
+              <IconWorld size={14} />
+            </button>
+          </Tooltip>
         </div>
       </div>
     </>

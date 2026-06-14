@@ -1,5 +1,6 @@
 import { IconX } from "@tabler/icons-react";
 import { useCanvas } from "../hooks/useCanvas";
+import { Tooltip } from "../../components/Tooltip/Tooltip";
 
 interface NodeHeaderProps {
   nodeId: string;
@@ -22,9 +23,11 @@ export function NodeHeader({ nodeId, name, indicator, children }: NodeHeaderProp
       {name && <span className='node-name'>{name}</span>}
       <div className='header-actions nodrag'>
         {children}
-        <button className='header-icon-btn' onClick={close} title='Delete'>
-          <IconX size={12} />
-        </button>
+        <Tooltip label='Delete'>
+          <button className='header-icon-btn' onClick={close}>
+            <IconX size={12} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   );

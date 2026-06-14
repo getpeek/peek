@@ -1,5 +1,6 @@
 import { getHotkeyHandler } from "@mantine/hooks";
 import { IconSearch, IconX } from "@tabler/icons-react";
+import { Tooltip } from "../../../components/Tooltip/Tooltip";
 
 export function ResultSearchBar({
   query,
@@ -42,9 +43,11 @@ export function ResultSearchBar({
           {matchCount} {matchCount === 1 ? "match" : "matches"}
         </span>
       )}
-      <button className='icon-btn' title='Close search' onClick={onClose}>
-        <IconX size={14} />
-      </button>
+      <Tooltip label='Close search'>
+        <button className='icon-btn' onClick={onClose}>
+          <IconX size={14} />
+        </button>
+      </Tooltip>
     </div>
   );
 }

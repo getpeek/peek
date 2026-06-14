@@ -4,6 +4,7 @@ import { IconChartArea, IconChartBar, IconChartLine } from "@tabler/icons-react"
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
+import { Tooltip } from "../../../components/Tooltip/Tooltip";
 import { useCanvas } from "../../hooks/useCanvas";
 import type { BarChartData, BarChartNode as BarChartNodeT, ChartType } from "../../types";
 import "./BarChart.css";
@@ -83,15 +84,15 @@ export function BarChartNode({ id, data, selected, width, height }: NodeProps<Ba
             <span>{seriesName}</span>
             <div className='chart-type-toggle'>
               {CHART_TYPE_OPTIONS.map(({ type, label, Icon }) => (
-                <button
-                  key={type}
-                  type='button'
-                  title={label}
-                  className={`chart-type-btn ${chartType === type ? "active" : ""}`}
-                  onClick={() => setChartType(type)}
-                >
-                  <Icon size={14} />
-                </button>
+                <Tooltip key={type} label={label}>
+                  <button
+                    type='button'
+                    className={`chart-type-btn ${chartType === type ? "active" : ""}`}
+                    onClick={() => setChartType(type)}
+                  >
+                    <Icon size={14} />
+                  </button>
+                </Tooltip>
               ))}
             </div>
           </div>

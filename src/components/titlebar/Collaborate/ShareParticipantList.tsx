@@ -3,6 +3,7 @@ import { canvasApiAtom, documentAtom } from "../../../canvas/state";
 import { initialFromName } from "../../../multiplayer/identity";
 import { remoteCursorsAtom } from "../../../multiplayer/state";
 import type { Peer, SessionState } from "../../../multiplayer/types";
+import { Tooltip } from "../../Tooltip/Tooltip";
 
 interface Props {
   session: SessionState;
@@ -54,23 +55,26 @@ export function ShareParticipantList({ session, peers, count, onClose }: Props) 
           const known = !!doc.pages[p.currentPageId];
           return (
             <li className={`collab-row ${known ? "collab-row--clickable" : ""}`} key={p.author}>
-              <button
-                type='button'
-                className='collab-row-button'
-                onClick={() => handlePeerClick(p)}
-                disabled={!known}
-                title={known ? `Jump to ${p.name} on ${pageNameFor(p.currentPageId)}` : p.name}
+              <Tooltip
+                label={known ? `Jump to ${p.name} on ${pageNameFor(p.currentPageId)}` : p.name}
               >
-                <span className='collab-avatar' style={{ backgroundColor: p.color }}>
-                  {initialFromName(p.name)}
-                  <span className='collab-presence' />
-                </span>
-                <span className='collab-name'>
-                  {p.name}{" "}
-                  <span className='collab-page'>{known ? pageNameFor(p.currentPageId) : ""}</span>
-                </span>
-                <span className='collab-role'>{p.isHost ? "HOST" : "EDITOR"}</span>
-              </button>
+                <button
+                  type='button'
+                  className='collab-row-button'
+                  onClick={() => handlePeerClick(p)}
+                  disabled={!known}
+                >
+                  <span className='collab-avatar' style={{ backgroundColor: p.color }}>
+                    {initialFromName(p.name)}
+                    <span className='collab-presence' />
+                  </span>
+                  <span className='collab-name'>
+                    {p.name}{" "}
+                    <span className='collab-page'>{known ? pageNameFor(p.currentPageId) : ""}</span>
+                  </span>
+                  <span className='collab-role'>{p.isHost ? "HOST" : "EDITOR"}</span>
+                </button>
+              </Tooltip>
             </li>
           );
         })}

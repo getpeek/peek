@@ -342,6 +342,27 @@
   cursor: not-allowed;
 }
 
+.btn-danger {
+  border-color: var(--pk-red);
+  background: var(--pk-red-soft);
+  color: var(--pk-red);
+  animation: btn-pulse 1.2s ease-in-out infinite;
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--pk-red);
+  color: var(--pk-node-bg);
+}
+
+@keyframes btn-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--pk-red-soft);
+  }
+  50% {
+    box-shadow: 0 0 0 4px var(--pk-red-soft);
+  }
+}
+
 .btn-ghost {
   background: transparent;
   border-color: transparent;

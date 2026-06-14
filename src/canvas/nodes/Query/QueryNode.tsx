@@ -1,5 +1,10 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
-import { IconIndentIncrease, IconLoader2, IconPlayerPlay } from "@tabler/icons-react";
+import {
+  IconAlertTriangle,
+  IconIndentIncrease,
+  IconLoader2,
+  IconPlayerPlay,
+} from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 import type { editor as MonacoEditor } from "monaco-editor";
@@ -17,6 +22,8 @@ import { formatPreservingVars } from "../../variables";
 import type { QueryNode as QueryNodeT } from "../../types";
 import { registerEditorFocus } from "../editorFocusRegistry";
 import { QueryPreview } from "./QueryPreview";
+import { isUnboundedWrite } from "./isUnboundedWrite";
+import { Tooltip } from "../../../components/Tooltip/Tooltip";
 import "./Query.css";
 
 const DEFAULT_W = 420;
@@ -48,6 +55,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   // editing never loses cursor/scroll/undo state to a remount.
   const [hasActivated, setHasActivated] = useState(false);
   const pendingFocusRef = useRef(false);
+  const [confirmingUnbounded, setConfirmingUnbounded] = useState(false);
   const tier = useZoomTier();
   useScrollFallthrough(bodyRef);
   const session = useAtomValue(sessionStateAtom);
@@ -78,10 +86,16 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
     if (!node || node.type !== "query") {
       return;
     }
-    if ((node.data as QueryNodeT["data"]).isRunning) {
+    const queryData = node.data as QueryNodeT["data"];
+    if (queryData.isRunning) {
       return;
     }
-    executeQueries(node, [(node.data as QueryNodeT["data"]).query]);
+    if (!confirmingUnbounded && isUnboundedWrite(queryData.query)) {
+      setConfirmingUnbounded(true);
+      return;
+    }
+    setConfirmingUnbounded(false);
+    executeQueries(node, [queryData.query]);
   };
 
   const isLive = (data.liveIntervalMs ?? null) !== null;
@@ -166,16 +180,17 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
           name={nodeHeading(data.query) || "untitled.sql"}
           indicator={<NodeIndicator kind='query' />}
         >
-          <button
-            className={`header-icon-btn ${isLive ? "is-live" : ""}`}
-            onClick={e => {
-              e.stopPropagation();
-              toggleLive();
-            }}
-            title={isLive ? "Stop live polling" : "Poll every 10s"}
-          >
-            <span className='live-dot' />
-          </button>
+          <Tooltip label={isLive ? "Stop live polling" : "Poll every 10s"}>
+            <button
+              className={`header-icon-btn ${isLive ? "is-live" : ""}`}
+              onClick={e => {
+                e.stopPropagation();
+                toggleLive();
+              }}
+            >
+              <span className='live-dot' />
+            </button>
+          </Tooltip>
         </NodeHeader>
         <div className='app-node-body nodrag' ref={bodyRef}>
           {showEditor ? (
@@ -212,7 +227,10 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
                   }
                 });
               }}
-              onQueryChange={query => canvas.updateNodeData<QueryNodeT["data"]>(id, { query })}
+              onQueryChange={query => {
+                setConfirmingUnbounded(false);
+                canvas.updateNodeData<QueryNodeT["data"]>(id, { query });
+              }}
             />
           ) : (
             <QueryPreview
@@ -225,19 +243,32 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
           )}
         </div>
         <div className='app-node-footer nodrag'>
-          <button className='btn btn-ghost' onClick={formatQuery} title='Format query (⌘⇧I)'>
-            <IconIndentIncrease size={13} />
-            Format
-          </button>
-          <button className='btn' onClick={runQuery} disabled={isRunning} title='Run query (⌘↵)'>
-            {isRunning ? (
-              <IconLoader2 size={13} className='btn-spinner' />
-            ) : (
-              <IconPlayerPlay size={13} />
-            )}
-            {isRunning ? "Running…" : "Run"}
-            <span className='kbd'>⌘↵</span>
-          </button>
+          <Tooltip label='Format query (⌘⇧I)'>
+            <button className='btn btn-ghost' onClick={formatQuery}>
+              <IconIndentIncrease size={13} />
+              Format
+            </button>
+          </Tooltip>
+          {confirmingUnbounded && !isRunning ? (
+            <Tooltip label='Do you want to run this unbounded delete operation?'>
+              <button className='btn btn-danger' onClick={runQuery}>
+                <IconAlertTriangle size={13} />
+                Run unbounded
+              </button>
+            </Tooltip>
+          ) : (
+            <Tooltip label='Run query (⌘↵)'>
+              <button className='btn' onClick={runQuery} disabled={isRunning}>
+                {isRunning ? (
+                  <IconLoader2 size={13} className='btn-spinner' />
+                ) : (
+                  <IconPlayerPlay size={13} />
+                )}
+                {isRunning ? "Running…" : "Run"}
+                <span className='kbd'>⌘↵</span>
+              </button>
+            </Tooltip>
+          )}
         </div>
       </div>
     </>

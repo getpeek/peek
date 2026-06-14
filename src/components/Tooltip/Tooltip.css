@@ -1,0 +1,13 @@
+/* Doubled `.pk-tooltip` selector so these rules outrank Mantine's own
+   `.mantine-Tooltip-tooltip` (equal single-class specificity) without `!important`.
+   Mantine's stylesheet is imported unlayered, so source order alone wouldn't win. */
+.pk-tooltip.pk-tooltip {
+  background: var(--pk-node-bg-2);
+  color: var(--pk-fg);
+  border: 1px solid var(--pk-node-border);
+  border-radius: 6px;
+  padding: 5px 9px;
+  font: 500 11.5px var(--pk-font-sans);
+  letter-spacing: 0.01em;
+  box-shadow: var(--pk-node-shadow-cheap);
+}
