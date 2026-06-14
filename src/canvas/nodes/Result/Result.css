@@ -626,7 +626,17 @@ td.editing {
 .app-node table tbody tr:hover td.search-match,
 .app-node table tbody tr.selected td.search-match,
 .app-node table tbody tr.selected:hover td.search-match {
-  background: var(--pk-yellow-soft);
+  background: color-mix(in oklab, var(--pk-node-bg-2) 90%, transparent 10%);
+}
+
+/* Highlight the matched characters within a cell, mirroring the command palette. */
+.app-node table tbody td mark.match {
+  background: transparent;
+  color: var(--pk-fg);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--pk-accent);
+  text-underline-offset: 2px;
 }
 
 .result-search-bar {

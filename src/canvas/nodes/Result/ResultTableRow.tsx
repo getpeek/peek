@@ -24,7 +24,7 @@ export const ResultTableRow = forwardRef<
     inbound: Record<string, Reference[]>;
     outbound: Record<string, Reference[]>;
     isSelected: boolean;
-    matchedCols?: Set<number>;
+    matchedCols?: Map<number, Fuzzysort.Result>;
     onSelectMouseDown: (rowIndex: number, e: React.MouseEvent) => void;
     onFollowReferences: (refs: CellReference[], value: unknown) => void;
     onCellContextMenu: (
@@ -130,6 +130,7 @@ export const ResultTableRow = forwardRef<
                 value={value}
                 type={type}
                 isKey={isPk || isFk}
+                match={matchedCols?.get(columnIdx)}
                 outbound={outbound[column]}
                 inbound={inbound[column]}
                 onInboundClick={onFollowReferences}

@@ -4,11 +4,14 @@ import fuzzysort from "fuzzysort";
 import type { DatabaseResult } from "../../../state";
 import { stringifyValue } from "./stringify";
 
+/** Minimum fuzzysort score (0–1) a cell must clear to count as a match. */
+const MATCH_THRESHOLD = 0.5;
+
 export type SearchMatches = {
   /** Original row indices (into `data`) that contain at least one matching cell. */
   visibleIndices: number[];
-  /** Original row index → set of column indices whose cell matched the query. */
-  matchedCols: Map<number, Set<number>>;
+  /** Original row index → matched column index → the fuzzysort result for that cell. */
+  matchedCols: Map<number, Map<number, Fuzzysort.Result>>;
   isSearching: boolean;
 };
 
@@ -49,20 +52,30 @@ export function useResultSearchMatches(
     }
 
     const visibleIndices: number[] = [];
-    const matchedCols = new Map<number, Set<number>>();
+    const matchedCols = new Map<number, Map<number, Fuzzysort.Result>>();
+    const rowScores = new Map<number, number>();
 
     prepared.forEach((row, rowIndex) => {
-      const cols = new Set<number>();
+      const cols = new Map<number, Fuzzysort.Result>();
+      let bestScore = 0;
       row.forEach((cell, columnIdx) => {
-        if (fuzzysort.single(trimmed, cell)) {
-          cols.add(columnIdx);
+        const result = fuzzysort.single(trimmed, cell);
+        // fuzzysort scores 1 = perfect, 0.5 = good, 0 = none. Below the threshold the
+        // match is loose enough to be noise, so the cell neither shows nor highlights.
+        if (result && result.score >= MATCH_THRESHOLD) {
+          cols.set(columnIdx, result);
+          bestScore = Math.max(bestScore, result.score);
         }
       });
       if (cols.size > 0) {
         visibleIndices.push(rowIndex);
         matchedCols.set(rowIndex, cols);
+        rowScores.set(rowIndex, bestScore);
       }
     });
+
+    // Strongest match first; Array.sort is stable, so equal scores keep original order.
+    visibleIndices.sort((a, b) => (rowScores.get(b) ?? 0) - (rowScores.get(a) ?? 0));
 
     return { visibleIndices, matchedCols, isSearching: true };
   }, [prepared, debouncedQuery, active, data.length]);
