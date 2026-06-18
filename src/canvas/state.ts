@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import { atomFamily, selectAtom } from "jotai/utils";
 import type { AppEdge, AppNode, AppNodeType, CanvasDocument, PageState, Viewport } from "./types";
 import type { DatabaseResult } from "../state";
 import { emptyDocument } from "./emptyDocument";
@@ -88,6 +89,16 @@ export const resultsAtom = atom(
       }
     }
   },
+);
+
+const EMPTY_RESULT: DatabaseResult = [];
+
+// Per-node view of `resultsAtom`. A result node subscribes to its own rows so
+// that one node receiving query results doesn't re-render every other result
+// node on the page. The stable `EMPTY_RESULT` keeps the no-rows case from
+// looking like a change on every unrelated write.
+export const resultRowsAtom = atomFamily((id: string) =>
+  selectAtom(resultsAtom, results => results[id] ?? EMPTY_RESULT),
 );
 
 export const activePageAtom = atom<PageState>(get => {

@@ -17,6 +17,7 @@ import { getExportTableName } from "./inlineEdit";
 import { useQueryInfo } from "./queryInfo";
 import type { ExportFormat } from "./serializeRows";
 import { ResultSearchBar } from "./ResultSearchBar";
+import { ResultRenderProfiler } from "./resultProfiler";
 import { ResultTable } from "./ResultTable";
 import { useResultSearch } from "./useResultSearch";
 import { useResultSearchMatches } from "./useResultSearchMatches";
@@ -29,7 +30,7 @@ import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
 import { Tooltip } from "../../../components/Tooltip/Tooltip";
-import { resultsAtom } from "../../state";
+import { resultRowsAtom } from "../../state";
 import type { AgentNode, QueryNode, ResultNode as ResultNodeT } from "../../types";
 import "./Result.css";
 
@@ -50,8 +51,7 @@ function nodeHeading(query: string): string {
 export function ResultNode({ id, data, selected, width, height }: NodeProps<ResultNodeT>) {
   const canvas = useCanvas();
   const createChart = useCreateChart();
-  const results = useAtomValue(resultsAtom);
-  const rows = results[id] ?? [];
+  const rows = useAtomValue(resultRowsAtom(id));
   useChartSync({ nodeId: id, rows });
   const queryInfo = useQueryInfo(data.query);
   const w = width ?? DEFAULT_W;
@@ -273,14 +273,16 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
           )}
         </div>
         <div className='app-node-body nodrag' ref={bodyRef}>
-          <ResultTable
-            nodeId={id}
-            data={rows}
-            query={data.query}
-            queryInfo={queryInfo}
-            columnWidths={data.columnWidths}
-            matches={matches}
-          />
+          <ResultRenderProfiler id={`result-table:${id}`}>
+            <ResultTable
+              nodeId={id}
+              data={rows}
+              query={data.query}
+              queryInfo={queryInfo}
+              columnWidths={data.columnWidths}
+              matches={matches}
+            />
+          </ResultRenderProfiler>
         </div>
       </div>
     </>

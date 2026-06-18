@@ -1,7 +1,6 @@
-import { Text } from "@mantine/core";
 import { highlightMatch } from "../../../Connection/highlightMatch";
 import type { CellReference } from "./findReferences";
-import { syntaxHighlight } from "./highlight-json";
+import { highlightJsonValue } from "./highlight-json";
 
 const ReferenceChip = ({
   value,
@@ -13,7 +12,7 @@ const ReferenceChip = ({
   onClick?: () => void;
 }) => (
   <div className={onClick ? "reference reference--link" : "reference"} onClick={onClick}>
-    <Text c='inherit'>{highlightMatch(match, String(value))}</Text>
+    {highlightMatch(match, String(value))}
   </div>
 );
 
@@ -41,7 +40,7 @@ export const DataCell = ({
       <pre
         className='json'
         dangerouslySetInnerHTML={{
-          __html: syntaxHighlight(JSON.stringify(value, null, 2)),
+          __html: highlightJsonValue(value),
         }}
       />
     );
@@ -65,27 +64,19 @@ export const DataCell = ({
     if (isKey) {
       return <ReferenceChip value={value} match={match} />;
     }
-    return <Text c='inherit'>{highlightMatch(match, String(value))}</Text>;
+    return <>{highlightMatch(match, String(value))}</>;
   }
 
   if (type === "BOOL") {
     return value ? (
-      <Text fs='italic' c='blue'>
-        TRUE
-      </Text>
+      <span className='cell-bool-true'>TRUE</span>
     ) : (
-      <Text fs='italic' c='red'>
-        FALSE
-      </Text>
+      <span className='cell-bool-false'>FALSE</span>
     );
   }
 
   if (value === null) {
-    return (
-      <Text fs='italic' c='gray'>
-        NULL
-      </Text>
-    );
+    return <span className='cell-null'>NULL</span>;
   }
 
   return <>unknown shape</>;

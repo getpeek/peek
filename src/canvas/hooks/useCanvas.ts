@@ -9,7 +9,9 @@ export function useCanvas(): CanvasApi {
   const rf = useReactFlow<AppNode, AppEdge>();
   const setNodes = useSetAtom(nodesAtom);
   const setEdges = useSetAtom(edgesAtom);
-  const [, setDoc] = useAtom(documentAtom);
+  // Setter only — subscribing here (useAtom) re-rendered every useCanvas consumer
+  // on every document mutation, i.e. on every node-drag tick across the canvas.
+  const setDoc = useSetAtom(documentAtom);
 
   return useMemo<CanvasApi>(
     () => ({

@@ -1,7 +1,8 @@
 import { Table } from "@mantine/core";
+import { memo } from "react";
 import { classifyColumn, type Reference } from "./columnRoles";
 
-export function ResultTableHeader({
+export const ResultTableHeader = memo(function ResultTableHeader({
   header,
   columnIdx,
   colType,
@@ -52,4 +53,4 @@ export function ResultTableHeader({
       />
     </Table.Th>
   );
-}
+});

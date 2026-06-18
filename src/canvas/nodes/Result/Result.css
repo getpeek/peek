@@ -20,14 +20,20 @@
     z-index: 1;
   }
 
+  /* Fixed row height lets the virtualizer skip per-row measurement. Cells are
+     single-line and truncate, so the rendered height always matches. */
+  & tbody tr[data-index] {
+    height: var(--pk-row-h);
+  }
+
   & tbody td {
     padding: 7px 14px !important;
     color: var(--pk-fg);
     border-bottom: 1px solid var(--pk-node-border) !important;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    vertical-align: top;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
     user-select: text;
     -webkit-user-select: text;
     cursor: text;
@@ -76,12 +82,10 @@
     color: var(--pk-blue);
   }
 
-  & tbody td.pk,
-  & tbody td.pk .mantine-Text-root {
+  & tbody td.pk {
     color: var(--pk-yellow) !important;
   }
-  & tbody td.fk,
-  & tbody td.fk .mantine-Text-root {
+  & tbody td.fk {
     color: var(--pk-blue) !important;
   }
 
@@ -224,6 +228,9 @@ td.editable {
 
 td.editing {
   padding: 0 !important;
+  position: relative;
+  /* Let the editor escape the fixed-height cell instead of stretching the row. */
+  overflow: visible;
   outline: 2px solid var(--pk-accent);
   outline-offset: -2px;
   border-radius: 4px;
@@ -233,6 +240,21 @@ td.editing {
     outline-color: var(--pk-red);
     box-shadow: 0 2px 12px var(--pk-red-soft);
   }
+}
+
+/* The editor floats over the row so multi-line editors (JSON textarea) don't
+   expand the row and desync the fixed-size virtualizer. */
+td.editing .edit-wrapper {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 5;
+  background: var(--pk-node-bg);
+}
+
+td.editing .edit-input,
+td.editing .bool-select {
+  height: auto;
+  min-height: calc(var(--pk-row-h) - 2px);
 }
 
 .edit-wrapper {
@@ -558,7 +580,29 @@ td.editing {
   cursor: pointer;
 }
 
+.cell-bool-true {
+  color: var(--pk-blue);
+  font-style: italic;
+}
+
+.cell-bool-false {
+  color: var(--pk-red);
+  font-style: italic;
+}
+
+.cell-null {
+  color: var(--pk-fg-muted);
+  font-style: italic;
+}
+
 .json {
+  /* Collapse the pretty-printed JSON to a single truncated preview line; the
+     full value is shown in the textarea on double-click-to-edit. */
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
   .true,
   .false {
     display: inline-block;

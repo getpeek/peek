@@ -1,9 +1,9 @@
 import { Table } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { schemaAtom, type DatabaseResult } from "../../../state";
-import { getInboundReferences, getOutboundReferences, type CellReference } from "./findReferences";
+import type { CellReference } from "./findReferences";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { CellContextMenu } from "./CellContextMenu";
@@ -26,10 +26,25 @@ import type { ExportFormat } from "./serializeRows";
 import { useRowActions } from "./useRowActions";
 import { useRowSelection } from "./useRowSelection";
 import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
-import type { Reference } from "./columnRoles";
+import { useColumnReferences } from "./useColumnReferences";
 import { getEditableTableName, getExportTableName } from "./inlineEdit";
 
-export function ResultTable({
+// Fixed row height drives the virtualizer directly — no per-row `measureElement`
+// layout reads. Cells truncate to one line so rendered height always matches;
+// the inline editor floats as an overlay so the editing row stays this tall too.
+const ROW_HEIGHT = 34;
+
+// `--pk-row-h` feeds the fixed row-height rule in Result.css.
+const SCROLL_CONTAINER_STYLE = {
+  height: "100%",
+  width: "100%",
+  overflow: "auto",
+  position: "relative",
+  background: "var(--pk-node-bg)",
+  "--pk-row-h": `${ROW_HEIGHT}px`,
+} as React.CSSProperties;
+
+export const ResultTable = memo(function ResultTable({
   nodeId,
   data,
   query,
@@ -91,15 +106,7 @@ export function ResultTable({
   const canInsert = getEditableTableName(queryInfo) !== null;
   const variableNames = Object.keys(useGetVariablesForNode(nodeId).direct).toSorted();
 
-  const { outbound, inbound } = useMemo(() => {
-    const outboundMap: Record<string, Reference[]> = {};
-    const inboundMap: Record<string, Reference[]> = {};
-    headers.forEach(column => {
-      inboundMap[column] = getInboundReferences(queryInfo, schema.references, column);
-      outboundMap[column] = getOutboundReferences(queryInfo, schema.references, column);
-    });
-    return { outbound: outboundMap, inbound: inboundMap };
-  }, [headers, queryInfo, schema.references]);
+  const { inbound, outbound } = useColumnReferences(headers, queryInfo, schema.references);
 
   const followReferences = (refs: CellReference[], value: unknown) => {
     const sourceNode = canvas.getNode(nodeId);
@@ -148,7 +155,7 @@ export function ResultTable({
     count: visibleIndices.length,
     getScrollElement: () => scrollContainerRef.current,
     overscan: 8,
-    estimateSize: () => 38,
+    estimateSize: () => ROW_HEIGHT,
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
@@ -186,17 +193,7 @@ export function ResultTable({
   // if the container only appears once rows arrive, the width is never measured
   // and the table renders too narrow to fill the node.
   return (
-    <div
-      style={{
-        height: "100%",
-        width: "100%",
-        overflow: "auto",
-        position: "relative",
-        background: "var(--pk-node-bg)",
-      }}
-      ref={scrollContainerRef}
-      onMouseDown={onContainerMouseDown}
-    >
+    <div style={SCROLL_CONTAINER_STYLE} ref={scrollContainerRef} onMouseDown={onContainerMouseDown}>
       {showEmpty ? (
         <ResultEmpty message={noRows ? "No results" : "No matching rows"} />
       ) : (
@@ -227,17 +224,18 @@ export function ResultTable({
               {paddingTop > 0 && <SpacerRow height={paddingTop} colSpan={headers.length} />}
               {virtualItems.map(virtualRow => {
                 const rowIndex = visibleIndices[virtualRow.index];
+                const edit =
+                  editing && editing.row === rowIndex
+                    ? { editing, commitEdit, variableNames }
+                    : null;
                 return (
                   <ResultTableRow
                     key={virtualRow.key}
-                    ref={rowVirtualizer.measureElement}
                     virtualIndex={virtualRow.index}
                     row={data[rowIndex]}
                     rowIndex={rowIndex}
-                    editing={editing}
+                    edit={edit}
                     setEditing={setEditing}
-                    commitEdit={commitEdit}
-                    variableNames={variableNames}
                     inbound={inbound}
                     outbound={outbound}
                     isSelected={rowSelection.isSelected(rowIndex)}
@@ -293,4 +291,4 @@ export function ResultTable({
       )}
     </div>
   );
-}
+});

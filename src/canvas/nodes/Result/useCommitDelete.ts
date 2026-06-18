@@ -5,8 +5,7 @@ import { schemaAtom } from "../../../state";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { ids } from "../../ids";
-import { edgesAtom, nodesAtom } from "../../state";
-import type { AppNode, ErrorData, QueryErrorNode } from "../../types";
+import type { ErrorData, QueryErrorNode } from "../../types";
 import type { QueryInfo } from "./queryInfo";
 import {
   buildDeleteSql,
@@ -36,20 +35,8 @@ export function useCommitDelete({
 }) {
   const schema = useAtomValue(schemaAtom);
   const canvas = useCanvas();
-  const nodes = useAtomValue(nodesAtom);
-  const edges = useAtomValue(edgesAtom);
   const executeQueries = useExecuteQueries();
   const editableTable = useMemo(() => getEditableTableName(queryInfo), [queryInfo]);
-
-  const sourceQueryNode = useMemo<AppNode | null>(() => {
-    const edge = edges.find(
-      e => e.target === nodeId && nodes.find(n => n.id === e.source)?.type === "query",
-    );
-    if (!edge) {
-      return null;
-    }
-    return nodes.find(n => n.id === edge.source) ?? null;
-  }, [edges, nodes, nodeId]);
 
   const preflight = useCallback(
     (selected: ReadonlySet<number>): DeletePreflight => {
@@ -113,14 +100,22 @@ export function useCommitDelete({
       }
 
       // Re-run the source query node so the result node and any downstream
-      // nodes (charts, dependent queries) all see the updated rows.
+      // nodes (charts, dependent queries) all see the updated rows. Read the
+      // graph lazily here rather than subscribing — this only matters at commit
+      // time, and subscribing re-rendered the table on every node-drag tick.
+      const nodes = canvas.getNodes();
+      const edges = canvas.getEdges();
+      const sourceEdge = edges.find(
+        e => e.target === nodeId && nodes.find(n => n.id === e.source)?.type === "query",
+      );
+      const sourceQueryNode = sourceEdge ? nodes.find(n => n.id === sourceEdge.source) : undefined;
       if (sourceQueryNode && sourceQueryNode.type === "query") {
         executeQueries(sourceQueryNode, [sourceQueryNode.data.query]);
       }
 
       return { ok: true };
     },
-    [preflight, schema.primaryKeys, data, canvas, nodeId, sourceQueryNode, executeQueries],
+    [preflight, schema.primaryKeys, data, canvas, nodeId, executeQueries],
   );
 
   return { preflight, commit };
