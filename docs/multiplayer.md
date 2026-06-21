@@ -223,8 +223,6 @@ The legacy migration in `useLoadDocument` (`migrateAndHydrate`) lifts any pre-St
 - **`MemStore` for blobs**: no persistence, and the doc grows monotonically (each result re-run is a new entry). If long sessions or large result sets become a problem, switch to `iroh-blobs`'s `fs::Store` and consider stripping `results/*` entries on session end.
 - **Undo/redo in session**: not specially handled. Snapshot-based undo replays the entire page's nodes/edges through the doc, which can race with peer edits. Consider disabling undo in session if it becomes a problem.
 - **Author identity is per-session** (fresh keypair on every `host()`/`join()`). No cross-session user identity yet.
-- **Pinned `pkcs8 = "0.11.0-rc.11"`** in `Cargo.lock` to work around a transient incompatibility with `ed25519-3.0.0-rc.4`. Drop the pin once iroh updates `ed25519-dalek` past the broken pre-release.
-- **`Cargo.lock` must be committed** for the pkcs8 pin to survive a clean clone.
 - **`ContentReady` fetch errors are logged only** — no retry loop. In practice the eager download policy + iroh's own retries cover this, but if a peer stays disconnected and reconnects, deferred entries may need a manual re-sync.
 - **Selection isn't synced**. The plan called this out as a Stage-4 nice-to-have; deferred.
 
