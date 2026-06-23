@@ -24,23 +24,25 @@ export function useAutoSaveDocument() {
       return;
     }
 
-    const json = JSON.stringify(doc);
-
     if (!hasObservedInitialRef.current) {
       hasObservedInitialRef.current = true;
-      lastSavedJsonRef.current = json;
-      return;
-    }
-
-    if (json === lastSavedJsonRef.current) {
+      lastSavedJsonRef.current = JSON.stringify(doc);
       return;
     }
 
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
+    // Serialize inside the debounced flush, not on every `doc` change. While a
+    // node is dragged `doc` updates each frame; stringifying the whole document
+    // per tick (just to dirty-check) is wasted main-thread work that scales with
+    // document size. The dirty-check moves here, so it runs once per save window.
     const flush = async () => {
       pendingSaveRef.current = null;
+      const json = JSON.stringify(doc);
+      if (json === lastSavedJsonRef.current) {
+        return;
+      }
       try {
         await invoke("save", {
           workspace: conn.workspaceName,

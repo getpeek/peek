@@ -11,7 +11,7 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { exportRows } from "./exportRows";
 import { getExportTableName } from "./inlineEdit";
 import { useQueryInfo } from "./queryInfo";
@@ -48,7 +48,13 @@ function nodeHeading(query: string): string {
   );
 }
 
-export function ResultNode({ id, data, selected, width, height }: NodeProps<ResultNodeT>) {
+export const ResultNode = memo(function ResultNode({
+  id,
+  data,
+  selected,
+  width,
+  height,
+}: NodeProps<ResultNodeT>) {
   const canvas = useCanvas();
   const createChart = useCreateChart();
   const rows = useAtomValue(resultRowsAtom(id));
@@ -287,4 +293,4 @@ export function ResultNode({ id, data, selected, width, height }: NodeProps<Resu
       </div>
     </>
   );
-}
+});

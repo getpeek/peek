@@ -26,7 +26,7 @@ body.is-rubber-band-selecting * {
    ============================================================ */
 .react-flow[data-interacting] .app-node {
   transition: none;
-  box-shadow: var(--pk-node-shadow-cheap);
+  box-shadow: none;
 }
 
 .react-flow[data-interacting] .app-node.selected,
@@ -51,6 +51,23 @@ body.is-rubber-band-selecting * {
    only — no permanent layer/memory cost at rest. */
 .react-flow[data-interacting] .react-flow__viewport {
   will-change: transform;
+}
+
+/* Promote the node being dragged onto its own compositor layer so moving it is
+   a GPU translate of a cached texture, not a re-rasterization of its content
+   every frame. Without this, drag cost scales with the node's DOM — e.g. a
+   result table's cell/column count. Scoped to `.dragging` (the drag only), so
+   the layer is created on grab and released on drop — no permanent cost. */
+.react-flow__node.dragging {
+  will-change: transform;
+}
+
+/* Sticky table headers each become their own compositing layer in WebKit, so a
+   result table fragments into ~one layer per column — compositing the node while
+   it moves then scales with column count. Headers needn't stick mid-drag, so
+   flatten them to static during interaction to keep the node a single layer. */
+.react-flow[data-interacting] .app-node thead th {
+  position: static;
 }
 
 /* Rubber-band selection box. Driven imperatively from `useRubberBandSelect`

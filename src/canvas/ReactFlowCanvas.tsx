@@ -46,7 +46,6 @@ import { useDrawTool } from "./hooks/useDrawTool";
 import { useInteractionState } from "./hooks/useInteractionState";
 import { useMetaKeyHeld } from "./hooks/useMetaKeyHeld";
 import { usePlaceTool } from "./hooks/usePlaceTool";
-import { useRubberBandSelect } from "./hooks/useRubberBandSelect";
 import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
 import { useSelectionHighlight } from "./hooks/useSelectionHighlight";
 import { useZoomVariable } from "./hooks/useZoomVariable";
@@ -120,7 +119,8 @@ function ReactFlowCanvasInner() {
   }, [loadEpoch, activePageId, viewport, rf]);
   const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
   usePlaceTool();
-  const { rectRef: selectionRectRef } = useRubberBandSelect();
+  // EXPERIMENT: useRubberBandSelect temporarily disabled to confirm its global
+  // pointermove handler isn't contributing to interaction cost.
   useZoomVariable();
   useCursorBroadcast();
   const metaHeld = useMetaKeyHeld();
@@ -175,17 +175,26 @@ function ReactFlowCanvasInner() {
 
   const { styledNodes, styledEdges } = useSelectionHighlight(nodes, edges);
 
+  // Node drags must flip `data-interacting` too — otherwise nodes keep their
+  // full box-shadow and re-rasterize that blur every frame (only viewport
+  // pan/zoom went through `interaction` before, via onMoveStart/End).
   const onNodeDragStart = useCallback(
-    (_e: unknown, n: AppNode) => onSchemaNodeDragStart(n),
-    [onSchemaNodeDragStart],
+    (_e: unknown, n: AppNode) => {
+      interaction.begin();
+      onSchemaNodeDragStart(n);
+    },
+    [interaction, onSchemaNodeDragStart],
   );
   const onNodeDrag = useCallback(
     (_e: unknown, n: AppNode) => onSchemaNodeDrag(n),
     [onSchemaNodeDrag],
   );
   const onNodeDragStop = useCallback(
-    (_e: unknown, n: AppNode) => onSchemaNodeDragStop(n),
-    [onSchemaNodeDragStop],
+    (_e: unknown, n: AppNode) => {
+      onSchemaNodeDragStop(n);
+      interaction.endDebounced();
+    },
+    [interaction, onSchemaNodeDragStop],
   );
 
   return (
@@ -281,7 +290,6 @@ function ReactFlowCanvasInner() {
           />
         </svg>
       )}
-      <div ref={selectionRectRef} className='rubber-band-rect' />
       <LassoOverlay />
       <CanvasApiPublisher />
       <PeekKeyboardShortcuts />
