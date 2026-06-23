@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useSyncedFieldValue } from "../../hooks/useSyncedFieldValue";
 
 interface VariableTextInputProps {
   value: string;
@@ -7,23 +7,13 @@ interface VariableTextInputProps {
   placeholder: string;
 }
 
-// Mirrors the incoming value in local state so the caret survives a keystroke.
-// Binding `value` straight to node data sends each edit on a round trip through
-// jotai and React Flow's internal store, which lands a frame late — long enough
-// for the controlled input to render stale and the browser to jump the caret to
-// the end. Rendering from local state keeps it synchronous; we only adopt the
-// prop again when it changes from the outside (remote edit, undo, array toggle).
 export function VariableTextInput({
   value,
   onChange,
   className,
   placeholder,
 }: VariableTextInputProps) {
-  const [local, setLocal] = useState(value);
-
-  useEffect(() => {
-    setLocal(value);
-  }, [value]);
+  const [local, setLocal] = useSyncedFieldValue(value);
 
   return (
     <input

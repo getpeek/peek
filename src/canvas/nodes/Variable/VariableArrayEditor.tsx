@@ -1,5 +1,6 @@
 import { Popover } from "@mantine/core";
 import { useState } from "react";
+import { useSyncedFieldValue } from "../../hooks/useSyncedFieldValue";
 
 export function VariableArrayEditor({
   value,
@@ -9,6 +10,7 @@ export function VariableArrayEditor({
   onChange: (next: string[]) => void;
 }) {
   const [opened, setOpened] = useState(false);
+  const [text, setText] = useSyncedFieldValue(value.join("\n"));
   const count = value.length;
   const label = count === 0 ? "empty" : `${count} ${count === 1 ? "value" : "values"}`;
 
@@ -35,11 +37,14 @@ export function VariableArrayEditor({
       <Popover.Dropdown className='variable-array-dropdown'>
         <textarea
           className='variable-array-textarea nodrag'
-          value={value.join("\n")}
+          value={text}
           placeholder='one value per line'
           autoComplete='off'
           spellCheck={false}
-          onChange={e => onChange(e.currentTarget.value.split("\n"))}
+          onChange={e => {
+            setText(e.currentTarget.value);
+            onChange(e.currentTarget.value.split("\n"));
+          }}
         />
       </Popover.Dropdown>
     </Popover>

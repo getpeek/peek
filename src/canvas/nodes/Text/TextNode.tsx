@@ -1,6 +1,7 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useCanvas } from "../../hooks/useCanvas";
+import { useSyncedFieldValue } from "../../hooks/useSyncedFieldValue";
 import { HiddenHandles } from "../HiddenHandles";
 import type { TextNode as TextNodeT } from "../../types";
 import "./Text.css";
@@ -19,6 +20,7 @@ export function TextNode({ id, data, selected, width, height }: NodeProps<TextNo
   const measureRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isEditing, setIsEditing] = useState(data.text.length === 0);
+  const [text, setText] = useSyncedFieldValue(data.text);
   const [fontSize, setFontSize] = useState(Math.max(MIN_FONT_SIZE, h * FONT_SIZE_RATIO));
 
   useLayoutEffect(() => {
@@ -44,7 +46,7 @@ export function TextNode({ id, data, selected, width, height }: NodeProps<TextNo
     if (required > w) {
       canvas.updateNode(id, n => ({ ...n, width: required }));
     }
-  }, [data.text, fontSize, w, canvas, id]);
+  }, [text, fontSize, w, canvas, id]);
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -55,7 +57,7 @@ export function TextNode({ id, data, selected, width, height }: NodeProps<TextNo
     textarea.setSelectionRange(textarea.value.length, textarea.value.length);
   }, [isEditing]);
 
-  const lines = (data.text.length > 0 ? data.text : " ").split("\n");
+  const lines = (text.length > 0 ? text : " ").split("\n");
 
   return (
     <>
@@ -71,7 +73,7 @@ export function TextNode({ id, data, selected, width, height }: NodeProps<TextNo
           <textarea
             ref={textareaRef}
             className='text-node-input nodrag'
-            value={data.text}
+            value={text}
             placeholder='Type...'
             autoComplete='off'
             autoCorrect='off'
@@ -84,11 +86,12 @@ export function TextNode({ id, data, selected, width, height }: NodeProps<TextNo
                 canvas.deselectAll();
               }
             }}
-            onChange={e =>
+            onChange={e => {
+              setText(e.currentTarget.value);
               canvas.updateNodeData<TextNodeT["data"]>(id, {
                 text: e.currentTarget.value,
-              })
-            }
+              });
+            }}
             onBlur={() => setIsEditing(false)}
           />
         ) : (
