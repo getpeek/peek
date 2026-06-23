@@ -11,7 +11,10 @@ import {
 import type { ReactNode } from "react";
 import { PortalAnchor } from "./PortalAnchor";
 import type { ExportFormat } from "./serializeRows";
+import { stringifyValue } from "./stringify";
 import type { CellMenuState } from "./useCellContextMenu";
+
+const MAX_COPY_VALUE_LENGTH = 13;
 
 function FormatSubmenu({
   label,
@@ -77,6 +80,11 @@ export function CellContextMenu({
   const deleteLabel = selectionCount >= 2 ? `Delete ${selectionCount} rows` : "Delete row";
   const copyIcon = <IconCopy size={14} />;
   const exportIcon = <IconDownload size={14} />;
+  const cellValue = stringifyValue(cellMenu.value);
+  const copyValueLabel =
+    cellValue.length > MAX_COPY_VALUE_LENGTH
+      ? `Copy "${cellValue.slice(0, MAX_COPY_VALUE_LENGTH)}…"`
+      : `Copy "${cellValue}"`;
 
   return (
     <Menu
@@ -106,7 +114,7 @@ export function CellContextMenu({
 
         {showSingleRow && (
           <Menu.Item leftSection={copyIcon} onClick={onCopyValue}>
-            Copy cell value
+            {copyValueLabel}
           </Menu.Item>
         )}
         {showSingleRow && <FormatSubmenu label='Copy row' icon={copyIcon} onSelect={onCopyRow} />}
