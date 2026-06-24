@@ -1,18 +1,16 @@
-import { useAtomValue } from "jotai";
+import { useAtomValue, useStore } from "jotai";
 import { useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { activeConnectionAtom } from "../../Connection/state";
 import { sessionStateAtom } from "../../multiplayer/state";
-import { documentAtom } from "../state";
+import { documentAtom, subscribeDocumentMutations } from "../state";
 
 export function useAutoSaveDocument() {
-  const doc = useAtomValue(documentAtom);
   const conn = useAtomValue(activeConnectionAtom);
   const session = useAtomValue(sessionStateAtom);
-  const hasObservedInitialRef = useRef(false);
-  const lastSavedJsonRef = useRef<string>("");
+  const store = useStore();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingSaveRef = useRef<(() => Promise<void>) | null>(null);
+  const lastSavedJsonRef = useRef<string>("");
 
   useEffect(() => {
     if (!conn) {
@@ -24,22 +22,12 @@ export function useAutoSaveDocument() {
       return;
     }
 
-    if (!hasObservedInitialRef.current) {
-      hasObservedInitialRef.current = true;
-      lastSavedJsonRef.current = JSON.stringify(doc);
-      return;
-    }
+    // The current document is already on disk (just loaded or last saved).
+    lastSavedJsonRef.current = JSON.stringify(store.get(documentAtom));
 
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-    // Serialize inside the debounced flush, not on every `doc` change. While a
-    // node is dragged `doc` updates each frame; stringifying the whole document
-    // per tick (just to dirty-check) is wasted main-thread work that scales with
-    // document size. The dirty-check moves here, so it runs once per save window.
     const flush = async () => {
-      pendingSaveRef.current = null;
-      const json = JSON.stringify(doc);
+      debounceRef.current = null;
+      const json = JSON.stringify(store.get(documentAtom));
       if (json === lastSavedJsonRef.current) {
         return;
       }
@@ -54,35 +42,28 @@ export function useAutoSaveDocument() {
         console.error("Failed to save canvas:", e);
       }
     };
-    pendingSaveRef.current = flush;
-    debounceRef.current = setTimeout(() => {
-      void flush();
-    }, 3000);
 
-    return () => {
+    // React to document mutations through the out-of-band listener rather than
+    // `useAtomValue(documentAtom)`. Subscribing in React would re-render this
+    // hook's host — the top-level <App> — on every mutation, i.e. every frame
+    // while a node is dragged (each frame rewrites the document). The listener
+    // just (re)arms the debounce; the actual serialize happens once per window.
+    const unsubscribe = subscribeDocumentMutations(() => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
-    };
-  }, [doc, conn, session]);
+      debounceRef.current = setTimeout(() => void flush(), 3000);
+    });
 
-  // On connection change, fire any in-flight debounced save against the
-  // *previous* conn (the closure captured it) before resetting observation
-  // state. Without this, viewport (and any other) edits made inside the
-  // debounce window would be silently dropped on switch.
-  useEffect(() => {
     return () => {
-      const pending = pendingSaveRef.current;
-      if (pending) {
-        pendingSaveRef.current = null;
-        if (debounceRef.current) {
-          clearTimeout(debounceRef.current);
-          debounceRef.current = null;
-        }
-        void pending();
+      unsubscribe();
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
       }
-      hasObservedInitialRef.current = false;
-      lastSavedJsonRef.current = "";
+      // Flush any pending edit before teardown (e.g. on connection switch) so a
+      // change made inside the debounce window isn't lost.
+      void flush();
     };
-  }, [conn?.workspaceName, conn?.connection.name]);
+  }, [conn, session, store]);
 }

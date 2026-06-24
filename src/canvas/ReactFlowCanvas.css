@@ -41,11 +41,6 @@ body.is-rubber-band-selecting * {
   animation-play-state: paused;
 }
 
-/* Per-edge colored glow is the priciest edge paint; drop it while moving. */
-.react-flow[data-interacting] .react-flow__edge-path {
-  filter: none;
-}
-
 /* Hint the single transformed pane onto its own compositor layer for the
    gesture so panning is a GPU translate, not a repaint. Scoped to interaction
    only — no permanent layer/memory cost at rest. */
@@ -68,6 +63,20 @@ body.is-rubber-band-selecting * {
    flatten them to static during interaction to keep the node a single layer. */
 .react-flow[data-interacting] .app-node thead th {
   position: static;
+}
+
+/* Isolate the result table onto its own persistent compositing layer. Moving or
+   panning *anything else* then re-composites its cached texture instead of
+   repainting the table, and dragging the result node itself becomes a cheap GPU
+   translate of that texture. The node clips (overflow: hidden), so the layer is
+   bounded to the node box — not the tall virtual scroll content. No content is
+   hidden, so nothing flashes.
+
+   Scoped to result nodes: `transform` makes `.app-node` a containing block for
+   `position: fixed` descendants, which would mis-place Monaco's overflow widgets
+   in query nodes. Result menus are all portaled, so result is safe. */
+.react-flow__node-result .app-node {
+  transform: translateZ(0);
 }
 
 /* Rubber-band selection box. Driven imperatively from `useRubberBandSelect`

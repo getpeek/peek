@@ -50,10 +50,13 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   const editorFocusedRef = useRef(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [editorReady, setEditorReady] = useState(false);
-  // Once the editor has been opened (zoomed in past the LOD threshold, or
-  // activated from the preview) keep Monaco mounted regardless of zoom, so
-  // editing never loses cursor/scroll/undo state to a remount.
-  const [hasActivated, setHasActivated] = useState(false);
+  // Mount Monaco only while the editor is focused (actively editing) or the node
+  // is zoomed in close; otherwise show the lightweight QueryPreview. Monaco keeps
+  // many compositing layers alive (cursor, suggest widget, scrollbars), so
+  // leaving every touched editor mounted made panning/dragging a busy board
+  // expensive. The query text lives in node data, so unmounting loses nothing
+  // but Monaco's transient cursor/undo — and only once you've zoomed out/blurred.
+  const [editorFocused, setEditorFocused] = useState(false);
   const pendingFocusRef = useRef(false);
   const [confirmingUnbounded, setConfirmingUnbounded] = useState(false);
   const tier = useZoomTier();
@@ -165,7 +168,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
     } catch {}
   };
 
-  const showEditor = tier === "near" || hasActivated;
+  const showEditor = tier === "near" || editorFocused;
 
   return (
     <>
@@ -210,10 +213,11 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
                 });
                 editor.onDidFocusEditorWidget(() => {
                   editorFocusedRef.current = true;
-                  setHasActivated(true);
+                  setEditorFocused(true);
                 });
                 editor.onDidBlurEditorWidget(() => {
                   editorFocusedRef.current = false;
+                  setEditorFocused(false);
                 });
                 editor.onKeyDown(e => {
                   const isMod = e.metaKey || e.ctrlKey;
@@ -237,7 +241,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
               query={data.query}
               onActivate={() => {
                 pendingFocusRef.current = true;
-                setHasActivated(true);
+                setEditorFocused(true);
               }}
             />
           )}

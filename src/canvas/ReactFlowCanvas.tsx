@@ -46,6 +46,7 @@ import { useDrawTool } from "./hooks/useDrawTool";
 import { useInteractionState } from "./hooks/useInteractionState";
 import { useMetaKeyHeld } from "./hooks/useMetaKeyHeld";
 import { usePlaceTool } from "./hooks/usePlaceTool";
+import { useRubberBandSelect } from "./hooks/useRubberBandSelect";
 import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
 import { useSelectionHighlight } from "./hooks/useSelectionHighlight";
 import { useZoomVariable } from "./hooks/useZoomVariable";
@@ -97,10 +98,8 @@ function ReactFlowCanvasInner() {
   const canvas = useCanvas();
   const interaction = useInteractionState();
 
-  // `defaultViewport` only takes effect on mount. After that, restoring
-  // viewport (on connection load *or* in-document page switch) requires an
-  // imperative setViewport — otherwise the camera stays where the user last
-  // left it visually, even though the atom holds the right value.
+  // `defaultViewport` only applies on mount; restoring viewport on connection
+  // load or page switch needs an imperative setViewport (else camera drifts).
   const viewportSyncRef = useRef<{ epoch: number; pageId: string } | null>(null);
   useEffect(() => {
     const last = viewportSyncRef.current;
@@ -119,8 +118,7 @@ function ReactFlowCanvasInner() {
   }, [loadEpoch, activePageId, viewport, rf]);
   const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
   usePlaceTool();
-  // EXPERIMENT: useRubberBandSelect temporarily disabled to confirm its global
-  // pointermove handler isn't contributing to interaction cost.
+  const { rectRef: selectionRectRef } = useRubberBandSelect();
   useZoomVariable();
   useCursorBroadcast();
   const metaHeld = useMetaKeyHeld();
@@ -128,9 +126,14 @@ function ReactFlowCanvasInner() {
 
   const onNodesChange = useCallback(
     (changes: NodeChange<AppNode>[]) => {
+      // Resize arrives as dimension changes with `resizing` — freeze too.
+      if (changes.some(c => c.type === "dimensions" && c.resizing)) {
+        interaction.begin();
+        interaction.endDebounced();
+      }
       setNodes(ns => applyNodeChanges(changes, ns));
     },
-    [setNodes],
+    [setNodes, interaction],
   );
 
   const onEdgesChange = useCallback(
@@ -175,9 +178,7 @@ function ReactFlowCanvasInner() {
 
   const { styledNodes, styledEdges } = useSelectionHighlight(nodes, edges);
 
-  // Node drags must flip `data-interacting` too — otherwise nodes keep their
-  // full box-shadow and re-rasterize that blur every frame (only viewport
-  // pan/zoom went through `interaction` before, via onMoveStart/End).
+  // Node drags flip `data-interacting` too, so heavy bodies freeze while moving.
   const onNodeDragStart = useCallback(
     (_e: unknown, n: AppNode) => {
       interaction.begin();
@@ -290,6 +291,7 @@ function ReactFlowCanvasInner() {
           />
         </svg>
       )}
+      <div ref={selectionRectRef} className='rubber-band-rect' />
       <LassoOverlay />
       <CanvasApiPublisher />
       <PeekKeyboardShortcuts />
