@@ -20,10 +20,18 @@ pub fn get_config() -> Result<String, String> {
 /// # Errors
 /// Returns an error if the updated config cannot be written to disk.
 #[tauri::command]
-pub fn set_theme(theme: Theme) -> Result<(), String> {
+// Tauri injects `AppHandle` by value; on non-macOS it then goes unused.
+#[allow(clippy::needless_pass_by_value)]
+#[cfg_attr(not(target_os = "macos"), allow(unused_variables))]
+pub fn set_theme(app: tauri::AppHandle, theme: Theme) -> Result<(), String> {
     let mut config = PeekConfig::get_or_default();
     config.theme = theme;
-    config.save_to_disk()
+    config.save_to_disk()?;
+
+    #[cfg(target_os = "macos")]
+    crate::dock_icon::set_for_theme(&app, theme);
+
+    Ok(())
 }
 
 /// # Errors
@@ -113,6 +121,11 @@ impl Default for AIConfig {
 }
 
 impl PeekConfig {
+    #[must_use]
+    pub fn theme(&self) -> Theme {
+        self.theme
+    }
+
     #[must_use]
     pub fn get_or_default() -> Self {
         let mut config = Self::load_from_disk();

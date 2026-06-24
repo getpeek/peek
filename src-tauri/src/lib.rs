@@ -1,6 +1,8 @@
 pub mod config;
 mod database;
 mod database_commands;
+#[cfg(target_os = "macos")]
+mod dock_icon;
 mod import;
 mod lsp_commands;
 mod mcp_commands;
@@ -173,6 +175,9 @@ pub fn run() {
             if let Some(window) = app.get_webview_window("main") {
                 window_chrome::apply_rounded_corners(&window);
             }
+
+            #[cfg(target_os = "macos")]
+            dock_icon::set_for_theme(app.handle(), PeekConfig::get_or_default().theme());
 
             Ok(())
         })
