@@ -1,6 +1,6 @@
 import { highlightMatch } from "../../../Connection/highlightMatch";
 import type { CellReference } from "./findReferences";
-import { highlightJsonValue } from "./highlight-json";
+import { JsonCell } from "./JsonCell";
 
 const ReferenceChip = ({
   value,
@@ -36,14 +36,7 @@ export const DataCell = ({
   onOutboundClick?: (refs: CellReference[], value: unknown) => void;
 }) => {
   if ((type === "JSON" || type === "JSONB") && value !== null) {
-    return (
-      <pre
-        className='json'
-        dangerouslySetInnerHTML={{
-          __html: highlightJsonValue(value),
-        }}
-      />
-    );
+    return <JsonCell value={value} />;
   }
 
   if (typeof value === "string" || typeof value === "number") {

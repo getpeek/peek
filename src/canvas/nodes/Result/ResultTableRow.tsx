@@ -21,6 +21,7 @@ export type RowEdit = {
 };
 
 export const ResultTableRow = memo(function ResultTableRow({
+  ref,
   row,
   rowIndex,
   virtualIndex,
@@ -34,6 +35,8 @@ export const ResultTableRow = memo(function ResultTableRow({
   onFollowReferences,
   onCellContextMenu,
 }: {
+  /** The virtualizer's `measureElement` callback ref — attaches to the row for height measurement. */
+  ref?: React.Ref<HTMLTableRowElement>;
   row: RowData;
   rowIndex: number;
   /** Position in the (possibly filtered) virtual list — drives `data-index` and striping. */
@@ -61,6 +64,7 @@ export const ResultTableRow = memo(function ResultTableRow({
 
   return (
     <tr
+      ref={ref}
       data-index={virtualIndex}
       className={rowClasses.join(" ") || undefined}
       onMouseDown={e => {

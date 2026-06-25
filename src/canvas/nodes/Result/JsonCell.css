@@ -1,0 +1,88 @@
+.json-pretty {
+  font: 400 12px/1.55 var(--pk-font-mono);
+  color: var(--pk-fg);
+  /* In-word breaks so a long JSON value never bleeds into the neighbouring cell. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  min-width: 0;
+
+  .json-indent {
+    padding-left: 12px;
+    margin-left: 2px;
+    border-left: 1px solid color-mix(in oklab, var(--pk-node-border) 60%, transparent);
+  }
+
+  .json-brace,
+  .json-punct {
+    color: var(--pk-fg-subtle);
+  }
+
+  .json-key {
+    color: var(--pk-fg-muted);
+  }
+
+  .json-str {
+    color: var(--pk-green);
+  }
+
+  .json-num {
+    color: var(--pk-yellow);
+  }
+
+  .json-empty {
+    color: var(--pk-fg-subtle);
+    font-style: italic;
+  }
+
+  .json-pill {
+    display: inline-block;
+    font: 500 10.5px var(--pk-font-mono);
+    padding: 1px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+    word-break: keep-all;
+  }
+
+  .json-true {
+    color: var(--pk-blue);
+    background: var(--pk-blue-soft);
+  }
+
+  .json-false {
+    color: var(--pk-red);
+    background: var(--pk-red-soft);
+  }
+
+  .json-null {
+    color: var(--pk-fg-subtle);
+    background: var(--pk-node-bg-2);
+  }
+
+  /* Long string: middle truncation with a trailing char-count badge. */
+  .json-longstr {
+    font-variant-ligatures: none;
+
+    .q,
+    .ell {
+      color: var(--pk-fg-subtle);
+    }
+
+    .ell {
+      padding: 0 1px;
+      font-weight: 600;
+    }
+
+    .charcount {
+      display: inline-block;
+      margin-left: 4px;
+      padding: 0 5px;
+      border: 1px solid var(--pk-node-border);
+      border-radius: 3px;
+      background: var(--pk-node-bg-2);
+      color: var(--pk-fg-subtle);
+      font: 500 9.5px var(--pk-font-mono);
+      letter-spacing: 0.04em;
+    }
+  }
+}

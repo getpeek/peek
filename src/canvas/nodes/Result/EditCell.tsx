@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { isBooleanType, isNumericType } from "./inlineEdit";
+import { MonacoJsonCell } from "./MonacoJsonCell";
 import { VariableInput, type VariableInputKind } from "./VariableInput";
 import { Tooltip } from "../../../components/Tooltip/Tooltip";
 
@@ -40,6 +41,10 @@ export function EditCell({
   const isNumeric = isNumericType(type);
 
   useLayoutEffect(() => {
+    if (isMultiline) {
+      // The Monaco JSON editor focuses itself on mount.
+      return;
+    }
     if (isBoolean) {
       const select = selectRef.current;
       if (!select) {
@@ -121,12 +126,25 @@ export function EditCell({
     );
   }
 
+  if (isMultiline) {
+    return (
+      <MonacoJsonCell
+        value={draft}
+        error={error}
+        saving={saving}
+        onChange={onChange}
+        onCommit={onCommit}
+        onCancel={onCancel}
+      />
+    );
+  }
+
   const clearToNull = () => {
     onChange("");
     onCommit();
   };
 
-  const kind: VariableInputKind = isMultiline ? "textarea" : isNumeric ? "number" : "text";
+  const kind: VariableInputKind = isNumeric ? "number" : "text";
 
   return (
     <div className='edit-wrapper'>
@@ -139,7 +157,6 @@ export function EditCell({
           className='edit-input'
           disabled={saving}
           spellCheck={false}
-          rows={3}
           inputRef={el => {
             inputRef.current = el;
           }}

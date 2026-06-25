@@ -29,19 +29,17 @@ import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
 import { useColumnReferences } from "./useColumnReferences";
 import { getEditableTableName, getExportTableName } from "./inlineEdit";
 
-// Fixed row height drives the virtualizer directly — no per-row `measureElement`
-// layout reads. Cells truncate to one line so rendered height always matches;
-// the inline editor floats as an overlay so the editing row stays this tall too.
+// Rows are variable height: cells wrap and JSON cells render their full pretty-printed
+// value, so each row is measured via the virtualizer's `measureElement`. ROW_HEIGHT is
+// only the pre-measurement estimate.
 const ROW_HEIGHT = 34;
 
-// `--pk-row-h` feeds the fixed row-height rule in Result.css.
 const SCROLL_CONTAINER_STYLE = {
   height: "100%",
   width: "100%",
   overflow: "auto",
   position: "relative",
   background: "var(--pk-node-bg)",
-  "--pk-row-h": `${ROW_HEIGHT}px`,
 } as React.CSSProperties;
 
 export const ResultTable = memo(function ResultTable({
@@ -231,6 +229,7 @@ export const ResultTable = memo(function ResultTable({
                 return (
                   <ResultTableRow
                     key={virtualRow.key}
+                    ref={rowVirtualizer.measureElement}
                     virtualIndex={virtualRow.index}
                     row={data[rowIndex]}
                     rowIndex={rowIndex}
