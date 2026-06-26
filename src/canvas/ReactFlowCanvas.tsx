@@ -32,6 +32,7 @@ import { DrawNode, getSvgPathFromStroke } from "./nodes/Draw/DrawNode";
 import { QueryErrorNode } from "./nodes/QueryError/QueryErrorNode";
 import { QueryNode } from "./nodes/Query/QueryNode";
 import { ResultNode } from "./nodes/Result/ResultNode";
+import { ResultInsertFormNode } from "./nodes/ResultInsertForm/ResultInsertFormNode";
 import { TableDefinitionNode } from "./nodes/TableDefinition/TableDefinitionNode";
 import { TextNode } from "./nodes/Text/TextNode";
 import { VariableNode } from "./nodes/Variable/VariableNode";
@@ -40,7 +41,7 @@ import { Toolbar } from "./ui/Toolbar";
 import { ZoomIndicator } from "./ui/ZoomIndicator";
 import { RemoteCursorsLayer } from "../multiplayer/RemoteCursorsLayer";
 import { useCursorBroadcast } from "../multiplayer/useCursorBroadcast";
-import type { AppEdge, AppNode } from "./types";
+import type { AppEdge, AppNode, AppNodeType } from "./types";
 import { useCanvas } from "./hooks/useCanvas";
 import { useDrawTool } from "./hooks/useDrawTool";
 import { useInteractionState } from "./hooks/useInteractionState";
@@ -60,6 +61,7 @@ import { PeekKeyboardShortcuts } from "./ui/KeyboardShortcuts";
 const nodeTypes = {
   query: QueryNode,
   result: ResultNode,
+  "result-insert-form": ResultInsertFormNode,
   agent: AgentNode,
   barchart: BarChartNode,
   "query-error": QueryErrorNode,
@@ -69,13 +71,11 @@ const nodeTypes = {
   draw: DrawNode,
 };
 
-const edgeTypes = {
-  floating: FloatingEdge,
-};
+const edgeTypes = { floating: FloatingEdge };
 
-const defaultEdgeOptions = {
-  type: "floating",
-};
+const defaultEdgeOptions = { type: "floating" };
+
+const VARIABLE_CONNECTION_TARGETS: AppNodeType[] = ["query", "result", "result-insert-form"];
 
 export function ReactFlowCanvas() {
   return (
@@ -153,7 +153,7 @@ function ReactFlowCanvasInner() {
       if (!source || !target) {
         return false;
       }
-      if (source.type === "variable" && (target.type === "query" || target.type === "result")) {
+      if (source.type === "variable" && VARIABLE_CONNECTION_TARGETS.includes(target.type)) {
         return true;
       }
       if (source.type === "result" && target.type === "agent") {

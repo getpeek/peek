@@ -11,6 +11,8 @@ export function newIdForType(type: AppNodeType): string {
       return ids.agent();
     case "result":
       return ids.result(ids.query());
+    case "result-insert-form":
+      return ids.resultInsertForm();
     case "barchart":
       return ids.chart(ids.query());
     case "query-error":

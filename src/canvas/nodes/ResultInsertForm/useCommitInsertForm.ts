@@ -1,20 +1,17 @@
 import { useCallback, useMemo } from "react";
-import { useSetAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
-import type { DatabaseResult } from "../../../../state";
-import { useCanvas } from "../../../hooks/useCanvas";
-import { useGetVariablesForNode } from "../../../hooks/useGetVariablesForNode";
-import { ids } from "../../../ids";
-import { resultsAtom } from "../../../state";
-import type { ErrorData, QueryErrorNode } from "../../../types";
-import { substituteVariables } from "../../../variables";
-import type { QueryInfo } from "../queryInfo";
+import { useCanvas } from "../../hooks/useCanvas";
+import { useExecuteQueries } from "../../hooks/useExecuteQueries";
+import { ids } from "../../ids";
+import type { ErrorData, QueryErrorNode } from "../../types";
+import { substituteVariables, type VariableValue } from "../../variables";
+import type { QueryInfo } from "../Result/queryInfo";
 import {
   buildInsertSql,
   formatSqlLiteral,
   getEditableTableName,
   type InsertAssignment,
-} from "../cell/inlineEdit";
+} from "../Result/cell/inlineEdit";
 
 const ERROR_NODE_WIDTH = 400;
 const ERROR_NODE_HEIGHT = 300;
@@ -28,33 +25,34 @@ export type InsertingState = {
   saving: boolean;
 };
 
-export function useCommitInsert({
+export const emptyInsertingState: InsertingState = {
+  drafts: {},
+  nullColumns: {},
+  error: null,
+  saving: false,
+};
+
+export function useCommitInsertForm({
+  resultNodeId,
+  queryInfo,
+  columnTypes,
+  variables,
   inserting,
   setInserting,
-  query,
-  queryInfo,
-  nodeId,
-  columnTypes,
 }: {
-  inserting: InsertingState | null;
-  setInserting: React.Dispatch<React.SetStateAction<InsertingState | null>>;
-  query: string;
+  resultNodeId: string;
   queryInfo: QueryInfo | null;
-  nodeId: string;
   columnTypes: Record<string, string>;
+  variables: Record<string, VariableValue>;
+  inserting: InsertingState;
+  setInserting: React.Dispatch<React.SetStateAction<InsertingState>>;
 }) {
   const canvas = useCanvas();
-  const setResults = useSetAtom(resultsAtom);
+  const executeQueries = useExecuteQueries();
   const editableTable = useMemo(() => getEditableTableName(queryInfo), [queryInfo]);
-  const vars = useGetVariablesForNode(nodeId);
 
   return useCallback(async () => {
-    if (!inserting) {
-      return;
-    }
-
-    const setError = (error: string) =>
-      setInserting(current => (current ? { ...current, error } : current));
+    const setError = (error: string) => setInserting(current => ({ ...current, error }));
 
     if (!editableTable) {
       setError("Cannot insert: query is not a single-table SELECT");
@@ -72,9 +70,7 @@ export function useCommitInsert({
         if (draft === "") {
           continue;
         }
-        // Resolve the draft against connected variables before quoting; undefined
-        // refs (e.g. typing `@test` with no `test` variable) stay as literal text.
-        const resolvedDraft = substituteVariables(draft, vars.direct).resolved;
+        const resolvedDraft = substituteVariables(draft, variables).resolved;
         const type = columnTypes[column] ?? "";
         assignments.push({ column, literal: formatSqlLiteral(resolvedDraft, type) });
       }
@@ -96,45 +92,45 @@ export function useCommitInsert({
       return;
     }
 
-    let resolvedRefreshQuery: string;
+    setInserting(current => ({ ...current, saving: true, error: null }));
     try {
-      const refresh = substituteVariables(query, vars.inherited);
-      if (refresh.missing.length > 0) {
-        throw new Error(`Undefined variables: ${refresh.missing.map(m => "@" + m).join(", ")}`);
-      }
-      resolvedRefreshQuery = refresh.resolved;
+      await invoke("execute_statement", { query: insertSql });
     } catch (err) {
-      setError(String(err));
+      const message = String(err);
+      showInsertError(canvas, resultNodeId, insertSql, message);
+      setInserting(current => ({ ...current, saving: false, error: message }));
       return;
     }
 
-    setInserting(current => (current ? { ...current, saving: true, error: null } : current));
-    try {
-      await invoke("execute_statement", { query: insertSql });
-      const refreshed = JSON.parse(
-        (await invoke("get_results", { query: resolvedRefreshQuery })) as string,
-      ) as DatabaseResult;
-      setResults(prev => ({ ...prev, [nodeId]: refreshed }));
-      const errorNodeId = ids.error(nodeId);
-      if (canvas.getNode(errorNodeId)) {
-        canvas.deleteNode(errorNodeId);
-      }
-      setInserting(null);
-    } catch (err) {
-      const message = String(err);
-      showInsertError(canvas, nodeId, insertSql, message);
-      setInserting(current => (current ? { ...current, saving: false, error: message } : current));
+    const errorNodeId = ids.error(resultNodeId);
+    if (canvas.getNode(errorNodeId)) {
+      canvas.deleteNode(errorNodeId);
     }
+
+    // Re-run the query node that feeds this result so the result and any
+    // downstream nodes pick up the new row (only if it matches the filters).
+    // Read the graph lazily here — subscribing would re-render on every drag.
+    const nodes = canvas.getNodes();
+    const edges = canvas.getEdges();
+    const sourceEdge = edges.find(
+      e => e.target === resultNodeId && nodes.find(n => n.id === e.source)?.type === "query",
+    );
+    const sourceQueryNode = sourceEdge ? nodes.find(n => n.id === sourceEdge.source) : undefined;
+    if (sourceQueryNode && sourceQueryNode.type === "query") {
+      executeQueries(sourceQueryNode, [sourceQueryNode.data.query]);
+    }
+
+    // Keep the form open for the next row, but clear what was just inserted.
+    setInserting(emptyInsertingState);
   }, [
-    inserting,
-    setInserting,
     editableTable,
     columnTypes,
+    inserting,
+    setInserting,
     canvas,
-    nodeId,
-    query,
-    setResults,
-    vars,
+    resultNodeId,
+    variables,
+    executeQueries,
   ]);
 }
 

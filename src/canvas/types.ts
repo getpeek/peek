@@ -4,6 +4,7 @@ import type { Message } from "./hooks/useExecutePrompt";
 export type AppNodeType =
   | "query"
   | "result"
+  | "result-insert-form"
   | "agent"
   | "barchart"
   | "query-error"
@@ -21,6 +22,14 @@ export type QueryData = {
 export type ResultData = {
   query: string;
   columnWidths?: Record<string, number>;
+};
+
+export type ResultInsertFormData = {
+  // The result node this form inserts into. Everything else (table, columns,
+  // variables, refresh) is derived live from it, so the form holds no snapshot.
+  resultNodeId: string;
+  // Optional per-column seed values (display strings) for the "duplicate row" flow.
+  initialValues?: Record<string, string>;
 };
 
 export type AgentData = {
@@ -67,6 +76,7 @@ export type DrawData = {
 
 export type QueryNode = Node<QueryData, "query">;
 export type ResultNode = Node<ResultData, "result">;
+export type ResultInsertFormNode = Node<ResultInsertFormData, "result-insert-form">;
 export type AgentNode = Node<AgentData, "agent">;
 export type BarChartNode = Node<BarChartData, "barchart">;
 export type QueryErrorNode = Node<ErrorData, "query-error">;
@@ -78,6 +88,7 @@ export type DrawNode = Node<DrawData, "draw">;
 export type AppNode =
   | QueryNode
   | ResultNode
+  | ResultInsertFormNode
   | AgentNode
   | BarChartNode
   | QueryErrorNode

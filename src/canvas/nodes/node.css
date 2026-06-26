@@ -74,6 +74,9 @@
 .react-flow__node-result {
   --pk-node-type-color: var(--pk-type-result);
 }
+.react-flow__node-result-insert-form {
+  --pk-node-type-color: var(--pk-type-result);
+}
 .react-flow__node-agent {
   --pk-node-type-color: var(--pk-type-agent);
 }
@@ -127,7 +130,8 @@
 }
 
 .connecting-from-variable .react-flow__node-query .app-node,
-.connecting-from-variable .react-flow__node-result .app-node {
+.connecting-from-variable .react-flow__node-result .app-node,
+.connecting-from-variable .react-flow__node-result-insert-form .app-node {
   border-color: var(--pk-accent);
   box-shadow:
     0 0 0 3px var(--pk-accent),
@@ -178,7 +182,8 @@
 .type-query .type-dot {
   background: var(--pk-type-query);
 }
-.type-result .type-dot {
+.type-result .type-dot,
+.type-result-insert-form .type-dot {
   background: var(--pk-type-result);
 }
 .type-agent .type-dot {

@@ -1,19 +1,19 @@
 import { Handle, NodeProps, NodeResizer, Position } from "@xyflow/react";
-import { Menu } from "@mantine/core";
 import {
   IconChartBar,
+  IconCopy,
   IconDownload,
-  IconFileTypeCsv,
-  IconFileTypeSql,
   IconGitFork,
-  IconJson,
   IconMessageChatbot,
+  IconRowInsertBottom,
   IconSearch,
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { memo, useRef } from "react";
+import { copyRows } from "./export/copyRows";
 import { exportRows } from "./export/exportRows";
-import { getExportTableName } from "./cell/inlineEdit";
+import { FormatMenu } from "./export/FormatMenu";
+import { getEditableTableName, getExportTableName } from "./cell/inlineEdit";
 import { useQueryInfo } from "./queryInfo";
 import type { ExportFormat } from "./export/serializeRows";
 import { ResultSearchBar } from "./ResultSearchBar";
@@ -30,6 +30,7 @@ import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
 import { Tooltip } from "../../../components/Tooltip/Tooltip";
 import { resultRowsAtom } from "../../state";
+import { useAddRow } from "../ResultInsertForm/useInsertFormSpawn";
 import type { AgentNode, QueryNode, ResultNode as ResultNodeT } from "../../types";
 import "./Result.css";
 
@@ -77,6 +78,10 @@ export const ResultNode = memo(function ResultNode({
     !!rows[0].some(
       ([key, value]) => typeof value === "number" && key !== "id" && !key.endsWith("_id"),
     );
+
+  const editableTable = getEditableTableName(queryInfo);
+  const canInsert = editableTable !== null;
+  const addRow = useAddRow(id, editableTable);
 
   const runCreateChart = () => {
     const node = canvas.getNode(id);
@@ -154,6 +159,12 @@ export const ResultNode = memo(function ResultNode({
     await exportRows(rows, format, baseName, getExportTableName(queryInfo, baseName));
   };
 
+  const copyAs = async (format: ExportFormat) => {
+    const baseName =
+      queryName.replaceAll(/[^a-z0-9_-]+/giu, "_").replaceAll(/^_+|_+$/gu, "") || "result";
+    await copyRows(rows, format, getExportTableName(queryInfo, baseName));
+  };
+
   return (
     <>
       <NodeResizer isVisible={!!selected} minWidth={400} minHeight={260} />
@@ -212,6 +223,13 @@ export const ResultNode = memo(function ResultNode({
                 ))}
               </div>
               <div className='actions'>
+                {canInsert && (
+                  <Tooltip label='Add row'>
+                    <button className='icon-btn' onClick={addRow}>
+                      <IconRowInsertBottom size={14} />
+                    </button>
+                  </Tooltip>
+                )}
                 {canChart && (
                   <Tooltip label='Create chart'>
                     <button className='icon-btn' onClick={runCreateChart}>
@@ -229,50 +247,25 @@ export const ResultNode = memo(function ResultNode({
                     <IconGitFork size={14} />
                   </button>
                 </Tooltip>
+                <FormatMenu
+                  icon={<IconDownload size={14} />}
+                  title='Export'
+                  verb='Export'
+                  disabled={rows.length === 0}
+                  onSelect={exportAs}
+                />
+                <FormatMenu
+                  icon={<IconCopy size={14} />}
+                  title='Copy'
+                  verb='Copy'
+                  disabled={rows.length === 0}
+                  onSelect={copyAs}
+                />
                 <Tooltip label='Search results'>
                   <button className='icon-btn' onClick={search.open} disabled={rows.length === 0}>
                     <IconSearch size={14} />
                   </button>
                 </Tooltip>
-                <Menu
-                  position='bottom-end'
-                  offset={4}
-                  radius='md'
-                  width={180}
-                  withinPortal
-                  classNames={{
-                    dropdown: "column-menu-dropdown",
-                    item: "column-menu-item",
-                    label: "column-menu-label",
-                    itemSection: "column-menu-item-section",
-                  }}
-                >
-                  <Menu.Target>
-                    <button className='icon-btn' title='Export' disabled={rows.length === 0}>
-                      <IconDownload size={14} />
-                    </button>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item
-                      leftSection={<IconFileTypeCsv size={14} />}
-                      onClick={() => exportAs("csv")}
-                    >
-                      Export as CSV
-                    </Menu.Item>
-                    <Menu.Item
-                      leftSection={<IconJson size={14} />}
-                      onClick={() => exportAs("json")}
-                    >
-                      Export as JSON
-                    </Menu.Item>
-                    <Menu.Item
-                      leftSection={<IconFileTypeSql size={14} />}
-                      onClick={() => exportAs("sql")}
-                    >
-                      Export as SQL
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
               </div>
             </>
           )}

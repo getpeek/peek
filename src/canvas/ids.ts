@@ -7,6 +7,7 @@ export const ids = {
   text: () => `text_${nanoid(8)}`,
   variable: () => `variable_${nanoid(8)}`,
   draw: () => `draw_${nanoid(8)}`,
+  resultInsertForm: () => `resultform_${nanoid(8)}`,
   result: (parentId: string, index = 0) => `${parentId}-result-${index}`,
   chart: (parentId: string) => `${parentId}-chart`,
   error: (parentId: string) => `${parentId}-error`,

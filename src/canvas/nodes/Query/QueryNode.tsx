@@ -13,7 +13,6 @@ import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { useGetVariables } from "./useGetVariables";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
-import { useZoomTier } from "../../hooks/useZoomTier";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
@@ -21,7 +20,6 @@ import { sessionStateAtom } from "../../../multiplayer/state";
 import { formatPreservingVars } from "../../variables";
 import type { QueryNode as QueryNodeT } from "../../types";
 import { registerEditorFocus } from "../editorFocusRegistry";
-import { QueryPreview } from "./QueryPreview";
 import { isUnboundedWrite } from "./isUnboundedWrite";
 import { Tooltip } from "../../../components/Tooltip/Tooltip";
 import "./Query.css";
@@ -50,16 +48,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   const editorFocusedRef = useRef(false);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [editorReady, setEditorReady] = useState(false);
-  // Mount Monaco only while the editor is focused (actively editing) or the node
-  // is zoomed in close; otherwise show the lightweight QueryPreview. Monaco keeps
-  // many compositing layers alive (cursor, suggest widget, scrollbars), so
-  // leaving every touched editor mounted made panning/dragging a busy board
-  // expensive. The query text lives in node data, so unmounting loses nothing
-  // but Monaco's transient cursor/undo — and only once you've zoomed out/blurred.
-  const [editorFocused, setEditorFocused] = useState(false);
-  const pendingFocusRef = useRef(false);
   const [confirmingUnbounded, setConfirmingUnbounded] = useState(false);
-  const tier = useZoomTier();
   useScrollFallthrough(bodyRef);
   const session = useAtomValue(sessionStateAtom);
   const variables = useGetVariables(id);
@@ -168,8 +157,6 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
     } catch {}
   };
 
-  const showEditor = tier === "near" || editorFocused;
-
   return (
     <>
       <NodeResizer isVisible={!!selected} minWidth={320} minHeight={200} />
@@ -196,55 +183,39 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
           </Tooltip>
         </NodeHeader>
         <div className='app-node-body nodrag' ref={bodyRef}>
-          {showEditor ? (
-            <SqlEditor
-              query={data.query}
-              variables={variables}
-              onMount={(editor, monaco) => {
-                editorRef.current = editor;
-                setEditorReady(true);
-                if (pendingFocusRef.current) {
-                  pendingFocusRef.current = false;
-                  editor.focus();
+          <SqlEditor
+            query={data.query}
+            variables={variables}
+            onMount={(editor, monaco) => {
+              editorRef.current = editor;
+              setEditorReady(true);
+              editor.onDidDispose(() => {
+                editorRef.current = null;
+                setEditorReady(false);
+              });
+              editor.onDidFocusEditorWidget(() => {
+                editorFocusedRef.current = true;
+              });
+              editor.onDidBlurEditorWidget(() => {
+                editorFocusedRef.current = false;
+              });
+              editor.onKeyDown(e => {
+                const isMod = e.metaKey || e.ctrlKey;
+                if (isMod && e.keyCode === monaco.KeyCode.Enter) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  runQuery();
                 }
-                editor.onDidDispose(() => {
-                  editorRef.current = null;
-                  setEditorReady(false);
-                });
-                editor.onDidFocusEditorWidget(() => {
-                  editorFocusedRef.current = true;
-                  setEditorFocused(true);
-                });
-                editor.onDidBlurEditorWidget(() => {
-                  editorFocusedRef.current = false;
-                  setEditorFocused(false);
-                });
-                editor.onKeyDown(e => {
-                  const isMod = e.metaKey || e.ctrlKey;
-                  if (isMod && e.keyCode === monaco.KeyCode.Enter) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    runQuery();
-                  }
-                  if (isMod && e.keyCode === monaco.KeyCode.KeyS) {
-                    formatQuery();
-                  }
-                });
-              }}
-              onQueryChange={query => {
-                setConfirmingUnbounded(false);
-                canvas.updateNodeData<QueryNodeT["data"]>(id, { query });
-              }}
-            />
-          ) : (
-            <QueryPreview
-              query={data.query}
-              onActivate={() => {
-                pendingFocusRef.current = true;
-                setEditorFocused(true);
-              }}
-            />
-          )}
+                if (isMod && e.keyCode === monaco.KeyCode.KeyS) {
+                  formatQuery();
+                }
+              });
+            }}
+            onQueryChange={query => {
+              setConfirmingUnbounded(false);
+              canvas.updateNodeData<QueryNodeT["data"]>(id, { query });
+            }}
+          />
         </div>
         <div className='app-node-footer nodrag'>
           <Tooltip label='Format query (⌘⇧I)'>

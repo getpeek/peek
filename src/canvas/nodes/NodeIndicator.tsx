@@ -8,6 +8,7 @@ interface NodeIndicatorProps {
 const KIND_LABELS: Record<AppNodeType, string> = {
   query: "QUERY",
   result: "RESULT",
+  "result-insert-form": "INSERT",
   agent: "AGENT",
   barchart: "CHART",
   "query-error": "ERROR",

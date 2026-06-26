@@ -4,6 +4,7 @@ import { ids } from "./ids";
 export const defaultDimensions: Record<AppNodeType, { w: number; h: number }> = {
   query: { w: 350, h: 240 },
   result: { w: 600, h: 440 },
+  "result-insert-form": { w: 560, h: 220 },
   agent: { w: 540, h: 400 },
   barchart: { w: 460, h: 290 },
   "query-error": { w: 400, h: 300 },
@@ -16,6 +17,7 @@ export const defaultDimensions: Record<AppNodeType, { w: number; h: number }> = 
 export const minDimensions: Record<AppNodeType, { w: number; h: number }> = {
   query: { w: 320, h: 200 },
   result: { w: 400, h: 260 },
+  "result-insert-form": { w: 360, h: 160 },
   agent: { w: 400, h: 300 },
   barchart: { w: 300, h: 200 },
   "query-error": { w: 300, h: 200 },
@@ -50,6 +52,13 @@ export function makeNode(type: AppNodeType, position: { x: number; y: number }):
         id: ids.result(ids.query()),
         type: "result",
         data: { query: "" },
+      };
+    case "result-insert-form":
+      return {
+        ...base,
+        id: ids.resultInsertForm(),
+        type: "result-insert-form",
+        data: { resultNodeId: "" },
       };
     case "barchart":
       return {

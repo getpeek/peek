@@ -1,0 +1,193 @@
+.insert-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--pk-node-bg);
+}
+
+.insert-form-fields {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  flex: 1;
+  padding: 12px 14px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.insert-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+}
+
+.insert-form-label {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font: 500 11px var(--pk-font-mono);
+  color: var(--pk-fg);
+}
+
+.insert-form-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.insert-form-type {
+  color: var(--pk-fg-subtle);
+  font-size: 10px;
+  text-transform: lowercase;
+}
+
+.insert-cell-row {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--pk-node-border);
+  border-radius: 6px;
+  background: var(--pk-node-bg-2);
+}
+
+.insert-input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  min-height: 30px;
+  padding: 6px 10px;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: var(--pk-fg);
+  font-family: var(--pk-font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  outline: none;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: var(--pk-fg-subtle);
+    font-style: italic;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+
+  &.is-null {
+    color: var(--pk-fg-subtle);
+    font-style: italic;
+  }
+
+  &.is-null::placeholder {
+    color: var(--pk-fg-muted);
+    opacity: 1;
+  }
+}
+
+/* The boolean editor is a bare <select> (no .insert-cell-row wrapper), so it
+   carries its own box. */
+select.insert-input {
+  border: 1px solid var(--pk-node-border);
+  border-radius: 6px;
+  background: var(--pk-node-bg-2);
+}
+
+.insert-null-toggle,
+.insert-uuid-btn {
+  flex: 0 0 auto;
+  padding: 0 8px;
+  margin: 0;
+  border: none;
+  border-left: 1px solid var(--pk-node-border);
+  background: transparent;
+  color: var(--pk-fg-subtle);
+  font: 600 10px var(--pk-font-mono);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  outline: none;
+  transition: color 0.12s ease-out;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.insert-null-toggle {
+  &:hover:not(:disabled) {
+    color: var(--pk-red);
+  }
+
+  &.active {
+    color: var(--pk-red);
+  }
+}
+
+.insert-uuid-btn:hover:not(:disabled) {
+  color: var(--pk-accent);
+}
+
+.insert-form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border-top: 1px solid var(--pk-node-border);
+}
+
+.insert-form-status {
+  flex: 1;
+  min-width: 0;
+  font: 500 11px var(--pk-font-mono);
+}
+
+.insert-saving {
+  color: var(--pk-fg-muted);
+}
+
+.insert-error {
+  color: var(--pk-red);
+  white-space: pre-wrap;
+}
+
+.insert-form-save {
+  flex: 0 0 auto;
+  padding: 6px 16px;
+  border: 1px solid var(--pk-accent);
+  border-radius: 6px;
+  background: var(--pk-accent-bg);
+  color: var(--pk-fg);
+  font: 500 12px var(--pk-font-sans);
+  cursor: pointer;
+  transition: background 0.12s ease-out;
+
+  &:hover:not(:disabled) {
+    background: var(--pk-accent);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.insert-form-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+  color: var(--pk-fg-muted);
+  font: 500 12px var(--pk-font-mono);
+}

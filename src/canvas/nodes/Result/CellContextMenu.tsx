@@ -2,6 +2,7 @@ import { Menu } from "@mantine/core";
 import {
   IconAt,
   IconCopy,
+  IconCopyPlus,
   IconDownload,
   IconFileTypeCsv,
   IconFileTypeSql,
@@ -48,6 +49,7 @@ function FormatSubmenu({
 export function CellContextMenu({
   cellMenu,
   selected,
+  canDuplicate,
   onClose,
   onUseAsVariable,
   onCopyValue,
@@ -55,10 +57,13 @@ export function CellContextMenu({
   onCopySelected,
   onExportRow,
   onExportSelected,
+  onDuplicateRow,
+  onDuplicateSelected,
   onRequestDelete,
 }: {
   cellMenu: CellMenuState | null;
   selected: ReadonlySet<number>;
+  canDuplicate: boolean;
   onClose: () => void;
   onUseAsVariable: () => void;
   onCopyValue: () => void;
@@ -66,6 +71,8 @@ export function CellContextMenu({
   onCopySelected: (format: ExportFormat) => void;
   onExportRow: (format: ExportFormat) => void;
   onExportSelected: (format: ExportFormat) => void;
+  onDuplicateRow: () => void;
+  onDuplicateSelected: () => void;
   onRequestDelete: () => void;
 }) {
   if (!cellMenu) {
@@ -80,6 +87,8 @@ export function CellContextMenu({
   const deleteLabel = selectionCount >= 2 ? `Delete ${selectionCount} rows` : "Delete row";
   const copyIcon = <IconCopy size={14} />;
   const exportIcon = <IconDownload size={14} />;
+  const duplicateIcon = <IconCopyPlus size={14} />;
+  const duplicateLabel = selectionCount >= 2 ? `Duplicate ${selectedRowsLabel}` : "Duplicate row";
   const cellValue = stringifyValue(cellMenu.value);
   const copyValueLabel =
     cellValue.length > MAX_COPY_VALUE_LENGTH
@@ -135,6 +144,15 @@ export function CellContextMenu({
             icon={exportIcon}
             onSelect={onExportSelected}
           />
+        )}
+
+        {canDuplicate && (
+          <Menu.Item
+            leftSection={duplicateIcon}
+            onClick={showSelectionActions ? onDuplicateSelected : onDuplicateRow}
+          >
+            {duplicateLabel}
+          </Menu.Item>
         )}
 
         {rowInSelection && (

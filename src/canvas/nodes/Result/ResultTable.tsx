@@ -9,7 +9,6 @@ import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { CellContextMenu } from "./CellContextMenu";
 import { DeleteConfirmModal } from "./edit/DeleteConfirmModal";
 import { exportRows } from "./export/exportRows";
-import { InsertRow } from "./edit/InsertRow";
 import { ResultEmpty } from "./ResultEmpty";
 import { SpacerRow } from "./SpacerRow";
 import type { SearchMatches } from "./hooks/useResultSearchMatches";
@@ -20,7 +19,6 @@ import { useCellContextMenu } from "./hooks/useCellContextMenu";
 import { useColumnAsVariable } from "./hooks/useColumnAsVariable";
 import { useColumnWidths } from "./hooks/useColumnWidths";
 import { useCommitEdit, type EditingState } from "./hooks/useCommitEdit";
-import { useCommitInsert, type InsertingState } from "./hooks/useCommitInsert";
 import type { QueryInfo } from "./queryInfo";
 import type { ExportFormat } from "./export/serializeRows";
 import { useRowActions } from "./hooks/useRowActions";
@@ -28,6 +26,7 @@ import { useRowSelection } from "./hooks/useRowSelection";
 import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
 import { useColumnReferences } from "./hooks/useColumnReferences";
 import { getEditableTableName, getExportTableName } from "./cell/inlineEdit";
+import { useDuplicateRows } from "../ResultInsertForm/useInsertFormSpawn";
 
 // Rows are variable height: cells wrap and JSON cells render their full pretty-printed
 // value, so each row is measured via the virtualizer's `measureElement`. ROW_HEIGHT is
@@ -63,7 +62,6 @@ export const ResultTable = memo(function ResultTable({
   const executeQueries = useExecuteQueries();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState<EditingState | null>(null);
-  const [inserting, setInserting] = useState<InsertingState | null>(null);
   const [headerMenu, setHeaderMenu] = useState<HeaderMenuState | null>(null);
   const cellContextMenu = useCellContextMenu(nodeId);
   const rowSelection = useRowSelection(data, visibleIndices);
@@ -71,10 +69,6 @@ export const ResultTable = memo(function ResultTable({
   const firstRow = data[0] ?? [];
   const headers = firstRow.map(([key]) => key);
   const headerTypes = firstRow.map(([, , type]) => type);
-  const columnTypes: Record<string, string> = {};
-  headers.forEach((header, idx) => {
-    columnTypes[header] = headerTypes[idx] ?? "";
-  });
 
   const { widthFor, totalWidth, startResize } = useColumnWidths({
     data,
@@ -85,14 +79,6 @@ export const ResultTable = memo(function ResultTable({
   });
 
   const commitEdit = useCommitEdit({ editing, setEditing, data, query, queryInfo, nodeId });
-  const commitInsert = useCommitInsert({
-    inserting,
-    setInserting,
-    query,
-    queryInfo,
-    nodeId,
-    columnTypes,
-  });
   const rowActions = useRowActions({
     data,
     query,
@@ -101,7 +87,7 @@ export const ResultTable = memo(function ResultTable({
     selected: rowSelection.selected,
     closeCellMenu: cellContextMenu.closeCellMenu,
   });
-  const canInsert = getEditableTableName(queryInfo) !== null;
+  const editableTable = getEditableTableName(queryInfo);
   const variableNames = Object.keys(useGetVariablesForNode(nodeId).direct).toSorted();
 
   const { inbound, outbound } = useColumnReferences(headers, queryInfo, schema.references);
@@ -131,6 +117,13 @@ export const ResultTable = memo(function ResultTable({
   );
 
   const spawnVariableFromColumn = useColumnAsVariable({ nodeId, data, headerTypes });
+
+  const duplicateRowIndices = useDuplicateRows({
+    resultNodeId: nodeId,
+    data,
+    table: editableTable,
+    closeMenu: cellContextMenu.closeCellMenu,
+  });
 
   const onContainerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (rowSelection.count === 0) {
@@ -246,16 +239,6 @@ export const ResultTable = memo(function ResultTable({
                 );
               })}
               {paddingBottom > 0 && <SpacerRow height={paddingBottom} colSpan={headers.length} />}
-              {canInsert && !isSearching && (
-                <InsertRow
-                  headers={headers}
-                  columnTypes={columnTypes}
-                  variableNames={variableNames}
-                  inserting={inserting}
-                  setInserting={setInserting}
-                  onCommit={commitInsert}
-                />
-              )}
             </Table.Tbody>
           </Table>
           <ResultHeaderMenu
@@ -268,6 +251,7 @@ export const ResultTable = memo(function ResultTable({
           <CellContextMenu
             cellMenu={cellContextMenu.cellMenu}
             selected={rowSelection.selected}
+            canDuplicate={editableTable !== null}
             onClose={cellContextMenu.closeCellMenu}
             onUseAsVariable={cellContextMenu.createVariableFromCell}
             onCopyValue={cellContextMenu.copyCellValue}
@@ -275,6 +259,13 @@ export const ResultTable = memo(function ResultTable({
             onCopySelected={onSelectionAction(rowActions.copySelectedRows)}
             onExportRow={onRowAction(rowActions.exportSingleRow)}
             onExportSelected={onSelectionAction(rowActions.exportSelectedRows)}
+            onDuplicateRow={() => {
+              const rowIndex = cellContextMenu.cellMenu?.rowIndex;
+              if (rowIndex !== undefined) {
+                duplicateRowIndices([rowIndex]);
+              }
+            }}
+            onDuplicateSelected={() => duplicateRowIndices([...rowSelection.selected])}
             onRequestDelete={rowActions.requestDelete}
           />
           <DeleteConfirmModal
