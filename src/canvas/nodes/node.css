@@ -322,6 +322,10 @@
   color: var(--pk-accent);
   background: var(--pk-node-bg-2);
 }
+.app-node-subtoolbar .icon-btn.is-active {
+  color: var(--pk-accent);
+  background: var(--pk-accent-bg);
+}
 
 /* Buttons */
 .btn {

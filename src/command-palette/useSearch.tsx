@@ -8,6 +8,7 @@ import { useRerunAllQueriesOnPageCommand } from "./commands/rerunAllQueriesOnPag
 import { useRerunSelectedQueriesCommand } from "./commands/rerunSelectedQueries";
 import { useExportSelectedDataCsvCommand } from "./commands/exportSelectedDataCsv";
 import { useExportSelectedDataJsonCommand } from "./commands/exportSelectedDataJson";
+import { usePivotResultCommand } from "./commands/pivotResult";
 import { useNewPageCommand } from "./commands/newPage";
 import { useClosePageCommand } from "./commands/closePage";
 import { useNextPageCommand, usePreviousPageCommand } from "./commands/nextPage";
@@ -33,6 +34,7 @@ export const useSearch = (query: string): SearchResult[] => {
   const rerunSelected = useRerunSelectedQueriesCommand();
   const exportCsv = useExportSelectedDataCsvCommand();
   const exportJson = useExportSelectedDataJsonCommand();
+  const pivotResultCommand = usePivotResultCommand();
   const newPageCommand = useNewPageCommand();
   const closePageCommand = useClosePageCommand();
   const nextPageCommand = useNextPageCommand();
@@ -51,6 +53,7 @@ export const useSearch = (query: string): SearchResult[] => {
     rerunSelected,
     exportCsv,
     exportJson,
+    ...(pivotResultCommand ? [pivotResultCommand] : []),
     ...queryCommands,
     ...connectionCommands,
     viewSchemaCommand,

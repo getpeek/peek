@@ -1,52 +1,25 @@
 import { Handle, NodeProps, NodeResizer, Position } from "@xyflow/react";
-import {
-  IconChartBar,
-  IconCopy,
-  IconDownload,
-  IconGitFork,
-  IconMessageChatbot,
-  IconRowInsertBottom,
-  IconSearch,
-} from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { memo, useRef } from "react";
-import { copyRows } from "./export/copyRows";
-import { exportRows } from "./export/exportRows";
-import { FormatMenu } from "./export/FormatMenu";
-import { getEditableTableName, getExportTableName } from "./cell/inlineEdit";
+import { nodeHeading } from "./queryHeading";
 import { useQueryInfo } from "./queryInfo";
-import type { ExportFormat } from "./export/serializeRows";
-import { ResultSearchBar } from "./ResultSearchBar";
+import { ResultPivotView } from "./ResultPivotView";
 import { ResultTable } from "./ResultTable";
+import { ResultToolbar } from "./ResultToolbar";
 import { useResultSearch } from "./hooks/useResultSearch";
 import { useResultSearchMatches } from "./hooks/useResultSearchMatches";
-import { useHotkey } from "../../../app/useHotkey";
-import { useCanvas } from "../../hooks/useCanvas";
 import { useChartSync } from "./hooks/useChartSync";
-import { useCreateChart } from "./hooks/useCreateChart";
+import { useHotkey } from "../../../app/useHotkey";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
-import { Tooltip } from "../../../components/Tooltip/Tooltip";
 import { resultRowsAtom } from "../../state";
-import { useAddRow } from "../ResultInsertForm/useInsertFormSpawn";
-import type { AgentNode, QueryNode, ResultNode as ResultNodeT } from "../../types";
+import type { ResultNode as ResultNodeT } from "../../types";
 import "./Result.css";
 
 const DEFAULT_W = 620;
 const DEFAULT_H = 640;
-
-function nodeHeading(query: string): string {
-  return (
-    query
-      .replace(/^--\s*/u, "")
-      .split("\n")
-      .map(l => l.trim())
-      .join(" ")
-      .slice(0, 60) + "..."
-  );
-}
 
 export const ResultNode = memo(function ResultNode({
   id,
@@ -55,8 +28,6 @@ export const ResultNode = memo(function ResultNode({
   width,
   height,
 }: NodeProps<ResultNodeT>) {
-  const canvas = useCanvas();
-  const createChart = useCreateChart();
   const rows = useAtomValue(resultRowsAtom(id));
   useChartSync({ nodeId: id, rows });
   const queryInfo = useQueryInfo(data.query);
@@ -65,105 +36,16 @@ export const ResultNode = memo(function ResultNode({
   const bodyRef = useRef<HTMLDivElement>(null);
   useScrollFallthrough(bodyRef);
 
+  const pivoted = data.pivoted ?? false;
   const search = useResultSearch();
   const matches = useResultSearchMatches(rows, search.query, search.active);
   useHotkey("meta-f", () => {
-    if (selected) {
+    if (selected && !pivoted) {
       search.open();
     }
   });
 
-  const canChart =
-    rows.length > 0 &&
-    !!rows[0].some(
-      ([key, value]) => typeof value === "number" && key !== "id" && !key.endsWith("_id"),
-    );
-
-  const editableTable = getEditableTableName(queryInfo);
-  const canInsert = editableTable !== null;
-  const addRow = useAddRow(id, editableTable);
-
-  const runCreateChart = () => {
-    const node = canvas.getNode(id);
-    if (node && node.type === "result") {
-      createChart(node);
-    }
-  };
-
-  const fork = () => {
-    const node = canvas.getNode(id);
-    if (!node || node.type !== "result") {
-      return;
-    }
-
-    const branchId = `${id}-branch`;
-    const existing = canvas.getNode(branchId);
-    if (existing) {
-      canvas.updateNodeData<QueryNode["data"]>(branchId, {
-        query: data.query,
-      });
-    } else {
-      const queryNode: QueryNode = {
-        id: branchId,
-        type: "query",
-        position: {
-          x: node.position.x,
-          y: node.position.y - 200,
-        },
-        width: 420,
-        height: 320,
-        data: { query: data.query },
-      };
-      canvas.addNode(queryNode);
-      canvas.connect(id, branchId);
-    }
-    canvas.selectOnly(branchId);
-    canvas.zoomToNode(branchId, { duration: 200 });
-  };
-
-  const ask = () => {
-    const node = canvas.getNode(id);
-    if (!node || node.type !== "result") {
-      return;
-    }
-
-    const agentId = `${id}-agent`;
-    const existing = canvas.getNode(agentId);
-    if (!existing) {
-      const agentNode: AgentNode = {
-        id: agentId,
-        type: "agent",
-        position: {
-          x: node.position.x + (node.width ?? DEFAULT_W) + 50,
-          y: node.position.y,
-        },
-        width: 540,
-        height: 400,
-        data: {
-          query: data.query,
-          messages: [],
-        },
-      };
-      canvas.addNode(agentNode);
-      canvas.connect(id, agentId);
-    }
-    canvas.selectOnly(agentId);
-    canvas.zoomToNode(agentId, { duration: 200 });
-  };
-
   const queryName = nodeHeading(data.query);
-
-  const exportAs = async (format: ExportFormat) => {
-    const baseName =
-      queryName.replaceAll(/[^a-z0-9_-]+/giu, "_").replaceAll(/^_+|_+$/gu, "") || "result";
-    await exportRows(rows, format, baseName, getExportTableName(queryInfo, baseName));
-  };
-
-  const copyAs = async (format: ExportFormat) => {
-    const baseName =
-      queryName.replaceAll(/[^a-z0-9_-]+/giu, "_").replaceAll(/^_+|_+$/gu, "") || "result";
-    await copyRows(rows, format, getExportTableName(queryInfo, baseName));
-  };
 
   return (
     <>
@@ -203,82 +85,28 @@ export const ResultNode = memo(function ResultNode({
           name={queryName ? `result · ${queryName}` : "result"}
           indicator={<NodeIndicator kind='result' />}
         />
-        <div className='app-node-subtoolbar nodrag'>
-          {search.active ? (
-            <ResultSearchBar
-              query={search.query}
-              matchCount={matches.visibleIndices.length}
-              onChange={search.setQuery}
-              onClose={search.close}
-            />
-          ) : (
-            <>
-              <div className='meta'>
-                <span className='ok'>●</span>
-                <span>{rows.length} rows</span>
-                {queryInfo?.tables.map(t => (
-                  <span key={`${t.name}-${t.alias ?? ""}`} className='table-badge'>
-                    {t.name}
-                  </span>
-                ))}
-              </div>
-              <div className='actions'>
-                {canInsert && (
-                  <Tooltip label='Add row'>
-                    <button className='icon-btn' onClick={addRow}>
-                      <IconRowInsertBottom size={14} />
-                    </button>
-                  </Tooltip>
-                )}
-                {canChart && (
-                  <Tooltip label='Create chart'>
-                    <button className='icon-btn' onClick={runCreateChart}>
-                      <IconChartBar size={14} />
-                    </button>
-                  </Tooltip>
-                )}
-                <Tooltip label='Ask about this result'>
-                  <button className='icon-btn' onClick={ask}>
-                    <IconMessageChatbot size={14} />
-                  </button>
-                </Tooltip>
-                <Tooltip label='Fork query'>
-                  <button className='icon-btn' onClick={fork}>
-                    <IconGitFork size={14} />
-                  </button>
-                </Tooltip>
-                <FormatMenu
-                  icon={<IconDownload size={14} />}
-                  title='Export'
-                  verb='Export'
-                  disabled={rows.length === 0}
-                  onSelect={exportAs}
-                />
-                <FormatMenu
-                  icon={<IconCopy size={14} />}
-                  title='Copy'
-                  verb='Copy'
-                  disabled={rows.length === 0}
-                  onSelect={copyAs}
-                />
-                <Tooltip label='Search results'>
-                  <button className='icon-btn' onClick={search.open} disabled={rows.length === 0}>
-                    <IconSearch size={14} />
-                  </button>
-                </Tooltip>
-              </div>
-            </>
-          )}
-        </div>
+        <ResultToolbar
+          nodeId={id}
+          query={data.query}
+          rows={rows}
+          queryInfo={queryInfo}
+          pivoted={pivoted}
+          search={search}
+          matchCount={matches.visibleIndices.length}
+        />
         <div className='app-node-body nodrag' ref={bodyRef}>
-          <ResultTable
-            nodeId={id}
-            data={rows}
-            query={data.query}
-            queryInfo={queryInfo}
-            columnWidths={data.columnWidths}
-            matches={matches}
-          />
+          {pivoted ? (
+            <ResultPivotView nodeId={id} data={rows} query={data.query} queryInfo={queryInfo} />
+          ) : (
+            <ResultTable
+              nodeId={id}
+              data={rows}
+              query={data.query}
+              queryInfo={queryInfo}
+              columnWidths={data.columnWidths}
+              matches={matches}
+            />
+          )}
         </div>
       </div>
     </>

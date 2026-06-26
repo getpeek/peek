@@ -3,9 +3,6 @@ import { useAtomValue } from "jotai";
 import { memo, useCallback, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { schemaAtom, type DatabaseResult } from "../../../state";
-import type { CellReference } from "./findReferences";
-import { useCanvas } from "../../hooks/useCanvas";
-import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { CellContextMenu } from "./CellContextMenu";
 import { DeleteConfirmModal } from "./edit/DeleteConfirmModal";
 import { exportRows } from "./export/exportRows";
@@ -18,12 +15,12 @@ import { ResultTableRow } from "./ResultTableRow";
 import { useCellContextMenu } from "./hooks/useCellContextMenu";
 import { useColumnAsVariable } from "./hooks/useColumnAsVariable";
 import { useColumnWidths } from "./hooks/useColumnWidths";
-import { useCommitEdit, type EditingState } from "./hooks/useCommitEdit";
+import { useResultEditing } from "./hooks/useResultEditing";
 import type { QueryInfo } from "./queryInfo";
 import type { ExportFormat } from "./export/serializeRows";
 import { useRowActions } from "./hooks/useRowActions";
 import { useRowSelection } from "./hooks/useRowSelection";
-import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
+import { useFollowReferences } from "./hooks/useFollowReferences";
 import { useColumnReferences } from "./hooks/useColumnReferences";
 import { getEditableTableName, getExportTableName } from "./cell/inlineEdit";
 import { useDuplicateRows } from "../ResultInsertForm/useInsertFormSpawn";
@@ -58,10 +55,7 @@ export const ResultTable = memo(function ResultTable({
 }) {
   const { visibleIndices, matchedCols, isSearching } = matches;
   const schema = useAtomValue(schemaAtom);
-  const canvas = useCanvas();
-  const executeQueries = useExecuteQueries();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [editing, setEditing] = useState<EditingState | null>(null);
   const [headerMenu, setHeaderMenu] = useState<HeaderMenuState | null>(null);
   const cellContextMenu = useCellContextMenu(nodeId);
   const rowSelection = useRowSelection(data, visibleIndices);
@@ -78,7 +72,12 @@ export const ResultTable = memo(function ResultTable({
     scrollContainerRef,
   });
 
-  const commitEdit = useCommitEdit({ editing, setEditing, data, query, queryInfo, nodeId });
+  const { editing, setEditing, commitEdit, variableNames } = useResultEditing({
+    data,
+    query,
+    queryInfo,
+    nodeId,
+  });
   const rowActions = useRowActions({
     data,
     query,
@@ -88,20 +87,10 @@ export const ResultTable = memo(function ResultTable({
     closeCellMenu: cellContextMenu.closeCellMenu,
   });
   const editableTable = getEditableTableName(queryInfo);
-  const variableNames = Object.keys(useGetVariablesForNode(nodeId).direct).toSorted();
 
   const { inbound, outbound } = useColumnReferences(headers, queryInfo, schema.references);
 
-  const followReferences = (refs: CellReference[], value: unknown) => {
-    const sourceNode = canvas.getNode(nodeId);
-    if (!sourceNode) {
-      return;
-    }
-    const queries = refs.map(
-      ref => `SELECT * FROM ${ref.table} WHERE ${ref.column} = '${value}' LIMIT 300`,
-    );
-    executeQueries(sourceNode, queries);
-  };
+  const followReferences = useFollowReferences(nodeId);
 
   const exportColumn = useCallback(
     async (columnIdx: number, header: string, format: ExportFormat) => {

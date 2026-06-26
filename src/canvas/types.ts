@@ -22,6 +22,9 @@ export type QueryData = {
 export type ResultData = {
   query: string;
   columnWidths?: Record<string, number>;
+  pivoted?: boolean;
+  /** Node size before pivoting, restored when toggling pivot back off. */
+  prePivotSize?: { width: number; height: number };
 };
 
 export type ResultInsertFormData = {
