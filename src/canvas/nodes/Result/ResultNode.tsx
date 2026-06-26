@@ -12,19 +12,18 @@ import {
 } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { memo, useRef } from "react";
-import { exportRows } from "./exportRows";
-import { getExportTableName } from "./inlineEdit";
+import { exportRows } from "./export/exportRows";
+import { getExportTableName } from "./cell/inlineEdit";
 import { useQueryInfo } from "./queryInfo";
-import type { ExportFormat } from "./serializeRows";
+import type { ExportFormat } from "./export/serializeRows";
 import { ResultSearchBar } from "./ResultSearchBar";
-import { ResultRenderProfiler } from "./resultProfiler";
 import { ResultTable } from "./ResultTable";
-import { useResultSearch } from "./useResultSearch";
-import { useResultSearchMatches } from "./useResultSearchMatches";
+import { useResultSearch } from "./hooks/useResultSearch";
+import { useResultSearchMatches } from "./hooks/useResultSearchMatches";
 import { useHotkey } from "../../../app/useHotkey";
 import { useCanvas } from "../../hooks/useCanvas";
-import { useChartSync } from "./useChartSync";
-import { useCreateChart } from "./useCreateChart";
+import { useChartSync } from "./hooks/useChartSync";
+import { useCreateChart } from "./hooks/useCreateChart";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
@@ -279,16 +278,14 @@ export const ResultNode = memo(function ResultNode({
           )}
         </div>
         <div className='app-node-body nodrag' ref={bodyRef}>
-          <ResultRenderProfiler id={`result-table:${id}`}>
-            <ResultTable
-              nodeId={id}
-              data={rows}
-              query={data.query}
-              queryInfo={queryInfo}
-              columnWidths={data.columnWidths}
-              matches={matches}
-            />
-          </ResultRenderProfiler>
+          <ResultTable
+            nodeId={id}
+            data={rows}
+            query={data.query}
+            queryInfo={queryInfo}
+            columnWidths={data.columnWidths}
+            matches={matches}
+          />
         </div>
       </div>
     </>

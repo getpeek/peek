@@ -1,5 +1,5 @@
-import { highlightMatch } from "../../../Connection/highlightMatch";
-import type { CellReference } from "./findReferences";
+import { highlightMatch } from "../../../../Connection/highlightMatch";
+import type { CellReference } from "../findReferences";
 import { JsonCell } from "./JsonCell";
 
 const ReferenceChip = ({

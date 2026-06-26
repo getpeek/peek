@@ -11,7 +11,7 @@ import type {
   ResultNode,
 } from "./types";
 import { collectVariablesFor, substituteVariables } from "./variables";
-import { isNumericType, isTimestampType, isUuidType } from "./nodes/Result/inlineEdit";
+import { isNumericType, isTimestampType, isUuidType } from "./nodes/Result/cell/inlineEdit";
 
 export type SetResults = (
   updater:

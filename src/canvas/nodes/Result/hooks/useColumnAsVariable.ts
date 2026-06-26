@@ -1,8 +1,8 @@
-import { useCanvas } from "../../hooks/useCanvas";
-import { defaultDimensions, makeNode } from "../../defaults";
-import { formatSqlLiteral } from "./sqlLiteral";
-import type { DatabaseResult } from "../../../state";
-import type { VariableNode } from "../../types";
+import { useCanvas } from "../../../hooks/useCanvas";
+import { defaultDimensions, makeNode } from "../../../defaults";
+import { formatSqlLiteral } from "../sqlLiteral";
+import type { DatabaseResult } from "../../../../state";
+import type { VariableNode } from "../../../types";
 
 export function useColumnAsVariable({
   nodeId,

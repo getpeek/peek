@@ -1,11 +1,11 @@
 import { memo } from "react";
 import type { DatabaseResult } from "../../../state";
 import type { CellReference } from "./findReferences";
-import { DataCell } from "./Cell";
-import { EditCell } from "./EditCell";
+import { DataCell } from "./cell/Cell";
+import { EditCell } from "./cell/EditCell";
 import { classifyColumn, type Reference } from "./columnRoles";
 import { stringifyValue } from "./stringify";
-import type { EditingState } from "./useCommitEdit";
+import type { EditingState } from "./hooks/useCommitEdit";
 
 type RowData = DatabaseResult[number];
 

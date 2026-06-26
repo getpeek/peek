@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
-import { isBooleanType, isNumericType } from "./inlineEdit";
-import { MonacoJsonCell } from "./MonacoJsonCell";
+import { isBooleanType, isNumericType } from "./cell/inlineEdit";
+import { MonacoJsonCell } from "./cell/MonacoJsonCell";
 import { VariableInput, type VariableInputKind } from "./VariableInput";
 import { Tooltip } from "../../../components/Tooltip/Tooltip";
 

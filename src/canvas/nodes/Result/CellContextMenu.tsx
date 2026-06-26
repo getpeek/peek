@@ -10,9 +10,9 @@ import {
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { PortalAnchor } from "./PortalAnchor";
-import type { ExportFormat } from "./serializeRows";
+import type { ExportFormat } from "./export/serializeRows";
 import { stringifyValue } from "./stringify";
-import type { CellMenuState } from "./useCellContextMenu";
+import type { CellMenuState } from "./hooks/useCellContextMenu";
 
 const MAX_COPY_VALUE_LENGTH = 13;
 

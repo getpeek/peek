@@ -1,4 +1,4 @@
-import { buildInsertSql, formatSqlLiteral, type InsertAssignment } from "./inlineEdit";
+import { buildInsertSql, formatSqlLiteral, type InsertAssignment } from "./cell/inlineEdit";
 import type { DatabaseResult } from "../../../state";
 
 export function toSqlInserts(result: DatabaseResult, table: string): string {

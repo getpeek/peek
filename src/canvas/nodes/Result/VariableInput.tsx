@@ -1,4 +1,4 @@
-import { useVariableSuggest } from "./useVariableSuggest";
+import { useVariableSuggest } from "./hooks/useVariableSuggest";
 import { VariableSuggestPopover } from "./VariableSuggestPopover";
 
 type FieldEl = HTMLInputElement | HTMLTextAreaElement;

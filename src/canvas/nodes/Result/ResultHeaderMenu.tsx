@@ -1,7 +1,7 @@
 import { Menu } from "@mantine/core";
 import { IconAt, IconFileTypeCsv, IconFileTypeSql, IconJson } from "@tabler/icons-react";
 import { PortalAnchor } from "./PortalAnchor";
-import type { ExportFormat } from "./serializeRows";
+import type { ExportFormat } from "./export/serializeRows";
 
 export type HeaderMenuState = {
   x: number;

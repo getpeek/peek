@@ -1,18 +1,18 @@
 import { useCallback, useMemo } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
-import { schemaAtom, type DatabaseResult } from "../../../state";
-import { useCanvas } from "../../hooks/useCanvas";
-import { resultsAtom } from "../../state";
-import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
-import { substituteVariables } from "../../variables";
-import type { QueryInfo } from "./queryInfo";
+import { schemaAtom, type DatabaseResult } from "../../../../state";
+import { useCanvas } from "../../../hooks/useCanvas";
+import { resultsAtom } from "../../../state";
+import { useGetVariablesForNode } from "../../../hooks/useGetVariablesForNode";
+import { substituteVariables } from "../../../variables";
+import type { QueryInfo } from "../queryInfo";
 import {
   buildPkAssignments,
   buildUpdateSql,
   formatSqlLiteral,
   getEditableTableName,
-} from "./inlineEdit";
+} from "../cell/inlineEdit";
 
 export type EditingState = {
   row: number;

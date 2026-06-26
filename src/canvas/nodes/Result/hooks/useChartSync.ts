@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { buildChartData } from "../../createChart";
-import { useCanvas } from "../../hooks/useCanvas";
-import type { DatabaseResult } from "../../../state";
-import type { BarChartData } from "../../types";
+import { buildChartData } from "../../../createChart";
+import { useCanvas } from "../../../hooks/useCanvas";
+import type { DatabaseResult } from "../../../../state";
+import type { BarChartData } from "../../../types";
 
 export function useChartSync(opts: { nodeId: string; rows: DatabaseResult }) {
   const { nodeId, rows } = opts;

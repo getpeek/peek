@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { useDebouncedValue } from "@mantine/hooks";
 import fuzzysort from "fuzzysort";
-import type { DatabaseResult } from "../../../state";
-import { stringifyValue } from "./stringify";
+import type { DatabaseResult } from "../../../../state";
+import { stringifyValue } from "../stringify";
 
 /** Minimum fuzzysort score (0–1) a cell must clear to count as a match. */
 const MATCH_THRESHOLD = 0.5;

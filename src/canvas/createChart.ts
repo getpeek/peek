@@ -1,5 +1,5 @@
 import { ids } from "./ids";
-import { isNumericType } from "./nodes/Result/inlineEdit";
+import { isNumericType } from "./nodes/Result/cell/inlineEdit";
 import type { CanvasApi } from "./state";
 import type { DatabaseResult } from "../state";
 import type { BarChartNode, ResultNode } from "./types";

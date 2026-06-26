@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useCanvas } from "../../hooks/useCanvas";
-import { defaultDimensions, makeNode } from "../../defaults";
-import { stringifyValue } from "./stringify";
-import type { VariableNode } from "../../types";
+import { useCanvas } from "../../../hooks/useCanvas";
+import { defaultDimensions, makeNode } from "../../../defaults";
+import { stringifyValue } from "../stringify";
+import type { VariableNode } from "../../../types";
 
 export type CellMenuState = {
   x: number;

@@ -1,9 +1,9 @@
 import { Table } from "@mantine/core";
 import { useCallback, useLayoutEffect, useRef } from "react";
-import { isBooleanType, isNumericType } from "./inlineEdit";
-import type { InsertingState } from "./useCommitInsert";
-import { VariableInput, type VariableInputKind } from "./VariableInput";
-import { Tooltip } from "../../../components/Tooltip/Tooltip";
+import { isBooleanType, isNumericType } from "../cell/inlineEdit";
+import type { InsertingState } from "../hooks/useCommitInsert";
+import { VariableInput, type VariableInputKind } from "../VariableInput";
+import { Tooltip } from "../../../../components/Tooltip/Tooltip";
 
 export function InsertRow({
   headers,

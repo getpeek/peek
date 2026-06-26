@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { getInboundReferences, getOutboundReferences } from "./findReferences";
-import type { Reference } from "./columnRoles";
-import type { QueryInfo } from "./queryInfo";
+import { getInboundReferences, getOutboundReferences } from "../findReferences";
+import type { Reference } from "../columnRoles";
+import type { QueryInfo } from "../queryInfo";
 
 /** Inbound/outbound FK references per column, recomputed only when the columns,
  *  query shape, or schema references change. */

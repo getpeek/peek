@@ -1,7 +1,7 @@
 import { save } from "@tauri-apps/plugin-dialog";
 import { writeTextFile } from "@tauri-apps/plugin-fs";
 import { serializeRows, type ExportFormat } from "./serializeRows";
-import type { DatabaseResult } from "../../../state";
+import type { DatabaseResult } from "../../../../state";
 
 export async function exportRows(
   rows: DatabaseResult,

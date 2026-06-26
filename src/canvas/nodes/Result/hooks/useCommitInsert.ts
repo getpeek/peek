@@ -1,20 +1,20 @@
 import { useCallback, useMemo } from "react";
 import { useSetAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
-import type { DatabaseResult } from "../../../state";
-import { useCanvas } from "../../hooks/useCanvas";
-import { useGetVariablesForNode } from "../../hooks/useGetVariablesForNode";
-import { ids } from "../../ids";
-import { resultsAtom } from "../../state";
-import type { ErrorData, QueryErrorNode } from "../../types";
-import { substituteVariables } from "../../variables";
-import type { QueryInfo } from "./queryInfo";
+import type { DatabaseResult } from "../../../../state";
+import { useCanvas } from "../../../hooks/useCanvas";
+import { useGetVariablesForNode } from "../../../hooks/useGetVariablesForNode";
+import { ids } from "../../../ids";
+import { resultsAtom } from "../../../state";
+import type { ErrorData, QueryErrorNode } from "../../../types";
+import { substituteVariables } from "../../../variables";
+import type { QueryInfo } from "../queryInfo";
 import {
   buildInsertSql,
   formatSqlLiteral,
   getEditableTableName,
   type InsertAssignment,
-} from "./inlineEdit";
+} from "../cell/inlineEdit";
 
 const ERROR_NODE_WIDTH = 400;
 const ERROR_NODE_HEIGHT = 300;

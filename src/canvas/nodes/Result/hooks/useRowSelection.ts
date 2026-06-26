@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { DatabaseResult } from "../../../state";
+import type { DatabaseResult } from "../../../../state";
 
 type DragState = {
   anchorPos: number;

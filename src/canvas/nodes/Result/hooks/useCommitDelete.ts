@@ -1,19 +1,19 @@
 import { useCallback, useMemo } from "react";
 import { useAtomValue } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
-import { schemaAtom } from "../../../state";
-import { useCanvas } from "../../hooks/useCanvas";
-import { useExecuteQueries } from "../../hooks/useExecuteQueries";
-import { ids } from "../../ids";
-import type { ErrorData, QueryErrorNode } from "../../types";
-import type { QueryInfo } from "./queryInfo";
+import { schemaAtom } from "../../../../state";
+import { useCanvas } from "../../../hooks/useCanvas";
+import { useExecuteQueries } from "../../../hooks/useExecuteQueries";
+import { ids } from "../../../ids";
+import type { ErrorData, QueryErrorNode } from "../../../types";
+import type { QueryInfo } from "../queryInfo";
 import {
   buildDeleteSql,
   buildPkAssignments,
   getEditableTableName,
   type PkAssignment,
-} from "./inlineEdit";
-import type { DatabaseResult } from "../../../state";
+} from "../cell/inlineEdit";
+import type { DatabaseResult } from "../../../../state";
 
 const ERROR_NODE_WIDTH = 400;
 const ERROR_NODE_HEIGHT = 300;

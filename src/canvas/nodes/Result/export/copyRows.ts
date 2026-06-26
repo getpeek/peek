@@ -1,5 +1,5 @@
 import { serializeRows, type ExportFormat } from "./serializeRows";
-import type { DatabaseResult } from "../../../state";
+import type { DatabaseResult } from "../../../../state";
 
 export async function copyRows(
   rows: DatabaseResult,

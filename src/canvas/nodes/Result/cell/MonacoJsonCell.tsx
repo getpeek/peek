@@ -2,7 +2,7 @@ import Editor, { type Monaco } from "@monaco-editor/react";
 import type { editor as MonacoEditor } from "monaco-editor";
 import { useRef, useState } from "react";
 import { useAtomValue } from "jotai";
-import { configAtom } from "../../../state";
+import { configAtom } from "../../../../state";
 import "./MonacoJsonCell.css";
 
 // The editor grows with its content between these bounds; past the max it scrolls.

@@ -1,4 +1,4 @@
-import type { QueryInfo } from "./queryInfo";
+import type { QueryInfo } from "../queryInfo";
 
 export function getEditableTableName(info: QueryInfo | null | undefined): string | null {
   if (!info || info.statementType !== "select") {

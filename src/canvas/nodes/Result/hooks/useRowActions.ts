@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
-import type { DatabaseResult } from "../../../state";
-import { copyRows } from "./copyRows";
-import { exportRows } from "./exportRows";
-import { getExportTableName } from "./inlineEdit";
-import type { QueryInfo } from "./queryInfo";
-import type { ExportFormat } from "./serializeRows";
+import type { DatabaseResult } from "../../../../state";
+import { copyRows } from "../export/copyRows";
+import { exportRows } from "../export/exportRows";
+import { getExportTableName } from "../cell/inlineEdit";
+import type { QueryInfo } from "../queryInfo";
+import type { ExportFormat } from "../export/serializeRows";
 import { useCommitDelete } from "./useCommitDelete";
 
 type DeleteConfirmState = {
