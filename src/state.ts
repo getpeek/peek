@@ -16,6 +16,7 @@ export interface Config {
   workspaces: Workspace[];
   name: string;
   theme: Theme;
+  keymap: Record<string, string>;
 }
 
 export const configAtom = atom<Config>();

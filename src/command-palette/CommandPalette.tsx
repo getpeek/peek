@@ -7,6 +7,8 @@ import { IconSearch } from "@tabler/icons-react";
 import { commandPaletteOpenAtom } from "../state";
 import { DefaultDetails } from "./details/DefaultDetails";
 import { highlightMatch } from "../Connection/highlightMatch";
+import { useHotkey } from "../app/useHotkey";
+import { useKeymap } from "../app/keymap";
 
 export const CommandPalette = () => {
   const [show, setShow] = useAtom(commandPaletteOpenAtom);
@@ -20,8 +22,8 @@ export const CommandPalette = () => {
     setCursor(0);
   };
   const ref = useClickOutside(hideSearch);
-  useHotkeys([["mod+shift+P", () => setShow(true)]], ["INPUT", "TEXTAREA"]);
-  useHotkeys([["mod+P", () => setShow(true)]], ["INPUT", "TEXTAREA"]);
+  const keymap = useKeymap();
+  useHotkey(keymap["CommandPalette::Open"], () => setShow(true));
   useHotkeys([["Escape", () => hideSearch()]]);
 
   const moveCursor = (direction: -1 | 1) => {

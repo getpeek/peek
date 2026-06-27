@@ -114,12 +114,8 @@
    useZoomVariable) so its width, gap, and glow stay constant on screen instead
    of scaling with zoom — matching how a native selection indicator behaves. */
 .app-node.selected {
-  outline: calc(2.5px / var(--pk-zoom, 1)) solid var(--pk-node-type-color);
+  outline: calc(1.5px / var(--pk-zoom, 1)) solid var(--pk-node-type-color);
   outline-offset: calc(3px / var(--pk-zoom, 1));
-  box-shadow:
-    0 0 calc(18px / var(--pk-zoom, 1)) calc(3px / var(--pk-zoom, 1))
-      color-mix(in oklab, var(--pk-node-type-color) 70%, transparent),
-    0 12px 32px oklch(0% 0 0 / 0.45);
 }
 
 .react-flow__node.connected .app-node {
@@ -129,13 +125,35 @@
     0 8px 20px oklch(0% 0 0 / 0.35);
 }
 
+/* Full-node drop target (HiddenHandles): inert at rest so it never eats clicks
+   on the body, but during a connection drag it captures pointer events and sits
+   above the node's own handles — so the handle under the cursor is always this,
+   letting the edge land anywhere on the node instead of only on a side handle. */
+.node-drop-target {
+  pointer-events: none;
+}
+.connecting .node-drop-target {
+  pointer-events: all;
+  z-index: 10;
+}
+
+/* The moment a connection starts, give its eligible targets a soft border cue
+   so it's clear where the edge can land. */
 .connecting-from-variable .react-flow__node-query .app-node,
 .connecting-from-variable .react-flow__node-result .app-node,
-.connecting-from-variable .react-flow__node-result-insert-form .app-node {
-  border-color: var(--pk-accent);
+.connecting-from-variable .react-flow__node-result-insert-form .app-node,
+.connecting-from-result .react-flow__node-agent .app-node {
+  border-color: color-mix(in oklab, var(--pk-node-type-color) 55%, var(--pk-node-border));
+}
+
+/* The node the cursor is currently over (and can drop on) gets the full accent
+   ring — the "release here" affordance. xyflow tags the drop-target handle
+   .connectingto.valid while a valid connection hovers it. */
+.react-flow__node:has(.node-drop-target.connectingto.valid) .app-node {
+  border-color: var(--pk-node-type-color);
   box-shadow:
-    0 0 0 3px var(--pk-accent),
-    0 0 12px color-mix(in oklab, var(--pk-accent) 15%, transparent);
+    0 0 0 2px var(--pk-node-type-color),
+    0 0 16px color-mix(in oklab, var(--pk-node-type-color) 30%, transparent);
 }
 
 /* While Cmd is held, the whole node is a drag surface (see useMetaKeyHeld),

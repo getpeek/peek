@@ -52,7 +52,7 @@ import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
 import { useSelectionHighlight } from "./hooks/useSelectionHighlight";
 import { useZoomVariable } from "./hooks/useZoomVariable";
 import { LassoOverlay } from "./LassoOverlay";
-import { useVariableDragHighlight } from "./hooks/useVariableDragHighlight";
+import { useConnectionDragHighlight } from "./hooks/useConnectionDragHighlight";
 import { getStroke } from "perfect-freehand";
 import { FloatingEdge } from "./edges/FloatingEdge";
 import "./nodes/node.css";
@@ -174,7 +174,7 @@ function ReactFlowCanvasInner() {
     [canvas, isValidConnection],
   );
 
-  const variableDragHighlight = useVariableDragHighlight();
+  const connectionDrag = useConnectionDragHighlight();
 
   const { styledNodes, styledEdges } = useSelectionHighlight(nodes, edges);
 
@@ -209,8 +209,8 @@ function ReactFlowCanvasInner() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onConnectStart={variableDragHighlight.onConnectStart}
-        onConnectEnd={variableDragHighlight.onConnectEnd}
+        onConnectStart={connectionDrag.onConnectStart}
+        onConnectEnd={connectionDrag.onConnectEnd}
         isValidConnection={isValidConnection}
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}
@@ -247,8 +247,8 @@ function ReactFlowCanvasInner() {
               : placeMode
                 ? "place-mode-active"
                 : "",
-            variableDragHighlight.active ? "connecting-from-variable" : "",
-            variableDragHighlight.connecting ? "connecting" : "",
+            connectionDrag.sourceHint ?? "",
+            connectionDrag.connecting ? "connecting" : "",
             metaHeld ? "drag-anywhere" : "",
           ]
             .filter(Boolean)

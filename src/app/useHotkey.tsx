@@ -71,35 +71,45 @@ export type Hotkey =
 
 const MODIFIER_KEYS: readonly string[] = ["meta", "shift", "alt", "ctrl"];
 
-export const useHotkey = (keys: Hotkey, callback: (event: KeyboardEvent) => void) => {
+const matchesHotkey = (keys: Hotkey, event: KeyboardEvent): boolean => {
+  const input = keys.split("-");
+  const trigger = input.find(key => !MODIFIER_KEYS.includes(key)) ?? input.at(-1);
+
+  if (!input.includes("escape") && isTextInputFocused()) {
+    return false;
+  }
+
+  const checks: [string, boolean][] = [
+    ["meta", event.metaKey],
+    ["shift", event.shiftKey],
+    ["alt", event.altKey],
+    ["ctrl", event.ctrlKey],
+  ];
+
+  // Exact match: every listed modifier must be held and every unlisted one
+  // must not be. Otherwise `p` would also fire on shift-p, and shift-p would
+  // also fire on the command palette's meta-shift-p.
+  for (const [check, modifier] of checks) {
+    if (input.includes(check) !== modifier) {
+      return false;
+    }
+  }
+
+  return event.key.toLowerCase() === trigger;
+};
+
+// Accepts an array so a single action can be bound to several keys (and `undefined` while the
+// keymap is still loading), firing on the first combo that matches.
+export const useHotkey = (
+  keys: Hotkey | Hotkey[] | undefined,
+  callback: (event: KeyboardEvent) => void,
+) => {
   const onKeyDown = (event: KeyboardEvent) => {
-    const input = keys.split("-");
-    const trigger = input.find(key => !MODIFIER_KEYS.includes(key)) ?? input.at(-1);
-
-    if (!input.includes("escape") && isTextInputFocused()) {
-      return;
+    const combos = keys === undefined ? [] : Array.isArray(keys) ? keys : [keys];
+    if (combos.some(combo => matchesHotkey(combo, event))) {
+      event.preventDefault();
+      callback(event);
     }
-
-    const checks: [string, boolean][] = [
-      ["meta", event.metaKey],
-      ["shift", event.shiftKey],
-      ["alt", event.altKey],
-      ["ctrl", event.ctrlKey],
-    ];
-
-    for (const [check, modifier] of checks) {
-      if (input.includes(check) && !modifier) {
-        return;
-      }
-    }
-
-    if (event.key.toLowerCase() !== trigger) {
-      return;
-    }
-
-    event.preventDefault();
-
-    callback(event);
   };
 
   useEffect(() => {

@@ -8,6 +8,7 @@ import "./ConnectionPicker.css";
 import { WorkspacePopover } from "../../../Connection/WorkspacePopover";
 import type { Connection } from "../../../Connection/types";
 import { useHotkey } from "../../../app/useHotkey";
+import { useKeymap } from "../../../app/keymap";
 import { IconChevronDown } from "@tabler/icons-react";
 
 export const ConnectionPicker: React.FC = () => {
@@ -15,7 +16,8 @@ export const ConnectionPicker: React.FC = () => {
   const [, setIsConnecting] = useState(false);
   const activeConnection = useAtomValue(activeConnectionAtom);
   const [showPopover, setShowPopover] = useState(false);
-  useHotkey("p", () => {
+  const keymap = useKeymap();
+  useHotkey(keymap["ConnectionPicker::Open"], () => {
     setShowPopover(!showPopover);
   });
   useHotkey("escape", () => {

@@ -1,13 +1,15 @@
-import { useSetAtom, useAtom } from "jotai";
+import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import { exit } from "@tauri-apps/plugin-process";
 import { useCanvas } from "../hooks/useCanvas";
 import { usePageActions } from "../hooks/usePageActions";
 import { uiVisibilityAtom } from "../../state";
-import { placeModeAtom, selectionToolAtom, clipboardAtom, nodesAtom } from "../state";
+import { placeModeAtom, selectionToolAtom, clipboardAtom, nodesAtom, resultsAtom } from "../state";
 import { useUndoHistory } from "./useUndoHistory";
 import { useHotkey } from "../../app/useHotkey";
+import { useKeymap } from "../../app/keymap";
 import { newIdForType } from "./KeyboardShortcuts";
-import { AppNode, AppNodeType } from "../types";
+import { togglePivot } from "../nodes/Result/togglePivot";
+import { AppNode, AppNodeType, ResultNode } from "../types";
 
 export const usePeekHotkeys = () => {
   const canvas = useCanvas();
@@ -16,15 +18,17 @@ export const usePeekHotkeys = () => {
   const [clipboard, setClipboard] = useAtom(clipboardAtom);
   const setNodes = useSetAtom(nodesAtom);
   const setUiVisible = useSetAtom(uiVisibilityAtom);
+  const results = useAtomValue(resultsAtom);
   const pageActions = usePageActions();
   const { undo, redo } = useUndoHistory();
+  const keymap = useKeymap();
 
-  useHotkey("meta-q", () => {
+  useHotkey(keymap["App::Quit"], () => {
     exit(0);
   });
 
   // Clipboard
-  useHotkey("meta-x", () => {
+  useHotkey(keymap["Edit::Cut"], () => {
     const selected = canvas.getSelectedNodes();
     if (selected.length === 0) {
       return;
@@ -33,14 +37,14 @@ export const usePeekHotkeys = () => {
     selected.forEach(node => canvas.deleteNode(node.id));
   });
 
-  useHotkey("meta-c", () => {
+  useHotkey(keymap["Edit::Copy"], () => {
     const selected = canvas.getSelectedNodes();
     if (selected.length > 0) {
       setClipboard(selected);
     }
   });
 
-  useHotkey("meta-v", () => {
+  useHotkey(keymap["Edit::Paste"], () => {
     if (clipboard.length === 0) {
       return;
     }
@@ -57,66 +61,66 @@ export const usePeekHotkeys = () => {
     setNodes(prev => [...prev.map(n => ({ ...n, selected: false })), ...copies]);
     canvas.selectOnly(copies.map(n => n.id));
   });
-  useHotkey("meta-z", undo);
-  useHotkey("shift-meta-z", redo);
+  useHotkey(keymap["History::Undo"], undo);
+  useHotkey(keymap["History::Redo"], redo);
 
   // Selection
 
-  useHotkey("meta-a", () => {
+  useHotkey(keymap["Edit::SelectAll"], () => {
     const nodeIds = canvas.getNodes().map(n => n.id);
     canvas.selectOnly(nodeIds);
   });
 
   // Page actions
 
-  useHotkey("backspace", () => {
+  useHotkey(keymap["Edit::DeleteSelection"], () => {
     canvas.getSelectedNodes().forEach(node => canvas.deleteNode(node.id));
   });
 
-  useHotkey("meta-0", () => {
+  useHotkey(keymap["Zoom::Reset"], () => {
     canvas.resetZoom();
   });
 
-  useHotkey("meta-shift-0", () => {
+  useHotkey(keymap["Zoom::FitView"], () => {
     canvas.fitView();
   });
 
-  useHotkey("meta-t", () => {
+  useHotkey(keymap["Page::New"], () => {
     pageActions.newPage();
   });
-  useHotkey("meta-w", () => {
+  useHotkey(keymap["Page::Close"], () => {
     pageActions.closeActivePage();
   });
-  useHotkey("meta-shift-[", () => {
+  useHotkey(keymap["Page::Previous"], () => {
     pageActions.previousPage();
   });
-  useHotkey("meta-shift-]", () => {
+  useHotkey(keymap["Page::Next"], () => {
     pageActions.nextPage();
   });
 
-  useHotkey("meta-[", () => {
+  useHotkey(keymap["Page::SelectPreviousQuery"], () => {
     pageActions.previousQueryNodeOnPage();
   });
-  useHotkey("meta-]", () => {
+  useHotkey(keymap["Page::SelectNextQuery"], () => {
     pageActions.nextQueryNodeOnPage();
   });
 
-  useHotkey("meta-arrowright", () => {
+  useHotkey(keymap["Page::SelectNodeRight"], () => {
     pageActions.nodeInDirection("right");
   });
-  useHotkey("meta-arrowleft", () => {
+  useHotkey(keymap["Page::SelectNodeLeft"], () => {
     pageActions.nodeInDirection("left");
   });
-  useHotkey("meta-arrowup", () => {
+  useHotkey(keymap["Page::SelectNodeUp"], () => {
     pageActions.nodeInDirection("up");
   });
-  useHotkey("meta-arrowdown", () => {
+  useHotkey(keymap["Page::SelectNodeDown"], () => {
     pageActions.nodeInDirection("down");
   });
 
   // Tools
 
-  useHotkey("escape", () => {
+  useHotkey(keymap["Tool::Select"], () => {
     const active = document.activeElement;
     if (active instanceof HTMLElement) {
       active.blur();
@@ -125,34 +129,43 @@ export const usePeekHotkeys = () => {
     setSelectionTool("default");
     canvas.deselectAll();
   });
-  useHotkey("l", () => {
+  useHotkey(keymap["Tool::LassoSelect"], () => {
     setSelectionTool("lasso");
     setPlaceMode(null);
   });
 
-  useHotkey("q", () => {
+  useHotkey(keymap["Tool::Query"], () => {
     setPlaceMode("query");
   });
 
-  useHotkey("a", () => {
+  useHotkey(keymap["Tool::Agent"], () => {
     setPlaceMode("agent");
   });
 
-  useHotkey("t", () => {
+  useHotkey(keymap["Tool::Text"], () => {
     setPlaceMode("text");
   });
 
-  useHotkey("d", () => {
+  useHotkey(keymap["Tool::Draw"], () => {
     setPlaceMode("draw");
   });
 
-  useHotkey("v", () => {
+  useHotkey(keymap["Tool::Variable"], () => {
     setPlaceMode("variable");
+  });
+
+  // Pivot all selected result nodes. The default `shift-p` stays clear of `p` for the
+  // connection picker and meta-p for the command palette.
+  useHotkey(keymap["Result::Pivot"], () => {
+    const selected = canvas.getSelectedNodes().filter((n): n is ResultNode => n.type === "result");
+    for (const node of selected) {
+      togglePivot(canvas, node.id, results[node.id]?.[0]?.length ?? 0);
+    }
   });
 
   // View
 
-  useHotkey("meta-.", () => {
+  useHotkey(keymap["View::ToggleUi"], () => {
     setUiVisible(v => !v);
   });
 };

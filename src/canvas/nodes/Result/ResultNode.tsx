@@ -10,6 +10,7 @@ import { useResultSearch } from "./hooks/useResultSearch";
 import { useResultSearchMatches } from "./hooks/useResultSearchMatches";
 import { useChartSync } from "./hooks/useChartSync";
 import { useHotkey } from "../../../app/useHotkey";
+import { useKeymap } from "../../../app/keymap";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
@@ -39,7 +40,8 @@ export const ResultNode = memo(function ResultNode({
   const pivoted = data.pivoted ?? false;
   const search = useResultSearch();
   const matches = useResultSearchMatches(rows, search.query, search.active);
-  useHotkey("meta-f", () => {
+  const keymap = useKeymap();
+  useHotkey(keymap["Result::Search"], () => {
     if (selected && !pivoted) {
       search.open();
     }

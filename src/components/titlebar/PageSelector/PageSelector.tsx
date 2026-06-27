@@ -94,26 +94,28 @@ export function PageSelector() {
         const active = page.id === activePageId;
         if (renameId === page.id) {
           return (
-            <input
-              key={page.id}
-              autoFocus
-              defaultValue={page.name}
-              onBlur={e => {
-                renamePage(page.id, e.target.value || page.name);
-                setRenameId(null);
-              }}
-              onKeyDown={e => {
-                if (e.key === "Enter") {
-                  renamePage(page.id, e.currentTarget.value || page.name);
+            <div key={page.id} className={`page-tab page-tab-editing ${active ? "active" : ""}`}>
+              {active && <span className='dot' />}
+              <input
+                autoFocus
+                defaultValue={page.name}
+                onFocus={e => e.currentTarget.select()}
+                onBlur={e => {
+                  renamePage(page.id, e.target.value || page.name);
                   setRenameId(null);
-                }
-                if (e.key === "Escape") {
-                  setRenameId(null);
-                }
-              }}
-              className='page-tab page-tab-input'
-              style={{ width: 110 }}
-            />
+                }}
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    renamePage(page.id, e.currentTarget.value || page.name);
+                    setRenameId(null);
+                  }
+                  if (e.key === "Escape") {
+                    setRenameId(null);
+                  }
+                }}
+                className='page-tab-rename-input'
+              />
+            </div>
           );
         }
         const isDragging = dragState?.draggingId === page.id;

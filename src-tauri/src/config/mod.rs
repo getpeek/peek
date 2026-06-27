@@ -2,6 +2,8 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+mod keymap;
+
 const SETTINGS_SCHEMA: &str = include_str!("./settings.schema.json");
 
 fn default_schema_ref() -> String {
@@ -14,7 +16,14 @@ fn default_schema_ref() -> String {
 pub fn get_config() -> Result<String, String> {
     let config = PeekConfig::get_or_default();
 
-    serde_json::to_string(&config).map_err(|_| "Can't serialize config".to_string())
+    // Disk holds only the user's partial overrides; the UI gets the full keymap (defaults
+    // merged with those overrides) so it can look up every action.
+    let mut value =
+        serde_json::to_value(&config).map_err(|_| "Can't serialize config".to_string())?;
+    value["keymap"] = serde_json::to_value(config.resolved_keymap())
+        .map_err(|_| "Can't serialize keymap".to_string())?;
+
+    serde_json::to_string(&value).map_err(|_| "Can't serialize config".to_string())
 }
 
 /// # Errors
@@ -64,6 +73,11 @@ pub struct PeekConfig {
     name: Option<String>,
     #[serde(default)]
     theme: Theme,
+    /// User keymap overrides (`key -> "Group::Variant"`). Stored as raw strings, not typed
+    /// `Action`s, so an unknown action name can't fail deserialization and reset the whole
+    /// config — `resolved_keymap` validates and merges these over the defaults.
+    #[serde(default)]
+    keymap: std::collections::HashMap<String, String>,
 }
 
 impl Default for PeekConfig {
@@ -74,6 +88,7 @@ impl Default for PeekConfig {
             ai: AIConfig::default(),
             name: None,
             theme: Theme::default(),
+            keymap: std::collections::HashMap::new(),
         }
     }
 }
@@ -137,6 +152,26 @@ impl PeekConfig {
             );
         }
         config
+    }
+
+    /// The full keymap (`key -> "Group::Variant"`): the built-in defaults with the user's
+    /// overrides applied, the user winning on any key they set. Overrides whose action isn't
+    /// recognized are skipped (and logged) so one typo never drops the rest of the bindings.
+    fn resolved_keymap(&self) -> std::collections::BTreeMap<String, String> {
+        let mut resolved: std::collections::BTreeMap<String, String> = keymap::default_keymap()
+            .into_iter()
+            .map(|(key, action)| (key.to_string(), action.to_string()))
+            .collect();
+
+        for (key, action) in &self.keymap {
+            if action.parse::<keymap::Action>().is_ok() {
+                resolved.insert(key.clone(), action.clone());
+            } else {
+                eprintln!("peek: ignoring unknown keymap action {action:?} for key {key:?}");
+            }
+        }
+
+        resolved
     }
 
     /// Ensures `~/peek/` exists, that `settings.schema.json` is up to date,

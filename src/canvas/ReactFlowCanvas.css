@@ -57,14 +57,6 @@ body.is-rubber-band-selecting * {
   will-change: transform;
 }
 
-/* Sticky table headers each become their own compositing layer in WebKit, so a
-   result table fragments into ~one layer per column — compositing the node while
-   it moves then scales with column count. Headers needn't stick mid-drag, so
-   flatten them to static during interaction to keep the node a single layer. */
-.react-flow[data-interacting] .app-node thead th {
-  position: static;
-}
-
 /* Isolate the result table onto its own persistent compositing layer. Moving or
    panning *anything else* then re-composites its cached texture instead of
    repainting the table, and dragging the result node itself becomes a cheap GPU

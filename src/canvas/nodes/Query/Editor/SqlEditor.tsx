@@ -211,6 +211,7 @@ export const SqlEditor = ({
             padding: { top: 16, bottom: 16 },
             lineDecorationsWidth: 0,
             lineNumbersMinChars: 0,
+            scrollBeyondLastLine: false,
             glyphMargin: false,
             guides: {
               indentation: false,

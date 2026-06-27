@@ -139,14 +139,21 @@
     }
   }
 
-  .page-tab-input {
-    background: transparent;
-    border: 1px solid var(--pk-accent-line);
-    outline: none;
-    color: var(--pk-fg);
-    padding: 3px 10px;
-    border-radius: 6px;
-    font: 500 12px var(--pk-font-sans);
+  .page-tab-editing {
+    cursor: text;
+    border-color: var(--pk-accent-line);
+
+    .page-tab-rename-input {
+      field-sizing: content;
+      min-width: 40px;
+      max-width: 220px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--pk-fg);
+      font: inherit;
+    }
   }
 }
 
