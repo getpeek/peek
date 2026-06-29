@@ -127,6 +127,12 @@ Action names are `Group::Variant`. The full set, with default bindings:
 | `ConnectionPicker::Open` | `p`                      | Open the connection picker |
 | `App::Quit`              | `meta-q`                 | Quit Peek                  |
 
+### Help
+
+| Action         | Default  | Description                |
+| -------------- | -------- | -------------------------- |
+| `Help::Keymap` | `meta-/` | Show this keymap reference |
+
 ## Not configurable
 
 Context-local keys aren't part of the keymap: pressing `escape` to dismiss a popover, `enter` to

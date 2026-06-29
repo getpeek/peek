@@ -2,7 +2,7 @@ import { useAtomValue, useSetAtom, useAtom } from "jotai";
 import { exit } from "@tauri-apps/plugin-process";
 import { useCanvas } from "../hooks/useCanvas";
 import { usePageActions } from "../hooks/usePageActions";
-import { uiVisibilityAtom } from "../../state";
+import { uiVisibilityAtom, keymapHelpOpenAtom } from "../../state";
 import { placeModeAtom, selectionToolAtom, clipboardAtom, nodesAtom, resultsAtom } from "../state";
 import { useUndoHistory } from "./useUndoHistory";
 import { useHotkey } from "../../app/useHotkey";
@@ -18,6 +18,7 @@ export const usePeekHotkeys = () => {
   const [clipboard, setClipboard] = useAtom(clipboardAtom);
   const setNodes = useSetAtom(nodesAtom);
   const setUiVisible = useSetAtom(uiVisibilityAtom);
+  const setKeymapHelpOpen = useSetAtom(keymapHelpOpenAtom);
   const results = useAtomValue(resultsAtom);
   const pageActions = usePageActions();
   const { undo, redo } = useUndoHistory();
@@ -161,12 +162,23 @@ export const usePeekHotkeys = () => {
     for (const node of selected) {
       togglePivot(canvas, node.id, results[node.id]?.[0]?.length ?? 0);
     }
+    // A lone pivoted node is usually parked off-screen; recenter so it isn't
+    // lost. With several selected the camera can't follow them all, so skip it.
+    if (selected.length === 1) {
+      canvas.zoomToNode(selected[0].id, { duration: 200 });
+    }
   });
 
   // View
 
   useHotkey(keymap["View::ToggleUi"], () => {
     setUiVisible(v => !v);
+  });
+
+  // Help
+
+  useHotkey(keymap["Help::Keymap"], () => {
+    setKeymapHelpOpen(true);
   });
 };
 

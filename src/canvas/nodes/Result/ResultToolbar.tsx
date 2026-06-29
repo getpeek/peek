@@ -201,7 +201,12 @@ export function ResultToolbar({
         <Tooltip label={pivoted ? "Show as table" : "Pivot result"}>
           <button
             className={pivoted ? "icon-btn is-active" : "icon-btn"}
-            onClick={() => togglePivot(canvas, nodeId, rows[0]?.length ?? 0)}
+            onClick={() => {
+              togglePivot(canvas, nodeId, rows[0]?.length ?? 0);
+              // Pivoting reshapes the node, which is usually parked off-screen —
+              // recenter so it doesn't get lost.
+              canvas.zoomToNode(nodeId, { duration: 200 });
+            }}
             disabled={rows.length === 0}
           >
             <IconLayoutRows size={14} />

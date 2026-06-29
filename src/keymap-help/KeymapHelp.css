@@ -1,0 +1,126 @@
+.keymap-help {
+  --width: 760px;
+
+  position: absolute;
+  z-index: 999;
+  top: 80px;
+  left: calc(50vw - var(--width) / 2);
+  display: flex;
+  flex-direction: column;
+  width: var(--width);
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 160px);
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 50%);
+  border-radius: var(--pk-radius-card);
+  background: color-mix(in oklab, var(--pk-node-bg), transparent 20%);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--pk-node-shadow);
+  animation: keymapHelpFadeIn 0.18s ease-in forwards;
+}
+
+@keyframes keymapHelpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.keymap-help-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 80%);
+}
+
+.keymap-help-title {
+  margin: 0;
+  font-family: var(--pk-font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--pk-fg);
+}
+
+.keymap-help-body {
+  column-count: 2;
+  column-gap: 32px;
+  padding: 20px 24px;
+  overflow-y: auto;
+}
+
+.keymap-help-section {
+  break-inside: avoid;
+  margin-bottom: 22px;
+}
+
+.keymap-help-section-title {
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pk-fg-subtle);
+}
+
+.keymap-help-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 28px;
+}
+
+.keymap-help-description {
+  font-size: 13px;
+  color: var(--pk-fg-muted);
+}
+
+.keymap-help-keys {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.keymap-help-combo {
+  display: flex;
+  gap: 4px;
+}
+
+.keymap-help-or {
+  font-size: 11px;
+  color: var(--pk-fg-subtle);
+}
+
+.keymap-help-unbound {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--pk-fg-subtle);
+}
+
+.keymap-help-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 50%);
+  background: var(--pk-node-bg);
+  color: var(--pk-fg-muted);
+  font-family: var(--pk-font-mono);
+  font-size: 11px;
+}
+
+.keymap-help-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 24px;
+  border-top: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 70%);
+  font-size: 11px;
+  color: var(--pk-fg-subtle);
+}

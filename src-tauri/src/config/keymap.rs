@@ -73,6 +73,11 @@ pub(crate) enum AppAction {
     Quit,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Help {
+    Keymap,
+}
+
 /// A user-bindable action. Serializes to / parses from a `"Group::Variant"` string
 /// (e.g. `"Tool::Query"`) — the same form used on disk, on the wire, and as the
 /// frontend lookup key.
@@ -88,6 +93,7 @@ pub(crate) enum Action {
     CommandPalette(CommandPalette),
     ConnectionPicker(ConnectionPicker),
     App(AppAction),
+    Help(Help),
 }
 
 impl fmt::Display for Action {
@@ -125,6 +131,7 @@ impl fmt::Display for Action {
             Action::CommandPalette(CommandPalette::Open) => "CommandPalette::Open",
             Action::ConnectionPicker(ConnectionPicker::Open) => "ConnectionPicker::Open",
             Action::App(AppAction::Quit) => "App::Quit",
+            Action::Help(Help::Keymap) => "Help::Keymap",
         };
         f.write_str(label)
     }
@@ -167,6 +174,7 @@ impl FromStr for Action {
             "CommandPalette::Open" => Action::CommandPalette(CommandPalette::Open),
             "ConnectionPicker::Open" => Action::ConnectionPicker(ConnectionPicker::Open),
             "App::Quit" => Action::App(AppAction::Quit),
+            "Help::Keymap" => Action::Help(Help::Keymap),
             other => return Err(format!("unknown keymap action: {other}")),
         };
         Ok(action)
@@ -213,5 +221,6 @@ pub(crate) fn default_keymap() -> Vec<(&'static str, Action)> {
         ("meta-shift-p", Action::CommandPalette(CommandPalette::Open)),
         ("p", Action::ConnectionPicker(ConnectionPicker::Open)),
         ("meta-q", Action::App(AppAction::Quit)),
+        ("meta-/", Action::Help(Help::Keymap)),
     ]
 }

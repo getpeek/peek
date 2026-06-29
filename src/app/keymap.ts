@@ -34,7 +34,8 @@ export type KeymapAction =
   | "Result::Search"
   | "CommandPalette::Open"
   | "ConnectionPicker::Open"
-  | "App::Quit";
+  | "App::Quit"
+  | "Help::Keymap";
 
 export type Keymap = Record<KeymapAction, Hotkey[]>;
 

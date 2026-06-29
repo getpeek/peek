@@ -199,7 +199,7 @@ function focusCreated(canvas: CanvasApi, createdIds: string[]): void {
   }
   if (createdIds.length === 1) {
     canvas.selectOnly(createdIds[0]);
-    canvas.zoomToNode(createdIds[0], { duration: ZOOM_DURATION_MS });
+    canvas.fitNode(createdIds[0], { duration: ZOOM_DURATION_MS });
     return;
   }
   canvas.selectOnly(createdIds);

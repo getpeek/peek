@@ -5,6 +5,21 @@ import { canvasApiAtom, documentAtom, edgesAtom, nodesAtom, type CanvasApi } fro
 import { ids } from "../ids";
 import type { AppEdge, AppNode, VariableData, VariableNode } from "../types";
 
+// React Flow's node lookup lags the jotai nodes atom by a render or two, so a node
+// added this tick can be missing from rf.getNode for a few frames. Poll until the
+// target registers before framing it — a single retry sometimes fires too early,
+// which is why freshly spawned nodes occasionally never got panned to.
+function fitWhenReady(isReady: () => boolean, frame: () => void, attempts = 12): void {
+  if (isReady()) {
+    frame();
+    return;
+  }
+  if (attempts <= 0) {
+    return;
+  }
+  requestAnimationFrame(() => fitWhenReady(isReady, frame, attempts - 1));
+}
+
 export function useCanvas(): CanvasApi {
   const rf = useReactFlow<AppNode, AppEdge>();
   const setNodes = useSetAtom(nodesAtom);
@@ -120,54 +135,29 @@ export function useCanvas(): CanvasApi {
         if (nodeIds.length === 0) {
           return;
         }
-        if (nodeIds.length === 1) {
-          const node = rf.getNode(nodeIds[0]);
-          if (!node) {
-            requestAnimationFrame(() => {
-              const n = rf.getNode(nodeIds[0]);
-              if (!n) {
-                return;
-              }
-              const w = n.measured?.width ?? n.width ?? 0;
-              const h = n.measured?.height ?? n.height ?? 0;
-              rf.setCenter(n.position.x + w / 2, n.position.y + h / 2, {
-                zoom: 1,
-                duration: opts.duration ?? 300,
-              });
-            });
-            return;
-          }
-          const w = node.measured?.width ?? node.width ?? 0;
-          const h = node.measured?.height ?? node.height ?? 0;
-          rf.setCenter(node.position.x + w / 2, node.position.y + h / 2, {
-            zoom: 1,
-            duration: opts.duration ?? 300,
-          });
-          return;
-        }
-        const fit = () =>
-          rf.fitView({
-            nodes: nodeIds.map(id => ({ id })),
-            duration: opts.duration ?? 300,
-            padding: opts.padding ?? 0.2,
-          });
-        if (nodeIds.every(id => rf.getNode(id))) {
-          fit();
-        } else {
-          requestAnimationFrame(fit);
-        }
+        fitWhenReady(
+          () => nodeIds.every(id => rf.getNode(id)),
+          () =>
+            rf.fitView({
+              nodes: nodeIds.map(id => ({ id })),
+              duration: opts.duration ?? 300,
+              padding: opts.padding ?? 0.2,
+              maxZoom: 1,
+            }),
+        );
       },
 
-      fitNode: (id, opts = {}) => {
-        const fit = () =>
-          rf.fitView({ nodes: [{ id }], duration: opts.duration ?? 300, padding: 0.2, maxZoom: 1 });
-        // The node may not be in React Flow yet (e.g. just after a page switch) — retry next frame.
-        if (rf.getNode(id)) {
-          fit();
-        } else {
-          requestAnimationFrame(fit);
-        }
-      },
+      fitNode: (id, opts = {}) =>
+        fitWhenReady(
+          () => Boolean(rf.getNode(id)),
+          () =>
+            rf.fitView({
+              nodes: [{ id }],
+              duration: opts.duration ?? 300,
+              padding: 0.2,
+              maxZoom: 1,
+            }),
+        ),
 
       panToNode: (id, opts = {}) => {
         const center = () => {

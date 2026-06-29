@@ -27,6 +27,11 @@ export const usePivotResultCommand = (): CommandPaletteResult | null => {
       for (const node of selected) {
         togglePivot(canvas, node.id, results[node.id]?.[0]?.length ?? 0);
       }
+      // A lone pivoted node is usually parked off-screen; recenter so it isn't
+      // lost. With several selected the camera can't follow them all, so skip it.
+      if (selected.length === 1) {
+        canvas.zoomToNode(selected[0].id, { duration: 200 });
+      }
     },
   };
 };

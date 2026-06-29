@@ -1,0 +1,202 @@
+.update-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in oklab, var(--pk-bg), transparent 35%);
+  backdrop-filter: blur(4px);
+  animation: updateDialogBackdropFadeIn 0.18s ease-in forwards;
+}
+
+@keyframes updateDialogBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.update-dialog {
+  --width: 460px;
+
+  display: flex;
+  flex-direction: column;
+  width: var(--width);
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 120px);
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 50%);
+  border-radius: var(--pk-radius-card);
+  background: color-mix(in oklab, var(--pk-node-bg), transparent 20%);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--pk-node-shadow);
+  font-family: var(--pk-font-sans);
+  animation: updateDialogFadeIn 0.18s ease-in forwards;
+}
+
+@keyframes updateDialogFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.update-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 24px;
+  border-bottom: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 80%);
+
+  .update-dialog-title {
+    margin: 0;
+    font-family: var(--pk-font-sans);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--pk-fg);
+  }
+
+  .update-dialog-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--pk-fg-muted);
+    cursor: pointer;
+    transition:
+      background 0.12s,
+      color 0.12s;
+
+    &:hover {
+      background: var(--pk-node-bg-2);
+      color: var(--pk-fg);
+    }
+  }
+}
+
+.update-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 24px;
+  overflow-y: auto;
+
+  .update-dialog-notes {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--pk-fg-muted);
+    white-space: pre-wrap;
+  }
+
+  .update-dialog-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .update-dialog-status {
+    font-size: 12px;
+    color: var(--pk-fg-subtle);
+  }
+
+  .update-dialog-error {
+    font-size: 12px;
+    color: var(--pk-red);
+  }
+}
+
+.update-dialog-track {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--pk-radius-pill);
+  background: var(--pk-node-inset);
+
+  .update-dialog-fill {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--pk-radius-pill);
+    background: var(--pk-accent);
+    transition: width 0.2s ease;
+
+    /* Moving highlight sweep echoes Mantine's `animated` stripe so progress reads as live. */
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in oklab, var(--pk-accent-soft), transparent 45%),
+        transparent
+      );
+      animation: updateDialogShimmer 1.1s linear infinite;
+    }
+  }
+}
+
+@keyframes updateDialogShimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.update-dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 24px;
+  border-top: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 70%);
+
+  .update-dialog-btn {
+    padding: 7px 14px;
+    border: 1px solid var(--pk-node-border);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--pk-fg);
+    font: 500 12.5px var(--pk-font-sans);
+    cursor: pointer;
+    transition:
+      background 0.12s,
+      border-color 0.12s,
+      opacity 0.12s;
+
+    &:hover {
+      background: color-mix(in oklab, var(--pk-fg) 4%, transparent);
+      border-color: var(--pk-node-border-strong);
+    }
+
+    &.primary {
+      border-color: var(--pk-accent);
+      background: var(--pk-accent);
+      color: var(--pk-bg);
+      font-weight: 600;
+
+      &:hover {
+        background: color-mix(in oklab, var(--pk-accent), black 8%);
+        border-color: color-mix(in oklab, var(--pk-accent), black 8%);
+      }
+    }
+  }
+}

@@ -63,5 +63,5 @@ export function createChart(canvas: CanvasApi, resultNode: ResultNode, rows: Dat
   }
 
   canvas.selectOnly(chartNodeId);
-  canvas.zoomToNode(chartNodeId, { duration: 300 });
+  canvas.fitNode(chartNodeId, { duration: 300 });
 }
