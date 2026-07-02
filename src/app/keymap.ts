@@ -30,6 +30,7 @@ export type KeymapAction =
   | "Page::SelectNodeUp"
   | "Page::SelectNodeDown"
   | "View::ToggleUi"
+  | "View::ToggleCameraLock"
   | "Result::Pivot"
   | "Result::Search"
   | "CommandPalette::Open"

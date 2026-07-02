@@ -166,6 +166,9 @@ export const placeModeAtom = atom<AppNodeType | null>(null);
 
 export const selectionToolAtom = atom<"default" | "lasso">("default");
 
+// Freezes canvas pan/zoom (node dragging/selection stay enabled). Session-only.
+export const cameraLockedAtom = atom(false);
+
 export const pendingPageCloseAtom = atom<{ pageId: string } | null>(null);
 
 export const clipboardAtom = atom<AppNode[]>([]);
@@ -201,6 +204,7 @@ export interface CanvasApi {
   panToNode: (id: string, opts?: { duration?: number; zoom?: number }) => void;
   panToPoint: (x: number, y: number, opts?: { duration?: number; zoom?: number }) => void;
   fitView: (opts?: { duration?: number; maxZoom?: number }) => void;
+  fitSelectedToViewport: () => void;
   resetZoom: () => void;
   setZoom: (zoom: number, opts?: { duration?: number }) => void;
   getZoom: () => number;

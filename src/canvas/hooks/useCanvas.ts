@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { canvasApiAtom, documentAtom, edgesAtom, nodesAtom, type CanvasApi } from "../state";
 import { ids } from "../ids";
 import type { AppEdge, AppNode, VariableData, VariableNode } from "../types";
+import { computeViewportFit } from "./bspTiles";
 
 // React Flow's node lookup lags the jotai nodes atom by a render or two, so a node
 // added this tick can be missing from rf.getNode for a few frames. Poll until the
@@ -185,6 +186,36 @@ export function useCanvas(): CanvasApi {
 
       fitView: (opts = {}) =>
         rf.fitView({ duration: opts.duration ?? 300, maxZoom: opts.maxZoom ?? 1 }),
+
+      fitSelectedToViewport: () => {
+        const selected = (rf.getNodes() as AppNode[]).filter(n => n.selected);
+        if (selected.length === 0) {
+          return;
+        }
+        const paneRect = document
+          .querySelector<HTMLElement>(".react-flow")
+          ?.getBoundingClientRect();
+        const { placements, viewport } = computeViewportFit(
+          selected.map(n => n.id),
+          paneRect,
+          p => rf.screenToFlowPosition(p),
+        );
+
+        const rectById = new Map(placements.map(p => [p.id, p.rect]));
+        setNodes(ns =>
+          ns.map(n => {
+            const r = rectById.get(n.id);
+            if (!r) {
+              return n;
+            }
+            const { x, y, width, height } = r;
+            return { ...n, position: { x, y }, width, height } as AppNode;
+          }),
+        );
+
+        // onMoveEnd persists this to viewportAtom, matching zoomToNode/resetZoom.
+        rf.setViewport(viewport, { duration: 200 });
+      },
 
       resetZoom: () => rf.zoomTo(1, { duration: 200 }),
       setZoom: (zoom, opts = {}) => rf.zoomTo(zoom, { duration: opts.duration ?? 200 }),

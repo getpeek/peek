@@ -19,6 +19,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { uiVisibilityAtom } from "../state";
 import {
   activePageIdAtom,
+  cameraLockedAtom,
   edgesAtom,
   loadEpochAtom,
   nodesAtom,
@@ -28,7 +29,8 @@ import {
 import { CanvasApiPublisher } from "./CanvasApiPublisher";
 import { AgentNode } from "./nodes/Agent/AgentNode";
 import { BarChartNode } from "./nodes/BarChart/BarChartNode";
-import { DrawNode, getSvgPathFromStroke } from "./nodes/Draw/DrawNode";
+import { DrawNode } from "./nodes/Draw/DrawNode";
+import { LiveStroke } from "./nodes/Draw/LiveStroke";
 import { QueryErrorNode } from "./nodes/QueryError/QueryErrorNode";
 import { QueryNode } from "./nodes/Query/QueryNode";
 import { ResultNode } from "./nodes/Result/ResultNode";
@@ -36,6 +38,7 @@ import { ResultInsertFormNode } from "./nodes/ResultInsertForm/ResultInsertFormN
 import { TableDefinitionNode } from "./nodes/TableDefinition/TableDefinitionNode";
 import { TextNode } from "./nodes/Text/TextNode";
 import { VariableNode } from "./nodes/Variable/VariableNode";
+import { CameraLockButton } from "./ui/CameraLockButton";
 import { HideUiDot } from "./ui/HideUiDot";
 import { Toolbar } from "./ui/Toolbar";
 import { ZoomIndicator } from "./ui/ZoomIndicator";
@@ -53,7 +56,6 @@ import { useSelectionHighlight } from "./hooks/useSelectionHighlight";
 import { useZoomVariable } from "./hooks/useZoomVariable";
 import { LassoOverlay } from "./LassoOverlay";
 import { useConnectionDragHighlight } from "./hooks/useConnectionDragHighlight";
-import { getStroke } from "perfect-freehand";
 import { FloatingEdge } from "./edges/FloatingEdge";
 import "./nodes/node.css";
 import { PeekKeyboardShortcuts } from "./ui/KeyboardShortcuts";
@@ -94,6 +96,7 @@ function ReactFlowCanvasInner() {
   const activePageId = useAtomValue(activePageIdAtom);
   const placeMode = useAtomValue(placeModeAtom);
   const uiVisible = useAtomValue(uiVisibilityAtom);
+  const cameraLocked = useAtomValue(cameraLockedAtom);
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
   const interaction = useInteractionState();
@@ -231,12 +234,12 @@ function ReactFlowCanvasInner() {
         nodesDraggable={placeMode === null}
         elementsSelectable={placeMode === null}
         selectionMode={SelectionMode.Partial}
-        panOnDrag={[1, 2]}
-        panOnScroll
+        panOnDrag={cameraLocked ? false : [1, 2]}
+        panOnScroll={!cameraLocked}
         zoomOnScroll={false}
-        zoomOnPinch
+        zoomOnPinch={!cameraLocked}
         zoomOnDoubleClick={false}
-        panActivationKeyCode='Space'
+        panActivationKeyCode={cameraLocked ? null : "Space"}
         proOptions={{ hideAttribution: true }}
         minZoom={0.1}
         maxZoom={4}
@@ -265,32 +268,15 @@ function ReactFlowCanvasInner() {
         {uiVisible && <Toolbar />}
         {uiVisible && <ZoomIndicator />}
         {!uiVisible && <HideUiDot />}
+        {cameraLocked && <CameraLockButton />}
         <RemoteCursorsLayer />
       </ReactFlow>
-      {livePoints.length > 1 && (
-        <svg
-          style={{
-            position: "fixed",
-            inset: 0,
-            width: "100vw",
-            height: "100vh",
-            pointerEvents: "none",
-            zIndex: 1000,
-          }}
-        >
-          <path
-            d={getSvgPathFromStroke(
-              getStroke(livePoints, {
-                size: drawStrokeWidth * 4 * rf.getViewport().zoom,
-                thinning: 0.5,
-                smoothing: 0.5,
-                streamline: 0.5,
-              }),
-            )}
-            fill={drawColor}
-          />
-        </svg>
-      )}
+      <LiveStroke
+        points={livePoints}
+        strokeWidth={drawStrokeWidth}
+        color={drawColor}
+        zoom={rf.getViewport().zoom}
+      />
       <div ref={selectionRectRef} className='rubber-band-rect' />
       <LassoOverlay />
       <CanvasApiPublisher />

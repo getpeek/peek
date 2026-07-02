@@ -1,0 +1,38 @@
+.camera-lock-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 10px;
+  /* Lift clear of HideUiDot, which also anchors bottom-right when the UI is hidden. */
+  margin-bottom: 28px;
+  color: var(--pk-fg);
+  background: color-mix(in oklab, var(--pk-node-bg), transparent);
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-card);
+  box-shadow: var(--pk-node-shadow-cheap);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background 0.12s,
+    color 0.12s;
+
+  &:hover {
+    background: var(--pk-node-bg-2);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--pk-accent);
+    outline-offset: 3px;
+  }
+
+  & .kbd {
+    font: 500 10px var(--pk-font-mono);
+    color: var(--pk-fg-subtle);
+    background: transparent;
+    padding: 1px 4px;
+    border: 1px solid var(--pk-node-border);
+    border-radius: 3px;
+  }
+}

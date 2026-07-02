@@ -50,6 +50,7 @@ pub(crate) enum Page {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum View {
     ToggleUi,
+    ToggleCameraLock,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -126,6 +127,7 @@ impl fmt::Display for Action {
             Action::Page(Page::SelectNodeUp) => "Page::SelectNodeUp",
             Action::Page(Page::SelectNodeDown) => "Page::SelectNodeDown",
             Action::View(View::ToggleUi) => "View::ToggleUi",
+            Action::View(View::ToggleCameraLock) => "View::ToggleCameraLock",
             Action::Result(ResultAction::Pivot) => "Result::Pivot",
             Action::Result(ResultAction::Search) => "Result::Search",
             Action::CommandPalette(CommandPalette::Open) => "CommandPalette::Open",
@@ -169,6 +171,7 @@ impl FromStr for Action {
             "Page::SelectNodeUp" => Action::Page(Page::SelectNodeUp),
             "Page::SelectNodeDown" => Action::Page(Page::SelectNodeDown),
             "View::ToggleUi" => Action::View(View::ToggleUi),
+            "View::ToggleCameraLock" => Action::View(View::ToggleCameraLock),
             "Result::Pivot" => Action::Result(ResultAction::Pivot),
             "Result::Search" => Action::Result(ResultAction::Search),
             "CommandPalette::Open" => Action::CommandPalette(CommandPalette::Open),
@@ -215,6 +218,7 @@ pub(crate) fn default_keymap() -> Vec<(&'static str, Action)> {
         ("meta-arrowup", Action::Page(Page::SelectNodeUp)),
         ("meta-arrowdown", Action::Page(Page::SelectNodeDown)),
         ("meta-.", Action::View(View::ToggleUi)),
+        ("meta-shift-l", Action::View(View::ToggleCameraLock)),
         ("shift-p", Action::Result(ResultAction::Pivot)),
         ("meta-f", Action::Result(ResultAction::Search)),
         ("meta-p", Action::CommandPalette(CommandPalette::Open)),

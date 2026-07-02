@@ -20,6 +20,11 @@ import { useSetThemeCommands } from "./commands/setTheme";
 import { useToggleUiCommand } from "./commands/toggleUi";
 import { useShowKeymapCommand } from "./commands/showKeymap";
 import { useAboutCommand } from "./commands/about";
+import { useCameraLockCommand } from "./commands/cameraLock";
+import {
+  useFitResultsToViewAndLockCommand,
+  useFitResultsToViewCommand,
+} from "./commands/fitResultsToView";
 
 export interface SearchResult {
   command: CommandPaletteResult;
@@ -48,9 +53,15 @@ export const useSearch = (query: string): SearchResult[] => {
   const toggleUiCommand = useToggleUiCommand();
   const showKeymapCommand = useShowKeymapCommand();
   const aboutCommand = useAboutCommand();
+  const cameraLockCommand = useCameraLockCommand();
+  const fitResultsCommand = useFitResultsToViewCommand();
+  const fitResultsAndLockCommand = useFitResultsToViewAndLockCommand();
 
   const searchSpace: CommandPaletteResult[] = [
     toggleUiCommand,
+    cameraLockCommand,
+    ...(fitResultsCommand ? [fitResultsCommand] : []),
+    ...(fitResultsAndLockCommand ? [fitResultsAndLockCommand] : []),
     rerunAllOnPage,
     rerunSelected,
     exportCsv,

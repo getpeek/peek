@@ -3,7 +3,14 @@ import { exit } from "@tauri-apps/plugin-process";
 import { useCanvas } from "../hooks/useCanvas";
 import { usePageActions } from "../hooks/usePageActions";
 import { uiVisibilityAtom, keymapHelpOpenAtom } from "../../state";
-import { placeModeAtom, selectionToolAtom, clipboardAtom, nodesAtom, resultsAtom } from "../state";
+import {
+  placeModeAtom,
+  selectionToolAtom,
+  clipboardAtom,
+  nodesAtom,
+  resultsAtom,
+  cameraLockedAtom,
+} from "../state";
 import { useUndoHistory } from "./useUndoHistory";
 import { useHotkey } from "../../app/useHotkey";
 import { useKeymap } from "../../app/keymap";
@@ -19,6 +26,7 @@ export const usePeekHotkeys = () => {
   const setNodes = useSetAtom(nodesAtom);
   const setUiVisible = useSetAtom(uiVisibilityAtom);
   const setKeymapHelpOpen = useSetAtom(keymapHelpOpenAtom);
+  const setCameraLocked = useSetAtom(cameraLockedAtom);
   const results = useAtomValue(resultsAtom);
   const pageActions = usePageActions();
   const { undo, redo } = useUndoHistory();
@@ -173,6 +181,10 @@ export const usePeekHotkeys = () => {
 
   useHotkey(keymap["View::ToggleUi"], () => {
     setUiVisible(v => !v);
+  });
+
+  useHotkey(keymap["View::ToggleCameraLock"], () => {
+    setCameraLocked(v => !v);
   });
 
   // Help
