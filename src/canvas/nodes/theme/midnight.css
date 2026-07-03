@@ -17,8 +17,8 @@
   --pk-accent-soft: oklch(86.8% 0.067 301.5);
   --pk-accent-bg: oklch(58.7% 0.205 301 / 0.14);
   --pk-accent-line: oklch(58.7% 0.205 301 / 0.5);
-  --pk-row-selected-bg: oklch(58.7% 0.205 301 / 0.22);
-  --pk-row-selected-bg-hover: oklch(58.7% 0.205 301 / 0.3);
+  --pk-row-selected-bg: color-mix(in srgb, var(--pk-node-bg), white 4%);
+  --pk-row-selected-bg-hover: color-mix(in srgb, var(--pk-node-bg), white 8%);
 
   --pk-green: oklch(65.3% 0.134 148.6);
   --pk-green-soft: oklch(65.3% 0.134 148.6 / 0.18);

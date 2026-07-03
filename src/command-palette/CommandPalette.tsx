@@ -70,7 +70,9 @@ export const CommandPalette = () => {
         />
       </div>
       <div className='command-palette-list'>
-        {results.length === 0 ? (
+        {query.trim().length === 0 ? (
+          <div className='command-palette-empty'>Type to search commands</div>
+        ) : results.length === 0 ? (
           <div className='command-palette-empty'>No matching commands</div>
         ) : (
           results.map(({ command, labelHighlight }, i) => {

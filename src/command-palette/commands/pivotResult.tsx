@@ -3,12 +3,14 @@ import { useAtomValue } from "jotai";
 import { canvasApiAtom, nodesAtom, resultsAtom } from "../../canvas/state";
 import type { ResultNode } from "../../canvas/types";
 import { togglePivot } from "../../canvas/nodes/Result/togglePivot";
+import { useKeybinding } from "./useKeybinding";
 import type { CommandPaletteResult } from ".";
 
 export const usePivotResultCommand = (): CommandPaletteResult | null => {
   const canvas = useAtomValue(canvasApiAtom);
   const nodes = useAtomValue(nodesAtom);
   const results = useAtomValue(resultsAtom);
+  const keybinding = useKeybinding("Result::Pivot");
 
   const selected = nodes.filter((n): n is ResultNode => n.type === "result" && n.selected === true);
 
@@ -21,6 +23,7 @@ export const usePivotResultCommand = (): CommandPaletteResult | null => {
     action: "run",
     label: "Pivot result",
     searchAgainst: "transpose record view unpivot",
+    keybinding,
     onSelect: () => {
       if (!canvas) {
         return;

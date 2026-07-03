@@ -85,7 +85,7 @@ export const useSearch = (query: string): SearchResult[] => {
   ];
 
   if (query.trim().length === 0) {
-    return searchSpace.map(command => ({ command }));
+    return [];
   }
 
   return fuzzysort.go(query, searchSpace, { keys: ["label", "searchAgainst"] }).map(result => ({

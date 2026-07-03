@@ -1,19 +1,13 @@
-.cp-strip-theme-swatch {
+.cp-strip-theme-boxes {
   flex-shrink: 0;
   display: inline-flex;
+  gap: 3px;
   align-items: center;
-  width: 36px;
-  height: 22px;
-  padding: 0 6px;
-  border-radius: 5px;
-  background: var(--pk-swatch-bg);
-  border: 1px solid var(--pk-swatch-border);
 }
 
-.cp-strip-theme-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--pk-swatch-accent);
-  box-shadow: 0 0 6px var(--pk-swatch-accent);
+.cp-strip-theme-box {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--pk-swatch-border);
 }
