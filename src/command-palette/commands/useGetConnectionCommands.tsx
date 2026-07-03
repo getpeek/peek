@@ -27,6 +27,7 @@ export const useGetConnectionCommands = (): CommandPaletteResult[] => {
       label: connection.name,
       description: workspaceName,
       searchAgainst: `connection ${connection.name} ${workspaceName}`,
+      action: "switch",
       details: <ConnectionDetails workspaceName={workspaceName} connection={connection} />,
       onSelect() {
         setActiveConnection({ workspaceName, connection });

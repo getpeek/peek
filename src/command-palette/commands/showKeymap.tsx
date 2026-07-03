@@ -8,6 +8,7 @@ export const useShowKeymapCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconKeyboard size={16} />,
+    action: "run",
     label: "Show keymap",
     searchAgainst: "keybindings keyboard shortcuts hotkeys cheatsheet reference",
     onSelect: () => setKeymapHelpOpen(true),

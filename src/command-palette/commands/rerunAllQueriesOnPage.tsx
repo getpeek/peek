@@ -15,6 +15,7 @@ export const useRerunAllQueriesOnPageCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconPlayerPlay size={16} />,
+    action: "run",
     label: "Rerun all queries on page",
     onSelect: async () => {
       if (!canvas) {

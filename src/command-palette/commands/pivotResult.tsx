@@ -18,6 +18,7 @@ export const usePivotResultCommand = (): CommandPaletteResult | null => {
 
   return {
     icon: <IconLayoutRows size={16} />,
+    action: "run",
     label: "Pivot result",
     searchAgainst: "transpose record view unpivot",
     onSelect: () => {

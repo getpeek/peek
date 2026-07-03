@@ -16,6 +16,7 @@ export const useSetThemeCommands = (): CommandPaletteResult[] => {
   return [
     {
       icon: <IconPalette size={16} />,
+      action: "run",
       label: "Set theme to Pine",
       searchAgainst: "purple dark",
       onSelect: apply("pine"),
@@ -23,6 +24,7 @@ export const useSetThemeCommands = (): CommandPaletteResult[] => {
     },
     {
       icon: <IconPalette size={16} />,
+      action: "run",
       label: "Set theme to Midnight",
       searchAgainst: "black dark",
       onSelect: apply("midnight"),
@@ -30,6 +32,7 @@ export const useSetThemeCommands = (): CommandPaletteResult[] => {
     },
     {
       icon: <IconPalette size={16} />,
+      action: "run",
       label: "Set theme to Midday",
       searchAgainst: "light bright",
       onSelect: apply("midday"),

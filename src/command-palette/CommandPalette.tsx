@@ -6,6 +6,7 @@ import { useAtom } from "jotai";
 import { IconSearch } from "@tabler/icons-react";
 import { commandPaletteOpenAtom } from "../state";
 import { DefaultDetails } from "./details/DefaultDetails";
+import { ACTION_GLYPH } from "./commands";
 import { highlightMatch } from "../Connection/highlightMatch";
 import { useHotkey } from "../app/useHotkey";
 import { useKeymap } from "../app/keymap";
@@ -38,16 +39,10 @@ export const CommandPalette = () => {
     return null;
   }
 
-  const activeResult = results[cursor];
-  const activeCommand = activeResult?.command;
-  const detailsContent = activeCommand
-    ? (activeCommand.details ?? <DefaultDetails command={activeCommand} />)
-    : null;
-
   return (
     <div className='command-palette' ref={ref}>
       <div className='command-palette-input'>
-        <IconSearch size={14} className='command-palette-input-icon' />
+        <IconSearch size={16} className='command-palette-input-icon' />
         <input
           autoFocus
           className='query'
@@ -74,51 +69,70 @@ export const CommandPalette = () => {
           placeholder='Search…'
         />
       </div>
-      <div className='command-palette-body'>
-        <div className='command-palette-list'>
-          {results.length === 0 ? (
-            <div className='command-palette-empty'>No matching commands</div>
-          ) : (
-            results.map(({ command, labelHighlight }, i) => (
+      <div className='command-palette-list'>
+        {results.length === 0 ? (
+          <div className='command-palette-empty'>No matching commands</div>
+        ) : (
+          results.map(({ command, labelHighlight }, i) => {
+            const active = i === cursor;
+            return (
               <div
                 ref={el => {
                   itemRefs.current[i] = el;
                 }}
-                className={`result ${i === cursor ? "active" : ""}`}
+                className={`result-wrap ${active ? "active" : ""}`}
                 key={i}
-                onClick={() => {
-                  command.onSelect();
-                  hideSearch();
-                }}
-                onMouseEnter={() => setCursor(i)}
               >
-                {command.icon && <div className='result-icon'>{command.icon}</div>}
-                <div className='result-text'>
-                  <div className='result-label'>
-                    {highlightMatch(labelHighlight, command.label)}
+                <div
+                  className='result'
+                  onClick={() => {
+                    command.onSelect();
+                    hideSearch();
+                  }}
+                  onMouseEnter={() => setCursor(i)}
+                >
+                  {command.icon && <div className='result-icon'>{command.icon}</div>}
+                  <div className='result-text'>
+                    <span className='result-title'>
+                      {highlightMatch(labelHighlight, command.label)}
+                    </span>
+                    {command.description && (
+                      <span className='result-desc'>{command.description}</span>
+                    )}
                   </div>
-                  {command.description && (
-                    <div className='result-description'>{command.description}</div>
-                  )}
+                  {command.keybinding && command.keybinding.length > 0 ? (
+                    <div className='result-keybinding'>
+                      {command.keybinding.map((key, k) => (
+                        <kbd key={k} className='details-key'>
+                          {key}
+                        </kbd>
+                      ))}
+                    </div>
+                  ) : command.action ? (
+                    <span className='result-glyph' title={ACTION_GLYPH[command.action].label}>
+                      {ACTION_GLYPH[command.action].glyph}
+                    </span>
+                  ) : null}
                 </div>
-                {command.keybinding && command.keybinding.length > 0 && (
-                  <div className='result-keybinding'>
-                    {command.keybinding.map((key, k) => (
-                      <kbd key={k} className='details-key'>
-                        {key}
-                      </kbd>
-                    ))}
-                  </div>
-                )}
+                {active && (command.details ?? <DefaultDetails command={command} />)}
               </div>
-            ))
-          )}
-        </div>
-        <div className='command-palette-details'>{detailsContent}</div>
+            );
+          })
+        )}
       </div>
       <div className='command-palette-footer'>
-        <kbd className='details-key'>esc</kbd>
-        <span>to close</span>
+        <span className='command-palette-footer-nav'>
+          <kbd className='details-key'>↑</kbd>
+          <kbd className='details-key'>↓</kbd>
+          <span>navigate</span>
+          <span className='command-palette-footer-sep'>·</span>
+          <kbd className='details-key'>↵</kbd>
+          <span>select</span>
+        </span>
+        <span className='command-palette-footer-item'>
+          <kbd className='details-key'>esc</kbd>
+          <span>to close</span>
+        </span>
       </div>
     </div>
   );

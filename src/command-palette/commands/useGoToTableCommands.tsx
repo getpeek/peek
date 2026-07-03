@@ -17,6 +17,7 @@ export const useGoToTableCommands = (): CommandPaletteResult[] => {
     .filter((n): n is TableDefinitionNode => n.type === "table-definition")
     .map(node => ({
       icon: <IconTable size={16} />,
+      action: "open",
       label: node.data.table,
       searchAgainst: "table",
       onSelect: () => {

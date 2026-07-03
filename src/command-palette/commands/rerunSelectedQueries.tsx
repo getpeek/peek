@@ -15,6 +15,7 @@ export const useRerunSelectedQueriesCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconPlayerPlay size={16} />,
+    action: "run",
     label: "Rerun selected queries",
     details: <RerunQueriesDetails scope='selected' />,
     onSelect: async () => {

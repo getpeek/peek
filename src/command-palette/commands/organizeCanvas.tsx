@@ -30,6 +30,7 @@ export const useOrganizeCanvasCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconLayoutGrid size={16} />,
+    action: "run",
     label: "Organize canvas",
     description: "Arrange nodes by their connections",
     searchAgainst: "layout auto force directed graph fit",

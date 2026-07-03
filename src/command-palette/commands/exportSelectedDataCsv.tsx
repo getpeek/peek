@@ -19,6 +19,7 @@ export const useExportSelectedDataCsvCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconTableExport size={16} />,
+    action: "run",
     label: "Export selected data (CSV)",
     details: <ExportDetails format='csv' />,
     onSelect: async () => {

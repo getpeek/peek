@@ -34,6 +34,7 @@ export const useViewSchemaCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconSchema size={16} />,
+    action: "open",
     label: "View schema",
     description: "Opens in a new page",
     searchAgainst: "database",

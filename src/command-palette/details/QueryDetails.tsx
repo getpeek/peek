@@ -1,18 +1,31 @@
 import { SqlPreview } from "./SqlPreview";
+import { useQueryInfo } from "../../canvas/nodes/Result/queryInfo";
 
-export const QueryDetails = ({ sql }: { sql: string }) => {
+export const QueryDetails = ({ sql, rows }: { sql: string; rows?: number }) => {
+  const info = useQueryInfo(sql);
+  const table = info?.tables[0]?.name;
+
   return (
-    <div className='details-query'>
-      <div className='details-eyebrow'>Navigate · Query node</div>
-      <div className='details-title'>Go to query</div>
-      <div className='details-subtitle'>
-        Selects this query node and zooms the canvas to fit it.
-      </div>
-      <SqlPreview sql={sql} />
-      <div className='details-action-hint'>
-        <kbd className='details-key'>↵</kbd>
-        <span>Jump to query on the canvas</span>
-      </div>
+    <div className='cp-strip'>
+      <span className='cp-strip-tag'>SQL</span>
+      <SqlPreview sql={sql} singleLine className='cp-strip-sql' />
+      <span className='cp-strip-meta'>
+        {rows === undefined ? (
+          table ? (
+            <>
+              <span className='m-dim'>table</span>
+              <span className='m-strong'>{table}</span>
+            </>
+          ) : (
+            <span className='m-dim'>{info?.statementType ?? "query"}</span>
+          )
+        ) : (
+          <>
+            <span className='m-strong'>{rows.toLocaleString()}</span>
+            <span className='m-dim'>{rows === 1 ? "row" : "rows"}</span>
+          </>
+        )}
+      </span>
     </div>
   );
 };

@@ -9,6 +9,7 @@ export const useGoToPageCommands = (): CommandPaletteResult[] => {
     .filter(page => page.id !== activePageId)
     .map(page => ({
       icon: <IconFile size={16} />,
+      action: "open",
       label: `Go to ${page.name}`,
       searchAgainst: "page",
       onSelect: () => {

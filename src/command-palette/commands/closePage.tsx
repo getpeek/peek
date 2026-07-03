@@ -16,6 +16,7 @@ export const useClosePageCommand = (): CommandPaletteResult | null => {
 
   return {
     icon: <IconFileMinus size={16} />,
+    action: "run",
     label: "Close page",
     description: activeName,
     searchAgainst: "delete remove tab",

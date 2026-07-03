@@ -20,6 +20,7 @@ export const useHostSessionCommand = (): CommandPaletteResult => {
 
   return {
     icon: isHost ? <IconBroadcastOff size={16} /> : <IconBroadcast size={16} />,
+    action: "run",
     label: isHost ? "End hosted session" : isInSession ? "Leave session" : "Host session",
     searchAgainst: "multiplayer share collaborate",
     onSelect: async () => {

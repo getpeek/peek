@@ -9,6 +9,7 @@ export const useNextPageCommand = (): CommandPaletteResult | null => {
   }
   return {
     icon: <IconArrowRight size={16} />,
+    action: "open",
     label: "Next page",
     searchAgainst: "forward tab",
     onSelect: () => {
@@ -24,6 +25,7 @@ export const usePreviousPageCommand = (): CommandPaletteResult | null => {
   }
   return {
     icon: <IconArrowLeft size={16} />,
+    action: "open",
     label: "Previous page",
     searchAgainst: "back tab",
     onSelect: () => {

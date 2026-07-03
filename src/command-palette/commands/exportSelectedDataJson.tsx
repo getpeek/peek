@@ -19,6 +19,7 @@ export const useExportSelectedDataJsonCommand = (): CommandPaletteResult => {
 
   return {
     icon: <IconTableExport size={16} />,
+    action: "run",
     label: "Export selected data (JSON)",
     details: <ExportDetails format='json' />,
     onSelect: async () => {

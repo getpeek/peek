@@ -13,6 +13,7 @@ export const useJoinSessionCommand = (): CommandPaletteResult | null => {
 
   return {
     icon: <IconLogin2 size={16} />,
+    action: "run",
     label: "Join session",
     searchAgainst: "multiplayer ticket connect collaborate",
     onSelect: () => {

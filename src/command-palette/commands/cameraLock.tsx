@@ -11,6 +11,7 @@ export const useCameraLockCommand = (): CommandPaletteResult => {
 
   return {
     icon: cameraLocked ? <IconLockOpen size={16} /> : <IconLock size={16} />,
+    action: "run",
     label: cameraLocked ? "Unlock camera" : "Lock camera",
     searchAgainst: "lock unlock camera pan zoom freeze",
     keybinding: combo ? formatCombo(combo) : undefined,

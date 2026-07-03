@@ -9,9 +9,13 @@ export const AboutDetails = () => {
   }, []);
 
   return (
-    <div className='details-about'>
-      <div className='details-eyebrow'>Peek</div>
-      <div className='details-title'>{version ? `Version ${version}` : "…"}</div>
+    <div className='cp-strip'>
+      <span className='cp-strip-tag cp-strip-tag--quiet'>PEEK</span>
+      <span className='cp-strip-desc'>Local-first database canvas</span>
+      <span className='cp-strip-meta'>
+        <span className='m-dim'>version</span>
+        <span className='m-strong'>{version ?? "…"}</span>
+      </span>
     </div>
   );
 };

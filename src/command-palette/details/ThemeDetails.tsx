@@ -10,27 +10,14 @@ const labels: Record<Theme, { name: string; tagline: string }> = {
 export const ThemeDetails = ({ theme }: { theme: Theme }) => {
   const { name, tagline } = labels[theme];
   return (
-    <div className={`details-theme pk-theme-${theme}`}>
-      <div className='details-eyebrow'>Appearance · Theme</div>
-      <div className='details-title'>{name}</div>
-      <div className='details-subtitle'>{tagline}</div>
-      <div className='details-theme-canvas'>
-        <div className='details-theme-node'>
-          <div className='details-theme-header'>
-            <span className='details-theme-dot' />
-            <span className='details-theme-bar details-theme-bar-title' />
-          </div>
-          <div className='details-theme-body'>
-            <span className='details-theme-bar' />
-            <span className='details-theme-bar details-theme-bar-short' />
-            <span className='details-theme-bar' />
-          </div>
-        </div>
-      </div>
-      <div className='details-action-hint'>
-        <kbd className='details-key'>↵</kbd>
-        <span>Apply theme</span>
-      </div>
+    <div className={`cp-strip pk-theme-${theme}`}>
+      <span className='cp-strip-theme-swatch'>
+        <span className='cp-strip-theme-dot' />
+      </span>
+      <span className='cp-strip-desc'>{tagline}</span>
+      <span className='cp-strip-meta'>
+        <span className='m-strong'>{name}</span>
+      </span>
     </div>
   );
 };
