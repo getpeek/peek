@@ -20,6 +20,7 @@ export function useRowActions({
   queryInfo,
   nodeId,
   selected,
+  cellGrid,
   closeCellMenu,
 }: {
   data: DatabaseResult;
@@ -27,6 +28,8 @@ export function useRowActions({
   queryInfo: QueryInfo | null;
   nodeId: string;
   selected: ReadonlySet<number>;
+  /** The active cell-selection sub-grid, or null when no cell selection exists. */
+  cellGrid: () => DatabaseResult | null;
   closeCellMenu: () => void;
 }) {
   const commitDelete = useCommitDelete({ data, queryInfo, nodeId });
@@ -90,6 +93,27 @@ export function useRowActions({
     [selectedRows, exportTableName],
   );
 
+  const copyCellSelection = useCallback(
+    (format: ExportFormat) => {
+      const grid = cellGrid();
+      if (grid?.length) {
+        void copyRows(grid, format, exportTableName);
+      }
+    },
+    [cellGrid, exportTableName],
+  );
+
+  const exportCellSelection = useCallback(
+    (format: ExportFormat) => {
+      const grid = cellGrid();
+      if (grid?.length) {
+        const name = `${baseExportName}-selection-${grid.length}x${grid[0].length}`;
+        void exportRows(grid, format, name, exportTableName);
+      }
+    },
+    [cellGrid, baseExportName, exportTableName],
+  );
+
   const requestDelete = useCallback(() => {
     closeCellMenu();
     const check = commitDelete.preflight(selected);
@@ -133,6 +157,8 @@ export function useRowActions({
     exportSelectedRows,
     copyRow,
     copySelectedRows,
+    copyCellSelection,
+    exportCellSelection,
     requestDelete,
     cancelDelete,
     confirmDelete,

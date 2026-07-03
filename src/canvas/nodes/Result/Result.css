@@ -452,6 +452,16 @@ td.editing {
   background: color-mix(in oklab, var(--pk-node-bg-2) 90%, transparent 10%);
 }
 
+/* Cell-grid selection — after search-match so source order wins over its background. */
+.app-node table tbody tr td.cell-selected,
+.app-node table tbody tr td.cell-selected.search-match {
+  background: var(--pk-row-selected-bg);
+}
+.app-node table tbody tr:hover td.cell-selected,
+.app-node table tbody tr:hover td.cell-selected.search-match {
+  background: var(--pk-row-selected-bg-hover);
+}
+
 /* Highlight the matched characters within a cell, mirroring the command palette. */
 .app-node table tbody td mark.match {
   background: transparent;

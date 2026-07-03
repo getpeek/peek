@@ -1,11 +1,10 @@
 import { Table } from "@mantine/core";
 import { useAtomValue } from "jotai";
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { schemaAtom, type DatabaseResult } from "../../../state";
 import { CellContextMenu } from "./CellContextMenu";
 import { DeleteConfirmModal } from "./edit/DeleteConfirmModal";
-import { exportRows } from "./export/exportRows";
 import { ResultEmpty } from "./ResultEmpty";
 import { SpacerRow } from "./SpacerRow";
 import type { SearchMatches } from "./hooks/useResultSearchMatches";
@@ -13,16 +12,17 @@ import { ResultHeaderMenu, type HeaderMenuState } from "./ResultHeaderMenu";
 import { ResultTableHeader } from "./ResultTableHeader";
 import { ResultTableRow } from "./ResultTableRow";
 import { useCellContextMenu } from "./hooks/useCellContextMenu";
-import { useColumnAsVariable } from "./hooks/useColumnAsVariable";
+import { useColumnActions } from "./hooks/useColumnActions";
 import { useColumnWidths } from "./hooks/useColumnWidths";
 import { useResultEditing } from "./hooks/useResultEditing";
 import type { QueryInfo } from "./queryInfo";
 import type { ExportFormat } from "./export/serializeRows";
+import { useResultSelections } from "./hooks/useResultSelections";
 import { useRowActions } from "./hooks/useRowActions";
-import { useRowSelection } from "./hooks/useRowSelection";
+import { useSelectionSummary } from "./hooks/useSelectionSummary";
 import { useFollowReferences } from "./hooks/useFollowReferences";
 import { useColumnReferences } from "./hooks/useColumnReferences";
-import { getEditableTableName, getExportTableName } from "./cell/inlineEdit";
+import { getEditableTableName } from "./cell/inlineEdit";
 import { useDuplicateRows } from "../ResultInsertForm/useInsertFormSpawn";
 
 // Rows are variable height: cells wrap and JSON cells render their full pretty-printed
@@ -58,7 +58,13 @@ export const ResultTable = memo(function ResultTable({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [headerMenu, setHeaderMenu] = useState<HeaderMenuState | null>(null);
   const cellContextMenu = useCellContextMenu(nodeId);
-  const rowSelection = useRowSelection(data, visibleIndices);
+  const {
+    rows: rowSelection,
+    cells: cellSelection,
+    onRowSelectMouseDown,
+    clearAll: clearSelections,
+  } = useResultSelections(data, visibleIndices);
+  useSelectionSummary({ nodeId, data, visibleIndices, rect: cellSelection.rect });
 
   const firstRow = data[0] ?? [];
   const headers = firstRow.map(([key]) => key);
@@ -84,6 +90,7 @@ export const ResultTable = memo(function ResultTable({
     queryInfo,
     nodeId,
     selected: rowSelection.selected,
+    cellGrid: cellSelection.selectedGrid,
     closeCellMenu: cellContextMenu.closeCellMenu,
   });
   const editableTable = getEditableTableName(queryInfo);
@@ -92,20 +99,16 @@ export const ResultTable = memo(function ResultTable({
 
   const followReferences = useFollowReferences(nodeId);
 
-  const exportColumn = useCallback(
-    async (columnIdx: number, header: string, format: ExportFormat) => {
-      const columnData: DatabaseResult = data
-        .map(row => (row[columnIdx] ? [row[columnIdx]] : []))
-        .filter(row => row.length > 0);
-      if (columnData.length === 0) {
-        return;
-      }
-      await exportRows(columnData, format, header, getExportTableName(queryInfo, header));
-    },
-    [data, queryInfo],
-  );
-
-  const spawnVariableFromColumn = useColumnAsVariable({ nodeId, data, headerTypes });
+  const { exportColumn, spawnVariableFromColumn, spawnVariableFromSelection } = useColumnActions({
+    nodeId,
+    data,
+    headers,
+    headerTypes,
+    queryInfo,
+    cellRect: cellSelection.rect,
+    selectedRowIndices: cellSelection.selectedRowIndices,
+    closeCellMenu: cellContextMenu.closeCellMenu,
+  });
 
   const duplicateRowIndices = useDuplicateRows({
     resultNodeId: nodeId,
@@ -115,7 +118,7 @@ export const ResultTable = memo(function ResultTable({
   });
 
   const onContainerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (rowSelection.count === 0) {
+    if (rowSelection.count === 0 && !cellSelection.rect) {
       return;
     }
     const target = e.target as HTMLElement | null;
@@ -128,7 +131,7 @@ export const ResultTable = memo(function ResultTable({
     if (target.closest("tr[data-index]") || target.closest("thead")) {
       return;
     }
-    rowSelection.clear();
+    clearSelections();
   };
 
   const rowVirtualizer = useVirtualizer({
@@ -208,6 +211,13 @@ export const ResultTable = memo(function ResultTable({
                   editing && editing.row === rowIndex
                     ? { editing, commitEdit, variableNames }
                     : null;
+                // Only rows inside the rect receive it (as a shared, stable
+                // object) so rows outside keep a stable null prop and stay memoized.
+                const rect = cellSelection.rect;
+                const rowCellRect =
+                  rect && virtualRow.index >= rect.top && virtualRow.index <= rect.bottom
+                    ? rect
+                    : null;
                 return (
                   <ResultTableRow
                     key={virtualRow.key}
@@ -220,8 +230,10 @@ export const ResultTable = memo(function ResultTable({
                     inbound={inbound}
                     outbound={outbound}
                     isSelected={rowSelection.isSelected(rowIndex)}
+                    cellRect={rowCellRect}
                     matchedCols={matchedCols.get(rowIndex)}
-                    onSelectMouseDown={rowSelection.onSelectMouseDown}
+                    onSelectMouseDown={onRowSelectMouseDown}
+                    onCellSelectMouseDown={cellSelection.onCellMouseDown}
                     onFollowReferences={followReferences}
                     onCellContextMenu={cellContextMenu.openCellMenu}
                   />
@@ -240,6 +252,7 @@ export const ResultTable = memo(function ResultTable({
           <CellContextMenu
             cellMenu={cellContextMenu.cellMenu}
             selected={rowSelection.selected}
+            cellRect={cellSelection.rect}
             canDuplicate={editableTable !== null}
             onClose={cellContextMenu.closeCellMenu}
             onUseAsVariable={cellContextMenu.createVariableFromCell}
@@ -248,6 +261,9 @@ export const ResultTable = memo(function ResultTable({
             onCopySelected={onSelectionAction(rowActions.copySelectedRows)}
             onExportRow={onRowAction(rowActions.exportSingleRow)}
             onExportSelected={onSelectionAction(rowActions.exportSelectedRows)}
+            onCopyCellSelection={onSelectionAction(rowActions.copyCellSelection)}
+            onExportCellSelection={onSelectionAction(rowActions.exportCellSelection)}
+            onUseSelectionAsVariable={spawnVariableFromSelection}
             onDuplicateRow={() => {
               const rowIndex = cellContextMenu.cellMenu?.rowIndex;
               if (rowIndex !== undefined) {

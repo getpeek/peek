@@ -14,6 +14,7 @@ import { PortalAnchor } from "./PortalAnchor";
 import type { ExportFormat } from "./export/serializeRows";
 import { stringifyValue } from "./stringify";
 import type { CellMenuState } from "./hooks/useCellContextMenu";
+import type { CellRect } from "./hooks/useCellSelection";
 
 const MAX_COPY_VALUE_LENGTH = 13;
 
@@ -49,6 +50,7 @@ function FormatSubmenu({
 export function CellContextMenu({
   cellMenu,
   selected,
+  cellRect,
   canDuplicate,
   onClose,
   onUseAsVariable,
@@ -57,12 +59,16 @@ export function CellContextMenu({
   onCopySelected,
   onExportRow,
   onExportSelected,
+  onCopyCellSelection,
+  onExportCellSelection,
+  onUseSelectionAsVariable,
   onDuplicateRow,
   onDuplicateSelected,
   onRequestDelete,
 }: {
   cellMenu: CellMenuState | null;
   selected: ReadonlySet<number>;
+  cellRect: CellRect | null;
   canDuplicate: boolean;
   onClose: () => void;
   onUseAsVariable: () => void;
@@ -71,6 +77,9 @@ export function CellContextMenu({
   onCopySelected: (format: ExportFormat) => void;
   onExportRow: (format: ExportFormat) => void;
   onExportSelected: (format: ExportFormat) => void;
+  onCopyCellSelection: (format: ExportFormat) => void;
+  onExportCellSelection: (format: ExportFormat) => void;
+  onUseSelectionAsVariable: () => void;
   onDuplicateRow: () => void;
   onDuplicateSelected: () => void;
   onRequestDelete: () => void;
@@ -79,10 +88,24 @@ export function CellContextMenu({
     return null;
   }
 
-  const rowInSelection = selected.has(cellMenu.rowIndex);
+  const inCellRect =
+    cellRect !== null &&
+    cellMenu.displayPos >= cellRect.top &&
+    cellMenu.displayPos <= cellRect.bottom &&
+    cellMenu.columnIdx >= cellRect.left &&
+    cellMenu.columnIdx <= cellRect.right;
+  const cellRectArea = cellRect
+    ? (cellRect.bottom - cellRect.top + 1) * (cellRect.right - cellRect.left + 1)
+    : 0;
+  // A 1×1 rect falls through to the plain single-cell menu, mirroring the
+  // `>= 2` rule row selections use below.
+  const showCellSelectionActions = inCellRect && cellRectArea >= 2;
+  const singleColumn = cellRect !== null && cellRect.left === cellRect.right;
+
+  const rowInSelection = !showCellSelectionActions && selected.has(cellMenu.rowIndex);
   const selectionCount = selected.size;
   const showSelectionActions = rowInSelection && selectionCount >= 2;
-  const showSingleRow = !showSelectionActions;
+  const showSingleRow = !showCellSelectionActions && !showSelectionActions;
   const selectedRowsLabel = `${selectionCount} rows`;
   const deleteLabel = selectionCount >= 2 ? `Delete ${selectionCount} rows` : "Delete row";
   const copyIcon = <IconCopy size={14} />;
@@ -115,6 +138,22 @@ export function CellContextMenu({
         <PortalAnchor x={cellMenu.x} y={cellMenu.y} />
       </Menu.Target>
       <Menu.Dropdown>
+        {showCellSelectionActions && singleColumn && (
+          <Menu.Item leftSection={<IconAt size={14} />} onClick={onUseSelectionAsVariable}>
+            Use as variable
+          </Menu.Item>
+        )}
+        {showCellSelectionActions && (
+          <FormatSubmenu label='Copy selection' icon={copyIcon} onSelect={onCopyCellSelection} />
+        )}
+        {showCellSelectionActions && (
+          <FormatSubmenu
+            label='Export selection'
+            icon={exportIcon}
+            onSelect={onExportCellSelection}
+          />
+        )}
+
         {showSingleRow && (
           <Menu.Item leftSection={<IconAt size={14} />} onClick={onUseAsVariable}>
             Use as variable
@@ -146,7 +185,7 @@ export function CellContextMenu({
           />
         )}
 
-        {canDuplicate && (
+        {canDuplicate && !showCellSelectionActions && (
           <Menu.Item
             leftSection={duplicateIcon}
             onClick={showSelectionActions ? onDuplicateSelected : onDuplicateRow}

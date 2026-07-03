@@ -34,7 +34,7 @@ export function useRowSelection(data: DatabaseResult, visibleIndices: number[]) 
 
   const onSelectMouseDown = useCallback(
     (rowIndex: number, e: React.MouseEvent) => {
-      if (!e.shiftKey || e.button !== 0) {
+      if (!e.altKey || e.button !== 0) {
         return;
       }
       e.preventDefault();

@@ -5,7 +5,9 @@ import { DataCell } from "./cell/Cell";
 import { EditCell } from "./cell/EditCell";
 import { classifyColumn, type Reference } from "./columnRoles";
 import { stringifyValue } from "./stringify";
+import type { CellRect } from "./hooks/useCellSelection";
 import type { EditingState } from "./hooks/useCommitEdit";
+import type { CellMenuTarget } from "./hooks/useCellContextMenu";
 
 type RowData = DatabaseResult[number];
 
@@ -30,8 +32,10 @@ export const ResultTableRow = memo(function ResultTableRow({
   inbound,
   outbound,
   isSelected,
+  cellRect,
   matchedCols,
   onSelectMouseDown,
+  onCellSelectMouseDown,
   onFollowReferences,
   onCellContextMenu,
 }: {
@@ -46,15 +50,13 @@ export const ResultTableRow = memo(function ResultTableRow({
   inbound: Record<string, Reference[]>;
   outbound: Record<string, Reference[]>;
   isSelected: boolean;
+  /** The active cell-selection rect — non-null only when this row is inside it. */
+  cellRect: CellRect | null;
   matchedCols?: Map<number, Fuzzysort.Result>;
   onSelectMouseDown: (rowIndex: number, e: React.MouseEvent) => void;
+  onCellSelectMouseDown: (displayPos: number, colIdx: number, e: React.MouseEvent) => void;
   onFollowReferences: (refs: CellReference[], value: unknown) => void;
-  onCellContextMenu: (
-    e: React.MouseEvent,
-    value: unknown,
-    column: string,
-    rowIndex: number,
-  ) => void;
+  onCellContextMenu: (e: React.MouseEvent, cell: CellMenuTarget) => void;
 }) {
   const isEvenRow = virtualIndex % 2 === 0;
   const rowClasses: string[] = [];
@@ -68,7 +70,7 @@ export const ResultTableRow = memo(function ResultTableRow({
       data-index={virtualIndex}
       className={rowClasses.join(" ") || undefined}
       onMouseDown={e => {
-        if (e.shiftKey) {
+        if (e.altKey && !e.shiftKey) {
           onSelectMouseDown(rowIndex, e);
         }
       }}
@@ -95,11 +97,20 @@ export const ResultTableRow = memo(function ResultTableRow({
         if (isEditing && edit?.editing.error) {
           cellClasses.push("error");
         }
+        if (cellRect && columnIdx >= cellRect.left && columnIdx <= cellRect.right) {
+          cellClasses.push("cell-selected");
+        }
 
         return (
           <td
             key={columnIdx}
+            data-col={columnIdx}
             className={cellClasses.join(" ")}
+            onMouseDown={e => {
+              if (e.shiftKey && !isEditing) {
+                onCellSelectMouseDown(virtualIndex, columnIdx, e);
+              }
+            }}
             onDoubleClick={e => {
               e.stopPropagation();
               setEditing({
@@ -112,7 +123,13 @@ export const ResultTableRow = memo(function ResultTableRow({
             }}
             onContextMenu={e => {
               e.stopPropagation();
-              onCellContextMenu(e, value, column, rowIndex);
+              onCellContextMenu(e, {
+                value,
+                column,
+                rowIndex,
+                columnIdx,
+                displayPos: virtualIndex,
+              });
             }}
           >
             {isEditing && edit ? (

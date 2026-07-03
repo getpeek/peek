@@ -15,9 +15,14 @@ export function useColumnAsVariable({
 }) {
   const canvas = useCanvas();
 
-  return (columnIdx: number, header: string) => {
+  return (columnIdx: number, header: string, rowIndices?: number[]) => {
     const columnType = headerTypes[columnIdx] ?? "";
-    const literals = data
+    const sourceRows = rowIndices
+      ? rowIndices
+          .map(i => data[i])
+          .filter((row): row is DatabaseResult[number] => row !== undefined)
+      : data;
+    const literals = sourceRows
       .map(row => row[columnIdx])
       .filter((cell): cell is [string, unknown, string] => cell !== undefined)
       .map(([, value]) => formatSqlLiteral(value, columnType));

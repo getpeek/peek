@@ -4,21 +4,27 @@ import { defaultDimensions, makeNode } from "../../../defaults";
 import { stringifyValue } from "../stringify";
 import type { VariableNode } from "../../../types";
 
-export type CellMenuState = {
-  x: number;
-  y: number;
+export type CellMenuTarget = {
   value: unknown;
   column: string;
   rowIndex: number;
+  columnIdx: number;
+  /** Display position (the row's data-index) — used to test membership in the cell-selection rect. */
+  displayPos: number;
+};
+
+export type CellMenuState = CellMenuTarget & {
+  x: number;
+  y: number;
 };
 
 export function useCellContextMenu(nodeId: string) {
   const canvas = useCanvas();
   const [cellMenu, setCellMenu] = useState<CellMenuState | null>(null);
 
-  const openCellMenu = (e: React.MouseEvent, value: unknown, column: string, rowIndex: number) => {
+  const openCellMenu = (e: React.MouseEvent, cell: CellMenuTarget) => {
     e.preventDefault();
-    setCellMenu({ x: e.clientX, y: e.clientY, value, column, rowIndex });
+    setCellMenu({ x: e.clientX, y: e.clientY, ...cell });
   };
 
   const closeCellMenu = () => setCellMenu(null);

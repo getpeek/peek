@@ -171,6 +171,19 @@ export const cameraLockedAtom = atom(false);
 
 export const pendingPageCloseAtom = atom<{ pageId: string } | null>(null);
 
+// Aggregates for the active all-numeric cell selection in a Result node,
+// displayed by the canvas-level SelectionSummary bar above the bottom toolbar.
+export type CellSelectionSummary = {
+  nodeId: string;
+  count: number;
+  sum: number;
+  avg: number;
+  min: number;
+  max: number;
+};
+
+export const cellSelectionSummaryAtom = atom<CellSelectionSummary | null>(null);
+
 export const clipboardAtom = atom<AppNode[]>([]);
 
 export type HistorySnapshot = { nodes: AppNode[]; edges: AppEdge[] };
