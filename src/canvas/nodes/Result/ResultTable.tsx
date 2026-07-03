@@ -18,6 +18,9 @@ import { useResultEditing } from "./hooks/useResultEditing";
 import type { QueryInfo } from "./queryInfo";
 import type { ExportFormat } from "./export/serializeRows";
 import { useResultSelections } from "./hooks/useResultSelections";
+import { useSelectionCursor } from "./hooks/useSelectionCursor";
+import { useSelectionCopy } from "./hooks/useSelectionCopy";
+import { useClearOnBlankClick } from "./hooks/useClearOnBlankClick";
 import { useRowActions } from "./hooks/useRowActions";
 import { useSelectionSummary } from "./hooks/useSelectionSummary";
 import { useFollowReferences } from "./hooks/useFollowReferences";
@@ -65,6 +68,13 @@ export const ResultTable = memo(function ResultTable({
     clearAll: clearSelections,
   } = useResultSelections(data, visibleIndices);
   useSelectionSummary({ nodeId, data, visibleIndices, rect: cellSelection.rect });
+  const cursorClass = useSelectionCursor();
+  useSelectionCopy({
+    active: cellSelection.rect !== null || rowSelection.selected.size > 0,
+    data,
+    cellGrid: cellSelection.selectedGrid,
+    selectedRows: rowSelection.selected,
+  });
 
   const firstRow = data[0] ?? [];
   const headers = firstRow.map(([key]) => key);
@@ -117,22 +127,10 @@ export const ResultTable = memo(function ResultTable({
     closeMenu: cellContextMenu.closeCellMenu,
   });
 
-  const onContainerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (rowSelection.count === 0 && !cellSelection.rect) {
-      return;
-    }
-    const target = e.target as HTMLElement | null;
-    // React bubbles synthetic events through the component tree, so portaled
-    // children (Mantine Modal, Menu) hit this handler too. Ignore anything
-    // whose DOM ancestry is not inside the scroll container.
-    if (!target || !e.currentTarget.contains(target)) {
-      return;
-    }
-    if (target.closest("tr[data-index]") || target.closest("thead")) {
-      return;
-    }
-    clearSelections();
-  };
+  const onContainerMouseDown = useClearOnBlankClick({
+    hasSelection: rowSelection.count > 0 || cellSelection.rect !== null,
+    clear: clearSelections,
+  });
 
   const rowVirtualizer = useVirtualizer({
     count: visibleIndices.length,
@@ -176,7 +174,12 @@ export const ResultTable = memo(function ResultTable({
   // if the container only appears once rows arrive, the width is never measured
   // and the table renders too narrow to fill the node.
   return (
-    <div style={SCROLL_CONTAINER_STYLE} ref={scrollContainerRef} onMouseDown={onContainerMouseDown}>
+    <div
+      style={SCROLL_CONTAINER_STYLE}
+      className={cursorClass}
+      ref={scrollContainerRef}
+      onMouseDown={onContainerMouseDown}
+    >
       {showEmpty ? (
         <ResultEmpty message={noRows ? "No results" : "No matching rows"} />
       ) : (
@@ -199,6 +202,7 @@ export const ResultTable = memo(function ResultTable({
                     outbound={outbound[header]}
                     onResizeStart={startResize}
                     onContextMenu={openHeaderMenu}
+                    onSelectColumn={cellSelection.selectColumn}
                   />
                 ))}
               </Table.Tr>
@@ -218,6 +222,7 @@ export const ResultTable = memo(function ResultTable({
                   rect && virtualRow.index >= rect.top && virtualRow.index <= rect.bottom
                     ? rect
                     : null;
+                const rowBandEdges = rowSelection.bandEdges(virtualRow.index);
                 return (
                   <ResultTableRow
                     key={virtualRow.key}
@@ -231,6 +236,7 @@ export const ResultTable = memo(function ResultTable({
                     outbound={outbound}
                     isSelected={rowSelection.isSelected(rowIndex)}
                     cellRect={rowCellRect}
+                    rowBandEdges={rowBandEdges}
                     matchedCols={matchedCols.get(rowIndex)}
                     onSelectMouseDown={onRowSelectMouseDown}
                     onCellSelectMouseDown={cellSelection.onCellMouseDown}

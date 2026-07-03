@@ -19,9 +19,12 @@ import { togglePivot } from "./togglePivot";
 import type { QueryInfo } from "./queryInfo";
 import { useResultSearch } from "./hooks/useResultSearch";
 import { useCreateChart } from "./hooks/useCreateChart";
+import { SelectionStats } from "./SelectionStats";
 import { useAddRow } from "../ResultInsertForm/useInsertFormSpawn";
 import { useCanvas } from "../../hooks/useCanvas";
 import { Tooltip } from "../../../components/Tooltip/Tooltip";
+import { cellSelectionSummaryAtom } from "../../state";
+import { useAtomValue } from "jotai";
 import type { DatabaseResult } from "../../../state";
 import type { AgentNode, QueryNode } from "../../types";
 
@@ -48,6 +51,8 @@ export function ResultToolbar({
 }) {
   const canvas = useCanvas();
   const createChart = useCreateChart();
+  const summary = useAtomValue(cellSelectionSummaryAtom);
+  const selectionStats = summary?.nodeId === nodeId ? summary : null;
 
   const canChart =
     rows.length > 0 &&
@@ -151,13 +156,19 @@ export function ResultToolbar({
   return (
     <div className='app-node-subtoolbar nodrag'>
       <div className='meta'>
-        <span className='ok'>●</span>
-        <span>{rows.length} rows</span>
-        {queryInfo?.tables.map(t => (
-          <span key={`${t.name}-${t.alias ?? ""}`} className='table-badge'>
-            {t.name}
-          </span>
-        ))}
+        {selectionStats ? (
+          <SelectionStats summary={selectionStats} />
+        ) : (
+          <>
+            <span className='ok'>●</span>
+            <span>{rows.length} rows</span>
+            {queryInfo?.tables.map(t => (
+              <span key={`${t.name}-${t.alias ?? ""}`} className='table-badge'>
+                {t.name}
+              </span>
+            ))}
+          </>
+        )}
       </div>
       <div className='actions'>
         {canInsert && (

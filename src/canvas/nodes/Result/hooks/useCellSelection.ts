@@ -78,7 +78,8 @@ export function useCellSelection({
 
   const onCellMouseDown = useCallback(
     (displayPos: number, colIdx: number, e: React.MouseEvent) => {
-      if (!e.shiftKey || e.button !== 0) {
+      // Plain left-press selects cells; Shift is reserved for row selection.
+      if (e.shiftKey || e.button !== 0) {
         return;
       }
       e.preventDefault();
@@ -86,12 +87,10 @@ export function useCellSelection({
       window.getSelection()?.removeAllRanges();
       onStart();
 
-      const clicked: CellPoint = { pos: displayPos, col: colIdx };
-      // Spreadsheet semantics: shift+click extends from an existing anchor;
-      // otherwise the clicked cell becomes the anchor of a 1×1 selection.
-      const anchor = anchorRef.current ?? clicked;
+      // The pressed cell anchors a 1×1 selection; dragging extends the rectangle.
+      const anchor: CellPoint = { pos: displayPos, col: colIdx };
       anchorRef.current = anchor;
-      applyRect(normalizeRect(anchor, clicked));
+      applyRect(normalizeRect(anchor, anchor));
 
       const prevUserSelect = document.body.style.userSelect;
       document.body.style.userSelect = "none";
@@ -132,6 +131,19 @@ export function useCellSelection({
     [onStart, applyRect],
   );
 
+  // Clicking a column header selects the whole column: every visible row, one column.
+  const selectColumn = useCallback(
+    (colIdx: number) => {
+      if (visibleIndices.length === 0) {
+        return;
+      }
+      onStart();
+      anchorRef.current = { pos: 0, col: colIdx };
+      applyRect({ top: 0, bottom: visibleIndices.length - 1, left: colIdx, right: colIdx });
+    },
+    [visibleIndices.length, onStart, applyRect],
+  );
+
   const selectedRowIndices = useCallback((): number[] => {
     if (rect === null) {
       return [];
@@ -152,5 +164,5 @@ export function useCellSelection({
       .map(row => row.slice(rect.left, rect.right + 1));
   }, [rect, visibleIndices, data]);
 
-  return { rect, onCellMouseDown, selectedRowIndices, selectedGrid, clear };
+  return { rect, onCellMouseDown, selectColumn, selectedRowIndices, selectedGrid, clear };
 }

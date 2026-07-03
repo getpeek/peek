@@ -17,6 +17,7 @@
     text-align: left;
     white-space: nowrap;
     user-select: none;
+    cursor: pointer;
     z-index: 1;
   }
 
@@ -28,9 +29,9 @@
     overflow-wrap: anywhere;
     word-break: break-word;
     vertical-align: top;
-    user-select: text;
-    -webkit-user-select: text;
-    cursor: text;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: cell;
   }
 }
 
@@ -108,6 +109,26 @@
   color: var(--pk-fg);
   font: 500 10.5px var(--pk-font-mono);
   letter-spacing: 0.02em;
+}
+
+/* Aggregate readout that replaces the row/table meta while an all-numeric
+   cell selection is active. */
+.app-node-subtoolbar .meta .stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+
+  .label {
+    color: var(--pk-fg-subtle);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .value {
+    color: var(--pk-fg);
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .col-meta {
@@ -217,7 +238,7 @@ th.header.outbound,
 }
 
 td.editable {
-  cursor: text;
+  cursor: cell;
 }
 
 td.editing {
@@ -255,6 +276,9 @@ td.editing {
   outline: none;
   resize: none;
   box-sizing: border-box;
+  /* The td forbids selection; the editor must stay selectable. */
+  user-select: text;
+  -webkit-user-select: text;
 
   &:disabled {
     opacity: 0.6;
@@ -460,6 +484,55 @@ td.editing {
 .app-node table tbody tr:hover td.cell-selected,
 .app-node table tbody tr:hover td.cell-selected.search-match {
   background: var(--pk-row-selected-bg-hover);
+}
+
+/* Cells default to the grid-selection cursor (plain drag selects). While Shift
+   is held the gesture switches to row selection, so the cursor does too. */
+.row-cursor table tbody td {
+  cursor: pointer;
+}
+
+/* Selection outline — a pseudo-element border on the boundary cells traces the
+   whole selection without disturbing layout. Interior cells get no sel-* class,
+   so only the outer edge is drawn; corner cells round the shared outer corner.
+   The `td` is positioned so the pseudo-element anchors to it. */
+.app-node table tbody td {
+  position: relative;
+}
+.app-node table tbody td.sel-top::after,
+.app-node table tbody td.sel-right::after,
+.app-node table tbody td.sel-bottom::after,
+.app-node table tbody td.sel-left::after {
+  content: "";
+  position: absolute;
+  /* Sit just outside the cells and overlap neighbours so segments join seamlessly. */
+  inset: -1.5px;
+  pointer-events: none;
+  z-index: 1;
+}
+.app-node table tbody td.sel-top::after {
+  border-top: 1.5px solid var(--pk-accent);
+}
+.app-node table tbody td.sel-bottom::after {
+  border-bottom: 1.5px solid var(--pk-accent);
+}
+.app-node table tbody td.sel-left::after {
+  border-left: 1.5px solid var(--pk-accent);
+}
+.app-node table tbody td.sel-right::after {
+  border-right: 1.5px solid var(--pk-accent);
+}
+.app-node table tbody td.sel-top.sel-left::after {
+  border-top-left-radius: 7px;
+}
+.app-node table tbody td.sel-top.sel-right::after {
+  border-top-right-radius: 7px;
+}
+.app-node table tbody td.sel-bottom.sel-left::after {
+  border-bottom-left-radius: 7px;
+}
+.app-node table tbody td.sel-bottom.sel-right::after {
+  border-bottom-right-radius: 7px;
 }
 
 /* Highlight the matched characters within a cell, mirroring the command palette. */

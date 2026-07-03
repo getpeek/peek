@@ -33,6 +33,7 @@ export const ResultTableRow = memo(function ResultTableRow({
   outbound,
   isSelected,
   cellRect,
+  rowBandEdges,
   matchedCols,
   onSelectMouseDown,
   onCellSelectMouseDown,
@@ -52,6 +53,8 @@ export const ResultTableRow = memo(function ResultTableRow({
   isSelected: boolean;
   /** The active cell-selection rect — non-null only when this row is inside it. */
   cellRect: CellRect | null;
+  /** Which sides of a row-selection band this row is on — non-null only when row-selected. */
+  rowBandEdges: { top: boolean; bottom: boolean } | null;
   matchedCols?: Map<number, Fuzzysort.Result>;
   onSelectMouseDown: (rowIndex: number, e: React.MouseEvent) => void;
   onCellSelectMouseDown: (displayPos: number, colIdx: number, e: React.MouseEvent) => void;
@@ -70,7 +73,7 @@ export const ResultTableRow = memo(function ResultTableRow({
       data-index={virtualIndex}
       className={rowClasses.join(" ") || undefined}
       onMouseDown={e => {
-        if (e.altKey && !e.shiftKey) {
+        if (e.shiftKey) {
           onSelectMouseDown(rowIndex, e);
         }
       }}
@@ -99,6 +102,34 @@ export const ResultTableRow = memo(function ResultTableRow({
         }
         if (cellRect && columnIdx >= cellRect.left && columnIdx <= cellRect.right) {
           cellClasses.push("cell-selected");
+          if (virtualIndex === cellRect.top) {
+            cellClasses.push("sel-top");
+          }
+          if (virtualIndex === cellRect.bottom) {
+            cellClasses.push("sel-bottom");
+          }
+          if (columnIdx === cellRect.left) {
+            cellClasses.push("sel-left");
+          }
+          if (columnIdx === cellRect.right) {
+            cellClasses.push("sel-right");
+          }
+        }
+        // Row-band selection spans the full width; `tr.selected` carries the fill,
+        // these classes draw the band's rounded outline on its boundary cells.
+        if (rowBandEdges) {
+          if (rowBandEdges.top) {
+            cellClasses.push("sel-top");
+          }
+          if (rowBandEdges.bottom) {
+            cellClasses.push("sel-bottom");
+          }
+          if (columnIdx === 0) {
+            cellClasses.push("sel-left");
+          }
+          if (columnIdx === row.length - 1) {
+            cellClasses.push("sel-right");
+          }
         }
 
         return (
@@ -107,9 +138,15 @@ export const ResultTableRow = memo(function ResultTableRow({
             data-col={columnIdx}
             className={cellClasses.join(" ")}
             onMouseDown={e => {
-              if (e.shiftKey && !isEditing) {
-                onCellSelectMouseDown(virtualIndex, columnIdx, e);
+              // Shift is row selection (handled by the row); editing keeps native
+              // text selection; a reference chip click should navigate, not select.
+              if (e.shiftKey || isEditing) {
+                return;
               }
+              if ((e.target as HTMLElement).closest(".reference--link")) {
+                return;
+              }
+              onCellSelectMouseDown(virtualIndex, columnIdx, e);
             }}
             onDoubleClick={e => {
               e.stopPropagation();

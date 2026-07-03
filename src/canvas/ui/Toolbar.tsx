@@ -13,7 +13,6 @@ import type { ComponentType } from "react";
 import { placeModeAtom, selectionToolAtom } from "../state";
 import type { AppNodeType } from "../types";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
-import { SelectionSummary } from "./SelectionSummary";
 import "./Toolbar.css";
 
 interface ToolDef {
@@ -62,51 +61,47 @@ export function Toolbar() {
 
   return (
     <Panel position='bottom-center'>
-      {/* Two Panels at the same position overlap, so the summary shares this one. */}
-      <div className='canvas-dock'>
-        <SelectionSummary />
-        <div className='canvas-toolbar'>
-          {selectionTool === "lasso" ? (
-            <Tooltip label='Lasso (L)'>
+      <div className='canvas-toolbar'>
+        {selectionTool === "lasso" ? (
+          <Tooltip label='Lasso (L)'>
+            <button
+              className={`toolbar-btn ${placeMode === null ? "active" : ""}`}
+              onClick={() => setPlaceMode(null)}
+            >
+              <IconLasso size={16} stroke={1.75} />
+              <span className='kbd'>L</span>
+            </button>
+          </Tooltip>
+        ) : (
+          <Tooltip label='Select (Esc)'>
+            <button
+              className={`toolbar-btn ${placeMode === null ? "active" : ""}`}
+              onClick={() => setPlaceMode(null)}
+            >
+              <IconMouse size={16} stroke={1.75} />
+              <span className='kbd'>Esc</span>
+            </button>
+          </Tooltip>
+        )}
+        <span className='sep' />
+        {tools.map(t => {
+          const active = placeMode === t.mode;
+          const { Icon } = t;
+          return (
+            <Tooltip key={t.label} label={`${t.label} (${t.hotkey})`}>
               <button
-                className={`toolbar-btn ${placeMode === null ? "active" : ""}`}
-                onClick={() => setPlaceMode(null)}
+                className={`toolbar-btn ${active ? "active" : ""}`}
+                onClick={() => {
+                  setPlaceMode(t.mode);
+                  setSelectionTool("default");
+                }}
               >
-                <IconLasso size={16} stroke={1.75} />
-                <span className='kbd'>L</span>
+                <Icon size={16} stroke={1.75} />
+                <span className='kbd'>{t.hotkey}</span>
               </button>
             </Tooltip>
-          ) : (
-            <Tooltip label='Select (Esc)'>
-              <button
-                className={`toolbar-btn ${placeMode === null ? "active" : ""}`}
-                onClick={() => setPlaceMode(null)}
-              >
-                <IconMouse size={16} stroke={1.75} />
-                <span className='kbd'>Esc</span>
-              </button>
-            </Tooltip>
-          )}
-          <span className='sep' />
-          {tools.map(t => {
-            const active = placeMode === t.mode;
-            const { Icon } = t;
-            return (
-              <Tooltip key={t.label} label={`${t.label} (${t.hotkey})`}>
-                <button
-                  className={`toolbar-btn ${active ? "active" : ""}`}
-                  onClick={() => {
-                    setPlaceMode(t.mode);
-                    setSelectionTool("default");
-                  }}
-                >
-                  <Icon size={16} stroke={1.75} />
-                  <span className='kbd'>{t.hotkey}</span>
-                </button>
-              </Tooltip>
-            );
-          })}
-        </div>
+          );
+        })}
       </div>
     </Panel>
   );

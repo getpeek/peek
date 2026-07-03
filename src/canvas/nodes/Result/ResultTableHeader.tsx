@@ -10,6 +10,7 @@ export const ResultTableHeader = memo(function ResultTableHeader({
   outbound,
   onResizeStart,
   onContextMenu,
+  onSelectColumn,
 }: {
   header: string;
   columnIdx: number;
@@ -18,6 +19,7 @@ export const ResultTableHeader = memo(function ResultTableHeader({
   outbound: Reference[] | undefined;
   onResizeStart: (e: React.PointerEvent<HTMLDivElement>, column: string) => void;
   onContextMenu: (e: React.MouseEvent, columnIdx: number, header: string) => void;
+  onSelectColumn: (columnIdx: number) => void;
 }) {
   const { isPk, isFk } = classifyColumn(header, columnIdx, inbound, outbound);
   const headerClasses: string[] = [];
@@ -31,6 +33,7 @@ export const ResultTableHeader = memo(function ResultTableHeader({
   return (
     <Table.Th
       className={headerClasses.join(" ")}
+      onClick={() => onSelectColumn(columnIdx)}
       onContextMenu={e => {
         e.preventDefault();
         e.stopPropagation();

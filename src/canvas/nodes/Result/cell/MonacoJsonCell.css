@@ -7,6 +7,9 @@
   background: var(--pk-node-bg);
   border-radius: 4px;
   overflow: hidden;
+  /* The td forbids selection; the Monaco editor must stay selectable. */
+  user-select: text;
+  -webkit-user-select: text;
 
   /* Strip the remaining Monaco chrome so the editor reads as the raw cell. */
   .monaco-editor,

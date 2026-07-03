@@ -17,6 +17,24 @@ export function useRowSelection(data: DatabaseResult, visibleIndices: number[]) 
 
   const isSelected = useCallback((idx: number) => selected.has(idx), [selected]);
 
+  // Which sides of a selection band a display row sits on — a row is a top/bottom
+  // edge when its neighbouring display position isn't selected. Null when the row
+  // isn't selected. Drives the band's rounded outline. `has(undefined)` is false,
+  // so the first/last display rows correctly read as edges.
+  const bandEdges = useCallback(
+    (displayPos: number): { top: boolean; bottom: boolean } | null => {
+      const rowIndex = visibleIndices[displayPos];
+      if (rowIndex === undefined || !selected.has(rowIndex)) {
+        return null;
+      }
+      return {
+        top: !selected.has(visibleIndices[displayPos - 1]),
+        bottom: !selected.has(visibleIndices[displayPos + 1]),
+      };
+    },
+    [selected, visibleIndices],
+  );
+
   const clear = useCallback(() => setSelected(new Set()), []);
 
   useEffect(() => {
@@ -34,7 +52,7 @@ export function useRowSelection(data: DatabaseResult, visibleIndices: number[]) 
 
   const onSelectMouseDown = useCallback(
     (rowIndex: number, e: React.MouseEvent) => {
-      if (!e.altKey || e.button !== 0) {
+      if (!e.shiftKey || e.button !== 0) {
         return;
       }
       e.preventDefault();
@@ -127,6 +145,7 @@ export function useRowSelection(data: DatabaseResult, visibleIndices: number[]) 
   return {
     selected,
     isSelected,
+    bandEdges,
     count: selected.size,
     onSelectMouseDown,
     clear,
