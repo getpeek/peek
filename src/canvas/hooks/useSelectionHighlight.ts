@@ -4,7 +4,7 @@ import type { AppEdge, AppNode, QueryData } from "../types";
 type NodeCacheEntry = { source: AppNode; styled: AppNode };
 type EdgeCacheEntry = { source: AppEdge; styled: AppEdge };
 
-function mergeClass(existing: string | undefined, extra: string): string {
+export function mergeClass(existing: string | undefined, extra: string): string {
   const base = existing ?? "";
   if (base.split(" ").includes(extra)) {
     return base;

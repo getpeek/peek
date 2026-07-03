@@ -49,6 +49,7 @@ import { useCanvas } from "./hooks/useCanvas";
 import { useDrawTool } from "./hooks/useDrawTool";
 import { useInteractionState } from "./hooks/useInteractionState";
 import { useMetaKeyHeld } from "./hooks/useMetaKeyHeld";
+import { useNodeEntryAnimation } from "./hooks/useNodeEntryAnimation";
 import { usePlaceTool } from "./hooks/usePlaceTool";
 import { useRubberBandSelect } from "./hooks/useRubberBandSelect";
 import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
@@ -179,7 +180,8 @@ function ReactFlowCanvasInner() {
 
   const connectionDrag = useConnectionDragHighlight();
 
-  const { styledNodes, styledEdges } = useSelectionHighlight(nodes, edges);
+  const enteringNodes = useNodeEntryAnimation(nodes);
+  const { styledNodes, styledEdges } = useSelectionHighlight(enteringNodes, edges);
 
   // Node drags flip `data-interacting` too, so heavy bodies freeze while moving.
   const onNodeDragStart = useCallback(

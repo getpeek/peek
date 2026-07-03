@@ -41,6 +41,12 @@ body.is-rubber-band-selecting * {
   animation-play-state: paused;
 }
 
+/* Entry: transform/opacity keep running on the compositor; the box-shadow
+   glow pauses during motion and resumes when the canvas is still. */
+.react-flow[data-interacting] .react-flow__node.node-entering .app-node {
+  animation-play-state: running, paused;
+}
+
 /* Hint the single transformed pane onto its own compositor layer for the
    gesture so panning is a GPU translate, not a repaint. Scoped to interaction
    only — no permanent layer/memory cost at rest. */
