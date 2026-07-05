@@ -2,7 +2,8 @@ import { useSetAtom } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
 import type { Simulation } from "d3-force";
 import { nodesAtom } from "../state";
-import { buildForceSimulation, type SimLink, type SimNode } from "../forceDirectedLayout";
+import { applySimulationPositions } from "../layout/applySimulationPositions";
+import { buildForceSimulation, type SimLink, type SimNode } from "../layout/forceSimulation";
 import type { AppNode } from "../types";
 
 export const SCHEMA_NODE_PREFIX = "schema-table-";
@@ -45,9 +46,6 @@ export function useSchemaSimulation({
       return;
     }
 
-    // Snapshot the schema sub-graph for the simulation. Coordinates are
-    // tracked at the node *centre* in the simulation but stored as the
-    // top-left corner in React Flow.
     const simNodes: SimNode[] = schemaNodes.map(n => {
       const w = n.width ?? DEFAULT_W;
       const h = n.height ?? DEFAULT_H;
@@ -68,30 +66,12 @@ export function useSchemaSimulation({
       .map(l => ({ source: l.source, target: l.target }));
 
     const sim = buildForceSimulation(simNodes, simLinks);
+    const applyPositions = applySimulationPositions(simNodeById, n =>
+      draggingRef.current.has(n.id),
+    );
 
     sim.on("tick", () => {
-      setNodes(ns => {
-        let mutated = false;
-        const next = ns.map(n => {
-          if (!isSchemaNode(n.id) || draggingRef.current.has(n.id)) {
-            return n;
-          }
-          const sn = simNodeById.get(n.id);
-          if (!sn) {
-            return n;
-          }
-          const w = n.width ?? DEFAULT_W;
-          const h = n.height ?? DEFAULT_H;
-          const x = (sn.x ?? 0) - w / 2;
-          const y = (sn.y ?? 0) - h / 2;
-          if (x === n.position.x && y === n.position.y) {
-            return n;
-          }
-          mutated = true;
-          return { ...n, position: { x, y } };
-        });
-        return mutated ? next : ns;
-      });
+      setNodes(applyPositions);
     });
 
     simRef.current = sim;

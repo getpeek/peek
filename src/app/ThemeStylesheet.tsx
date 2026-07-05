@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
 import { useEffect } from "react";
-import { configAtom } from "../state";
+import { effectiveThemeAtom } from "../state";
 import pineHref from "../canvas/nodes/theme/pine.css?url";
 import midnightHref from "../canvas/nodes/theme/midnight.css?url";
 import middayHref from "../canvas/nodes/theme/midday.css?url";
@@ -29,8 +29,7 @@ const getLinkElement = () => {
 };
 
 export const ThemeStylesheet = () => {
-  const config = useAtomValue(configAtom);
-  const theme = config?.theme ?? "pine";
+  const theme = useAtomValue(effectiveThemeAtom);
 
   useEffect(() => {
     getLinkElement().href = themeHrefs[theme];

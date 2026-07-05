@@ -3,7 +3,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { cameraLockedAtom, canvasApiAtom, nodesAtom } from "../../canvas/state";
 import type { CommandPaletteResult } from ".";
 
-export const useFitResultsToViewCommand = (): CommandPaletteResult | null => {
+export const useFitNodesToViewCommand = (): CommandPaletteResult | null => {
   const canvas = useAtomValue(canvasApiAtom);
   const nodes = useAtomValue(nodesAtom);
 
@@ -14,13 +14,13 @@ export const useFitResultsToViewCommand = (): CommandPaletteResult | null => {
   return {
     icon: <IconLayoutGrid size={16} />,
     action: "run",
-    label: "Fit results to view",
-    searchAgainst: "fit results view zoom bsp tile layout fill viewport",
+    label: "Fit nodes to view",
+    searchAgainst: "fit nodes view zoom bsp tile layout fill viewport",
     onSelect: () => canvas?.fitSelectedToViewport(),
   };
 };
 
-export const useFitResultsToViewAndLockCommand = (): CommandPaletteResult | null => {
+export const useFitNodesToViewAndLockCommand = (): CommandPaletteResult | null => {
   const canvas = useAtomValue(canvasApiAtom);
   const nodes = useAtomValue(nodesAtom);
   const setCameraLocked = useSetAtom(cameraLockedAtom);
@@ -32,8 +32,8 @@ export const useFitResultsToViewAndLockCommand = (): CommandPaletteResult | null
   return {
     icon: <IconLayoutGrid size={16} />,
     action: "run",
-    label: "Fit results to view and lock camera",
-    searchAgainst: "fit results view zoom bsp tile lock camera freeze present",
+    label: "Fit nodes to view and lock camera",
+    searchAgainst: "fit nodes view zoom bsp tile lock camera freeze present",
     onSelect: () => {
       canvas?.fitSelectedToViewport();
       setCameraLocked(true);

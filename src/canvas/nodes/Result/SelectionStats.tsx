@@ -1,25 +1,28 @@
+import { IconHash, IconMathAvg, IconMathMax, IconMathMin, IconSum } from "@tabler/icons-react";
+import type { Icon } from "@tabler/icons-react";
 import type { SelectionAggregates } from "./aggregate";
 
 const numberFormat = new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 });
 
-/** Aggregate readout shown in the result toolbar while an all-numeric cell selection is active. */
-export function SelectionStats({ summary }: { summary: SelectionAggregates }) {
-  const stats: [string, number][] = [
-    ["count", summary.count],
-    ["sum", summary.sum],
-    ["avg", summary.avg],
-    ["min", summary.min],
-    ["max", summary.max],
-  ];
+const stats: [keyof SelectionAggregates, Icon][] = [
+  ["count", IconHash],
+  ["sum", IconSum],
+  ["avg", IconMathAvg],
+  ["min", IconMathMin],
+  ["max", IconMathMax],
+];
 
+/** Aggregate chips that take over the result toolbar while an all-numeric cell selection is active. */
+export function SelectionStats({ summary }: { summary: SelectionAggregates }) {
   return (
-    <>
-      {stats.map(([label, value]) => (
-        <span key={label} className='stat'>
+    <div className='selection-stats'>
+      {stats.map(([label, StatIcon]) => (
+        <span key={label} className='stat-chip'>
+          <StatIcon size={11} />
           <span className='label'>{label}</span>
-          <span className='value'>{numberFormat.format(value)}</span>
+          <span className='value'>{numberFormat.format(summary[label])}</span>
         </span>
       ))}
-    </>
+    </div>
   );
 }

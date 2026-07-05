@@ -153,22 +153,24 @@ export function ResultToolbar({
     );
   }
 
+  if (selectionStats) {
+    return (
+      <div className='app-node-subtoolbar nodrag'>
+        <SelectionStats summary={selectionStats} />
+      </div>
+    );
+  }
+
   return (
     <div className='app-node-subtoolbar nodrag'>
       <div className='meta'>
-        {selectionStats ? (
-          <SelectionStats summary={selectionStats} />
-        ) : (
-          <>
-            <span className='ok'>●</span>
-            <span>{rows.length} rows</span>
-            {queryInfo?.tables.map(t => (
-              <span key={`${t.name}-${t.alias ?? ""}`} className='table-badge'>
-                {t.name}
-              </span>
-            ))}
-          </>
-        )}
+        <span className='ok'>●</span>
+        <span>{rows.length} rows</span>
+        {queryInfo?.tables.map(t => (
+          <span key={`${t.name}-${t.alias ?? ""}`} className='table-badge'>
+            {t.name}
+          </span>
+        ))}
       </div>
       <div className='actions'>
         {canInsert && (

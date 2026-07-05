@@ -18,7 +18,8 @@ import { useMultiplayer } from "./multiplayer/syncBridge";
 import { useDeepLinkInvite } from "./multiplayer/useDeepLinkInvite";
 import { useMcpBridge } from "./mcp/useMcpBridge";
 import { UpdateDialog } from "./updater/UpdateDialog";
-import { configAtom } from "./state";
+import { ThemePicker } from "./theme-picker/ThemePicker";
+import { effectiveThemeAtom } from "./state";
 import "@mantine/core/styles.css";
 import "@mantine/charts/styles.css";
 import "./canvas/theme.css";
@@ -35,8 +36,8 @@ function App() {
   useDeepLinkInvite();
   useMcpBridge();
 
-  const config = useAtomValue(configAtom);
-  const colorScheme = config?.theme === "midday" ? "light" : "dark";
+  const effectiveTheme = useAtomValue(effectiveThemeAtom);
+  const colorScheme = effectiveTheme === "midday" ? "light" : "dark";
 
   return (
     <MantineProvider theme={theme} forceColorScheme={colorScheme}>
@@ -48,6 +49,7 @@ function App() {
       <ReactFlowCanvas />
       <CommandPalette />
       <KeymapHelp />
+      <ThemePicker />
       <ClosePageConfirmModal />
       <InviteConfirmModal />
       <UpdateDialog />

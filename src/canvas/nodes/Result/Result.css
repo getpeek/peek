@@ -111,23 +111,41 @@
   letter-spacing: 0.02em;
 }
 
-/* Aggregate readout that replaces the row/table meta while an all-numeric
+/* Aggregate chips that take over the subtoolbar while an all-numeric
    cell selection is active. */
-.app-node-subtoolbar .meta .stat {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
+.app-node-subtoolbar .selection-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: wrap;
 
-  .label {
-    color: var(--pk-fg-subtle);
-    font-size: 10px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
+  .stat-chip {
+    --chip-color: var(--pk-fg-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: 1px solid color-mix(in oklch, var(--chip-color) 28%, transparent);
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--chip-color) 11%, transparent);
 
-  .value {
-    color: var(--pk-fg);
-    font-variant-numeric: tabular-nums;
+    svg {
+      flex: none;
+      color: var(--pk-fg-subtle);
+    }
+
+    .label {
+      color: var(--pk-fg-subtle);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .value {
+      color: var(--pk-fg);
+      font-variant-numeric: tabular-nums;
+    }
   }
 }
 
@@ -492,6 +510,15 @@ td.editing {
   cursor: pointer;
 }
 
+/* Cmd/Ctrl held: a drag moves the node, so everything in the body reads as
+   grabbable rather than selectable. */
+.move-cursor,
+.move-cursor table tbody td,
+.move-cursor table thead th,
+.move-cursor .reference--link {
+  cursor: grab;
+}
+
 /* Selection outline — a pseudo-element border on the boundary cells traces the
    whole selection without disturbing layout. Interior cells get no sel-* class,
    so only the outer edge is drawn; corner cells round the shared outer corner.
@@ -508,7 +535,8 @@ td.editing {
   /* Sit just outside the cells and overlap neighbours so segments join seamlessly. */
   inset: -1.5px;
   pointer-events: none;
-  z-index: 1;
+  /* Above the ghost outline (z-index 1) so a solid edge wins where they overlap. */
+  z-index: 2;
 }
 .app-node table tbody td.sel-top::after {
   border-top: 1.5px solid var(--pk-accent);
@@ -533,6 +561,49 @@ td.editing {
 }
 .app-node table tbody td.sel-bottom.sel-right::after {
   border-bottom-right-radius: 7px;
+}
+
+/* Ghost outline — a dashed, dimmer hover preview of what a click/drag would
+   select (a cell, the whole column from its header, or the row while Shift is
+   held). Mirrors the selection outline above but on ::before, sitting under it. */
+.app-node table tbody td.gh-top::before,
+.app-node table tbody td.gh-right::before,
+.app-node table tbody td.gh-bottom::before,
+.app-node table tbody td.gh-left::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  pointer-events: none;
+  z-index: 1;
+}
+.app-node table tbody td.gh-top::before {
+  border-top: 1.5px dashed var(--pk-accent-line);
+}
+.app-node table tbody td.gh-bottom::before {
+  border-bottom: 1.5px dashed var(--pk-accent-line);
+}
+.app-node table tbody td.gh-left::before {
+  border-left: 1.5px dashed var(--pk-accent-line);
+}
+.app-node table tbody td.gh-right::before {
+  border-right: 1.5px dashed var(--pk-accent-line);
+}
+.app-node table tbody td.gh-top.gh-left::before {
+  border-top-left-radius: 7px;
+}
+.app-node table tbody td.gh-top.gh-right::before {
+  border-top-right-radius: 7px;
+}
+.app-node table tbody td.gh-bottom.gh-left::before {
+  border-bottom-left-radius: 7px;
+}
+.app-node table tbody td.gh-bottom.gh-right::before {
+  border-bottom-right-radius: 7px;
+}
+
+/* Header-hover cue: tint the column name so it reads as clickable (selects column). */
+.app-node table thead th:hover .col-name {
+  color: var(--pk-accent-soft);
 }
 
 /* Highlight the matched characters within a cell, mirroring the command palette. */

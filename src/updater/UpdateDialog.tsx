@@ -1,7 +1,12 @@
 import "./UpdateDialog.css";
 import { useClickOutside, useHotkeys } from "@mantine/hooks";
 import { IconX } from "@tabler/icons-react";
+import { openUrl } from "@tauri-apps/plugin-opener";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useUpdateCheck } from "./useUpdateCheck";
+
+const CHANGELOG_URL = "https://getpeek.dev/changelog";
 
 export function UpdateDialog() {
   const { update, installState, progress, errorMessage, dismiss, install } = useUpdateCheck();
@@ -31,7 +36,17 @@ export function UpdateDialog() {
           )}
         </div>
         <div className='update-dialog-body'>
-          {update.body && <p className='update-dialog-notes'>{update.body}</p>}
+          {update.body && (
+            <div className='update-dialog-notes'>
+              <Markdown remarkPlugins={[remarkGfm]}>{update.body}</Markdown>
+            </div>
+          )}
+          <button
+            className='update-dialog-changelog-link'
+            onClick={() => void openUrl(CHANGELOG_URL)}
+          >
+            View full changelog ↗
+          </button>
           {installState === "downloading" && (
             <div className='update-dialog-progress'>
               <span className='update-dialog-status'>Downloading…</span>

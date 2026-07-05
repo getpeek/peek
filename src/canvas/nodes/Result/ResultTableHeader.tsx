@@ -11,6 +11,7 @@ export const ResultTableHeader = memo(function ResultTableHeader({
   onResizeStart,
   onContextMenu,
   onSelectColumn,
+  onHeaderEnter,
 }: {
   header: string;
   columnIdx: number;
@@ -20,6 +21,7 @@ export const ResultTableHeader = memo(function ResultTableHeader({
   onResizeStart: (e: React.PointerEvent<HTMLDivElement>, column: string) => void;
   onContextMenu: (e: React.MouseEvent, columnIdx: number, header: string) => void;
   onSelectColumn: (columnIdx: number) => void;
+  onHeaderEnter: (columnIdx: number) => void;
 }) {
   const { isPk, isFk } = classifyColumn(header, columnIdx, inbound, outbound);
   const headerClasses: string[] = [];
@@ -33,7 +35,14 @@ export const ResultTableHeader = memo(function ResultTableHeader({
   return (
     <Table.Th
       className={headerClasses.join(" ")}
-      onClick={() => onSelectColumn(columnIdx)}
+      onMouseEnter={() => onHeaderEnter(columnIdx)}
+      onClick={e => {
+        // Cmd/Ctrl lets the drag move the node instead of selecting the column.
+        if (e.metaKey || e.ctrlKey) {
+          return;
+        }
+        onSelectColumn(columnIdx);
+      }}
       onContextMenu={e => {
         e.preventDefault();
         e.stopPropagation();

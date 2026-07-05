@@ -7,7 +7,7 @@ import { useAtomValue } from "jotai";
 import { scanVariableSites, type VariableValue } from "../../../variables";
 import { attachLspDocumentSync } from "./lspProvider";
 import { getOverflowWidgetsDomNode, syncOverflowWidgetsScale } from "./overflowWidgets";
-import { configAtom } from "../../../../state";
+import { effectiveThemeAtom } from "../../../../state";
 
 const variablesByModelUri = new Map<string, string[]>();
 let variableProviderRegistered = false;
@@ -83,8 +83,7 @@ export const SqlEditor = ({
   const variablesRef = useRef<Record<string, VariableValue>>(variables ?? {});
   const zoom = useStore(s => s.transform[2]);
   const zoomRef = useRef(zoom);
-  const config = useAtomValue(configAtom);
-  const theme = config?.theme === "midday" ? "rose-pine-dawn" : "rose-pine";
+  const theme = useAtomValue(effectiveThemeAtom) === "midday" ? "rose-pine-dawn" : "rose-pine";
 
   useEffect(() => {
     zoomRef.current = zoom;

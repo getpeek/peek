@@ -1,7 +1,7 @@
 import fuzzysort from "fuzzysort";
 import { CommandPaletteResult } from "./commands";
 import { useGoToQueryCommands } from "./commands/useGoToQueryCommands";
-import { useGetConnectionCommands } from "./commands/useGetConnectionCommands";
+import { useOpenConnectionPickerCommand } from "./commands/openConnectionPicker";
 import { useViewSchemaCommand } from "./commands/viewSchema";
 import { useOrganizeCanvasCommand } from "./commands/organizeCanvas";
 import { useRerunAllQueriesOnPageCommand } from "./commands/rerunAllQueriesOnPage";
@@ -16,15 +16,15 @@ import { useGoToPageCommands } from "./commands/useGoToPageCommands";
 import { useGoToTableCommands } from "./commands/useGoToTableCommands";
 import { useHostSessionCommand } from "./commands/hostSession";
 import { useJoinSessionCommand } from "./commands/joinSession";
-import { useSetThemeCommands } from "./commands/setTheme";
+import { useOpenThemePickerCommand } from "./commands/openThemePicker";
 import { useToggleUiCommand } from "./commands/toggleUi";
 import { useShowKeymapCommand } from "./commands/showKeymap";
 import { useAboutCommand } from "./commands/about";
 import { useCameraLockCommand } from "./commands/cameraLock";
 import {
-  useFitResultsToViewAndLockCommand,
-  useFitResultsToViewCommand,
-} from "./commands/fitResultsToView";
+  useFitNodesToViewAndLockCommand,
+  useFitNodesToViewCommand,
+} from "./commands/fitNodesToView";
 
 export interface SearchResult {
   command: CommandPaletteResult;
@@ -33,7 +33,7 @@ export interface SearchResult {
 
 export const useSearch = (query: string): SearchResult[] => {
   const queryCommands = useGoToQueryCommands();
-  const connectionCommands = useGetConnectionCommands();
+  const connectionPickerCommand = useOpenConnectionPickerCommand();
   const viewSchemaCommand = useViewSchemaCommand();
   const organizeCanvasCommand = useOrganizeCanvasCommand();
   const rerunAllOnPage = useRerunAllQueriesOnPageCommand();
@@ -49,26 +49,26 @@ export const useSearch = (query: string): SearchResult[] => {
   const goToTableCommands = useGoToTableCommands();
   const hostSessionCommand = useHostSessionCommand();
   const joinSessionCommand = useJoinSessionCommand();
-  const setThemeCommands = useSetThemeCommands();
+  const themePickerCommand = useOpenThemePickerCommand();
   const toggleUiCommand = useToggleUiCommand();
   const showKeymapCommand = useShowKeymapCommand();
   const aboutCommand = useAboutCommand();
   const cameraLockCommand = useCameraLockCommand();
-  const fitResultsCommand = useFitResultsToViewCommand();
-  const fitResultsAndLockCommand = useFitResultsToViewAndLockCommand();
+  const fitNodesCommand = useFitNodesToViewCommand();
+  const fitNodesAndLockCommand = useFitNodesToViewAndLockCommand();
 
   const searchSpace: CommandPaletteResult[] = [
     toggleUiCommand,
     cameraLockCommand,
-    ...(fitResultsCommand ? [fitResultsCommand] : []),
-    ...(fitResultsAndLockCommand ? [fitResultsAndLockCommand] : []),
+    ...(fitNodesCommand ? [fitNodesCommand] : []),
+    ...(fitNodesAndLockCommand ? [fitNodesAndLockCommand] : []),
     rerunAllOnPage,
     rerunSelected,
     exportCsv,
     exportJson,
     ...(pivotResultCommand ? [pivotResultCommand] : []),
     ...queryCommands,
-    ...connectionCommands,
+    connectionPickerCommand,
     viewSchemaCommand,
     organizeCanvasCommand,
     newPageCommand,
@@ -79,7 +79,7 @@ export const useSearch = (query: string): SearchResult[] => {
     ...goToTableCommands,
     hostSessionCommand,
     ...(joinSessionCommand ? [joinSessionCommand] : []),
-    ...setThemeCommands,
+    themePickerCommand,
     showKeymapCommand,
     aboutCommand,
   ];

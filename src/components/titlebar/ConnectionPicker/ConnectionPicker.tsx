@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Popover, Text } from "@mantine/core";
 import { useAtom, useAtomValue } from "jotai";
 import { activeConnectionAtom } from "../../../Connection/state";
-import { schemaAtom } from "../../../state";
+import { connectionPickerOpenAtom, schemaAtom } from "../../../state";
 import { invoke } from "@tauri-apps/api/core";
 import "./ConnectionPicker.css";
 import { WorkspacePopover } from "../../../Connection/WorkspacePopover";
@@ -15,7 +15,7 @@ export const ConnectionPicker: React.FC = () => {
   const [, setSchema] = useAtom(schemaAtom);
   const [, setIsConnecting] = useState(false);
   const activeConnection = useAtomValue(activeConnectionAtom);
-  const [showPopover, setShowPopover] = useState(false);
+  const [showPopover, setShowPopover] = useAtom(connectionPickerOpenAtom);
   const keymap = useKeymap();
   useHotkey(keymap["ConnectionPicker::Open"], () => {
     setShowPopover(!showPopover);

@@ -19,6 +19,16 @@ body {
   background: var(--pk-bg);
 }
 
+/* A theme swap flips every --pk-* token at once, which reads as a hard blink.
+   Easing the color-bearing properties smooths it into a crossfade — most visible
+   while previewing themes in the picker. */
+body > * {
+  transition:
+    background-color 0.1s,
+    color 0.1s,
+    border-color 0.1s;
+}
+
 /* Mantine surface tokens — pull from --pk-* so they follow the active theme */
 [data-mantine-color-scheme="dark"] {
   --mantine-color-body: var(--pk-bg);

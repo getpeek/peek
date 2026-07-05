@@ -21,6 +21,13 @@ export interface Config {
 
 export const configAtom = atom<Config>();
 
+export const previewThemeAtom = atom<Theme | null>(null);
+
+// Preview wins while the theme picker is open; otherwise the saved theme.
+export const effectiveThemeAtom = atom(
+  get => get(previewThemeAtom) ?? get(configAtom)?.theme ?? "pine",
+);
+
 export interface Schema {
   tables: Record<string, [string, string][]>;
   references: Record<string, string[]>;
@@ -40,5 +47,9 @@ export const persistanceAtom = atomWithStorage<string>("persistance", "default")
 export const commandPaletteOpenAtom = atom<boolean>(false);
 
 export const keymapHelpOpenAtom = atom<boolean>(false);
+
+export const themePickerOpenAtom = atom<boolean>(false);
+
+export const connectionPickerOpenAtom = atom<boolean>(false);
 
 export const uiVisibilityAtom = atom<boolean>(true);

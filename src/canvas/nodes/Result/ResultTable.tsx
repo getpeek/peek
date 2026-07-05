@@ -18,7 +18,8 @@ import { useResultEditing } from "./hooks/useResultEditing";
 import type { QueryInfo } from "./queryInfo";
 import type { ExportFormat } from "./export/serializeRows";
 import { useResultSelections } from "./hooks/useResultSelections";
-import { useSelectionCursor } from "./hooks/useSelectionCursor";
+import { useGhostSelection } from "./hooks/useGhostSelection";
+import type { CellRect } from "./hooks/useCellSelection";
 import { useSelectionCopy } from "./hooks/useSelectionCopy";
 import { useClearOnBlankClick } from "./hooks/useClearOnBlankClick";
 import { useRowActions } from "./hooks/useRowActions";
@@ -68,12 +69,16 @@ export const ResultTable = memo(function ResultTable({
     clearAll: clearSelections,
   } = useResultSelections(data, visibleIndices);
   useSelectionSummary({ nodeId, data, visibleIndices, rect: cellSelection.rect });
-  const cursorClass = useSelectionCursor();
   useSelectionCopy({
     active: cellSelection.rect !== null || rowSelection.selected.size > 0,
     data,
     cellGrid: cellSelection.selectedGrid,
     selectedRows: rowSelection.selected,
+  });
+  const ghost = useGhostSelection({
+    visibleCount: visibleIndices.length,
+    columnCount: data[0]?.length ?? 0,
+    cellRect: cellSelection.rect,
   });
 
   const firstRow = data[0] ?? [];
@@ -176,9 +181,9 @@ export const ResultTable = memo(function ResultTable({
   return (
     <div
       style={SCROLL_CONTAINER_STYLE}
-      className={cursorClass}
       ref={scrollContainerRef}
       onMouseDown={onContainerMouseDown}
+      onMouseLeave={ghost.onLeave}
     >
       {showEmpty ? (
         <ResultEmpty message={noRows ? "No results" : "No matching rows"} />
@@ -203,6 +208,7 @@ export const ResultTable = memo(function ResultTable({
                     onResizeStart={startResize}
                     onContextMenu={openHeaderMenu}
                     onSelectColumn={cellSelection.selectColumn}
+                    onHeaderEnter={ghost.onHeaderEnter}
                   />
                 ))}
               </Table.Tr>
@@ -215,14 +221,11 @@ export const ResultTable = memo(function ResultTable({
                   editing && editing.row === rowIndex
                     ? { editing, commitEdit, variableNames }
                     : null;
-                // Only rows inside the rect receive it (as a shared, stable
-                // object) so rows outside keep a stable null prop and stay memoized.
-                const rect = cellSelection.rect;
-                const rowCellRect =
+                // Rows outside a rect get a stable null prop and stay memoized.
+                const clipToRow = (rect: CellRect | null) =>
                   rect && virtualRow.index >= rect.top && virtualRow.index <= rect.bottom
                     ? rect
                     : null;
-                const rowBandEdges = rowSelection.bandEdges(virtualRow.index);
                 return (
                   <ResultTableRow
                     key={virtualRow.key}
@@ -235,11 +238,13 @@ export const ResultTable = memo(function ResultTable({
                     inbound={inbound}
                     outbound={outbound}
                     isSelected={rowSelection.isSelected(rowIndex)}
-                    cellRect={rowCellRect}
-                    rowBandEdges={rowBandEdges}
+                    cellRect={clipToRow(cellSelection.rect)}
+                    ghostRect={clipToRow(ghost.ghostRect)}
+                    rowBandEdges={rowSelection.bandEdges(virtualRow.index)}
                     matchedCols={matchedCols.get(rowIndex)}
                     onSelectMouseDown={onRowSelectMouseDown}
                     onCellSelectMouseDown={cellSelection.onCellMouseDown}
+                    onCellEnter={ghost.onCellEnter}
                     onFollowReferences={followReferences}
                     onCellContextMenu={cellContextMenu.openCellMenu}
                   />

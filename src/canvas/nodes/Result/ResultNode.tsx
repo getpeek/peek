@@ -12,6 +12,7 @@ import { useChartSync } from "./hooks/useChartSync";
 import { useHotkey } from "../../../app/useHotkey";
 import { useKeymap } from "../../../app/keymap";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
+import { useSelectionCursor } from "./hooks/useSelectionCursor";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
@@ -36,6 +37,17 @@ export const ResultNode = memo(function ResultNode({
   const h = height ?? DEFAULT_H;
   const bodyRef = useRef<HTMLDivElement>(null);
   useScrollFallthrough(bodyRef);
+
+  // Cmd/Ctrl held → drag moves the node: drop `nodrag` so React Flow takes the
+  // gesture, and show the matching cursor. Shift keeps its row-selection cursor.
+  const modifierClass = useSelectionCursor();
+  const bodyClasses = [
+    "app-node-body",
+    modifierClass === "move-cursor" ? null : "nodrag",
+    modifierClass,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const pivoted = data.pivoted ?? false;
   const search = useResultSearch();
@@ -96,7 +108,7 @@ export const ResultNode = memo(function ResultNode({
           search={search}
           matchCount={matches.visibleIndices.length}
         />
-        <div className='app-node-body nodrag' ref={bodyRef}>
+        <div className={bodyClasses} ref={bodyRef}>
           {pivoted ? (
             <ResultPivotView nodeId={id} data={rows} query={data.query} queryInfo={queryInfo} />
           ) : (
