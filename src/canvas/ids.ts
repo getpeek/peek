@@ -2,6 +2,7 @@ import { nanoid } from "nanoid";
 
 export const ids = {
   page: () => `page_${nanoid(8)}`,
+  checkpoint: () => `chk_${nanoid(8)}`,
   query: () => `query_${nanoid(8)}`,
   agent: () => `agent_${nanoid(8)}`,
   text: () => `text_${nanoid(8)}`,

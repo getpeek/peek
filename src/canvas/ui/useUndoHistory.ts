@@ -1,29 +1,11 @@
 import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
 import { documentAtom, historyAtom, loadEpochAtom, type HistorySnapshot } from "../state";
+import { stripEdge, stripNode } from "../stripEphemeral";
 import type { AppEdge, AppNode } from "../types";
 
 const MAX_HISTORY = 50;
 const DEBOUNCE_MS = 300;
-
-function stripNode(n: AppNode): AppNode {
-  const {
-    selected: _s,
-    dragging: _d,
-    resizing: _r,
-    ...rest
-  } = n as AppNode & {
-    selected?: boolean;
-    dragging?: boolean;
-    resizing?: boolean;
-  };
-  return rest as AppNode;
-}
-
-function stripEdge(e: AppEdge): AppEdge {
-  const { selected: _s, ...rest } = e as AppEdge & { selected?: boolean };
-  return rest as AppEdge;
-}
 
 function makeSnapshot(nodes: AppNode[], edges: AppEdge[]): HistorySnapshot {
   return {

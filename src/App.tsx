@@ -13,6 +13,8 @@ import { ReactFlowCanvas } from "./canvas/ReactFlowCanvas";
 import { useAutoSaveDocument } from "./canvas/hooks/useAutoSaveDocument";
 import { useAutoSaveResults } from "./canvas/hooks/useAutoSaveResults";
 import { useLoadDocument } from "./canvas/hooks/useLoadDocument";
+import { useHistoryCapture } from "./canvas/history/useHistoryCapture";
+import { HistoryTimeline } from "./canvas/history/HistoryTimeline";
 import { InviteConfirmModal } from "./multiplayer/InviteConfirmModal";
 import { useMultiplayer } from "./multiplayer/syncBridge";
 import { useDeepLinkInvite } from "./multiplayer/useDeepLinkInvite";
@@ -32,6 +34,7 @@ function App() {
   useAutoSaveDocument();
   useAutoSaveResults();
   useLoadDocument();
+  useHistoryCapture();
   useMultiplayer();
   useDeepLinkInvite();
   useMcpBridge();
@@ -50,6 +53,7 @@ function App() {
       <CommandPalette />
       <KeymapHelp />
       <ThemePicker />
+      <HistoryTimeline />
       <ClosePageConfirmModal />
       <InviteConfirmModal />
       <UpdateDialog />
