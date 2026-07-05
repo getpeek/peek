@@ -36,9 +36,6 @@ export function useSyncBridge(): void {
   const setSnapshot = useSetAtom(preSessionSnapshotAtom);
   const setResults = useSetAtom(resultsAtom);
 
-  // Outbound (document): subscribe to local document mutations and push diffs.
-  // Active for both `connecting` and `active` so the host's initial-state push
-  // lands before sync-finished flips status.
   useEffect(() => {
     if (!session) {
       return;
@@ -51,7 +48,6 @@ export function useSyncBridge(): void {
     });
   }, [session]);
 
-  // Outbound (results): per-result-node rows live in `results/<id>` entries.
   useEffect(() => {
     if (!session) {
       return;
@@ -64,11 +60,6 @@ export function useSyncBridge(): void {
     });
   }, [session]);
 
-  // Outbound (schema): the host pushes its DB schema as a single
-  // `schema/index` JSON blob so joiners — who have no DB connection — can
-  // populate `schemaAtom` (canvas UI) and the Rust-side `SchemaCache` (LSP)
-  // and get working completions/diagnostics. Re-runs on every schema
-  // change so reconnecting to a different host-side DB also propagates.
   useEffect(() => {
     if (!session || session.role !== "host") {
       return;
@@ -80,11 +71,6 @@ export function useSyncBridge(): void {
     });
   }, [schema, session]);
 
-  // Inbound: doc-update / doc-delete / sync-finished / session-ended /
-  // peer-disconnected / peer-reconnected. Mounted once at startup so we never
-  // miss events fired between the JS join() call returning and the
-  // [session]-effect re-running. The handlers gate on the session by reading
-  // from the store at event time.
   useEffect(() => {
     let unlistenUpdate: UnlistenFn | undefined;
     let unlistenDelete: UnlistenFn | undefined;
@@ -117,11 +103,8 @@ export function useSyncBridge(): void {
           isApplyingRemoteRef.current = false;
         }
       } else if (kind === "exec-request" && currentSession.role === "host") {
-        // Joiner asked us to run a query; do it and then clear the request.
         void handleExecRequest(key, value);
       } else if (kind === "schema" && currentSession.role === "joiner") {
-        // Host pushed its schema. Update the canvas-side atom and feed the
-        // Rust LSP cache so completions/diagnostics work for the joiner.
         try {
           const parsed: unknown = JSON.parse(new TextDecoder().decode(value));
           if (!isSchemaShape(parsed)) {
@@ -159,8 +142,6 @@ export function useSyncBridge(): void {
           isApplyingRemoteRef.current = false;
         }
       }
-      // exec-request deletes are confirmation that the host processed a
-      // request; nothing to do on the joiner side.
     }).then(u => {
       unlistenDelete = u;
     });
@@ -182,9 +163,6 @@ export function useSyncBridge(): void {
       if (!s) {
         return;
       }
-      // Only flip from "active" → "reconnecting"; if we're still in
-      // "connecting" the initial sync hasn't finished and the disconnect
-      // signal would be misleading. (Joiner already shows "SYNC".)
       if (s.status !== "active") {
         return;
       }
@@ -238,12 +216,8 @@ export function useSyncBridge(): void {
       unlistenDisconnected?.();
       unlistenReconnected?.();
     };
-    // Mount once for the lifetime of the app; never resubscribe.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Reference setters so React doesn't warn about unused values; the actual
-  // mutations go through the store inside the always-on listeners above.
   void setDoc;
   void setSession;
   void setRemoteCursors;

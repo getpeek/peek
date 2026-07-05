@@ -113,7 +113,6 @@ export function diffDocs(prev: CanvasDocument, next: CanvasDocument): Operation[
     });
   }
 
-  // Page deletions: emit deletions for the removed page's nodes/edges/name.
   for (const pageId of Object.keys(prev.pages)) {
     if (next.pages[pageId]) {
       continue;

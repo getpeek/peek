@@ -36,7 +36,6 @@ export const usePeekHotkeys = () => {
     exit(0);
   });
 
-  // Clipboard
   useHotkey(keymap["Edit::Cut"], () => {
     const selected = canvas.getSelectedNodes();
     if (selected.length === 0) {
@@ -73,14 +72,10 @@ export const usePeekHotkeys = () => {
   useHotkey(keymap["History::Undo"], undo);
   useHotkey(keymap["History::Redo"], redo);
 
-  // Selection
-
   useHotkey(keymap["Edit::SelectAll"], () => {
     const nodeIds = canvas.getNodes().map(n => n.id);
     canvas.selectOnly(nodeIds);
   });
-
-  // Page actions
 
   useHotkey(keymap["Edit::DeleteSelection"], () => {
     canvas.getSelectedNodes().forEach(node => canvas.deleteNode(node.id));
@@ -126,8 +121,6 @@ export const usePeekHotkeys = () => {
   useHotkey(keymap["Page::SelectNodeDown"], () => {
     pageActions.nodeInDirection("down");
   });
-
-  // Tools
 
   useHotkey(keymap["Tool::Select"], () => {
     const active = document.activeElement;
@@ -177,8 +170,6 @@ export const usePeekHotkeys = () => {
     }
   });
 
-  // View
-
   useHotkey(keymap["View::ToggleUi"], () => {
     setUiVisible(v => !v);
   });
@@ -186,8 +177,6 @@ export const usePeekHotkeys = () => {
   useHotkey(keymap["View::ToggleCameraLock"], () => {
     setCameraLocked(v => !v);
   });
-
-  // Help
 
   useHotkey(keymap["Help::Keymap"], () => {
     setKeymapHelpOpen(true);

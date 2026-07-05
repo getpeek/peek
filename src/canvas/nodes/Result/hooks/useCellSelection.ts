@@ -87,7 +87,6 @@ export function useCellSelection({
       window.getSelection()?.removeAllRanges();
       onStart();
 
-      // The pressed cell anchors a 1×1 selection; dragging extends the rectangle.
       const anchor: CellPoint = { pos: displayPos, col: colIdx };
       anchorRef.current = anchor;
       applyRect(normalizeRect(anchor, anchor));
@@ -131,7 +130,6 @@ export function useCellSelection({
     [onStart, applyRect],
   );
 
-  // Clicking a column header selects the whole column: every visible row, one column.
   const selectColumn = useCallback(
     (colIdx: number) => {
       if (visibleIndices.length === 0) {

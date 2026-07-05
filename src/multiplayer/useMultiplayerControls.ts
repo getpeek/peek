@@ -205,7 +205,6 @@ export function useMultiplayerControls(): MultiplayerControls {
 
   const controls = useMemo<MultiplayerControls>(() => ({ host, join, end }), [host, join, end]);
 
-  // Stage 2 devtools surface: window.peekMultiplayer.host() / .join('<ticket>') / .end().
   useEffect(() => {
     interface PeekMultiplayerWindow extends Window {
       peekMultiplayer?: MultiplayerControls;

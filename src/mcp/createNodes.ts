@@ -189,7 +189,6 @@ export function patchNode(
   return { nodeId, pageId };
 }
 
-// Position and size are optional on update; only the provided ones are applied.
 function geometryPatch(params: Record<string, unknown>): Partial<AppNode> {
   const patch: Partial<AppNode> = {};
   if (Array.isArray(params.position)) {

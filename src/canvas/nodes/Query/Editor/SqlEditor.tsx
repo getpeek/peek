@@ -12,8 +12,6 @@ import { effectiveThemeAtom } from "../../../../state";
 const variablesByModelUri = new Map<string, string[]>();
 let variableProviderRegistered = false;
 
-// Markdown shown when hovering a resolved variable chip: the value for a single
-// entry, or a count when a connected Variable node supplies a list.
 function variableHoverMessage(value: VariableValue): string {
   const values = Array.isArray(value) ? value : [value];
   if (values.length === 1) {
@@ -252,7 +250,6 @@ export const SqlEditor = ({
             smoothScrolling: true,
             cursorBlinking: "solid",
             cursorSmoothCaretAnimation: "off",
-            // Improve mouse interaction
             smartSelect: {
               selectSubwords: true,
               selectLeadingAndTrailingWhitespace: false,

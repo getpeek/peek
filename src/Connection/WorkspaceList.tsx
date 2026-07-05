@@ -118,7 +118,6 @@ export const WorkspaceList = ({
     }
   }
 
-  // Show all workspaces (even empty) when not searching.
   const isSearching = query.trim().length > 0;
   const allNames = isSearching ? groupedNames : workspaces.map(workspace => workspace.name);
   const cursorWorkspaceName = highlightedEntry?.item.workspaceName;

@@ -102,10 +102,8 @@ function useGossipBridge(): void {
     return () => {
       unlistenRecv?.();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Presence heartbeat + stale-peer pruning (only while session active).
   const session = useAtomValue(sessionStateAtom);
   useEffect(() => {
     if (!session) {

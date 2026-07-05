@@ -137,9 +137,7 @@ export function applyOperation(doc: CanvasDocument, op: Operation): CanvasDocume
           const next = active === doc.activePageId ? doc : ensurePage(doc, active);
           return { ...next, pageOrder: parsed, activePageId: active };
         }
-      } catch {
-        // ignore malformed
-      }
+      } catch {}
       return doc;
     }
     const parts = op.key.split("/");
@@ -159,7 +157,6 @@ export function applyOperation(doc: CanvasDocument, op: Operation): CanvasDocume
     return doc;
   }
 
-  // del
   const parts = op.key.split("/");
   if (parts[0] === "pages" && parts.length >= 3) {
     const pageId = parts[1];

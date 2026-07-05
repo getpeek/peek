@@ -200,7 +200,7 @@ impl PeekConfig {
         Ok(())
     }
 
-    fn config_dir() -> Result<PathBuf, String> {
+    pub(crate) fn config_dir() -> Result<PathBuf, String> {
         let home_dir = std::env::var("HOME").map_err(|e| e.to_string())?;
         Ok(Path::new(&home_dir).join("peek"))
     }
