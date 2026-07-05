@@ -1,25 +1,7 @@
 import type { AppEdge, AppNode, CanvasDocument, PageState } from "../canvas/types";
+import { stripEdge, stripNode } from "../canvas/stripEphemeral";
 import type { DatabaseResult } from "../state";
 import type { Operation } from "./types";
-
-function stripNode(n: AppNode): AppNode {
-  const {
-    selected: _s,
-    dragging: _d,
-    resizing: _r,
-    ...rest
-  } = n as AppNode & {
-    selected?: boolean;
-    dragging?: boolean;
-    resizing?: boolean;
-  };
-  return rest as AppNode;
-}
-
-function stripEdge(e: AppEdge): AppEdge {
-  const { selected: _s, ...rest } = e as AppEdge & { selected?: boolean };
-  return rest as AppEdge;
-}
 
 function encode(s: string): Uint8Array {
   return new TextEncoder().encode(s);

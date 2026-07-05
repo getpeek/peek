@@ -11,6 +11,7 @@ import {
   resultsAtom,
   cameraLockedAtom,
 } from "../state";
+import { historyPreviewAtom } from "../history/state";
 import { useUndoHistory } from "./useUndoHistory";
 import { useHotkey } from "../../app/useHotkey";
 import { useKeymap } from "../../app/keymap";
@@ -28,22 +29,34 @@ export const usePeekHotkeys = () => {
   const setKeymapHelpOpen = useSetAtom(keymapHelpOpenAtom);
   const setCameraLocked = useSetAtom(cameraLockedAtom);
   const results = useAtomValue(resultsAtom);
+  const historyPreview = useAtomValue(historyPreviewAtom);
   const pageActions = usePageActions();
   const { undo, redo } = useUndoHistory();
   const keymap = useKeymap();
+
+  // While a history preview is on screen the visible board is not the real
+  // document — anything that would mutate it must be inert.
+  const unlessPreviewing = (fn: () => void) => () => {
+    if (historyPreview === null) {
+      fn();
+    }
+  };
 
   useHotkey(keymap["App::Quit"], () => {
     exit(0);
   });
 
-  useHotkey(keymap["Edit::Cut"], () => {
-    const selected = canvas.getSelectedNodes();
-    if (selected.length === 0) {
-      return;
-    }
-    setClipboard(selected);
-    selected.forEach(node => canvas.deleteNode(node.id));
-  });
+  useHotkey(
+    keymap["Edit::Cut"],
+    unlessPreviewing(() => {
+      const selected = canvas.getSelectedNodes();
+      if (selected.length === 0) {
+        return;
+      }
+      setClipboard(selected);
+      selected.forEach(node => canvas.deleteNode(node.id));
+    }),
+  );
 
   useHotkey(keymap["Edit::Copy"], () => {
     const selected = canvas.getSelectedNodes();
@@ -52,34 +65,43 @@ export const usePeekHotkeys = () => {
     }
   });
 
-  useHotkey(keymap["Edit::Paste"], () => {
-    if (clipboard.length === 0) {
-      return;
-    }
-    const translation = pasteTranslation(clipboard, canvas.screenToFlowPosition);
-    const copies: AppNode[] = clipboard.map(node => ({
-      ...node,
-      id: newIdForType(node.type as AppNodeType),
-      position: {
-        x: node.position.x + translation.x,
-        y: node.position.y + translation.y,
-      },
-      selected: true,
-    }));
-    setNodes(prev => [...prev.map(n => ({ ...n, selected: false })), ...copies]);
-    canvas.selectOnly(copies.map(n => n.id));
-  });
-  useHotkey(keymap["History::Undo"], undo);
-  useHotkey(keymap["History::Redo"], redo);
+  useHotkey(
+    keymap["Edit::Paste"],
+    unlessPreviewing(() => {
+      if (clipboard.length === 0) {
+        return;
+      }
+      const translation = pasteTranslation(clipboard, canvas.screenToFlowPosition);
+      const copies: AppNode[] = clipboard.map(node => ({
+        ...node,
+        id: newIdForType(node.type as AppNodeType),
+        position: {
+          x: node.position.x + translation.x,
+          y: node.position.y + translation.y,
+        },
+        selected: true,
+      }));
+      setNodes(prev => [...prev.map(n => ({ ...n, selected: false })), ...copies]);
+      canvas.selectOnly(copies.map(n => n.id));
+    }),
+  );
+  useHotkey(keymap["History::Undo"], unlessPreviewing(undo));
+  useHotkey(keymap["History::Redo"], unlessPreviewing(redo));
 
-  useHotkey(keymap["Edit::SelectAll"], () => {
-    const nodeIds = canvas.getNodes().map(n => n.id);
-    canvas.selectOnly(nodeIds);
-  });
+  useHotkey(
+    keymap["Edit::SelectAll"],
+    unlessPreviewing(() => {
+      const nodeIds = canvas.getNodes().map(n => n.id);
+      canvas.selectOnly(nodeIds);
+    }),
+  );
 
-  useHotkey(keymap["Edit::DeleteSelection"], () => {
-    canvas.getSelectedNodes().forEach(node => canvas.deleteNode(node.id));
-  });
+  useHotkey(
+    keymap["Edit::DeleteSelection"],
+    unlessPreviewing(() => {
+      canvas.getSelectedNodes().forEach(node => canvas.deleteNode(node.id));
+    }),
+  );
 
   useHotkey(keymap["Zoom::Reset"], () => {
     canvas.resetZoom();
@@ -89,12 +111,18 @@ export const usePeekHotkeys = () => {
     canvas.fitView();
   });
 
-  useHotkey(keymap["Page::New"], () => {
-    pageActions.newPage();
-  });
-  useHotkey(keymap["Page::Close"], () => {
-    pageActions.closeActivePage();
-  });
+  useHotkey(
+    keymap["Page::New"],
+    unlessPreviewing(() => {
+      pageActions.newPage();
+    }),
+  );
+  useHotkey(
+    keymap["Page::Close"],
+    unlessPreviewing(() => {
+      pageActions.closeActivePage();
+    }),
+  );
   useHotkey(keymap["Page::Previous"], () => {
     pageActions.previousPage();
   });
@@ -131,44 +159,57 @@ export const usePeekHotkeys = () => {
     setSelectionTool("default");
     canvas.deselectAll();
   });
-  useHotkey(keymap["Tool::LassoSelect"], () => {
-    setSelectionTool("lasso");
-    setPlaceMode(null);
-  });
+  useHotkey(
+    keymap["Tool::LassoSelect"],
+    unlessPreviewing(() => {
+      setSelectionTool("lasso");
+      setPlaceMode(null);
+    }),
+  );
 
-  useHotkey(keymap["Tool::Query"], () => {
-    setPlaceMode("query");
-  });
+  useHotkey(
+    keymap["Tool::Query"],
+    unlessPreviewing(() => setPlaceMode("query")),
+  );
 
-  useHotkey(keymap["Tool::Agent"], () => {
-    setPlaceMode("agent");
-  });
+  useHotkey(
+    keymap["Tool::Agent"],
+    unlessPreviewing(() => setPlaceMode("agent")),
+  );
 
-  useHotkey(keymap["Tool::Text"], () => {
-    setPlaceMode("text");
-  });
+  useHotkey(
+    keymap["Tool::Text"],
+    unlessPreviewing(() => setPlaceMode("text")),
+  );
 
-  useHotkey(keymap["Tool::Draw"], () => {
-    setPlaceMode("draw");
-  });
+  useHotkey(
+    keymap["Tool::Draw"],
+    unlessPreviewing(() => setPlaceMode("draw")),
+  );
 
-  useHotkey(keymap["Tool::Variable"], () => {
-    setPlaceMode("variable");
-  });
+  useHotkey(
+    keymap["Tool::Variable"],
+    unlessPreviewing(() => setPlaceMode("variable")),
+  );
 
   // Pivot all selected result nodes. The default `shift-p` stays clear of `p` for the
   // connection picker and meta-p for the command palette.
-  useHotkey(keymap["Result::Pivot"], () => {
-    const selected = canvas.getSelectedNodes().filter((n): n is ResultNode => n.type === "result");
-    for (const node of selected) {
-      togglePivot(canvas, node.id, results[node.id]?.[0]?.length ?? 0);
-    }
-    // A lone pivoted node is usually parked off-screen; recenter so it isn't
-    // lost. With several selected the camera can't follow them all, so skip it.
-    if (selected.length === 1) {
-      canvas.zoomToNode(selected[0].id, { duration: 200 });
-    }
-  });
+  useHotkey(
+    keymap["Result::Pivot"],
+    unlessPreviewing(() => {
+      const selected = canvas
+        .getSelectedNodes()
+        .filter((n): n is ResultNode => n.type === "result");
+      for (const node of selected) {
+        togglePivot(canvas, node.id, results[node.id]?.[0]?.length ?? 0);
+      }
+      // A lone pivoted node is usually parked off-screen; recenter so it isn't
+      // lost. With several selected the camera can't follow them all, so skip it.
+      if (selected.length === 1) {
+        canvas.zoomToNode(selected[0].id, { duration: 200 });
+      }
+    }),
+  );
 
   useHotkey(keymap["View::ToggleUi"], () => {
     setUiVisible(v => !v);

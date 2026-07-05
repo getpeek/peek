@@ -1,0 +1,558 @@
+/* Version history — bottom-docked punchcard timeline (issue #3).
+   The canvas stays sharp while history is open; only the surrounding chrome
+   fades so a previewed board reads clearly. */
+
+/* ── Stage & chrome while the panel is open ─────────────────────── */
+
+.react-flow {
+  transform-origin: 50% 40%;
+  transition: transform 0.55s cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+
+body[data-history-open] {
+  .react-flow {
+    transform: translateY(-10px) scale(0.97);
+  }
+
+  .custom-titlebar {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(-8px);
+    pointer-events: none;
+  }
+
+  .canvas-toolbar,
+  .zoom-indicator {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(8px);
+    pointer-events: none;
+  }
+}
+
+.custom-titlebar,
+.canvas-toolbar,
+.zoom-indicator {
+  transition:
+    opacity 0.45s ease,
+    filter 0.45s ease,
+    transform 0.45s ease;
+}
+
+/* Freeze the board while a past version is on screen. React Flow sets
+   pointer-events inline on nodes, hence the !important. */
+body[data-history-previewing] {
+  .react-flow__node,
+  .react-flow__edge {
+    pointer-events: none !important;
+  }
+}
+
+/* ── Scrim, ring & chip ─────────────────────────────────────────── */
+
+.history-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 920;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    color-mix(in oklab, var(--pk-bg) 82%, transparent) 0%,
+    color-mix(in oklab, var(--pk-bg) 18%, transparent) 20%,
+    transparent 38%
+  );
+  animation: history-fade-in 0.55s ease;
+}
+
+.history-ring {
+  position: fixed;
+  inset: 0;
+  z-index: 930;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 2px var(--pk-accent-line),
+    inset 0 0 70px var(--pk-accent-bg);
+  animation: history-fade-in 0.3s ease;
+
+  .history-ring-chip {
+    position: absolute;
+    top: 46px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    background: var(--pk-accent);
+    color: var(--pk-bg);
+    font: 600 11px var(--pk-font-sans);
+    letter-spacing: 0.02em;
+    border-radius: var(--pk-radius-pill);
+    box-shadow: var(--pk-node-shadow-cheap);
+    white-space: nowrap;
+  }
+}
+
+@keyframes history-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Docked panel ───────────────────────────────────────────────── */
+
+.history-panel {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 940;
+  height: 208px;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in oklab, var(--pk-node-bg), transparent 20%);
+  backdrop-filter: blur(28px) saturate(1.5);
+  -webkit-backdrop-filter: blur(28px) saturate(1.5);
+  border: 1px solid var(--pk-node-border);
+  border-radius: 20px;
+  box-shadow: var(--pk-node-shadow);
+  color: var(--pk-fg);
+  animation: history-panel-in 0.55s cubic-bezier(0.2, 0.85, 0.25, 1);
+}
+
+@keyframes history-panel-in {
+  from {
+    transform: translateY(130%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.history-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 8px 18px;
+  flex: 0 0 auto;
+
+  .title {
+    font: 600 14px var(--pk-font-sans);
+    letter-spacing: -0.01em;
+  }
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  .hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 11.5px var(--pk-font-sans);
+    color: var(--pk-fg-subtle);
+    white-space: nowrap;
+  }
+}
+
+.history-close {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--pk-node-border);
+  background: transparent;
+  color: var(--pk-fg-subtle);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    background 0.12s;
+
+  &:hover {
+    color: var(--pk-fg);
+    background: var(--pk-node-bg-2);
+  }
+}
+
+/* ── Timeline strip (wider than the panel → drag / wheel to pan) ── */
+
+.history-viewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-x;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 42px,
+    #000 calc(100% - 42px),
+    transparent
+  );
+  mask-image: linear-gradient(90deg, transparent, #000 42px, #000 calc(100% - 42px), transparent);
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.history-track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.history-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: var(--pk-node-border);
+  border-radius: 2px;
+}
+
+.history-rail-fill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, var(--pk-accent-line), var(--pk-accent));
+  border-radius: 2px;
+  pointer-events: none;
+  transition: width 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.history-gridline {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 0;
+  border-left: 1px dashed var(--pk-node-border);
+  pointer-events: none;
+}
+
+.history-day {
+  position: absolute;
+  bottom: 6px;
+  transform: translateX(-50%);
+  font: 600 10.5px var(--pk-font-sans);
+  color: var(--pk-fg-muted);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.history-tag {
+  position: absolute;
+  top: calc(50% - 40px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font: 500 10px var(--pk-font-mono);
+  color: var(--pk-fg-muted);
+  padding: 2px 8px;
+  border-radius: var(--pk-radius-pill);
+  background: color-mix(in oklab, var(--pk-node-bg) 70%, transparent);
+  border: 1px solid var(--pk-node-border);
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    border-color 0.12s,
+    background 0.12s;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 1px;
+    height: 24px;
+    transform: translateX(-50%);
+    background: var(--pk-node-border-strong);
+  }
+
+  &:hover {
+    color: var(--pk-fg);
+    border-color: var(--pk-accent-line);
+  }
+
+  &.active {
+    color: var(--pk-bg);
+    background: var(--pk-accent);
+    border-color: var(--pk-accent);
+    font-weight: 600;
+
+    &::after {
+      background: var(--pk-accent);
+    }
+  }
+}
+
+.history-dot {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background: var(--pk-node-border-strong);
+  transition:
+    transform 0.12s,
+    box-shadow 0.15s,
+    background 0.15s;
+
+  &:hover {
+    transform: translate(-50%, -50%) scale(1.35);
+    box-shadow: 0 0 0 4px var(--pk-accent-bg);
+  }
+
+  &.milestone {
+    background: var(--pk-accent);
+  }
+
+  &.present {
+    background: var(--pk-fg);
+    box-shadow: 0 0 0 3px var(--pk-accent-bg);
+  }
+
+  &.selected {
+    background: var(--pk-fg);
+    border: 3px solid var(--pk-accent);
+    transform: translate(-50%, -50%) scale(1.7);
+    box-shadow: 0 0 0 4px var(--pk-accent-bg);
+  }
+}
+
+/* ── Floating version card (follows the selected dot) ───────────── */
+
+.history-card-layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 0;
+  pointer-events: none;
+}
+
+.history-card {
+  position: absolute;
+  bottom: 14px;
+  width: 300px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border-strong);
+  border-radius: 14px;
+  box-shadow: var(--pk-node-shadow);
+  transition: left 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  .history-card-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: var(--pk-fg-subtle);
+    border-radius: 6px;
+    cursor: pointer;
+    transition:
+      color 0.12s,
+      background 0.12s;
+
+    &:hover {
+      color: var(--pk-fg);
+      background: var(--pk-node-bg-2);
+    }
+  }
+
+  .history-card-body {
+    padding: 15px 16px 12px;
+  }
+
+  .history-card-title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding-right: 26px;
+
+    .version {
+      font: 600 15px var(--pk-font-sans);
+      color: var(--pk-fg);
+    }
+
+    .stamp {
+      margin-left: auto;
+      font: 500 11.5px var(--pk-font-mono);
+      color: var(--pk-fg-subtle);
+      white-space: nowrap;
+    }
+  }
+
+  .history-card-desc {
+    margin: 8px 0 10px;
+    font: 400 13px / 1.5 var(--pk-font-sans);
+    color: var(--pk-fg-muted);
+  }
+
+  .history-card-meta {
+    display: flex;
+    align-items: center;
+
+    .current {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font: 500 11px var(--pk-font-mono);
+      color: var(--pk-green);
+    }
+
+    .changes {
+      font: 500 11px var(--pk-font-mono);
+      color: var(--pk-fg-subtle);
+    }
+  }
+
+  .history-card-actions {
+    padding: 0 16px 14px;
+
+    button {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 10px;
+      border-radius: 9px;
+      font: 600 12.5px var(--pk-font-sans);
+      cursor: pointer;
+      border: 1px solid var(--pk-accent);
+      background: var(--pk-accent);
+      color: var(--pk-bg);
+      transition: filter 0.12s;
+
+      &:hover:not(:disabled) {
+        filter: brightness(1.08);
+      }
+
+      &:disabled {
+        background: var(--pk-node-bg-2);
+        border-color: var(--pk-node-border);
+        color: var(--pk-fg-subtle);
+        cursor: default;
+      }
+    }
+  }
+
+  .history-card-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-top: 1px solid var(--pk-node-border);
+    border-radius: 0 0 14px 14px;
+    background: var(--pk-node-bg-2);
+    font: 500 12px var(--pk-font-sans);
+    color: var(--pk-fg-muted);
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 0;
+      background: transparent;
+      color: var(--pk-fg-muted);
+      font: inherit;
+      cursor: pointer;
+      padding: 3px 6px;
+      border-radius: 6px;
+      transition:
+        color 0.12s,
+        background 0.12s;
+
+      &:hover:not(:disabled) {
+        color: var(--pk-fg);
+        background: var(--pk-node-bg);
+      }
+
+      &:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+    }
+
+    .count {
+      font: 500 11px var(--pk-font-mono);
+      font-variant-numeric: tabular-nums;
+      color: var(--pk-fg-subtle);
+      white-space: nowrap;
+    }
+  }
+
+  .history-card-arrow {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    transform: translate(-50%, -7px) rotate(45deg);
+    background: var(--pk-node-bg-2);
+    border-right: 1px solid var(--pk-node-border-strong);
+    border-bottom: 1px solid var(--pk-node-border-strong);
+  }
+}
+
+/* ── Restore toast ──────────────────────────────────────────────── */
+
+.history-toast {
+  position: fixed;
+  top: 46px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 990;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-accent-line);
+  color: var(--pk-fg);
+  padding: 9px 15px;
+  border-radius: var(--pk-radius-card);
+  font: 500 12.5px var(--pk-font-sans);
+  box-shadow: var(--pk-node-shadow);
+  animation: history-toast-in 0.25s ease;
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--pk-green);
+    box-shadow: 0 0 8px var(--pk-green);
+  }
+}
+
+@keyframes history-toast-in {
+  from {
+    transform: translate(-50%, -8px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}

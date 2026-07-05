@@ -15,18 +15,18 @@ import {
 import "@xyflow/react/dist/style.css";
 import "./ReactFlowCanvas.css";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback } from "react";
 import { uiVisibilityAtom } from "../state";
 import {
   activePageIdAtom,
   cameraLockedAtom,
   edgesAtom,
-  loadEpochAtom,
   nodesAtom,
   placeModeAtom,
   viewportAtom,
 } from "./state";
 import { CanvasApiPublisher } from "./CanvasApiPublisher";
+import { historyPreviewAtom } from "./history/state";
 import { AgentNode } from "./nodes/Agent/AgentNode";
 import { BarChartNode } from "./nodes/BarChart/BarChartNode";
 import { DrawNode } from "./nodes/Draw/DrawNode";
@@ -54,6 +54,7 @@ import { usePlaceTool } from "./hooks/usePlaceTool";
 import { useRubberBandSelect } from "./hooks/useRubberBandSelect";
 import { useSchemaForceLayout } from "./hooks/useSchemaForceLayout";
 import { useSelectionHighlight } from "./hooks/useSelectionHighlight";
+import { useViewportSync } from "./hooks/useViewportSync";
 import { useZoomVariable } from "./hooks/useZoomVariable";
 import { LassoOverlay } from "./LassoOverlay";
 import { useConnectionDragHighlight } from "./hooks/useConnectionDragHighlight";
@@ -93,33 +94,17 @@ function ReactFlowCanvasInner() {
   const [edges, setEdges] = useAtom(edgesAtom);
   const viewport = useAtomValue(viewportAtom);
   const setViewport = useSetAtom(viewportAtom);
-  const loadEpoch = useAtomValue(loadEpochAtom);
   const activePageId = useAtomValue(activePageIdAtom);
   const placeMode = useAtomValue(placeModeAtom);
   const uiVisible = useAtomValue(uiVisibilityAtom);
   const cameraLocked = useAtomValue(cameraLockedAtom);
+  const historyPreview = useAtomValue(historyPreviewAtom);
+  const previewing = historyPreview !== null && historyPreview.pageId === activePageId;
   const rf = useReactFlow<AppNode, AppEdge>();
   const canvas = useCanvas();
   const interaction = useInteractionState();
 
-  // `defaultViewport` only applies on mount; restoring viewport on connection
-  // load or page switch needs an imperative setViewport (else camera drifts).
-  const viewportSyncRef = useRef<{ epoch: number; pageId: string } | null>(null);
-  useEffect(() => {
-    const last = viewportSyncRef.current;
-    if (last === null) {
-      // First mount — defaultViewport already wired this up.
-      viewportSyncRef.current = { epoch: loadEpoch, pageId: activePageId };
-      return;
-    }
-    if (last.epoch === loadEpoch && last.pageId === activePageId) {
-      // Pan/zoom — `viewport` changed but neither load nor page did. Don't
-      // re-apply; that would fight the user.
-      return;
-    }
-    viewportSyncRef.current = { epoch: loadEpoch, pageId: activePageId };
-    rf.setViewport(viewport);
-  }, [loadEpoch, activePageId, viewport, rf]);
+  useViewportSync();
   const { livePoints, strokeWidth: drawStrokeWidth, color: drawColor } = useDrawTool();
   usePlaceTool();
   const { rectRef: selectionRectRef } = useRubberBandSelect();
@@ -130,6 +115,12 @@ function ReactFlowCanvasInner() {
 
   const onNodesChange = useCallback(
     (changes: NodeChange<AppNode>[]) => {
+      // While a history preview is on screen React Flow computes changes
+      // (dimension measurements, removals) against the *preview* nodes —
+      // applying them to the real document would corrupt it.
+      if (previewing) {
+        return;
+      }
       // Resize arrives as dimension changes with `resizing` — freeze too.
       if (changes.some(c => c.type === "dimensions" && c.resizing)) {
         interaction.begin();
@@ -137,14 +128,17 @@ function ReactFlowCanvasInner() {
       }
       setNodes(ns => applyNodeChanges(changes, ns));
     },
-    [setNodes, interaction],
+    [setNodes, interaction, previewing],
   );
 
   const onEdgesChange = useCallback(
     (changes: EdgeChange<AppEdge>[]) => {
+      if (previewing) {
+        return;
+      }
       setEdges(es => applyEdgeChanges(changes, es));
     },
-    [setEdges],
+    [setEdges, previewing],
   );
 
   const isValidConnection = useCallback<IsValidConnection<AppEdge>>(
@@ -170,18 +164,23 @@ function ReactFlowCanvasInner() {
 
   const onConnect = useCallback(
     (c: Connection) => {
-      if (!c.source || !c.target || !isValidConnection(c)) {
+      if (previewing || !c.source || !c.target || !isValidConnection(c)) {
         return;
       }
       canvas.connect(c.source, c.target);
     },
-    [canvas, isValidConnection],
+    [canvas, isValidConnection, previewing],
   );
 
   const connectionDrag = useConnectionDragHighlight();
 
+  // Entry animation tracks the REAL nodes even while previewing, so scrubbing
+  // between versions doesn't replay the pop-in for every reappearing node.
   const enteringNodes = useNodeEntryAnimation(nodes);
-  const { styledNodes, styledEdges } = useSelectionHighlight(enteringNodes, edges);
+  const { styledNodes, styledEdges } = useSelectionHighlight(
+    previewing ? historyPreview.snapshot.nodes : enteringNodes,
+    previewing ? historyPreview.snapshot.edges : edges,
+  );
 
   // Node drags flip `data-interacting` too, so heavy bodies freeze while moving.
   const onNodeDragStart = useCallback(
@@ -227,14 +226,14 @@ function ReactFlowCanvasInner() {
         }}
         defaultViewport={viewport}
         colorMode={"dark"}
-        deleteKeyCode={["Backspace", "Delete"]}
+        deleteKeyCode={previewing ? null : ["Backspace", "Delete"]}
         multiSelectionKeyCode='Shift'
         onlyRenderVisibleElements
         selectionKeyCode={null}
         selectionOnDrag={false}
         noDragClassName={metaHeld ? "nodrag-disabled" : "nodrag"}
-        nodesDraggable={placeMode === null}
-        elementsSelectable={placeMode === null}
+        nodesDraggable={placeMode === null && !previewing}
+        elementsSelectable={placeMode === null && !previewing}
         selectionMode={SelectionMode.Partial}
         panOnDrag={cameraLocked ? false : [1, 2]}
         panOnScroll={!cameraLocked}

@@ -17,6 +17,7 @@ import { useGoToTableCommands } from "./commands/useGoToTableCommands";
 import { useHostSessionCommand } from "./commands/hostSession";
 import { useJoinSessionCommand } from "./commands/joinSession";
 import { useOpenThemePickerCommand } from "./commands/openThemePicker";
+import { useShowHistoryCommand } from "./commands/showHistory";
 import { useToggleUiCommand } from "./commands/toggleUi";
 import { useShowKeymapCommand } from "./commands/showKeymap";
 import { useAboutCommand } from "./commands/about";
@@ -50,6 +51,7 @@ export const useSearch = (query: string): SearchResult[] => {
   const hostSessionCommand = useHostSessionCommand();
   const joinSessionCommand = useJoinSessionCommand();
   const themePickerCommand = useOpenThemePickerCommand();
+  const showHistoryCommand = useShowHistoryCommand();
   const toggleUiCommand = useToggleUiCommand();
   const showKeymapCommand = useShowKeymapCommand();
   const aboutCommand = useAboutCommand();
@@ -80,6 +82,7 @@ export const useSearch = (query: string): SearchResult[] => {
     hostSessionCommand,
     ...(joinSessionCommand ? [joinSessionCommand] : []),
     themePickerCommand,
+    ...(showHistoryCommand ? [showHistoryCommand] : []),
     showKeymapCommand,
     aboutCommand,
   ];
