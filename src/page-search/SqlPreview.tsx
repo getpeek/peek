@@ -152,20 +152,12 @@ const tokenize = (sql: string): Token[] => {
   return tokens;
 };
 
-interface SqlPreviewProps {
-  sql: string;
-  className?: string;
-  singleLine?: boolean;
-}
-
-export const SqlPreview = ({ sql, className, singleLine }: SqlPreviewProps) => {
-  const trimmed = sql.trim();
-  const normalized = singleLine ? trimmed.replaceAll(/\s+/gu, " ") : sql;
-  const source = trimmed.length === 0 ? "-- this query is empty" : normalized;
+export const SqlPreview = ({ sql }: { sql: string }) => {
+  const source = sql.trim().length === 0 ? "-- this query is empty" : sql;
   const tokens = tokenize(source);
 
   return (
-    <pre className={className ?? "cp-strip-sql"}>
+    <pre className='page-search-strip-sql'>
       {tokens.map((token, i) =>
         token.type === "whitespace" ? (
           <Fragment key={i}>{token.value}</Fragment>

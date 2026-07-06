@@ -45,6 +45,7 @@ pub(crate) enum Page {
     SelectNodeRight,
     SelectNodeUp,
     SelectNodeDown,
+    Search,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -56,7 +57,6 @@ pub(crate) enum View {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum ResultAction {
     Pivot,
-    Search,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -126,10 +126,10 @@ impl fmt::Display for Action {
             Action::Page(Page::SelectNodeRight) => "Page::SelectNodeRight",
             Action::Page(Page::SelectNodeUp) => "Page::SelectNodeUp",
             Action::Page(Page::SelectNodeDown) => "Page::SelectNodeDown",
+            Action::Page(Page::Search) => "Page::Search",
             Action::View(View::ToggleUi) => "View::ToggleUi",
             Action::View(View::ToggleCameraLock) => "View::ToggleCameraLock",
             Action::Result(ResultAction::Pivot) => "Result::Pivot",
-            Action::Result(ResultAction::Search) => "Result::Search",
             Action::CommandPalette(CommandPalette::Open) => "CommandPalette::Open",
             Action::ConnectionPicker(ConnectionPicker::Open) => "ConnectionPicker::Open",
             Action::App(AppAction::Quit) => "App::Quit",
@@ -170,10 +170,10 @@ impl FromStr for Action {
             "Page::SelectNodeRight" => Action::Page(Page::SelectNodeRight),
             "Page::SelectNodeUp" => Action::Page(Page::SelectNodeUp),
             "Page::SelectNodeDown" => Action::Page(Page::SelectNodeDown),
+            "Page::Search" => Action::Page(Page::Search),
             "View::ToggleUi" => Action::View(View::ToggleUi),
             "View::ToggleCameraLock" => Action::View(View::ToggleCameraLock),
             "Result::Pivot" => Action::Result(ResultAction::Pivot),
-            "Result::Search" => Action::Result(ResultAction::Search),
             "CommandPalette::Open" => Action::CommandPalette(CommandPalette::Open),
             "ConnectionPicker::Open" => Action::ConnectionPicker(ConnectionPicker::Open),
             "App::Quit" => Action::App(AppAction::Quit),
@@ -220,7 +220,7 @@ pub(crate) fn default_keymap() -> Vec<(&'static str, Action)> {
         ("meta-.", Action::View(View::ToggleUi)),
         ("meta-shift-l", Action::View(View::ToggleCameraLock)),
         ("shift-p", Action::Result(ResultAction::Pivot)),
-        ("meta-f", Action::Result(ResultAction::Search)),
+        ("meta-f", Action::Page(Page::Search)),
         ("meta-p", Action::CommandPalette(CommandPalette::Open)),
         ("meta-shift-p", Action::CommandPalette(CommandPalette::Open)),
         ("p", Action::ConnectionPicker(ConnectionPicker::Open)),

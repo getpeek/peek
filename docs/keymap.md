@@ -93,18 +93,19 @@ Action names are `Group::Variant`. The full set, with default bindings:
 
 ### Page — pages and node navigation
 
-| Action                      | Default           | Description                    |
-| --------------------------- | ----------------- | ------------------------------ |
-| `Page::New`                 | `meta-t`          | New page                       |
-| `Page::Close`               | `meta-w`          | Close the active page          |
-| `Page::Previous`            | `meta-shift-[`    | Previous page                  |
-| `Page::Next`                | `meta-shift-]`    | Next page                      |
-| `Page::SelectPreviousQuery` | `meta-[`          | Select the previous query node |
-| `Page::SelectNextQuery`     | `meta-]`          | Select the next query node     |
-| `Page::SelectNodeLeft`      | `meta-arrowleft`  | Select the node to the left    |
-| `Page::SelectNodeRight`     | `meta-arrowright` | Select the node to the right   |
-| `Page::SelectNodeUp`        | `meta-arrowup`    | Select the node above          |
-| `Page::SelectNodeDown`      | `meta-arrowdown`  | Select the node below          |
+| Action                      | Default           | Description                                                              |
+| --------------------------- | ----------------- | ------------------------------------------------------------------------ |
+| `Page::New`                 | `meta-t`          | New page                                                                 |
+| `Page::Close`               | `meta-w`          | Close the active page                                                    |
+| `Page::Previous`            | `meta-shift-[`    | Previous page                                                            |
+| `Page::Next`                | `meta-shift-]`    | Next page                                                                |
+| `Page::SelectPreviousQuery` | `meta-[`          | Select the previous query node                                           |
+| `Page::SelectNextQuery`     | `meta-]`          | Select the next query node                                               |
+| `Page::SelectNodeLeft`      | `meta-arrowleft`  | Select the node to the left                                              |
+| `Page::SelectNodeRight`     | `meta-arrowright` | Select the node to the right                                             |
+| `Page::SelectNodeUp`        | `meta-arrowup`    | Select the node above                                                    |
+| `Page::SelectNodeDown`      | `meta-arrowdown`  | Select the node below                                                    |
+| `Page::Search`              | `meta-f`          | Search all nodes on the page (searches within a selected result instead) |
 
 ### View
 
@@ -115,10 +116,9 @@ Action names are `Group::Variant`. The full set, with default bindings:
 
 ### Result
 
-| Action           | Default   | Description                           |
-| ---------------- | --------- | ------------------------------------- |
-| `Result::Pivot`  | `shift-p` | Pivot/transpose selected result nodes |
-| `Result::Search` | `meta-f`  | Search within the selected result     |
+| Action          | Default   | Description                           |
+| --------------- | --------- | ------------------------------------- |
+| `Result::Pivot` | `shift-p` | Pivot/transpose selected result nodes |
 
 ### Other
 

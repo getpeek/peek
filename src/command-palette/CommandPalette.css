@@ -262,17 +262,6 @@
   color: color-mix(in oklab, var(--pk-fg-subtle), transparent 50%);
 }
 
-.cp-strip-sql {
-  margin: 0;
-  min-width: 0;
-  flex: 1;
-  font: 400 12px var(--pk-font-mono);
-  color: var(--pk-fg-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .cp-strip-desc {
   min-width: 0;
   font: 400 12.5px var(--pk-font-sans);
@@ -280,32 +269,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.sql-keyword {
-  color: var(--pk-accent);
-  font-weight: 500;
-}
-
-.sql-string {
-  color: var(--pk-green);
-}
-
-.sql-number {
-  color: var(--pk-yellow);
-}
-
-.sql-comment {
-  color: var(--pk-fg-subtle);
-  font-style: italic;
-}
-
-.sql-operator {
-  color: var(--pk-red);
-}
-
-.sql-identifier {
-  color: var(--pk-fg);
 }
 
 .command-palette-footer {

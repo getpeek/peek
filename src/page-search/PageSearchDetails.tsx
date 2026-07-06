@@ -1,0 +1,107 @@
+import { useAtomValue } from "jotai";
+import { formatPreservingVars } from "../canvas/variables";
+import { resultRowsAtom } from "../canvas/state";
+import { stringifyValue } from "../canvas/nodes/Result/stringify";
+import type { DatabaseResult } from "../state";
+import { MAX_SEARCHED_ROWS, type NodeSearchEntry } from "./searchCorpus";
+import { SqlPreview } from "./SqlPreview";
+
+interface CellMatch {
+  column: string;
+  rowIndex: number;
+  value: string;
+  start: number;
+  end: number;
+}
+
+const MAX_CELL_MATCHES = 3;
+
+// How much of a long cell value to keep around the highlighted range.
+const WINDOW_BEFORE = 24;
+const WINDOW_AFTER = 60;
+
+function findCellMatches(rows: DatabaseResult, query: string): CellMatch[] {
+  const terms = query.trim().toLowerCase().split(/\s+/u).filter(Boolean);
+  if (terms.length === 0) {
+    return [];
+  }
+  const matches: CellMatch[] = [];
+  for (const [rowIndex, row] of rows.slice(0, MAX_SEARCHED_ROWS).entries()) {
+    for (const [column, value] of row) {
+      const text = stringifyValue(value);
+      const lower = text.toLowerCase();
+      const term = terms.find(t => lower.includes(t));
+      if (!term) {
+        continue;
+      }
+      const start = lower.indexOf(term);
+      matches.push({ column, rowIndex, value: text, start, end: start + term.length });
+      if (matches.length === MAX_CELL_MATCHES) {
+        return matches;
+      }
+    }
+  }
+  return matches;
+}
+
+const MatchedCell = ({ match }: { match: CellMatch }) => {
+  const windowStart = Math.max(0, match.start - WINDOW_BEFORE);
+  const windowEnd = Math.min(match.value.length, match.end + WINDOW_AFTER);
+  return (
+    <div className='page-search-strip-cell'>
+      <span className='cell-column'>{match.column}</span>
+      <span className='cell-value'>
+        {windowStart > 0 && "…"}
+        {match.value.slice(windowStart, match.start)}
+        <mark className='match'>{match.value.slice(match.start, match.end)}</mark>
+        {match.value.slice(match.end, windowEnd)}
+        {windowEnd < match.value.length && "…"}
+      </span>
+      <span className='cell-row'>row {match.rowIndex + 1}</span>
+    </div>
+  );
+};
+
+const PrettySql = ({ sql }: { sql: string }) => {
+  let pretty = sql;
+  try {
+    pretty = formatPreservingVars(sql, {
+      keywordCase: "upper",
+      functionCase: "upper",
+      language: "postgresql",
+    });
+  } catch {}
+  return <SqlPreview sql={pretty} />;
+};
+
+const ResultMatches = ({ entry, query }: { entry: NodeSearchEntry; query: string }) => {
+  const rows = useAtomValue(resultRowsAtom(entry.id));
+  const matches = findCellMatches(rows, query);
+
+  if (matches.length === 0) {
+    return entry.sql === undefined ? null : <PrettySql sql={entry.sql} />;
+  }
+  return matches.map((match, i) => <MatchedCell key={i} match={match} />);
+};
+
+// Fold-out under the active row, like the command palette's details strip: query
+// nodes preview their pretty-printed SQL; result nodes show the cells the query
+// actually hit (falling back to SQL when the match came from elsewhere, e.g. a
+// fuzzy or column-name hit).
+export const PageSearchDetails = ({ entry, query }: { entry: NodeSearchEntry; query: string }) => {
+  if (entry.type === "result") {
+    return (
+      <div className='page-search-strip'>
+        <ResultMatches entry={entry} query={query} />
+      </div>
+    );
+  }
+  if (entry.sql === undefined) {
+    return null;
+  }
+  return (
+    <div className='page-search-strip'>
+      <PrettySql sql={entry.sql} />
+    </div>
+  );
+};

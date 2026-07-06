@@ -3,6 +3,7 @@ import { useAtomValue } from "jotai";
 import { MonacoManager } from "./canvas/nodes/Query/Editor/MonacoManager";
 import { CustomTitleBar } from "./components/titlebar/CustomTitleBar";
 import { CommandPalette } from "./command-palette/CommandPalette";
+import { PageSearch } from "./page-search/PageSearch";
 import { KeymapHelp } from "./keymap-help/KeymapHelp";
 import { DropZone } from "./drop-zone/DropZone";
 import { useGetConfig } from "./app/useGetConfig";
@@ -51,6 +52,7 @@ function App() {
       <MonacoManager />
       <ReactFlowCanvas />
       <CommandPalette />
+      <PageSearch />
       <KeymapHelp />
       <ThemePicker />
       <HistoryTimeline />

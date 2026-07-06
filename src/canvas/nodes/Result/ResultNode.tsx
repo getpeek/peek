@@ -53,7 +53,7 @@ export const ResultNode = memo(function ResultNode({
   const search = useResultSearch();
   const matches = useResultSearchMatches(rows, search.query, search.active);
   const keymap = useKeymap();
-  useHotkey(keymap["Result::Search"], () => {
+  useHotkey(keymap["Page::Search"], () => {
     if (selected && !pivoted) {
       search.open();
     }

@@ -63,6 +63,10 @@ export const KEYMAP_REFERENCE: KeymapSection[] = [
       { action: "Page::SelectNodeRight", description: "Select the node to the right" },
       { action: "Page::SelectNodeUp", description: "Select the node above" },
       { action: "Page::SelectNodeDown", description: "Select the node below" },
+      {
+        action: "Page::Search",
+        description: "Search all nodes on the page (searches within a selected result instead)",
+      },
     ],
   },
   {
@@ -74,10 +78,7 @@ export const KEYMAP_REFERENCE: KeymapSection[] = [
   },
   {
     title: "Result",
-    entries: [
-      { action: "Result::Pivot", description: "Pivot/transpose selected result nodes" },
-      { action: "Result::Search", description: "Search within the selected result" },
-    ],
+    entries: [{ action: "Result::Pivot", description: "Pivot/transpose selected result nodes" }],
   },
   {
     title: "Other",
