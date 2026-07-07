@@ -98,6 +98,31 @@ export const AGENT_TOOLS: DynamicStructuredTool[] = [
     func: unused,
   }),
   new DynamicStructuredTool({
+    name: "group_nodes",
+    description:
+      "Group nodes into a named region — a wayfinding label the user sees when zoomed out. Group by MEANING, not edge connectivity: connected subgraphs often cover different questions as an exploration drills down, so prefer several precise regions over one broad one. A node belongs to one region; grouping claims it from any previous region. Created as a suggestion the user reviews unless suggested=false.",
+    schema: z.object({
+      node_ids: z.array(z.string()).describe("ids of the nodes to group (at least two)"),
+      name: z.string().describe("short region name, 2-4 words"),
+      desc: z.string().optional().describe("one-line description of the group"),
+      suggested: z.boolean().optional().describe("false to skip the user's review step"),
+    }),
+    func: unused,
+  }),
+  new DynamicStructuredTool({
+    name: "list_regions",
+    description:
+      "List the active page's regions and the node ids not in any region. Call before group_nodes to see current groups.",
+    schema: z.object({}),
+    func: unused,
+  }),
+  new DynamicStructuredTool({
+    name: "remove_region",
+    description: "Delete a region by region_id. Member nodes are kept — they become ungrouped.",
+    schema: z.object({ region_id: z.string() }),
+    func: unused,
+  }),
+  new DynamicStructuredTool({
     name: "camera_pan_to",
     description: "Center the camera on a point [x, y] in flow coords, keeping the current zoom.",
     schema: z.object({ position: z.tuple([z.number(), z.number()]) }),
@@ -160,7 +185,7 @@ Two query tools exist — do not confuse them:
 - run_query EXECUTES a query against the live database and returns the rows (CSV) so you can analyze them; it also drops a Result node on the canvas. Use it whenever you need data to answer a question.
 - create_query_node places an UN-RUN query node for the user to run themselves. Use it when the user asks you to create / write / add a query.
 
-Other tools build and arrange the board (create_vars_node, create_text_node, create_page, update_query_node, update_vars_node, update_text_node, connect_nodes) and drive the view (camera_pan_to, camera_set_zoom, camera_fit_node, select_nodes). Read tools (get_db_schema, get_connection_info, get_active_page_id, get_pages, get_page_content) inspect the current state.
+Other tools build and arrange the board (create_vars_node, create_text_node, create_page, update_query_node, update_vars_node, update_text_node, connect_nodes), organize it into named regions (group_nodes, list_regions, remove_region) and drive the view (camera_pan_to, camera_set_zoom, camera_fit_node, select_nodes). Read tools (get_db_schema, get_connection_info, get_active_page_id, get_pages, get_page_content) inspect the current state.
 
 Guidance:
 - The database schema is given to you as context — rely on it for table and column names rather than guessing.

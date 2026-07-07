@@ -1,27 +1,10 @@
-import type { AppEdge, AppNode, CanvasDocument, PageState } from "../canvas/types";
+import type { AppEdge, AppNode, CanvasDocument, PageState, RegionState } from "../canvas/types";
 import { stripEdge, stripNode } from "../canvas/stripEphemeral";
 import type { DatabaseResult } from "../state";
 import type { Operation } from "./types";
 
 function encode(s: string): Uint8Array {
   return new TextEncoder().encode(s);
-}
-
-export function bytesToB64(bytes: Uint8Array): string {
-  let bin = "";
-  for (let i = 0; i < bytes.length; i++) {
-    bin += String.fromCodePoint(bytes[i]);
-  }
-  return btoa(bin);
-}
-
-export function b64ToBytes(b64: string): Uint8Array {
-  const bin = atob(b64);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) {
-    out[i] = bin.codePointAt(i) ?? 0;
-  }
-  return out;
 }
 
 const PAGE_ORDER_KEY = "doc/page-order";
@@ -39,6 +22,10 @@ function edgeKey(pageId: string, edgeId: string): string {
 
 function pageNameKey(pageId: string): string {
   return `pages/${pageId}/name`;
+}
+
+function regionKey(pageId: string, regionId: string): string {
+  return `pages/${pageId}/regions/${regionId}`;
 }
 
 export function resultKey(nodeId: string): string {
@@ -106,6 +93,9 @@ export function diffDocs(prev: CanvasDocument, next: CanvasDocument): Operation[
     for (const edge of prevPage.edges) {
       ops.push({ kind: "del", key: edgeKey(pageId, edge.id) });
     }
+    for (const region of prevPage.regions ?? []) {
+      ops.push({ kind: "del", key: regionKey(pageId, region.id) });
+    }
     ops.push({ kind: "del", key: pageNameKey(pageId) });
   }
 
@@ -122,6 +112,7 @@ export function diffDocs(prev: CanvasDocument, next: CanvasDocument): Operation[
 
     diffNodes(pageId, prevPage, nextPage, ops);
     diffEdges(pageId, prevPage, nextPage, ops);
+    diffRegions(pageId, prevPage, nextPage, ops);
   }
 
   return ops;
@@ -178,6 +169,33 @@ function diffEdges(
         kind: "put",
         key: edgeKey(pageId, edgeId),
         value: encode(JSON.stringify(stripped)),
+      });
+    }
+  }
+}
+
+function diffRegions(
+  pageId: string,
+  prevPage: PageState | undefined,
+  nextPage: PageState,
+  ops: Operation[],
+): void {
+  const prevById = new Map<string, RegionState>((prevPage?.regions ?? []).map(r => [r.id, r]));
+  const nextById = new Map<string, RegionState>((nextPage.regions ?? []).map(r => [r.id, r]));
+
+  for (const [regionId] of prevById) {
+    if (!nextById.has(regionId)) {
+      ops.push({ kind: "del", key: regionKey(pageId, regionId) });
+    }
+  }
+
+  for (const [regionId, nextRegion] of nextById) {
+    const prevRegion = prevById.get(regionId);
+    if (!prevRegion || JSON.stringify(prevRegion) !== JSON.stringify(nextRegion)) {
+      ops.push({
+        kind: "put",
+        key: regionKey(pageId, regionId),
+        value: encode(JSON.stringify(nextRegion)),
       });
     }
   }
@@ -256,6 +274,13 @@ export function documentToPuts(doc: CanvasDocument): Operation[] {
         kind: "put",
         key: edgeKey(pageId, edge.id),
         value: encode(JSON.stringify(stripEdge(edge))),
+      });
+    }
+    for (const region of page.regions ?? []) {
+      ops.push({
+        kind: "put",
+        key: regionKey(pageId, region.id),
+        value: encode(JSON.stringify(region)),
       });
     }
   }

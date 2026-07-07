@@ -1,4 +1,4 @@
-import type { AppEdge, AppNode, CanvasDocument, PageState } from "../canvas/types";
+import type { AppEdge, AppNode, CanvasDocument, PageState, RegionState } from "../canvas/types";
 import type { DatabaseResult } from "../state";
 import type { Operation } from "./types";
 
@@ -94,6 +94,33 @@ function applyEdgePut(
   }
 }
 
+function applyRegionPut(
+  doc: CanvasDocument,
+  pageId: string,
+  regionId: string,
+  value: string,
+): CanvasDocument {
+  try {
+    const parsed = JSON.parse(value) as RegionState;
+    if (parsed.id !== regionId) {
+      return doc;
+    }
+    const next = ensurePage(doc, pageId);
+    return updatePage(next, pageId, p => {
+      const regions = p.regions ?? [];
+      const idx = regions.findIndex(r => r.id === regionId);
+      if (idx === -1) {
+        return { ...p, regions: [...regions, parsed] };
+      }
+      const updated = regions.slice();
+      updated[idx] = parsed;
+      return { ...p, regions: updated };
+    });
+  } catch {
+    return doc;
+  }
+}
+
 export function applyResultOperation(
   results: Record<string, DatabaseResult>,
   op: Operation,
@@ -153,6 +180,9 @@ export function applyOperation(doc: CanvasDocument, op: Operation): CanvasDocume
       if (parts[2] === "edges" && parts.length === 4) {
         return applyEdgePut(doc, pageId, parts[3], value);
       }
+      if (parts[2] === "regions" && parts.length === 4) {
+        return applyRegionPut(doc, pageId, parts[3], value);
+      }
     }
     return doc;
   }
@@ -183,6 +213,13 @@ export function applyOperation(doc: CanvasDocument, op: Operation): CanvasDocume
       return updatePage(doc, pageId, p => ({
         ...p,
         edges: p.edges.filter(e => e.id !== edgeId),
+      }));
+    }
+    if (parts[2] === "regions" && parts.length === 4) {
+      const regionId = parts[3];
+      return updatePage(doc, pageId, p => ({
+        ...p,
+        regions: (p.regions ?? []).filter(r => r.id !== regionId),
       }));
     }
   }

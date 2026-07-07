@@ -120,6 +120,13 @@ Action names are `Group::Variant`. The full set, with default bindings:
 | --------------- | --------- | ------------------------------------- |
 | `Result::Pivot` | `shift-p` | Pivot/transpose selected result nodes |
 
+### Regions
+
+| Action                   | Default  | Description                        |
+| ------------------------ | -------- | ---------------------------------- |
+| `Region::GroupSelection` | `meta-g` | Group selected nodes into a region |
+| `Region::OpenPicker`     | `r`      | Open the regions picker            |
+
 ### Other
 
 | Action                   | Default                  | Description                |

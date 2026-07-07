@@ -8,6 +8,7 @@ import {
   updateVarsNode,
 } from "../../../mcp/createNodes";
 import { createTextNode, updateTextNode } from "../../../mcp/textNodes";
+import { groupNodes, listRegions, removeRegion } from "../../../mcp/regionTools";
 import { cameraFitNode, cameraPanTo, cameraSetZoom, selectNodes } from "../../../mcp/viewTools";
 import { createPage } from "../../../mcp/pageTools";
 import {
@@ -178,6 +179,18 @@ export function useAgentTools(opts: { nodeId: string }): ToolHandlers {
       const a = args as { from: string; to: string };
       return describe(connectNodes({ from: a.from, to: a.to }));
     },
+
+    group_nodes: args => {
+      const a = args as { node_ids: string[]; name: string; desc?: string; suggested?: boolean };
+      return describe(
+        groupNodes({ nodeIds: a.node_ids, name: a.name, desc: a.desc, suggested: a.suggested }),
+      );
+    },
+
+    list_regions: () => describe(listRegions({})),
+
+    remove_region: args =>
+      describe(removeRegion({ regionId: (args as { region_id: string }).region_id })),
 
     camera_pan_to: args =>
       describe(cameraPanTo({ position: (args as { position: Vec }).position })),

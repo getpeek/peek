@@ -26,6 +26,10 @@ export function describeSummary(summary: ChangeSummary): string {
   if (edgeTotal > 0) {
     parts.push(`${edgeTotal} connection${edgeTotal === 1 ? "" : "s"}`);
   }
+  const regionTotal = summary.changedRegions ?? 0;
+  if (regionTotal > 0) {
+    parts.push(`${regionTotal} region${regionTotal === 1 ? "" : "s"}`);
+  }
   if (summary.renamed) {
     parts.push("renamed");
   }
@@ -40,6 +44,7 @@ export function changeCount(summary: ChangeSummary): number {
     summary.addedEdges +
     summary.editedEdges +
     summary.removedEdges +
+    (summary.changedRegions ?? 0) +
     (summary.renamed ? 1 : 0)
   );
 }

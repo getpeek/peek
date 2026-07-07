@@ -58,6 +58,18 @@
       },
       "required": ["model", "url"]
     },
+    "canvas": {
+      "type": "object",
+      "description": "Canvas behavior.",
+      "additionalProperties": false,
+      "properties": {
+        "enable_regions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Region grouping and wayfinding on the canvas: zoom-out beacons, off-screen edge peekers and the regions menu."
+        }
+      }
+    },
     "workspaces": {
       "type": "array",
       "description": "Workspaces shown in the connection picker. Each groups one or more database connections.",
@@ -102,6 +114,8 @@
           "View::ToggleUi",
           "View::ToggleCameraLock",
           "Result::Pivot",
+          "Region::GroupSelection",
+          "Region::OpenPicker",
           "CommandPalette::Open",
           "ConnectionPicker::Open",
           "App::Quit",

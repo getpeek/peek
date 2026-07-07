@@ -217,7 +217,12 @@ export function useHistoryPanel() {
         ...d,
         pages: {
           ...d.pages,
-          [pageId]: { ...d.pages[pageId], nodes: snapshot.nodes, edges: snapshot.edges },
+          [pageId]: {
+            ...d.pages[pageId],
+            nodes: snapshot.nodes,
+            edges: snapshot.edges,
+            regions: snapshot.regions ?? [],
+          },
         },
       }));
       const restored = await captureCheckpoint({

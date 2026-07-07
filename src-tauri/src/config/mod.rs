@@ -52,6 +52,15 @@ pub fn set_workspaces(workspaces: Vec<Workspace>) -> Result<(), String> {
     config.save_to_disk()
 }
 
+/// # Errors
+/// Returns an error if the updated config cannot be written to disk.
+#[tauri::command]
+pub fn set_canvas_enable_regions(enable: bool) -> Result<(), String> {
+    let mut config = PeekConfig::get_or_default();
+    config.canvas.enable_regions = enable;
+    config.save_to_disk()
+}
+
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
@@ -78,6 +87,8 @@ pub struct PeekConfig {
     /// config — `resolved_keymap` validates and merges these over the defaults.
     #[serde(default)]
     keymap: std::collections::HashMap<String, String>,
+    #[serde(default)]
+    pub canvas: CanvasConfig,
 }
 
 impl Default for PeekConfig {
@@ -89,6 +100,28 @@ impl Default for PeekConfig {
             name: None,
             theme: Theme::default(),
             keymap: std::collections::HashMap::new(),
+            canvas: CanvasConfig::default(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CanvasConfig {
+    /// Region grouping and wayfinding (beacons, edge peekers) on the canvas.
+    #[serde(default = "CanvasConfig::default_enable_regions")]
+    pub enable_regions: bool,
+}
+
+impl CanvasConfig {
+    fn default_enable_regions() -> bool {
+        true
+    }
+}
+
+impl Default for CanvasConfig {
+    fn default() -> Self {
+        Self {
+            enable_regions: Self::default_enable_regions(),
         }
     }
 }

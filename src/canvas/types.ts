@@ -102,6 +102,19 @@ export type AppNode =
 
 export type AppEdge = Edge;
 
+export type RegionStatus = "confirmed" | "suggested";
+
+export type RegionState = {
+  id: string;
+  name: string;
+  desc: string;
+  /** Index into the --pk-region-N theme tokens, so regions recolor with the theme. */
+  colorIndex: number;
+  status: RegionStatus;
+  /** Node ids; members may since have been deleted — filter against live nodes when deriving. */
+  memberIds: string[];
+};
+
 export type Viewport = { x: number; y: number; zoom: number };
 
 export type PageState = {
@@ -110,6 +123,7 @@ export type PageState = {
   nodes: AppNode[];
   edges: AppEdge[];
   viewport: Viewport;
+  regions?: RegionState[];
 };
 
 export type CanvasDocument = {

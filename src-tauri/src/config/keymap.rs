@@ -60,6 +60,12 @@ pub(crate) enum ResultAction {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Region {
+    GroupSelection,
+    OpenPicker,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum CommandPalette {
     Open,
 }
@@ -91,6 +97,7 @@ pub(crate) enum Action {
     Page(Page),
     View(View),
     Result(ResultAction),
+    Region(Region),
     CommandPalette(CommandPalette),
     ConnectionPicker(ConnectionPicker),
     App(AppAction),
@@ -130,6 +137,8 @@ impl fmt::Display for Action {
             Action::View(View::ToggleUi) => "View::ToggleUi",
             Action::View(View::ToggleCameraLock) => "View::ToggleCameraLock",
             Action::Result(ResultAction::Pivot) => "Result::Pivot",
+            Action::Region(Region::GroupSelection) => "Region::GroupSelection",
+            Action::Region(Region::OpenPicker) => "Region::OpenPicker",
             Action::CommandPalette(CommandPalette::Open) => "CommandPalette::Open",
             Action::ConnectionPicker(ConnectionPicker::Open) => "ConnectionPicker::Open",
             Action::App(AppAction::Quit) => "App::Quit",
@@ -174,6 +183,8 @@ impl FromStr for Action {
             "View::ToggleUi" => Action::View(View::ToggleUi),
             "View::ToggleCameraLock" => Action::View(View::ToggleCameraLock),
             "Result::Pivot" => Action::Result(ResultAction::Pivot),
+            "Region::GroupSelection" => Action::Region(Region::GroupSelection),
+            "Region::OpenPicker" => Action::Region(Region::OpenPicker),
             "CommandPalette::Open" => Action::CommandPalette(CommandPalette::Open),
             "ConnectionPicker::Open" => Action::ConnectionPicker(ConnectionPicker::Open),
             "App::Quit" => Action::App(AppAction::Quit),
@@ -220,6 +231,8 @@ pub(crate) fn default_keymap() -> Vec<(&'static str, Action)> {
         ("meta-.", Action::View(View::ToggleUi)),
         ("meta-shift-l", Action::View(View::ToggleCameraLock)),
         ("shift-p", Action::Result(ResultAction::Pivot)),
+        ("meta-g", Action::Region(Region::GroupSelection)),
+        ("r", Action::Region(Region::OpenPicker)),
         ("meta-f", Action::Page(Page::Search)),
         ("meta-p", Action::CommandPalette(CommandPalette::Open)),
         ("meta-shift-p", Action::CommandPalette(CommandPalette::Open)),

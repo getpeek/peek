@@ -30,6 +30,12 @@
   --pk-red: oklch(54.9% 0.179 22.5);
   --pk-red-soft: oklch(54.9% 0.179 22.5 / 0.14);
 
+  --pk-region-1: oklch(50% 0.17 298);
+  --pk-region-2: var(--pk-blue);
+  --pk-region-3: var(--pk-yellow);
+  --pk-region-4: var(--pk-green);
+  --pk-region-5: oklch(55% 0.15 356);
+
   --pk-type-query: oklch(49.6% 0.195 293.1);
   --pk-type-agent: oklch(50% 0.173 267.3);
   --pk-type-result: oklch(56.4% 0.127 150.9);

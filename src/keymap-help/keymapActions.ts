@@ -81,6 +81,13 @@ export const KEYMAP_REFERENCE: KeymapSection[] = [
     entries: [{ action: "Result::Pivot", description: "Pivot/transpose selected result nodes" }],
   },
   {
+    title: "Regions",
+    entries: [
+      { action: "Region::GroupSelection", description: "Group selected nodes into a region" },
+      { action: "Region::OpenPicker", description: "Open the regions picker" },
+    ],
+  },
+  {
     title: "Other",
     entries: [
       { action: "CommandPalette::Open", description: "Open the command palette" },

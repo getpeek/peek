@@ -125,9 +125,11 @@ export function useRubberBandSelect() {
       }
       // The pane is an ancestor of every node, so clicks on nodes/handles/
       // edges bubble up here. Don't intercept those — RF needs them for
-      // node-drag, connection-drag, and edge-select.
+      // node-drag, connection-drag, and edge-select. `.nodrag` is the same
+      // opt-out xyflow honors, used by interactive overlays rendered inside
+      // the viewport (e.g. the suggested-region review card).
       const target = e.target as HTMLElement;
-      if (target.closest(".react-flow__node, .react-flow__handle, .react-flow__edge")) {
+      if (target.closest(".react-flow__node, .react-flow__handle, .react-flow__edge, .nodrag")) {
         return;
       }
       e.preventDefault();

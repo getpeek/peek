@@ -26,6 +26,9 @@ import {
   useFitNodesToViewAndLockCommand,
   useFitNodesToViewCommand,
 } from "./commands/fitNodesToView";
+import { useGroupSelectionIntoRegionCommand } from "./commands/groupSelectionIntoRegion";
+import { useGroupWithAiCommand } from "./commands/groupWithAi";
+import { useToggleRegionsCommand } from "./commands/toggleRegions";
 
 export interface SearchResult {
   command: CommandPaletteResult;
@@ -58,12 +61,18 @@ export const useSearch = (query: string): SearchResult[] => {
   const cameraLockCommand = useCameraLockCommand();
   const fitNodesCommand = useFitNodesToViewCommand();
   const fitNodesAndLockCommand = useFitNodesToViewAndLockCommand();
+  const groupSelectionCommand = useGroupSelectionIntoRegionCommand();
+  const groupWithAiCommand = useGroupWithAiCommand();
+  const toggleRegionsCommand = useToggleRegionsCommand();
 
   const searchSpace: CommandPaletteResult[] = [
     toggleUiCommand,
     cameraLockCommand,
     ...(fitNodesCommand ? [fitNodesCommand] : []),
     ...(fitNodesAndLockCommand ? [fitNodesAndLockCommand] : []),
+    ...(groupSelectionCommand ? [groupSelectionCommand] : []),
+    ...(groupWithAiCommand ? [groupWithAiCommand] : []),
+    toggleRegionsCommand,
     rerunAllOnPage,
     rerunSelected,
     exportCsv,

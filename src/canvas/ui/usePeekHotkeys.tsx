@@ -12,6 +12,9 @@ import {
   cameraLockedAtom,
 } from "../state";
 import { historyPreviewAtom } from "../history/state";
+import { regionsMenuOpenAtom } from "../wayfinding/state";
+import { useGroupSelection } from "../wayfinding/useGroupSelection";
+import { useRegionsEnabled } from "../wayfinding/useRegionsEnabled";
 import { useUndoHistory } from "./useUndoHistory";
 import { useHotkey } from "../../app/useHotkey";
 import { useKeymap } from "../../app/keymap";
@@ -32,6 +35,9 @@ export const usePeekHotkeys = () => {
   const historyPreview = useAtomValue(historyPreviewAtom);
   const pageActions = usePageActions();
   const { undo, redo } = useUndoHistory();
+  const groupSelection = useGroupSelection();
+  const regionsEnabled = useRegionsEnabled();
+  const setRegionsMenuOpen = useSetAtom(regionsMenuOpenAtom);
   const keymap = useKeymap();
 
   // While a history preview is on screen the visible board is not the real
@@ -210,6 +216,19 @@ export const usePeekHotkeys = () => {
       }
     }),
   );
+
+  useHotkey(
+    keymap["Region::GroupSelection"],
+    unlessPreviewing(() => {
+      groupSelection?.();
+    }),
+  );
+
+  useHotkey(keymap["Region::OpenPicker"], () => {
+    if (regionsEnabled) {
+      setRegionsMenuOpen(v => !v);
+    }
+  });
 
   useHotkey(keymap["View::ToggleUi"], () => {
     setUiVisible(v => !v);

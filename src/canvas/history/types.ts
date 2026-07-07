@@ -1,9 +1,12 @@
-import type { AppEdge, AppNode } from "../types";
+import type { AppEdge, AppNode, RegionState } from "../types";
 
+// The optional region fields stay optional for backward compatibility: history
+// entries persist to disk, and pre-region snapshots/deltas/summaries load without them.
 export type PageSnapshot = {
   name: string;
   nodes: AppNode[];
   edges: AppEdge[];
+  regions?: RegionState[];
 };
 
 export type PageDelta = {
@@ -11,6 +14,8 @@ export type PageDelta = {
   delNodeIds: string[];
   putEdges: AppEdge[];
   delEdgeIds: string[];
+  putRegions?: RegionState[];
+  delRegionIds?: string[];
   name?: string;
 };
 
@@ -21,6 +26,7 @@ export type ChangeSummary = {
   addedEdges: number;
   editedEdges: number;
   removedEdges: number;
+  changedRegions?: number;
   renamed: boolean;
 };
 

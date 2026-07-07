@@ -7,11 +7,12 @@ export function toPageSnapshot(page: PageState): PageSnapshot {
     name: page.name,
     nodes: page.nodes.map(n => stripNode(n)),
     edges: page.edges.map(e => stripEdge(e)),
+    regions: page.regions ?? [],
   };
 }
 
 export function emptyPageSnapshot(name: string): PageSnapshot {
-  return { name, nodes: [], edges: [] };
+  return { name, nodes: [], edges: [], regions: [] };
 }
 
 export function pageSnapshotKey(snapshot: PageSnapshot): string {
@@ -47,6 +48,7 @@ export function diffPage(
 ): { delta: PageDelta; summary: ChangeSummary } {
   const nodes = diffById(prev.nodes, next.nodes);
   const edges = diffById(prev.edges, next.edges);
+  const regions = diffById(prev.regions ?? [], next.regions ?? []);
   const renamed = prev.name !== next.name;
   return {
     delta: {
@@ -54,6 +56,8 @@ export function diffPage(
       delNodeIds: nodes.delIds,
       putEdges: edges.puts,
       delEdgeIds: edges.delIds,
+      putRegions: regions.puts,
+      delRegionIds: regions.delIds,
       ...(renamed ? { name: next.name } : {}),
     },
     summary: {
@@ -63,6 +67,7 @@ export function diffPage(
       addedEdges: edges.added,
       editedEdges: edges.edited,
       removedEdges: edges.delIds.length,
+      changedRegions: regions.added + regions.edited + regions.delIds.length,
       renamed,
     },
   };
@@ -83,9 +88,17 @@ export function applyDelta(snapshot: PageSnapshot, delta: PageDelta): PageSnapsh
   for (const edge of delta.putEdges) {
     edges.set(edge.id, edge);
   }
+  const regions = new Map((snapshot.regions ?? []).map(r => [r.id, r]));
+  for (const id of delta.delRegionIds ?? []) {
+    regions.delete(id);
+  }
+  for (const region of delta.putRegions ?? []) {
+    regions.set(region.id, region);
+  }
   return {
     name: delta.name ?? snapshot.name,
     nodes: [...nodes.values()],
     edges: [...edges.values()],
+    regions: [...regions.values()],
   };
 }

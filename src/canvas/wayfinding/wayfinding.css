@@ -1,0 +1,447 @@
+/* ============================================================
+   Wayfinding — regions menu, beacons, edge peekers
+   ============================================================ */
+
+/* Full-viewport overlay panel (same trick as .remote-cursors-panel). */
+.react-flow__panel.wf-layer {
+  position: absolute;
+  inset: 0;
+  margin: 0 !important;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: transparent;
+}
+
+/* Zoomed out, beacons take over: recede the canvas content. */
+.react-flow {
+  .react-flow__nodes,
+  .react-flow__edges {
+    transition: opacity 0.25s ease;
+  }
+
+  &[data-wf-lowzoom] {
+    .react-flow__nodes {
+      opacity: 0.42;
+    }
+
+    .react-flow__edges {
+      opacity: 0.35;
+    }
+  }
+}
+
+/* The full-viewport containers must never take pointer events — an invisible
+   inset-0 div would swallow every pan/zoom/click on the canvas. Only the
+   label buttons become interactive, and only while their layer is shown. */
+.wf-beacons {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+
+  &.interactive .wf-beacon {
+    pointer-events: auto;
+  }
+
+  .wf-beacon {
+    position: absolute;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: 0;
+    text-align: center;
+    cursor: pointer;
+    padding: 14px 22px;
+    border-radius: 14px;
+    transition: background 0.15s;
+
+    &:hover {
+      background: color-mix(in oklab, var(--pk-fg) 5%, transparent);
+
+      .bc-meta {
+        opacity: 1;
+      }
+    }
+
+    .bc-name {
+      font: 600 26px/1.2 var(--pk-font-sans);
+      letter-spacing: -0.015em;
+      color: var(--pk-fg);
+      text-shadow: 0 2px 20px var(--pk-bg);
+    }
+
+    .bc-desc {
+      font: 400 12.5px var(--pk-font-sans);
+      color: var(--pk-fg-muted);
+      text-shadow: 0 1px 10px var(--pk-bg);
+    }
+
+    .bc-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      font: 500 10.5px var(--pk-font-mono);
+      color: var(--pk-fg-subtle);
+      opacity: 0;
+      transition: opacity 0.15s;
+
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--rc);
+      }
+    }
+  }
+}
+
+.wf-peekers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+
+  &.interactive .wf-peeker {
+    pointer-events: auto;
+  }
+
+  .wf-peeker {
+    position: absolute;
+    pointer-events: none;
+    width: 212px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 10px;
+    transition: background 0.15s;
+
+    &:hover {
+      background: color-mix(in oklab, var(--pk-fg) 6%, transparent);
+    }
+
+    &.align-right {
+      align-items: flex-end;
+      text-align: right;
+
+      .pk-row {
+        flex-direction: row-reverse;
+      }
+    }
+
+    .pk-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+    }
+
+    .pk-arrow {
+      display: grid;
+      place-items: center;
+      color: var(--rc);
+      flex-shrink: 0;
+    }
+
+    .pk-name {
+      font: 600 17px/1.15 var(--pk-font-sans);
+      letter-spacing: -0.012em;
+      color: var(--pk-fg);
+      text-shadow: 0 2px 14px var(--pk-bg);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pk-ct {
+      font: 500 10px var(--pk-font-mono);
+      color: var(--pk-fg-subtle);
+      flex-shrink: 0;
+    }
+
+    .pk-desc {
+      font: 400 11.5px/1.35 var(--pk-font-sans);
+      color: var(--pk-fg-muted);
+      text-shadow: 0 1px 10px var(--pk-bg);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+  }
+}
+
+.wf-hint {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  font: 400 11px var(--pk-font-mono);
+  color: var(--pk-fg-subtle);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ── Region halos (canvas space, via ViewportPortal) ── */
+.wf-region-halo {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 28px;
+  transition: opacity 0.2s ease;
+
+  /* Confirmed regions: a quiet box that fades in with the beacons on zoom-out. */
+  &.confirmed {
+    border: 1px solid color-mix(in oklab, var(--rc) 22%, transparent);
+    background: color-mix(in oklab, var(--rc) 6%, transparent);
+  }
+
+  /* Suggested regions: dashed, awaiting review, and carrying the card. */
+  &.suggested {
+    border: 1.5px dashed color-mix(in oklab, var(--rc) 55%, transparent);
+    background: color-mix(in oklab, var(--rc) 4%, transparent);
+  }
+
+  .wf-suggest-card {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    margin-left: -140px;
+    width: 280px;
+    /* Constant on-screen size while the canvas zooms under it. */
+    transform: scale(min(calc(1 / var(--pk-zoom)), 2.8));
+    transform-origin: top center;
+    background: var(--pk-node-bg);
+    border: 1px solid var(--pk-accent-line);
+    border-radius: var(--pk-radius-card);
+    padding: 12px 14px;
+    pointer-events: auto;
+    box-shadow: var(--pk-node-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    .sc-head {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font: 500 10.5px var(--pk-font-mono);
+      color: var(--pk-accent);
+      letter-spacing: 0.03em;
+    }
+
+    .sc-name {
+      font: 600 15px var(--pk-font-sans);
+      color: var(--pk-fg);
+      letter-spacing: -0.01em;
+    }
+
+    .sc-input {
+      background: var(--pk-node-inset);
+      border: 1px solid var(--pk-accent-line);
+      border-radius: 6px;
+      color: var(--pk-fg);
+      font: 600 14px var(--pk-font-sans);
+      padding: 6px 9px;
+      outline: none;
+    }
+
+    .sc-actions {
+      display: flex;
+      gap: 6px;
+
+      button {
+        padding: 5px 10px;
+        font: 500 11.5px var(--pk-font-sans);
+        border-radius: 6px;
+        border: 1px solid var(--pk-node-border-strong);
+        background: var(--pk-node-bg-2);
+        color: var(--pk-fg);
+        cursor: pointer;
+
+        &:hover {
+          border-color: var(--pk-accent-line);
+        }
+
+        &.primary {
+          background: var(--pk-accent-bg);
+          border-color: var(--pk-accent-line);
+        }
+
+        &.ghost {
+          background: transparent;
+          border-color: transparent;
+          color: var(--pk-fg-muted);
+        }
+      }
+    }
+  }
+}
+
+@keyframes wf-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Inline in the bottom-left zoom cluster; the trigger button inherits the
+   cluster's icon-button styling, only the popover is ours. */
+.wf-regions {
+  position: relative;
+  display: inline-flex;
+  pointer-events: auto;
+
+  button.active {
+    background: var(--pk-node-bg-2);
+    color: var(--pk-fg);
+  }
+}
+
+.wf-region-list {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: -3px;
+  width: 280px;
+  background: var(--pk-node-bg);
+  border: 1px solid var(--pk-node-border-strong);
+  border-radius: var(--pk-radius-card);
+  box-shadow: var(--pk-node-shadow);
+  overflow: hidden;
+  padding-bottom: 4px;
+
+  .rl-title {
+    padding: 10px 14px 6px;
+    font: 500 10px var(--pk-font-mono);
+    color: var(--pk-fg-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .rl-empty {
+    padding: 8px 14px 10px;
+    font: 400 12px var(--pk-font-sans);
+    color: var(--pk-fg-subtle);
+  }
+
+  .rl-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font: 500 12.5px var(--pk-font-sans);
+    color: var(--pk-fg);
+
+    &:hover {
+      background: var(--pk-node-bg-2);
+
+      .rl-actions {
+        opacity: 1;
+      }
+    }
+
+    &.muted {
+      color: var(--pk-fg-muted);
+      cursor: default;
+
+      &:hover {
+        background: transparent;
+      }
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &.hollow {
+        background: transparent;
+        border: 1.5px dashed var(--pk-fg-subtle);
+      }
+    }
+
+    .nm {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .rl-rename {
+      flex: 1;
+      min-width: 0;
+      background: var(--pk-node-inset);
+      border: 1px solid var(--pk-accent-line);
+      border-radius: 5px;
+      color: var(--pk-fg);
+      font: 500 12.5px var(--pk-font-sans);
+      padding: 3px 7px;
+      outline: none;
+    }
+
+    .ct {
+      font: 500 10.5px var(--pk-font-mono);
+      color: var(--pk-fg-subtle);
+    }
+
+    .sug {
+      font: 500 9px var(--pk-font-mono);
+      color: var(--pk-accent);
+      background: var(--pk-accent-bg);
+      border: 1px solid var(--pk-accent-line);
+      padding: 1px 5px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .rl-actions {
+      display: inline-flex;
+      gap: 2px;
+      opacity: 0;
+      transition: opacity 0.12s;
+
+      /* The AI button sits on the non-hoverable "Ungrouped" row — always show it. */
+      &.ai {
+        opacity: 1;
+      }
+
+      button {
+        background: transparent;
+        border: 0;
+        color: var(--pk-fg-subtle);
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+
+        &:hover {
+          background: var(--pk-node-inset);
+          color: var(--pk-accent);
+        }
+
+        .spin {
+          width: 10px;
+          height: 10px;
+          border: 2px solid var(--pk-accent-bg);
+          border-top-color: var(--pk-accent);
+          border-radius: 50%;
+          animation: wf-spin 0.8s linear infinite;
+        }
+      }
+    }
+  }
+}

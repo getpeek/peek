@@ -9,7 +9,8 @@ import {
   subscribeResultsMutations,
 } from "../canvas/state";
 import { applyOperation, applyResultOperation } from "./diffApply";
-import { b64ToBytes, diffDocs, diffResults, keyKind, SCHEMA_INDEX_KEY } from "./diff";
+import { diffDocs, diffResults, keyKind, SCHEMA_INDEX_KEY } from "./diff";
+import { b64ToBytes } from "./bytes";
 import {
   multiplayerSyncIssueAtom,
   preSessionSnapshotAtom,

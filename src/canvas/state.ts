@@ -1,6 +1,14 @@
 import { atom } from "jotai";
 import { atomFamily, selectAtom } from "jotai/utils";
-import type { AppEdge, AppNode, AppNodeType, CanvasDocument, PageState, Viewport } from "./types";
+import type {
+  AppEdge,
+  AppNode,
+  AppNodeType,
+  CanvasDocument,
+  PageState,
+  RegionState,
+  Viewport,
+} from "./types";
 import type { DatabaseResult } from "../state";
 import { emptyDocument } from "./emptyDocument";
 
@@ -146,6 +154,24 @@ export const edgesAtom = atom(
   },
 );
 
+const NO_REGIONS: RegionState[] = [];
+
+export const regionsAtom = atom(
+  get => get(activePageAtom).regions ?? NO_REGIONS,
+  (get, set, updater: Updater<RegionState[]>) => {
+    const doc = get(documentAtom);
+    const page = doc.pages[doc.activePageId];
+    const next = applyUpdater(page.regions ?? NO_REGIONS, updater);
+    set(documentAtom, {
+      ...doc,
+      pages: {
+        ...doc.pages,
+        [doc.activePageId]: { ...page, regions: next },
+      },
+    });
+  },
+);
+
 export const viewportAtom = atom(
   get => get(activePageAtom).viewport,
   (get, set, updater: Updater<Viewport>) => {
@@ -186,7 +212,7 @@ export const cellSelectionSummaryAtom = atom<CellSelectionSummary | null>(null);
 
 export const clipboardAtom = atom<AppNode[]>([]);
 
-export type HistorySnapshot = { nodes: AppNode[]; edges: AppEdge[] };
+export type HistorySnapshot = { nodes: AppNode[]; edges: AppEdge[]; regions: RegionState[] };
 export type PageHistory = { past: HistorySnapshot[]; future: HistorySnapshot[] };
 
 export const historyAtom = atom<Record<string, PageHistory>>({});

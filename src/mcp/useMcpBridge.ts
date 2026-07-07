@@ -9,6 +9,7 @@ import {
   updateVarsNode,
 } from "./createNodes";
 import { createTextNode, updateTextNode } from "./textNodes";
+import { groupNodes, listRegions, removeRegion } from "./regionTools";
 import { cameraFitNode, cameraPanTo, cameraSetZoom, selectNodes } from "./viewTools";
 import { createPage } from "./pageTools";
 import {
@@ -47,6 +48,12 @@ function handleRequest(method: string, params: Record<string, unknown>): unknown
       return updateTextNode(params);
     case "connect_nodes":
       return connectNodes(params);
+    case "group_nodes":
+      return groupNodes(params);
+    case "list_regions":
+      return listRegions(params);
+    case "remove_region":
+      return removeRegion(params);
     case "camera_pan_to":
       return cameraPanTo(params);
     case "camera_set_zoom":

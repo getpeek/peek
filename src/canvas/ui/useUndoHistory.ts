@@ -2,15 +2,16 @@ import { useAtom, useAtomValue } from "jotai";
 import { useCallback, useEffect, useRef } from "react";
 import { documentAtom, historyAtom, loadEpochAtom, type HistorySnapshot } from "../state";
 import { stripEdge, stripNode } from "../stripEphemeral";
-import type { AppEdge, AppNode } from "../types";
+import type { PageState } from "../types";
 
 const MAX_HISTORY = 50;
 const DEBOUNCE_MS = 300;
 
-function makeSnapshot(nodes: AppNode[], edges: AppEdge[]): HistorySnapshot {
+function makeSnapshot(page: PageState): HistorySnapshot {
   return {
-    nodes: nodes.map(n => stripNode(n)),
-    edges: edges.map(e => stripEdge(e)),
+    nodes: page.nodes.map(n => stripNode(n)),
+    edges: page.edges.map(e => stripEdge(e)),
+    regions: page.regions ?? [],
   };
 }
 
@@ -40,7 +41,7 @@ export function useUndoHistory() {
 
   useEffect(() => {
     if (isUndoRedoRef.current) {
-      const snap = makeSnapshot(page.nodes, page.edges);
+      const snap = makeSnapshot(page);
       lastStableRef.current = {
         key: snapshotKey(snap),
         snapshot: snap,
@@ -53,7 +54,7 @@ export function useUndoHistory() {
     const last = lastStableRef.current;
 
     if (last && last.pageId !== pageId) {
-      const snap = makeSnapshot(page.nodes, page.edges);
+      const snap = makeSnapshot(page);
       lastStableRef.current = {
         key: snapshotKey(snap),
         snapshot: snap,
@@ -63,7 +64,7 @@ export function useUndoHistory() {
     }
 
     const timer = setTimeout(() => {
-      const snap = makeSnapshot(page.nodes, page.edges);
+      const snap = makeSnapshot(page);
       const key = snapshotKey(snap);
 
       if (!last) {
@@ -89,7 +90,7 @@ export function useUndoHistory() {
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(timer);
-  }, [page.nodes, page.edges, pageId, setHistory]);
+  }, [page, pageId, setHistory]);
 
   const restore = useCallback(
     (snap: HistorySnapshot) => {
@@ -102,6 +103,7 @@ export function useUndoHistory() {
             ...d.pages[pageId],
             nodes: snap.nodes,
             edges: snap.edges,
+            regions: snap.regions,
           },
         },
       }));
@@ -116,7 +118,7 @@ export function useUndoHistory() {
       return;
     }
 
-    const currentSnap = makeSnapshot(page.nodes, page.edges);
+    const currentSnap = makeSnapshot(page);
 
     setHistory(prev => {
       const ph = prev[pageId] ?? { past: [], future: [] };
@@ -129,7 +131,7 @@ export function useUndoHistory() {
       };
     });
     restore(previous);
-  }, [history, pageId, page.nodes, page.edges, setHistory, restore]);
+  }, [history, pageId, page, setHistory, restore]);
 
   const redo = useCallback(() => {
     const pageHist = history[pageId];
@@ -138,7 +140,7 @@ export function useUndoHistory() {
       return;
     }
 
-    const currentSnap = makeSnapshot(page.nodes, page.edges);
+    const currentSnap = makeSnapshot(page);
 
     setHistory(prev => {
       const ph = prev[pageId] ?? { past: [], future: [] };
@@ -151,7 +153,7 @@ export function useUndoHistory() {
       };
     });
     restore(next);
-  }, [history, pageId, page.nodes, page.edges, setHistory, restore]);
+  }, [history, pageId, page, setHistory, restore]);
 
   const canUndo = (history[pageId]?.past.length ?? 0) > 0;
   const canRedo = (history[pageId]?.future.length ?? 0) > 0;

@@ -17,6 +17,9 @@ export interface Config {
   name: string;
   theme: Theme;
   keymap: Record<string, string>;
+  canvas: {
+    enable_regions: boolean;
+  };
 }
 
 export const configAtom = atom<Config>();

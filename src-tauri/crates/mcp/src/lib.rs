@@ -2,6 +2,7 @@ mod bridge;
 mod connection;
 mod nodes;
 mod pages;
+mod regions;
 mod reply;
 mod schema;
 mod server;

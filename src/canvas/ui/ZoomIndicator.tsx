@@ -3,6 +3,7 @@ import { IconMaximize, IconMinus, IconPlus } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { cameraLockedAtom, viewportAtom } from "../state";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
+import { RegionsMenu } from "../wayfinding/RegionsMenu";
 import "./Toolbar.css";
 
 export function ZoomIndicator() {
@@ -39,6 +40,7 @@ export function ZoomIndicator() {
             <IconMaximize size={14} />
           </button>
         </Tooltip>
+        <RegionsMenu />
       </div>
     </Panel>
   );

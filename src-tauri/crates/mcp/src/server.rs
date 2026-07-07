@@ -6,7 +6,7 @@ use tower_http::cors::CorsLayer;
 use tower_mcp::{HttpTransport, McpRouter};
 
 use super::bridge::SharedBridge;
-use super::{connection, nodes, pages, schema, view};
+use super::{connection, nodes, pages, regions, schema, view};
 
 /// Bind the MCP server to `0.0.0.0:port` and serve until the process exits.
 ///
@@ -39,6 +39,9 @@ fn app() -> Router {
         .tool(nodes::create_text_node_tool())
         .tool(nodes::update_text_node_tool())
         .tool(nodes::connect_nodes_tool())
+        .tool(regions::group_nodes_tool())
+        .tool(regions::list_regions_tool())
+        .tool(regions::remove_region_tool())
         .tool(view::camera_pan_to_tool())
         .tool(view::camera_set_zoom_tool())
         .tool(view::camera_fit_node_tool())
