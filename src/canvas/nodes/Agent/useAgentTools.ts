@@ -1,5 +1,3 @@
-import { invoke } from "@tauri-apps/api/core";
-import { useSetAtom } from "jotai";
 import {
   connectNodes,
   createQueryNode,
@@ -18,13 +16,9 @@ import {
   getPageContent,
   getPages,
 } from "../../../mcp/readTools";
-import { toCsv } from "../../../tools/export/csv";
 import { useCanvas } from "../../hooks/useCanvas";
-import { ids } from "../../ids";
 import { defaultDimensions } from "../../defaults";
-import { resultsAtom } from "../../state";
-import type { DatabaseResult } from "../../../state";
-import type { AppNodeType, ResultNode } from "../../types";
+import type { AppNodeType } from "../../types";
 
 // Handlers are awaited by the stream loop, so they may resolve synchronously
 // (most just delegate to a synchronous mcp/* mutation) or asynchronously.
@@ -43,7 +37,6 @@ function describe(result: unknown): string {
 export function useAgentTools(opts: { nodeId: string }): ToolHandlers {
   const { nodeId } = opts;
   const canvas = useCanvas();
-  const setResults = useSetAtom(resultsAtom);
 
   // Stack created nodes to the right of the agent, one row per existing
   // outgoing edge, so a multi-node build doesn't pile everything in one spot.
@@ -60,38 +53,6 @@ export function useAgentTools(opts: { nodeId: string }): ToolHandlers {
   };
 
   return {
-    run_query: async args => {
-      const { query } = args as { query: string };
-      let rows: DatabaseResult;
-      try {
-        const response = (await invoke("get_results", { query })) as string;
-        rows = JSON.parse(response) as DatabaseResult;
-      } catch (e) {
-        return `The query "${query}" failed: ${e}`;
-      }
-
-      const agent = canvas.getNode(nodeId);
-      if (agent) {
-        const { position, size } = placement("result");
-        const resultId = ids.result(`${nodeId}-tool`, Date.now());
-        const newResult: ResultNode = {
-          id: resultId,
-          type: "result",
-          position: { x: position[0], y: position[1] },
-          width: size[0],
-          height: size[1],
-          data: { query },
-        };
-        setResults(prev => ({ ...prev, [resultId]: rows }));
-        canvas.addNode(newResult);
-        canvas.connect(nodeId, resultId);
-        canvas.selectOnly(resultId);
-        canvas.zoomToNode(resultId, { duration: 300 });
-      }
-
-      return `Executed query "${query}"\n\n${toCsv(rows)}`;
-    },
-
     create_query_node: args => {
       const a = args as { query: string; position?: Vec; size?: Vec };
       const place = placement("query");

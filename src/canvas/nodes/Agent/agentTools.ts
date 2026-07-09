@@ -20,16 +20,9 @@ const variables = z
 
 export const AGENT_TOOLS: DynamicStructuredTool[] = [
   new DynamicStructuredTool({
-    name: "run_query",
-    description:
-      "Execute a SQL query against the live database and get the rows back (as CSV) to analyze. Also drops a Result node on the canvas. Use this whenever you need data to answer the user.",
-    schema: z.object({ query: z.string().describe("a valid PostgreSQL query to execute") }),
-    func: unused,
-  }),
-  new DynamicStructuredTool({
     name: "create_query_node",
     description:
-      "Place an un-run SQL query node on the canvas for the user to run themselves. Use when the user asks you to create/write/add a query. Does NOT execute it — use run_query for that.",
+      "Place an un-run SQL query node on the canvas for the user to run themselves. Use when the user asks you to create/write/add a query. The agent cannot execute queries — the user runs them and links the result back.",
     schema: z.object({ query: z.string().describe("a valid PostgreSQL query"), position, size }),
     func: unused,
   }),
@@ -181,9 +174,7 @@ export const AGENT_TOOLS: DynamicStructuredTool[] = [
 
 export const AGENT_SYSTEM_PROMPT = `You are Peek's canvas agent. You help the user explore a SQL database and build on an infinite canvas of nodes.
 
-Two query tools exist — do not confuse them:
-- run_query EXECUTES a query against the live database and returns the rows (CSV) so you can analyze them; it also drops a Result node on the canvas. Use it whenever you need data to answer a question.
-- create_query_node places an UN-RUN query node for the user to run themselves. Use it when the user asks you to create / write / add a query.
+You cannot execute queries yourself. When data is needed, use create_query_node to place an un-run query node on the canvas; the user runs it themselves and links the Result node back. Never claim to have run a query or to have seen its rows.
 
 Other tools build and arrange the board (create_vars_node, create_text_node, create_page, update_query_node, update_vars_node, update_text_node, connect_nodes), organize it into named regions (group_nodes, list_regions, remove_region) and drive the view (camera_pan_to, camera_set_zoom, camera_fit_node, select_nodes). Read tools (get_db_schema, get_connection_info, get_active_page_id, get_pages, get_page_content) inspect the current state.
 
