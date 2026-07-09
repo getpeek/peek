@@ -3,6 +3,7 @@ import type { editor as MonacoEditor } from "monaco-editor";
 import { useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 import { effectiveThemeAtom } from "../../../../state";
+import { editorThemeForUiTheme } from "../../../../themes/editorTheme";
 import "./MonacoJsonCell.css";
 
 // The editor grows with its content between these bounds; past the max it scrolls.
@@ -65,7 +66,7 @@ export function MonacoJsonCell({
   onCommit: () => void;
   onCancel: () => void;
 }) {
-  const theme = useAtomValue(effectiveThemeAtom) === "midday" ? "rose-pine-dawn" : "rose-pine";
+  const theme = editorThemeForUiTheme(useAtomValue(effectiveThemeAtom));
   const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
   // The draft arrives compact (JSON.stringify); open it pretty-printed for editing.
   const [initialValue] = useState(() => formatJson(value));

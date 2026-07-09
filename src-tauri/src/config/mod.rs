@@ -68,6 +68,7 @@ pub enum Theme {
     Pine,
     Midnight,
     Midday,
+    Terminal,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

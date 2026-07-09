@@ -24,3 +24,11 @@
   --pk-swatch-fg: oklch(21.6% 0.02 293.9);
   --pk-swatch-accent: oklch(49.6% 0.195 293.1);
 }
+
+.pk-theme-terminal {
+  --pk-swatch-bg: #000000;
+  --pk-swatch-node-bg: #000000;
+  --pk-swatch-border: #363636;
+  --pk-swatch-fg: #ffffff;
+  --pk-swatch-accent: #33ff66;
+}

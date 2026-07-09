@@ -1,4 +1,5 @@
 import { IconMap2, IconPencil, IconSparkles, IconX } from "@tabler/icons-react";
+import { getHotkeyHandler } from "@mantine/hooks";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
 import { historyPreviewAtom } from "../history/state";
@@ -23,7 +24,10 @@ export function RegionsMenu() {
   const { renameRegion, removeRegion, flyToRegion } = useRegionActions();
   const groupWithAi = useGroupWithAi();
   const [aiBusy, setAiBusy] = useState(false);
+  const [cursor, setCursor] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Close on outside click. The popover lives in a React Flow Panel above the
   // canvas pane, which stops propagation of bubble-phase mouse events — so we
@@ -42,6 +46,17 @@ export function RegionsMenu() {
     return () => document.removeEventListener("pointerdown", onPointerDown, true);
   }, [open, setOpen, setRenamingId]);
 
+  useEffect(() => {
+    if (open) {
+      setCursor(0);
+      listRef.current?.focus();
+    }
+  }, [open]);
+
+  useEffect(() => {
+    itemRefs.current[cursor]?.scrollIntoView({ block: "nearest" });
+  }, [cursor]);
+
   const runGroupWithAi = async () => {
     if (!groupWithAi || aiBusy) {
       return;
@@ -59,6 +74,13 @@ export function RegionsMenu() {
   const groupedIds = new Set(derived.flatMap(d => d.memberIds));
   const ungroupedCount = nodes.filter(n => !groupedIds.has(n.id)).length;
 
+  const selectRegion = (region: RegionState, count: number) => {
+    if (count > 0) {
+      flyToRegion(region.id);
+      setOpen(false);
+    }
+  };
+
   const commitRename = (region: RegionState, value: string) => {
     const name = value.trim();
     if (name.length > 0 && name !== region.name) {
@@ -74,22 +96,49 @@ export function RegionsMenu() {
   return (
     <div ref={containerRef} className='wf-regions'>
       {open && (
-        <div className='wf-region-list'>
+        <div
+          ref={listRef}
+          className='wf-region-list'
+          tabIndex={-1}
+          onKeyDown={getHotkeyHandler([
+            [
+              "Escape",
+              () => {
+                setOpen(false);
+                setRenamingId(null);
+              },
+            ],
+            ["ArrowUp", () => setCursor(c => Math.max(0, c - 1))],
+            ["ArrowDown", () => setCursor(c => Math.min(regions.length - 1, c + 1))],
+            [
+              "Enter",
+              () => {
+                const region = regions[cursor];
+                if (region) {
+                  selectRegion(region, liveCountById.get(region.id) ?? 0);
+                }
+              },
+            ],
+          ])}
+        >
           <div className='rl-title'>Regions</div>
           {regions.length === 0 && (
             <div className='rl-empty'>Select nodes and press ⌘G to group them</div>
           )}
-          {regions.map(region => {
+          {regions.map((region, index) => {
             const count = liveCountById.get(region.id) ?? 0;
             const renaming = renamingId === region.id;
             return (
               <div
                 key={region.id}
-                className={`rl-row ${count === 0 ? "muted" : ""}`}
+                ref={el => {
+                  itemRefs.current[index] = el;
+                }}
+                className={`rl-row ${count === 0 ? "muted" : ""} ${index === cursor ? "active" : ""}`}
+                onMouseEnter={() => setCursor(index)}
                 onClick={() => {
-                  if (!renaming && count > 0) {
-                    flyToRegion(region.id);
-                    setOpen(false);
+                  if (!renaming) {
+                    selectRegion(region, count);
                   }
                 }}
               >

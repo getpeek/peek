@@ -8,6 +8,7 @@ import { scanVariableSites, type VariableValue } from "../../../variables";
 import { attachLspDocumentSync } from "./lspProvider";
 import { getOverflowWidgetsDomNode, syncOverflowWidgetsScale } from "./overflowWidgets";
 import { effectiveThemeAtom } from "../../../../state";
+import { editorThemeForUiTheme } from "../../../../themes/editorTheme";
 
 const variablesByModelUri = new Map<string, string[]>();
 let variableProviderRegistered = false;
@@ -81,7 +82,7 @@ export const SqlEditor = ({
   const variablesRef = useRef<Record<string, VariableValue>>(variables ?? {});
   const zoom = useStore(s => s.transform[2]);
   const zoomRef = useRef(zoom);
-  const theme = useAtomValue(effectiveThemeAtom) === "midday" ? "rose-pine-dawn" : "rose-pine";
+  const theme = editorThemeForUiTheme(useAtomValue(effectiveThemeAtom));
 
   useEffect(() => {
     zoomRef.current = zoom;

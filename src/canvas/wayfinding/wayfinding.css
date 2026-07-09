@@ -341,7 +341,8 @@
     font: 500 12.5px var(--pk-font-sans);
     color: var(--pk-fg);
 
-    &:hover {
+    &:hover,
+    &.active {
       background: var(--pk-node-bg-2);
 
       .rl-actions {

@@ -1,0 +1,154 @@
+/* Terminal — tactical command-console theme.
+   Pure black, zero-radius, corner-bracket node frames, type-colored header ticks,
+   dithered dot-grid backdrop, phosphor-green "active/selected" cue. Krypton stays
+   the font (no --pk-font-* override). Colors are exact hex from the design prototype
+   (grayscale ramp + a few CRT accent hues) rather than the usual oklch — the pure
+   values reproduce the console look precisely.
+
+   Only the active theme's stylesheet is loaded (see ThemeStylesheet.tsx), so the
+   non-:root selectors below apply exclusively while Terminal is active. */
+:root {
+  --pk-bg: #000000;
+  --pk-bg-grid: #161616;
+  --pk-node-bg: #000000;
+  --pk-node-bg-2: #111111;
+  --pk-node-inset: #0a0a0a;
+  --pk-node-border: #262626;
+  --pk-node-border-strong: #4a4a4a;
+  --pk-node-shadow: none;
+  --pk-node-shadow-cheap: none;
+
+  --pk-fg: #ffffff;
+  --pk-fg-muted: #b5b5b5;
+  --pk-fg-subtle: #6e6e6e;
+
+  --pk-accent: #ffffff;
+  --pk-accent-soft: #e6e6e6;
+  --pk-accent-bg: rgba(255, 255, 255, 0.12);
+  --pk-accent-line: rgba(255, 255, 255, 0.55);
+  /* Phosphor green — reserved for the selected/active node (see .app-node.selected). */
+  --pk-active: #33ff66;
+  --pk-row-selected-bg: color-mix(in srgb, var(--pk-node-bg), white 9%);
+  --pk-row-selected-bg-hover: color-mix(in srgb, var(--pk-node-bg), white 14%);
+
+  --pk-green: #ffffff;
+  --pk-green-soft: rgba(255, 255, 255, 0.14);
+  --pk-yellow: #ffd633;
+  --pk-yellow-soft: rgba(255, 214, 51, 0.16);
+  --pk-blue: #33ccff;
+  --pk-blue-soft: rgba(51, 204, 255, 0.16);
+  --pk-red: #ff5c57;
+  --pk-red-soft: rgba(255, 92, 87, 0.16);
+
+  --pk-region-1: #c77dff;
+  --pk-region-2: var(--pk-blue);
+  --pk-region-3: var(--pk-yellow);
+  --pk-region-4: var(--pk-green);
+  --pk-region-5: #ff9e33;
+
+  --pk-type-query: #ffffff;
+  --pk-type-agent: #33ccff;
+  --pk-type-result: #ffd633;
+  --pk-type-chart: #ff9e33;
+  --pk-type-error: #ff5c57;
+  --pk-type-variable: #c77dff;
+
+  /* Square everything. Loads after node.css's :root, so these win on source order.
+     --pk-radius-window is left alone — it tracks the native window squircle. */
+  --pk-radius-node: 0px;
+  --pk-radius-card: 0px;
+  --pk-radius-pill: 0px;
+
+  /* Black field with an ordered-dither dot overlay; the grid comes from xyflow's
+     Background (tinted by --pk-bg-grid above). */
+  --pk-canvas-bg:
+    radial-gradient(rgba(255, 255, 255, 0.07) 0.5px, transparent 0.6px) 0 0 / 3px 3px, #000000;
+}
+
+/* ---- Corner brackets: the signature tactical frame ----
+   Absolutely-positioned pseudo (removed from .app-node's flex flow) drawing eight
+   short line segments at the corners. inset:0 keeps it inside the node's existing
+   overflow:hidden, so no overflow change is needed. */
+.app-node {
+  position: relative;
+}
+.app-node::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  --bc: #d0d0d0;
+  --bl: 13px;
+  --bt: 1px;
+  background:
+    linear-gradient(var(--bc), var(--bc)) top left / var(--bl) var(--bt) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) top left / var(--bt) var(--bl) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) top right / var(--bl) var(--bt) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) top right / var(--bt) var(--bl) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) bottom left / var(--bl) var(--bt) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) bottom left / var(--bt) var(--bl) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) bottom right / var(--bl) var(--bt) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) bottom right / var(--bt) var(--bl) no-repeat;
+}
+
+/* ---- Phosphor-green selection ---- */
+.app-node.selected {
+  outline-color: var(--pk-active);
+  box-shadow: 0 0 18px rgba(51, 255, 102, 0.22);
+}
+.app-node.selected::after {
+  --bc: var(--pk-active);
+  --bl: 16px;
+  --bt: 2px;
+}
+
+/* ---- Header tick: type-colored vertical bar instead of a round dot ---- */
+.node-indicator .type-dot {
+  width: 3px;
+  height: 14px;
+  border-radius: 0;
+}
+
+/* ---- Dithered PK/FK & param tags: halftone fill over the soft background ----
+   Matched to node.css's selector specificity so the shorthand `background` there
+   doesn't reset our background-image. */
+.col-tag.pk,
+.col-tag.fk,
+.param-chip {
+  background-image: radial-gradient(currentColor 0.5px, transparent 0.7px);
+  background-size: 3px 3px;
+  border: 1px solid currentColor;
+}
+
+/* ---- Buttons invert on hover (white on black -> black on white) ---- */
+.btn:hover:not(:disabled) {
+  background: var(--pk-fg);
+  color: var(--pk-bg);
+}
+
+/* ---- Page tabs: square, and the active tab inverts to black-on-white ----
+   Selectors match PageSelector.css's nested specificity so the theme link (loaded
+   after the bundled component CSS) wins on source order. */
+.titlebar-page-selector .page-tab {
+  border-radius: 0;
+  backdrop-filter: none;
+}
+.titlebar-page-selector .page-tab.active {
+  background: var(--pk-fg);
+  color: var(--pk-bg);
+}
+.titlebar-page-selector .page-tab.active .dot {
+  background: var(--pk-bg);
+  box-shadow: none;
+}
+
+/* ---- Square the corner-bracket resize handles ----
+   node.css rounds each handle's outer corner (border-*-radius: 9px). Match its
+   per-corner selector specificity so the shorthand reset wins on source order. */
+.react-flow__node.selected .react-flow__resize-control.handle.top.left,
+.react-flow__node.selected .react-flow__resize-control.handle.top.right,
+.react-flow__node.selected .react-flow__resize-control.handle.bottom.left,
+.react-flow__node.selected .react-flow__resize-control.handle.bottom.right {
+  border-radius: 0;
+}

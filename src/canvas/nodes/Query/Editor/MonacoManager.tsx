@@ -4,6 +4,7 @@ import { createLspProvider } from "./lspProvider";
 import { editor, IDisposable } from "monaco-editor";
 import { rosePineTheme } from "../../../../themes/rosePineTheme";
 import { rosePineDawnTheme } from "../../../../themes/rosePineDawnTheme";
+import { terminalTheme } from "../../../../themes/terminalTheme";
 
 export const MonacoManager = () => {
   const monacoRef = useRef<Monaco | null>(null);
@@ -32,6 +33,7 @@ export const MonacoManager = () => {
 
           monaco.editor.defineTheme("rose-pine", rosePineTheme);
           monaco.editor.defineTheme("rose-pine-dawn", rosePineDawnTheme);
+          monaco.editor.defineTheme("terminal", terminalTheme);
 
           if (!providerRef.current) {
             providerRef.current = createLspProvider(monaco);

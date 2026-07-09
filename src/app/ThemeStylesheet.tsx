@@ -4,11 +4,13 @@ import { effectiveThemeAtom } from "../state";
 import pineHref from "../canvas/nodes/theme/pine.css?url";
 import midnightHref from "../canvas/nodes/theme/midnight.css?url";
 import middayHref from "../canvas/nodes/theme/midday.css?url";
+import terminalHref from "../canvas/nodes/theme/terminal.css?url";
 
 const themeHrefs = {
   pine: pineHref,
   midnight: midnightHref,
   midday: middayHref,
+  terminal: terminalHref,
 } as const;
 
 const LINK_ID = "pk-theme";
