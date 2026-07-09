@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 
 const root = resolve(import.meta.dirname, "..");
@@ -27,9 +28,25 @@ function generateReleaseNotes(previousTag, newTag) {
     return "";
   }
 
+  // Exclude generated/lock files so the model reasons about real changes, not churn.
+  const diff = git(
+    "diff",
+    `${previousTag}..HEAD`,
+    "--",
+    ".",
+    ":(exclude)yarn.lock",
+    ":(exclude)package-lock.json",
+    ":(exclude)src-tauri/Cargo.lock",
+    ":(exclude).yarn/releases/**",
+    ":(exclude)dist/**",
+  );
+
+  const stdin = `=== COMMIT LOG ===\n${commitLog}\n\n=== DIFF ===\n${diff}`;
+
   const prompt = [
     "You are writing release notes for Peek, a Figma-like database GUI desktop app.",
-    `Stdin contains the git log between the previous release (${previousTag}) and the new release (${newTag}).`,
+    `Stdin contains, for the range between the previous release (${previousTag}) and the new release (${newTag}), both the git commit log (under "=== COMMIT LOG ===") and the code diff (under "=== DIFF ===").`,
+    "Base the notes on what the diff actually changes; use the commit messages as hints about intent.",
     "Write concise, user-facing release notes in GitHub-flavored markdown:",
     '- Group bullets under "### Features", "### Fixes", "### Other" — omit empty groups.',
     "- One bullet per meaningful change; merge related commits; skip version-bump, CI, and chore noise.",
@@ -39,7 +56,7 @@ function generateReleaseNotes(previousTag, newTag) {
   try {
     return execFileSync("claude", ["-p", prompt], {
       cwd: root,
-      input: commitLog,
+      input: stdin,
       encoding: "utf8",
       timeout: 120_000,
       stdio: ["pipe", "pipe", "inherit"],
@@ -53,11 +70,30 @@ function generateReleaseNotes(previousTag, newTag) {
   }
 }
 
-async function confirm(question) {
+async function promptChoice(question) {
   const readline = createInterface({ input: process.stdin, output: process.stdout });
   const answer = (await readline.question(question)).trim().toLowerCase();
   readline.close();
-  return answer === "y" || answer === "yes";
+  if (answer === "e" || answer === "edit") {
+    return "edit";
+  }
+  if (answer === "y" || answer === "yes") {
+    return "yes";
+  }
+  return "no";
+}
+
+function editInEditor(notes) {
+  const editor = process.env.EDITOR || "vi";
+  const dir = mkdtempSync(join(tmpdir(), "peek-release-"));
+  const file = join(dir, "RELEASE_NOTES.md");
+  writeFileSync(file, notes);
+  try {
+    execFileSync(editor, [file], { stdio: "inherit" });
+    return readFileSync(file, "utf8").trim();
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 if (!version) {
@@ -99,12 +135,26 @@ const previousTag = (() => {
     return "";
   }
 })();
-const releaseNotes = previousTag === "" ? "" : generateReleaseNotes(previousTag, tag);
+let releaseNotes = previousTag === "" ? "" : generateReleaseNotes(previousTag, tag);
 
-if (releaseNotes !== "") {
-  console.log(`\nRelease notes (${previousTag} → ${tag}):\n\n${releaseNotes}\n`);
-}
-if (!(await confirm(`Proceed with release ${tag}? [y/N] `))) {
+while (true) {
+  if (releaseNotes !== "") {
+    console.log(`\nRelease notes (${previousTag} → ${tag}):\n\n${releaseNotes}\n`);
+  }
+  // Only offer edit when there are notes to edit.
+  const prompt =
+    releaseNotes === ""
+      ? `Proceed with release ${tag}? [y/N] `
+      : `Proceed with release ${tag}? [y]es / [n]o / [e]dit `;
+  const choice = await promptChoice(prompt);
+
+  if (choice === "yes") {
+    break;
+  }
+  if (choice === "edit" && releaseNotes !== "") {
+    releaseNotes = editInEditor(releaseNotes);
+    continue;
+  }
   console.log("release: aborted — nothing was changed.");
   process.exit(0);
 }
