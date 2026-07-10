@@ -40,9 +40,10 @@
   display: inline-flex;
   align-items: baseline;
   padding: 3px 7px;
-  border-radius: var(--pk-radius-pill);
-  background: var(--pk-accent);
-  color: var(--pk-node-bg);
+  border-radius: 4px;
+  background: var(--pk-bg);
+  border: 1px solid var(--pk-node-border);
+  color: var(--pk-accent);
   font: 600 12px var(--pk-font-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -63,16 +64,17 @@
 
 /* Already-typed prefix recedes so the remaining keys to press stand out. */
 .jump-typed {
-  color: color-mix(in oklab, var(--pk-node-bg) 55%, var(--pk-accent));
+  color: var(--pk-fg-subtle);
 }
 
 .jump-rest {
-  color: var(--pk-node-bg);
+  color: var(--pk-accent);
 }
 
 /* Labels that no longer match the typed prefix drop back but stay legible. */
 .jump-badge.faded {
-  background: color-mix(in oklab, var(--pk-accent) 22%, var(--pk-node-bg));
+  background: var(--pk-bg);
+  border-color: color-mix(in oklab, var(--pk-node-border) 50%, transparent);
   box-shadow: none;
   opacity: 0.5;
 }
