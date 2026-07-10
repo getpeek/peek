@@ -1,6 +1,7 @@
 import fuzzysort from "fuzzysort";
 import { CommandPaletteResult } from "./commands";
 import { useSearchPageCommand } from "./commands/searchPage";
+import { useJumpToNodeCommand } from "./commands/jumpToNode";
 import { useOpenConnectionPickerCommand } from "./commands/openConnectionPicker";
 import { useViewSchemaCommand } from "./commands/viewSchema";
 import { useOrganizeCanvasCommand } from "./commands/organizeCanvas";
@@ -37,6 +38,7 @@ export interface SearchResult {
 
 export const useSearch = (query: string): SearchResult[] => {
   const searchPageCommand = useSearchPageCommand();
+  const jumpToNodeCommand = useJumpToNodeCommand();
   const connectionPickerCommand = useOpenConnectionPickerCommand();
   const viewSchemaCommand = useViewSchemaCommand();
   const organizeCanvasCommand = useOrganizeCanvasCommand();
@@ -79,6 +81,7 @@ export const useSearch = (query: string): SearchResult[] => {
     exportJson,
     ...(pivotResultCommand ? [pivotResultCommand] : []),
     searchPageCommand,
+    jumpToNodeCommand,
     connectionPickerCommand,
     viewSchemaCommand,
     organizeCanvasCommand,

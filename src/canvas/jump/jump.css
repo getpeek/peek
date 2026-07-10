@@ -1,0 +1,81 @@
+/* ============================================================
+   Jump-to-node — letter labels for keyboard node navigation
+   ============================================================ */
+
+/* Full-viewport overlay panel (same trick as .wf-layer). */
+.react-flow__panel.jump-layer {
+  position: absolute;
+  inset: 0;
+  margin: 0 !important;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: transparent;
+}
+
+/* A faint scrim quiets the canvas so the labels read; it also catches a click
+   to bail out of jump mode. Only the scrim takes pointer events — the badges
+   are keyboard-driven and must never intercept a pan. */
+.jump-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: color-mix(in oklab, var(--pk-bg) 45%, transparent);
+  animation: jump-scrim-in 0.12s ease-out;
+}
+
+@keyframes jump-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.jump-badge {
+  position: absolute;
+  pointer-events: none;
+  transform: translate(-35%, -35%);
+  display: inline-flex;
+  align-items: baseline;
+  padding: 3px 7px;
+  border-radius: var(--pk-radius-pill);
+  background: var(--pk-accent);
+  color: var(--pk-node-bg);
+  font: 600 12px var(--pk-font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px oklch(0% 0 0 / 0.4);
+  animation: jump-badge-in 0.12s ease-out;
+}
+
+@keyframes jump-badge-in {
+  from {
+    opacity: 0;
+    transform: translate(-35%, -35%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-35%, -35%) scale(1);
+  }
+}
+
+/* Already-typed prefix recedes so the remaining keys to press stand out. */
+.jump-typed {
+  color: color-mix(in oklab, var(--pk-node-bg) 55%, var(--pk-accent));
+}
+
+.jump-rest {
+  color: var(--pk-node-bg);
+}
+
+/* Labels that no longer match the typed prefix drop back but stay legible. */
+.jump-badge.faded {
+  background: color-mix(in oklab, var(--pk-accent) 22%, var(--pk-node-bg));
+  box-shadow: none;
+  opacity: 0.5;
+}
+.jump-badge.faded .jump-rest {
+  color: var(--pk-fg-muted);
+}

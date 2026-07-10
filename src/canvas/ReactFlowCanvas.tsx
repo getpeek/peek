@@ -39,6 +39,7 @@ import { TableDefinitionNode } from "./nodes/TableDefinition/TableDefinitionNode
 import { TextNode } from "./nodes/Text/TextNode";
 import { VariableNode } from "./nodes/Variable/VariableNode";
 import { CameraLockButton } from "./ui/CameraLockButton";
+import { JumpLabels } from "./jump/JumpLabels";
 import { RegionHalos } from "./wayfinding/RegionHalos";
 import { WayfindingLayer } from "./wayfinding/WayfindingLayer";
 import { HideUiDot } from "./ui/HideUiDot";
@@ -272,6 +273,7 @@ function ReactFlowCanvasInner() {
         {uiVisible && <ZoomIndicator />}
         {!previewing && <RegionHalos />}
         <WayfindingLayer />
+        {!previewing && <JumpLabels />}
         {!uiVisible && <HideUiDot />}
         {cameraLocked && <CameraLockButton />}
         <RemoteCursorsLayer />

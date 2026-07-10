@@ -1,6 +1,6 @@
 import { useAtomValue, useSetAtom } from "jotai";
-import { canvasApiAtom, documentAtom, pendingPageCloseAtom } from "../state";
-import type { PageState } from "../types";
+import { canvasApiAtom, documentAtom, pendingPageCloseAtom, type CanvasApi } from "../state";
+import type { AppNode, PageState } from "../types";
 
 export interface PageActions {
   pages: PageState[];
@@ -20,8 +20,68 @@ export interface PageActions {
   reorderPage: (pageId: string, toIndex: number) => void;
 }
 
-const distance = (p1: { x: number; y: number }, p2: { x: number; y: number }) => {
-  return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+type Direction = "up" | "down" | "left" | "right";
+
+// Off-axis drift costs double, so among nodes inside the cone the one most
+// squarely in the pressed direction wins even if a skewed node sits nearer.
+const PERPENDICULAR_PENALTY = 2;
+
+const centerOf = (node: AppNode): { x: number; y: number } => {
+  const width = node.measured?.width ?? node.width ?? 0;
+  const height = node.measured?.height ?? node.height ?? 0;
+  return { x: node.position.x + width / 2, y: node.position.y + height / 2 };
+};
+
+/**
+ * Pick the best node in `direction` from `origin` using a 45° cone on node
+ * centres: a candidate only counts if its off-axis drift is within its
+ * forward distance, so pressing ↑ never jumps to a node that's really off to
+ * the side — beyond 45° the perpendicular arrow owns it. This is what makes
+ * arrow navigation feel right when targets sit at an arbitrary angle.
+ */
+const pickInDirection = (
+  nodes: AppNode[],
+  origin: AppNode,
+  direction: Direction,
+): AppNode | undefined => {
+  const from = centerOf(origin);
+  const scored = nodes.flatMap(node => {
+    if (node.id === origin.id) {
+      return [];
+    }
+    const to = centerOf(node);
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const forward =
+      direction === "up" ? -dy : direction === "down" ? dy : direction === "left" ? -dx : dx;
+    const drift = direction === "up" || direction === "down" ? Math.abs(dx) : Math.abs(dy);
+    if (forward <= 0 || drift > forward) {
+      return [];
+    }
+    return [{ node, score: forward + drift * PERPENDICULAR_PENALTY }];
+  });
+  if (scored.length === 0) {
+    return undefined;
+  }
+  return scored.reduce((best, candidate) => (candidate.score < best.score ? candidate : best)).node;
+};
+
+// With nothing selected, the arrow keys anchor on whatever node is nearest the
+// viewport centre and walk outward from there.
+const nearestToViewportCenter = (nodes: AppNode[], canvas: CanvasApi): AppNode | undefined => {
+  const rect = document.querySelector<HTMLElement>(".react-flow")?.getBoundingClientRect();
+  if (!rect) {
+    return nodes[0];
+  }
+  const center = canvas.screenToFlowPosition({
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2,
+  });
+  const distanceTo = (node: AppNode) => {
+    const c = centerOf(node);
+    return (c.x - center.x) ** 2 + (c.y - center.y) ** 2;
+  };
+  return nodes.reduce((best, node) => (distanceTo(node) < distanceTo(best) ? node : best));
 };
 
 export function usePageActions(): PageActions {
@@ -98,45 +158,27 @@ export function usePageActions(): PageActions {
     previousQueryNodeOnPage: () => {
       cycleActiveQueryNode(-1);
     },
-    nodeInDirection: (direction: "up" | "down" | "left" | "right") => {
+    nodeInDirection: (direction: Direction) => {
       if (!canvas) {
+        return;
+      }
+      const nodes = canvas.getNodes();
+      if (nodes.length === 0) {
         return;
       }
 
       const selected = canvas.getSelectedNodes().at(0);
-      if (!selected) {
+      // No selection yet: the first press just anchors on the nearest node;
+      // from there each press steps to the next node in the pressed cone.
+      const target = selected
+        ? pickInDirection(nodes, selected, direction)
+        : nearestToViewportCenter(nodes, canvas);
+      if (!target) {
         return;
       }
 
-      const { x, y } = selected.position;
-      const candidates = canvas.getNodes().filter(node => {
-        if (node.id === selected.id) {
-          return false;
-        }
-        if (direction === "up") {
-          return node.position.y < y;
-        }
-        if (direction === "down") {
-          return node.position.y > y;
-        }
-        if (direction === "left") {
-          return node.position.x < x;
-        }
-        return node.position.x > x;
-      });
-
-      if (candidates.length === 0) {
-        return;
-      }
-
-      const closest = candidates.reduce((best, node) =>
-        distance(node.position, selected.position) < distance(best.position, selected.position)
-          ? node
-          : best,
-      );
-
-      canvas.selectOnly(closest.id);
-      canvas.panToNode(closest.id, { zoom: 1 });
+      canvas.selectOnly(target.id);
+      canvas.panToNode(target.id, { zoom: canvas.getZoom() });
     },
     goToPageByIndex: index => {
       if (!canvas) {

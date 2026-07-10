@@ -12,6 +12,7 @@ import {
   cameraLockedAtom,
 } from "../state";
 import { historyPreviewAtom } from "../history/state";
+import { jumpModeAtom } from "../jump/state";
 import { regionsMenuOpenAtom } from "../wayfinding/state";
 import { useGroupSelection } from "../wayfinding/useGroupSelection";
 import { useRegionsEnabled } from "../wayfinding/useRegionsEnabled";
@@ -38,6 +39,7 @@ export const usePeekHotkeys = () => {
   const groupSelection = useGroupSelection();
   const regionsEnabled = useRegionsEnabled();
   const setRegionsMenuOpen = useSetAtom(regionsMenuOpenAtom);
+  const setJumpMode = useSetAtom(jumpModeAtom);
   const keymap = useKeymap();
 
   // While a history preview is on screen the visible board is not the real
@@ -155,6 +157,13 @@ export const usePeekHotkeys = () => {
   useHotkey(keymap["Page::SelectNodeDown"], () => {
     pageActions.nodeInDirection("down");
   });
+
+  useHotkey(
+    keymap["Page::JumpToNode"],
+    unlessPreviewing(() => {
+      setJumpMode(true);
+    }),
+  );
 
   useHotkey(keymap["Tool::Select"], () => {
     const active = document.activeElement;
