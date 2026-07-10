@@ -231,7 +231,7 @@ pub(crate) fn default_keymap() -> Vec<(&'static str, Action)> {
         ("meta-arrowright", Action::Page(Page::SelectNodeRight)),
         ("meta-arrowup", Action::Page(Page::SelectNodeUp)),
         ("meta-arrowdown", Action::Page(Page::SelectNodeDown)),
-        ("f", Action::Page(Page::JumpToNode)),
+        ("g", Action::Page(Page::JumpToNode)),
         ("meta-.", Action::View(View::ToggleUi)),
         ("meta-shift-l", Action::View(View::ToggleCameraLock)),
         ("shift-p", Action::Result(ResultAction::Pivot)),
