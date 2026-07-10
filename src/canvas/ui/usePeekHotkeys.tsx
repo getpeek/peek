@@ -20,6 +20,7 @@ import { useUndoHistory } from "./useUndoHistory";
 import { useHotkey } from "../../app/useHotkey";
 import { useKeymap } from "../../app/keymap";
 import { newIdForType } from "./KeyboardShortcuts";
+import { useFocusQueryOnEnter } from "./useFocusQueryOnEnter";
 import { togglePivot } from "../nodes/Result/togglePivot";
 import { AppNode, AppNodeType, ResultNode } from "../types";
 
@@ -159,11 +160,13 @@ export const usePeekHotkeys = () => {
   });
 
   useHotkey(
-    keymap["Page::JumpToNode"],
+    keymap["Page::GoToNode"],
     unlessPreviewing(() => {
       setJumpMode(true);
     }),
   );
+
+  useFocusQueryOnEnter();
 
   useHotkey(keymap["Tool::Select"], () => {
     const active = document.activeElement;

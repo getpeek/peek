@@ -41,7 +41,7 @@ function JumpOverlay({ onExit }: { onExit: () => void }) {
   useEffect(() => {
     const jumpTo = (id: string) => {
       canvas.selectOnly(id);
-      canvas.panToNode(id, { zoom: canvas.getZoom(), duration: 300 });
+      canvas.panToNode(id, { zoom: 1, duration: 300 });
       onExit();
     };
 

@@ -105,7 +105,7 @@ Action names are `Group::Variant`. The full set, with default bindings:
 | `Page::SelectNodeRight`     | `meta-arrowright` | Select the node to the right                                             |
 | `Page::SelectNodeUp`        | `meta-arrowup`    | Select the node above                                                    |
 | `Page::SelectNodeDown`      | `meta-arrowdown`  | Select the node below                                                    |
-| `Page::JumpToNode`          | `g`               | Label every visible node — type a label to fly straight to it            |
+| `Page::GoToNode`            | `g`               | Label every visible node — type a label to fly straight to it            |
 | `Page::Search`              | `meta-f`          | Search all nodes on the page (searches within a selected result instead) |
 
 ### View

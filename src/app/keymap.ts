@@ -29,7 +29,7 @@ export type KeymapAction =
   | "Page::SelectNodeRight"
   | "Page::SelectNodeUp"
   | "Page::SelectNodeDown"
-  | "Page::JumpToNode"
+  | "Page::GoToNode"
   | "Page::Search"
   | "View::ToggleUi"
   | "View::ToggleCameraLock"

@@ -64,7 +64,7 @@ export const KEYMAP_REFERENCE: KeymapSection[] = [
       { action: "Page::SelectNodeUp", description: "Select the node above" },
       { action: "Page::SelectNodeDown", description: "Select the node below" },
       {
-        action: "Page::JumpToNode",
+        action: "Page::GoToNode",
         description: "Label every visible node — type a label to fly straight to it",
       },
       {
