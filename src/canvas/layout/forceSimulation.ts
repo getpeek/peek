@@ -16,6 +16,9 @@ const LINK_STRENGTH = 0.6;
 const CHARGE_STRENGTH = -800;
 const CHARGE_DISTANCE_MAX = 1000;
 const ANCHOR_STRENGTH = 0.2;
+// Region members anchor harder than ungrouped nodes so a cross-region edge
+// stretches rather than dragging two region islands into each other.
+const REGION_ANCHOR_STRENGTH = 0.35;
 const COLLIDE_ITERATIONS = 3;
 
 export interface SimNode extends SimulationNodeDatum {
@@ -36,13 +39,15 @@ const maxDimension = (node: SimNode) => Math.max(node.width, node.height);
 export function buildForceSimulation(
   simNodes: SimNode[],
   simLinks: SimLink[],
-  options: { alphaDecay?: number } = {},
+  options: { alphaDecay?: number; regionOfNode?: ReadonlyMap<string, string> } = {},
 ): Simulation<SimNode, SimLink> {
   // forceLink mutates each link's endpoints from id strings into node
   // references when the simulation initializes, so anchors must be computed
   // from the raw links first.
-  const anchors = computeAnchors(simNodes, simLinks);
+  const anchors = computeAnchors(simNodes, simLinks, options.regionOfNode);
   const anchorFor = (node: SimNode) => anchors.get(node.id) ?? { x: 0, y: 0 };
+  const anchorStrength = (node: SimNode) =>
+    options.regionOfNode?.has(node.id) ? REGION_ANCHOR_STRENGTH : ANCHOR_STRENGTH;
 
   const nodeById = new Map(simNodes.map(node => [node.id, node]));
   const linkDistance = (link: SimLink) => {
@@ -65,8 +70,8 @@ export function buildForceSimulation(
       "charge",
       forceManyBody<SimNode>().strength(CHARGE_STRENGTH).distanceMax(CHARGE_DISTANCE_MAX),
     )
-    .force("anchorX", forceX<SimNode>(node => anchorFor(node).x).strength(ANCHOR_STRENGTH))
-    .force("anchorY", forceY<SimNode>(node => anchorFor(node).y).strength(ANCHOR_STRENGTH))
+    .force("anchorX", forceX<SimNode>(node => anchorFor(node).x).strength(anchorStrength))
+    .force("anchorY", forceY<SimNode>(node => anchorFor(node).y).strength(anchorStrength))
     .force("collide", rectCollide<SimNode>(COLLIDE_PADDING, COLLIDE_ITERATIONS));
 
   if (options.alphaDecay !== undefined) {

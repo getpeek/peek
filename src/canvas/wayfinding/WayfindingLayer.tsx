@@ -5,7 +5,7 @@ import { uiVisibilityAtom } from "../../state";
 import { historyPreviewAtom } from "../history/state";
 import { nodesAtom, regionsAtom } from "../state";
 import { Beacons } from "./Beacons";
-import { crossFade, DIM_THRESHOLD_T, HINT_THRESHOLD_T } from "./crossFade";
+import { crossFade, DIM_THRESHOLD_T } from "./crossFade";
 import { EdgePeekers } from "./EdgePeekers";
 import { deriveRegions, type DerivedRegion } from "./regionGeometry";
 import { useRegionsEnabled } from "./useRegionsEnabled";
@@ -55,11 +55,6 @@ function WayfindingOverlay({ derived }: { derived: DerivedRegion[] }) {
     <Panel position='top-left' className='wf-layer'>
       <Beacons derived={derived} t={t} transform={[tx, ty, tz]} />
       <EdgePeekers derived={derived} t={t} transform={[tx, ty, tz]} />
-      {t > HINT_THRESHOLD_T && (
-        <div className='wf-hint'>
-          {t > 0.6 ? "click a label to enter that area" : "keep zooming out — areas become beacons"}
-        </div>
-      )}
     </Panel>
   );
 }

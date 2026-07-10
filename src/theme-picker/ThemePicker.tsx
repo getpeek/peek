@@ -7,14 +7,6 @@ import { configAtom, previewThemeAtom, themePickerOpenAtom } from "../state";
 import type { Theme } from "../state";
 import { THEMES } from "./themes";
 
-const swatchTokens = [
-  "--pk-swatch-bg",
-  "--pk-swatch-node-bg",
-  "--pk-swatch-border",
-  "--pk-swatch-accent",
-  "--pk-swatch-fg",
-] as const;
-
 export const ThemePicker = () => {
   const [open, setOpen] = useAtom(themePickerOpenAtom);
   const setPreview = useSetAtom(previewThemeAtom);
@@ -89,15 +81,6 @@ export const ThemePicker = () => {
             onMouseEnter={() => applyCursor(i)}
             onClick={() => commit(theme.id)}
           >
-            <span className={`theme-picker-swatches pk-theme-${theme.id}`}>
-              {swatchTokens.map(token => (
-                <span
-                  key={token}
-                  className='theme-picker-swatch'
-                  style={{ background: `var(${token})` }}
-                />
-              ))}
-            </span>
             <span className='theme-picker-name'>{theme.name}</span>
             <span className='theme-picker-tagline'>{theme.tagline}</span>
           </div>

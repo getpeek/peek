@@ -199,10 +199,23 @@
   border-radius: 28px;
   transition: opacity 0.2s ease;
 
-  /* Confirmed regions: a quiet box that fades in with the beacons on zoom-out. */
+  /* Confirmed regions — the box, styled as a Lasso Glow: a radial pool that
+     dissolves toward the canvas background (var(--pk-bg)) so the clustered nodes
+     recede into the void when zoomed out. Using --pk-bg keeps it theme-correct —
+     a dark well on the dark themes, an unobtrusive blend on the light one —
+     rather than a fixed black blob. Plain CSS gradient (no SVG filter) so pan/zoom
+     stays cheap. The fade is driven in CSS off the live --pk-zoom variable
+     (written to the DOM by useZoomVariable without a React re-render), mirroring
+     crossFade.ts: 0 at zoom >= BEACON_FADE_START (0.35), ramping to 1 over
+     BEACON_FADE_RANGE (0.14). */
   &.confirmed {
-    border: 1px solid color-mix(in oklab, var(--rc) 22%, transparent);
-    background: color-mix(in oklab, var(--rc) 6%, transparent);
+    opacity: clamp(0, calc((0.35 - var(--pk-zoom, 1)) / 0.14), 1);
+    background: radial-gradient(
+      ellipse 80% 80% at 50% 50%,
+      color-mix(in oklab, var(--pk-bg) 94%, transparent) 0%,
+      color-mix(in oklab, var(--pk-bg) 60%, transparent) 46%,
+      transparent 74%
+    );
   }
 
   /* Suggested regions: dashed, awaiting review, and carrying the card. */

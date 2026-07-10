@@ -7,8 +7,9 @@ import {
   type SimLink,
   type SimNode,
 } from "../../canvas/layout/forceSimulation";
-import { activePageAtom, canvasApiAtom, nodesAtom } from "../../canvas/state";
+import { activePageAtom, canvasApiAtom, nodesAtom, regionsAtom } from "../../canvas/state";
 import type { AppNode } from "../../canvas/types";
+import { useRegionsEnabled } from "../../canvas/wayfinding/useRegionsEnabled";
 import type { CommandPaletteResult } from "./index";
 
 const FALLBACK_W = 400;
@@ -26,6 +27,8 @@ export const useOrganizeCanvasCommand = (): CommandPaletteResult => {
   const canvas = useAtomValue(canvasApiAtom);
   const activePage = useAtomValue(activePageAtom);
   const setNodes = useSetAtom(nodesAtom);
+  const regions = useAtomValue(regionsAtom);
+  const regionsEnabled = useRegionsEnabled();
 
   return {
     icon: <IconLayoutGrid size={16} />,
@@ -65,8 +68,22 @@ export const useOrganizeCanvasCommand = (): CommandPaletteResult => {
         .filter(e => presentIds.has(e.source) && presentIds.has(e.target))
         .map(e => ({ source: e.source, target: e.target }));
 
+      // Nodes sharing a region cluster into their own island. A node belongs to
+      // at most one region (enforced when regions are created).
+      const regionOfNode = new Map<string, string>();
+      if (regionsEnabled) {
+        for (const region of regions) {
+          for (const memberId of region.memberIds) {
+            if (presentIds.has(memberId)) {
+              regionOfNode.set(memberId, region.id);
+            }
+          }
+        }
+      }
+
       const sim = buildForceSimulation(simNodes, simLinks, {
         alphaDecay: ANIMATED_ALPHA_DECAY,
+        regionOfNode,
       });
       const applyPositions = applySimulationPositions(new Map(simNodes.map(n => [n.id, n])));
       currentSim = sim;

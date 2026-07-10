@@ -58,14 +58,57 @@ function componentRadius(component: SimNode[]): number {
 }
 
 /**
- * Assigns every node an anchor point: one shared anchor per connected
- * component, shelf-packed largest-first into a roughly square grid centred
- * on the origin. Pulling nodes toward their component's anchor is what
- * separates disconnected subgraphs into their own islands.
+ * Groups nodes into the clusters that each get their own island. Region
+ * members cluster by region — one island per region, regardless of edges —
+ * while everything else clusters by connected component. With no region map
+ * the result is exactly the connected components.
  */
-export function computeAnchors(simNodes: SimNode[], simLinks: SimLink[]): Map<string, Anchor> {
-  const islands = connectedComponents(simNodes, simLinks)
-    .map(component => ({ component, cell: componentRadius(component) * 2 + ISLAND_GAP }))
+function computeClusters(
+  simNodes: SimNode[],
+  simLinks: SimLink[],
+  regionOfNode?: ReadonlyMap<string, string>,
+): SimNode[][] {
+  if (!regionOfNode || regionOfNode.size === 0) {
+    return connectedComponents(simNodes, simLinks);
+  }
+
+  const regionClusters = new Map<string, SimNode[]>();
+  const ungrouped: SimNode[] = [];
+  for (const node of simNodes) {
+    const regionId = regionOfNode.get(node.id);
+    if (regionId === undefined) {
+      ungrouped.push(node);
+      continue;
+    }
+    const members = regionClusters.get(regionId) ?? [];
+    members.push(node);
+    regionClusters.set(regionId, members);
+  }
+
+  // Ungrouped nodes still island by connectivity, but only edges wholly among
+  // them count — a link crossing into a region must not merge the two.
+  const ungroupedIds = new Set(ungrouped.map(node => node.id));
+  const ungroupedLinks = simLinks.filter(
+    link => ungroupedIds.has(endpointId(link.source)) && ungroupedIds.has(endpointId(link.target)),
+  );
+
+  return [...regionClusters.values(), ...connectedComponents(ungrouped, ungroupedLinks)];
+}
+
+/**
+ * Assigns every node an anchor point: one shared anchor per cluster (a region
+ * or, for ungrouped nodes, a connected component), shelf-packed largest-first
+ * into a roughly square grid centred on the origin. Pulling nodes toward their
+ * cluster's anchor is what separates regions and disconnected subgraphs into
+ * their own islands.
+ */
+export function computeAnchors(
+  simNodes: SimNode[],
+  simLinks: SimLink[],
+  regionOfNode?: ReadonlyMap<string, string>,
+): Map<string, Anchor> {
+  const islands = computeClusters(simNodes, simLinks, regionOfNode)
+    .map(cluster => ({ cluster, cell: componentRadius(cluster) * 2 + ISLAND_GAP }))
     .toSorted((a, b) => b.cell - a.cell);
 
   const targetRowWidth = Math.max(
@@ -73,18 +116,18 @@ export function computeAnchors(simNodes: SimNode[], simLinks: SimLink[]): Map<st
     Math.sqrt(islands.reduce((sum, island) => sum + island.cell ** 2, 0)),
   );
 
-  const placements: { component: SimNode[]; x: number; y: number }[] = [];
+  const placements: { cluster: SimNode[]; x: number; y: number }[] = [];
   let cursorX = 0;
   let rowY = 0;
   let rowHeight = 0;
   let maxX = 0;
-  for (const { component, cell } of islands) {
+  for (const { cluster, cell } of islands) {
     if (cursorX > 0 && cursorX + cell > targetRowWidth) {
       rowY += rowHeight;
       cursorX = 0;
       rowHeight = 0;
     }
-    placements.push({ component, x: cursorX + cell / 2, y: rowY + cell / 2 });
+    placements.push({ cluster, x: cursorX + cell / 2, y: rowY + cell / 2 });
     cursorX += cell;
     rowHeight = Math.max(rowHeight, cell);
     maxX = Math.max(maxX, cursorX);
@@ -92,9 +135,9 @@ export function computeAnchors(simNodes: SimNode[], simLinks: SimLink[]): Map<st
   const maxY = rowY + rowHeight;
 
   const anchors = new Map<string, Anchor>();
-  for (const { component, x, y } of placements) {
+  for (const { cluster, x, y } of placements) {
     const anchor = { x: x - maxX / 2, y: y - maxY / 2 };
-    for (const node of component) {
+    for (const node of cluster) {
       anchors.set(node.id, anchor);
     }
   }

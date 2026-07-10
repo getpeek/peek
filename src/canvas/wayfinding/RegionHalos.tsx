@@ -3,24 +3,27 @@ import { IconSparkles } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
 import { useState, type CSSProperties } from "react";
 import { nodesAtom, regionsAtom } from "../state";
-import { useCrossFade } from "./crossFade";
 import { deriveRegions, regionColorVar, type DerivedRegion } from "./regionGeometry";
 import { useRegionActions } from "./useRegionActions";
 import { useRegionsEnabled } from "./useRegionsEnabled";
 import "./wayfinding.css";
 
 /**
- * Canvas-space bounding box drawn around every region. Confirmed regions get a
- * quiet solid halo that fades in with the beacons as the user zooms out (so it
- * never clutters working zoom); suggested ones get an always-on dashed halo
- * plus the Keep / Rename / Dismiss review card. Rendered through ViewportPortal
- * so the boxes track world coordinates without manual transform math.
+ * Canvas-space box drawn around every region. Confirmed regions get the Lasso
+ * Glow look — a dark radial pool ringed by a soft region-colored glow — painted
+ * as a plain div (CSS gradients only, no SVG filter) so pan/zoom stays cheap.
+ * Suggested ones keep the always-on dashed box plus the Keep / Rename / Dismiss
+ * review card. Rendered through ViewportPortal so the boxes track world
+ * coordinates without transform math.
+ *
+ * This layer deliberately does NOT subscribe to the live zoom: confirmed regions
+ * fade in CSS off `--pk-zoom` (see wayfinding.css), so nothing here re-renders
+ * per zoom frame.
  */
 export function RegionHalos() {
   const regionsEnabled = useRegionsEnabled();
   const nodes = useAtomValue(nodesAtom);
   const regions = useAtomValue(regionsAtom);
-  const t = useCrossFade();
 
   const derived = deriveRegions(nodes, regions);
   if (!regionsEnabled || derived.length === 0) {
@@ -29,18 +32,39 @@ export function RegionHalos() {
 
   return (
     <ViewportPortal>
-      {derived.map(d => (
-        <RegionHalo key={d.region.id} derived={d} t={t} />
-      ))}
+      {derived.map(d =>
+        d.region.status === "suggested" ? (
+          <SuggestedRegion key={d.region.id} derived={d} />
+        ) : (
+          <ConfirmedRegion key={d.region.id} derived={d} />
+        ),
+      )}
     </ViewportPortal>
   );
 }
 
-function RegionHalo({ derived, t }: { derived: DerivedRegion; t: number }) {
+function ConfirmedRegion({ derived }: { derived: DerivedRegion }) {
+  const { region, bbox } = derived;
+  return (
+    <div
+      className='wf-region-halo confirmed'
+      style={
+        {
+          left: bbox.x,
+          top: bbox.y,
+          width: bbox.w,
+          height: bbox.h,
+          "--rc": regionColorVar(region.colorIndex),
+        } as CSSProperties
+      }
+    />
+  );
+}
+
+function SuggestedRegion({ derived }: { derived: DerivedRegion }) {
   const { region, bbox, memberIds } = derived;
   const { confirmRegion, renameRegion, removeRegion } = useRegionActions();
   const [renaming, setRenaming] = useState(false);
-  const suggested = region.status === "suggested";
 
   const commitRename = (value: string) => {
     const name = value.trim();
@@ -52,61 +76,56 @@ function RegionHalo({ derived, t }: { derived: DerivedRegion; t: number }) {
 
   return (
     <div
-      className={`wf-region-halo ${suggested ? "suggested" : "confirmed"}`}
+      className='wf-region-halo suggested'
       style={
         {
           left: bbox.x,
           top: bbox.y,
           width: bbox.w,
           height: bbox.h,
-          // Confirmed halos track the beacon cross-fade; suggested ones stay
-          // put so the review card is reachable at working zoom.
-          opacity: suggested ? 1 : t,
           "--rc": regionColorVar(region.colorIndex),
         } as CSSProperties
       }
     >
-      {suggested && (
-        <div className='wf-suggest-card nodrag' onMouseDown={e => e.stopPropagation()}>
-          <div className='sc-head'>
-            <IconSparkles size={12} />
-            <span>AI suggests grouping these {memberIds.length} nodes</span>
-          </div>
-          {renaming ? (
-            <input
-              className='sc-input'
-              autoFocus
-              defaultValue={region.name}
-              onFocus={e => e.currentTarget.select()}
-              onKeyDown={e => {
-                if (e.key === "Enter") {
-                  commitRename(e.currentTarget.value);
-                }
-                if (e.key === "Escape") {
-                  setRenaming(false);
-                }
-                e.stopPropagation();
-              }}
-              onBlur={e => commitRename(e.currentTarget.value)}
-            />
-          ) : (
-            <div className='sc-name'>“{region.name}”</div>
-          )}
-          <div className='sc-actions'>
-            {!renaming && (
-              <>
-                <button className='primary' onClick={() => confirmRegion(region.id)}>
-                  ✓ Keep
-                </button>
-                <button onClick={() => setRenaming(true)}>Rename</button>
-                <button className='ghost' onClick={() => removeRegion(region.id)}>
-                  Dismiss
-                </button>
-              </>
-            )}
-          </div>
+      <div className='wf-suggest-card nodrag' onMouseDown={e => e.stopPropagation()}>
+        <div className='sc-head'>
+          <IconSparkles size={12} />
+          <span>AI suggests grouping these {memberIds.length} nodes</span>
         </div>
-      )}
+        {renaming ? (
+          <input
+            className='sc-input'
+            autoFocus
+            defaultValue={region.name}
+            onFocus={e => e.currentTarget.select()}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                commitRename(e.currentTarget.value);
+              }
+              if (e.key === "Escape") {
+                setRenaming(false);
+              }
+              e.stopPropagation();
+            }}
+            onBlur={e => commitRename(e.currentTarget.value)}
+          />
+        ) : (
+          <div className='sc-name'>“{region.name}”</div>
+        )}
+        <div className='sc-actions'>
+          {!renaming && (
+            <>
+              <button className='primary' onClick={() => confirmRegion(region.id)}>
+                ✓ Keep
+              </button>
+              <button onClick={() => setRenaming(true)}>Rename</button>
+              <button className='ghost' onClick={() => removeRegion(region.id)}>
+                Dismiss
+              </button>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
