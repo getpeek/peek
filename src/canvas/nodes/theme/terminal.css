@@ -40,12 +40,6 @@
   --pk-red: #ff5c57;
   --pk-red-soft: rgba(255, 92, 87, 0.16);
 
-  --pk-region-1: #c77dff;
-  --pk-region-2: var(--pk-blue);
-  --pk-region-3: var(--pk-yellow);
-  --pk-region-4: var(--pk-green);
-  --pk-region-5: #ff9e33;
-
   --pk-type-query: #ffffff;
   --pk-type-agent: #33ccff;
   --pk-type-result: #ffd633;
@@ -132,7 +126,9 @@
    after the bundled component CSS) wins on source order. */
 .titlebar-page-selector .page-tab {
   border-radius: 0;
-  backdrop-filter: none;
+  &:input {
+    color: var(--pk-bg);
+  }
 }
 .titlebar-page-selector .page-tab.active {
   background: var(--pk-fg);

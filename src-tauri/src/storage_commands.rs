@@ -98,7 +98,7 @@ pub(crate) async fn append_history(
         .append(true)
         .open(&file_path)
         .map_err(|e| e.to_string())?;
-    writeln!(file, "{}", line).map_err(|e| e.to_string())
+    writeln!(file, "{line}").map_err(|e| e.to_string())
 }
 
 /// Load the version-history log. Returns `""` when the log is absent.
@@ -114,7 +114,7 @@ pub(crate) async fn load_history(
     std::fs::create_dir_all(&folder).map_err(|e| e.to_string())?;
 
     if let Ok(false) = std::fs::exists(&file_path) {
-        return Ok("".to_string());
+        return Ok(String::new());
     }
     std::fs::read_to_string(&file_path).map_err(|e| e.to_string())
 }

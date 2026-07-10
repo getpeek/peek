@@ -71,10 +71,10 @@ tokio = { version = "1", features = [
   "fs",
 ] }
 url = "2"
-iroh = "0.98"
-iroh-docs = "0.98"
-iroh-blobs = "0.100"
-iroh-gossip = "0.98"
+iroh = "1"
+iroh-docs = "0.101"
+iroh-blobs = "0.103"
+iroh-gossip = "0.101"
 futures-lite = "2"
 hex = "0.4"
 data-encoding = "2"
