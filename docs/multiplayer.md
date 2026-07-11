@@ -1,6 +1,11 @@
 # Multiplayer
 
-P2P collaborative editing built on [iroh](https://docs.iroh.computer/quickstart): one user _hosts_ a session and shares a ticket; another user _joins_ by pasting that ticket, mirrors the host's canvas, and edits alongside them in real time. The host's database is the only one queries run against — joiners observe the streamed results.
+P2P collaborative editing built on [iroh](https://docs.iroh.computer/quickstart): one user _hosts_ a session and shares a ticket; another user _joins_, mirrors the host's canvas, and edits alongside them in real time. The host's database is the only one queries run against — joiners observe the streamed results. The host's Ollama is likewise the only model agent conversations run against (see "Agent execution").
+
+There are two kinds of joiner:
+
+- **Desktop joiner** — another Peek instance, joins by pasting the ticket (or a `peek://invite/<ticket>` deep link).
+- **Browser guest** — no install; opens `getpeek.dev/join/<ticket>`. Lives in the separate **`~/labs/peek-web`** repo (the Next.js marketing site) and connects as a real iroh peer via a wasm build of the same protocol stack. See "Browser guest (peek-web)" below.
 
 ## Roles
 
@@ -11,6 +16,8 @@ P2P collaborative editing built on [iroh](https://docs.iroh.computer/quickstart)
 | `joiner`               | **no**        | **no** (suspended)       | **no**           | iroh-doc ← replicated; restored from snapshot on session end |
 
 `session.role` lives at `src/multiplayer/state.ts:sessionStateAtom`. Role guards are sprinkled in `useAutoSaveDocument`, `useAutoSaveResults`, `useLoadDocument`, `useExecuteQueries`, `QueryNode`'s live-poll effect, and `CustomTitleBar` (which hides the connection picker for joiners).
+
+The browser guest behaves as a `joiner` (peek-web derives a desktop-shaped `sessionStateAtom` with `role: "joiner"` so verbatim-copied components gate correctly) with two differences: it has no persistence at all (in-memory iroh stores, nothing survives a refresh — a refresh simply re-joins and re-syncs), and it self-assigns its name/color from its endpoint id (`colorFromName` hash).
 
 ## Transport (Rust, `src-tauri/src/multiplayer/`)
 
@@ -98,29 +105,36 @@ Cursor rendering and broadcast are mounted _inside_ `<ReactFlowProvider>` becaus
 
 ## Key scheme (iroh-doc)
 
-| Key                             | Value                                    | Notes                                                                                                                |
-| ------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `doc/page-order`                | JSON array                               | pageOrder                                                                                                            |
-| `pages/<pageId>/name`           | UTF-8 string                             | page name; deleting this key tombstones the page                                                                     |
-| `pages/<pageId>/nodes/<nodeId>` | JSON node                                | stripped of `selected`/`dragging`/`resizing`                                                                         |
-| `pages/<pageId>/edges/<edgeId>` | JSON edge                                | stripped of `selected`                                                                                               |
-| `results/<nodeId>`              | JSON `DatabaseResult`                    | rows for a result node, lifted out of the document                                                                   |
-| `exec-requests/<requestId>`     | JSON `{nodeId, queries}`                 | joiner→host RPC; host deletes after running                                                                          |
-| `schema/index`                  | JSON `{tables, references, primaryKeys}` | host's DB schema; joiners feed this into `schemaAtom` and `lsp_set_schema_cache` so the LSP works without a local DB |
+| Key                                 | Value                                    | Notes                                                                                                                |
+| ----------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `doc/page-order`                    | JSON array                               | pageOrder                                                                                                            |
+| `pages/<pageId>/name`               | UTF-8 string                             | page name; deleting this key tombstones the page                                                                     |
+| `pages/<pageId>/nodes/<nodeId>`     | JSON node                                | stripped of `selected`/`dragging`/`resizing`                                                                         |
+| `pages/<pageId>/edges/<edgeId>`     | JSON edge                                | stripped of `selected`                                                                                               |
+| `pages/<pageId>/regions/<regionId>` | JSON `RegionState`                       | wayfinding regions; synced whole                                                                                     |
+| `results/<nodeId>`                  | JSON `DatabaseResult`                    | rows for a result node, lifted out of the document                                                                   |
+| `exec-requests/<requestId>`         | JSON `{nodeId, queries}`                 | joiner→host RPC; host deletes after running                                                                          |
+| `agent-requests/<requestId>`        | JSON `{nodeId, question}`                | joiner→host agent RPC; host deletes when the run ends — that delete IS the completion signal (see "Agent execution") |
+| `agent-cancels/<requestId>`         | `{}`                                     | joiner→host cancel for a running agent request; host deletes it alongside the request key                           |
+| `schema/index`                      | JSON `{tables, references, primaryKeys}` | host's DB schema; joiners feed this into `schemaAtom` and `lsp_set_schema_cache` so the LSP works without a local DB |
 
 Viewport and `activePageId` are **not** synced — each peer has its own pan/zoom and chooses which page to view independently. `activePageId` still lives on `CanvasDocument` so it persists to disk per-peer; it's just excluded from the multiplayer diff. When a remote `doc/page-order` arrives that no longer contains the local active page (joiner just imported the host's pages, or someone else deleted the page we were on), `applyOperation` falls back to `parsed[0]` so the peer doesn't end up on an orphan page.
 
-Routing is centralized in `keyKind()` (`diff.ts`); all inbound handlers dispatch through it.
+Routing is centralized in `keyKind()`, which lives in **`src/multiplayer/keys.ts`** together with the key prefixes and builder helpers (`nodeKey`, `execRequestKey`, `agentRequestKey`, …) — the namespace outgrew `diff.ts`. All inbound handlers dispatch through it. iroh-docs `del` is a **prefix** delete; the key scheme mostly avoids prefix collisions, but note that `pages/<p>/nodes/<queryId>` is a proper prefix of `pages/<p>/nodes/<queryId>-result-0` (result-node ids are parent-derived), so deleting a query node's key also prunes its result-node entries from the replica.
 
 ## Gossip messages
 
 JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}` (where `author` is the sender's iroh `EndpointId`).
 
-| `payload.type` | Fields                     | Cadence                                          |
-| -------------- | -------------------------- | ------------------------------------------------ |
-| `cursor`       | `flowX`, `flowY`, `pageId` | ~15 Hz on mouse move                             |
-| `presence`     | `name`, `color`, `isHost`  | every 5 s                                        |
-| `leave`        | (none)                     | once on `controls.end()` before `mp_end_session` |
+| `payload.type`     | Fields                              | Cadence                                                            |
+| ------------------ | ----------------------------------- | ------------------------------------------------------------------ |
+| `cursor`           | `flowX`, `flowY`, `pageId`          | ~15 Hz on mouse move                                               |
+| `presence`         | `name`, `color`, `isHost`, `pageId` | every 5 s, plus immediately on local page switch                   |
+| `leave`            | (none)                              | once on `controls.end()`; browser guest also sends on tab close    |
+| `agent-stream`     | `nodeId`, `requestId`, `text`       | host → peers, ~10 Hz while an agent run streams (see below)        |
+| `agent-stream-end` | `nodeId`, `requestId`               | host → peers, once when the streaming portion of a run finishes    |
+
+`agent-stream.text` is the **full accumulated partial**, not a delta — gossip is lossy, so any received packet supersedes all prior ones and a dropped packet self-heals on the next.
 
 `useGossipBridge` filters out events with `author === session.myAuthor`. Peers and remote cursors that haven't been seen in 15 s are pruned. A `leave` message drops the sender from `participantsAtom` and `remoteCursorsAtom` immediately so the UI reflects a clean disconnect without waiting for the prune.
 
@@ -129,6 +143,33 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 **Per-page cursor filtering.** The cursor payload carries the sender's `documentAtom.activePageId`. `RemoteCursorsLayer` filters cursors whose `pageId` doesn't match the local active page, so peers viewing different pages don't see each other's pointers as ghosts. With active page no longer synced, this filter is what keeps cursors from peers viewing other pages from leaking onto your canvas.
 
 **Topic isolation.** `app_gossip_topic()` in `session.rs` derives our gossip `TopicId` as `blake3("peek/multiplayer:" || namespace_id)`. Do **not** use `namespace_id.into()` directly — that's the same topic iroh-docs subscribes to internally for live entry propagation, and our JSON payloads would land in iroh-docs' `receive_loop` where `postcard::from_bytes::<Op>(...)?` fails and `?`-s out, killing live sync. Initial reconciliation still works in that broken state (it goes over the docs ALPN), which is why the symptom presents as "first sync OK, edits don't propagate."
+
+## Browser guest (`~/labs/peek-web`)
+
+`getpeek.dev/join/<ticket>` lets anyone join a session from a browser, no install. It lives in the **separate `~/labs/peek-web` repo** (the Next.js 16 marketing site) and is a full peer: as of 2026-07 the guest canvas is **read-write** with near-desktop parity — toolbar (all tools incl. Agent), zoom cluster, full wayfinding/regions (halos, menu, ⌘G grouping, low-zoom beacons; no AI grouping), the `midnight` theme, desktop-style live cursors, Monaco SQL editing, the full Result node (export via Blob download; inline row editing disabled), and host-proxied query + agent execution.
+
+### Architecture
+
+- **`crates/peek-join/`** — the same iroh stack (`iroh 1`, `iroh-docs 0.101`, `iroh-blobs 0.103`, `iroh-gossip 0.101`) compiled to wasm (`wasm-pack`, ~4.6 MB / 1.6 MB gzipped; build with `yarn build:wasm`, artifacts land in `public/peek-join/`). Browser transport is relay + WebTransport — no UDP hole punching, so the host must be relay-reachable (it is, with `RelayAndAddresses` tickets). The wasm surface (`PeekJoinSession`): `join(ticket)`, `events()` (a single-consumer ReadableStream of entry/delete/syncFinished/gossip/peerUp/peerDown), `endpointId()`, `sendGossip(json)`, `requestExec(nodeId, queries)`, and the generic `docPut(key, value)` / `docDel(key)` that make guest editing possible. It applies the same subscribe-before-sync and per-entry explicit blob-download fixes described above. `doc_put` must never write an empty string (zero-length content reads as a tombstone on receive).
+- **`src/join/` mirrors this repo's `src/`** (`canvas/`, `multiplayer/`, `components/`, `app/`, `themes/`) so most files are **verbatim copies** and future re-syncs are a `diff -r`. This is deliberate: no shared package. Web-authored stubs keep the copies compiling: `src/join/state.ts` (a static `configAtom` whose `WEB_DEFAULT_KEYMAP` omits bindings for desktop-only features — the keymap IS the feature gate), `tauri.ts` (rejecting `invoke`), `Result/queryInfo.ts` (returns null → disables all inline edit affordances), `canvas/hooks/useExecuteQueries.ts` (always the joiner path via `requestExec`).
+- **Sync bridge** (`src/join/multiplayer/useGuestSyncBridge.ts`) is the desktop `useSyncBridge` translated onto the wasm session: inbound events apply into the ported jotai `documentAtom` under the `isApplyingRemoteRef` gate; outbound is `subscribeDocumentMutations → diffDocs → docPut/docDel`. Echo is prevented structurally — the wasm subscribe loop forwards only `InsertRemote` and ignores `InsertLocal`. The canvas stays read-only until `syncFinished` fires, which sidesteps last-write-wins races during initial reconciliation. The guest document starts empty (`activePageId: ""`, no pages) and fills from the host; the page-lens atoms guard the pre-sync window.
+- **CSS isolation**: the marketing site defines its own `--pk-*` tokens, and desktop canvas CSS uses bare `:root` / `.react-flow` selectors — Next.js never unloads global CSS on client navigation, so the app is split into two **route groups with separate root layouts** (`src/app/(marketing)/`, `src/app/(join)/`). Crossing them is a full document load, so the desktop CSS (midnight tokens included) ships byte-for-byte without touching the marketing pages.
+
+### Protocol parity (drift = silent failure)
+
+Three places must stay byte-compatible with this repo, by hand:
+
+| peek-web file                       | Mirrors                                                             |
+| ----------------------------------- | ------------------------------------------------------------------- |
+| `crates/peek-join/src/protocol.rs`  | gossip topic derivation + `exec-requests/` prefix from `session.rs` |
+| `src/join/multiplayer/diff.ts`      | key scheme + `keyKind()` from `src/multiplayer/keys.ts` + `diff.ts` (web values are strings, not `Uint8Array`) |
+| `src/join/multiplayer/diffApply.ts` | `diffApply.ts`                                                       |
+
+Gossip payloads and the exec/agent request JSON shapes are shared contracts too. When adding a doc key or gossip type here, add it to peek-web in the same change.
+
+### What the browser guest doesn't have
+
+LSP completions (Monaco runs bare), AI region grouping (no Ollama), undo history, command palette / page search, camera lock, and BarChart / TableDefinition nodes (labeled placeholders). Local agent runs — everything agent goes through the host proxy.
 
 ## Deep link invites (`peek://invite/<ticket>`)
 
@@ -193,7 +234,22 @@ The hook depends on `window.peekMultiplayer` being populated, which `useMultipla
 ### Query execution
 
 - **Standalone or host**: `useExecuteQueries` calls the regular `executeQueries(canvas, setResults, sourceNode, queries)` — runs against the local DB, creates the result node and updates `resultsAtom`. Both side-effects propagate via the regular outbound listeners.
-- **Joiner**: `useExecuteQueries` calls `requestRemoteExecution(nodeId, queries)`, which writes `exec-requests/<requestId>` to the doc. The host's syncBridge sees the doc-update, looks up the source node via `canvasApiAtom`, calls `executeQueries` against the host's DB, then deletes the request entry. Results stream back to the joiner via `results/*` sync.
+- **Joiner**: `useExecuteQueries` calls `requestRemoteExecution(nodeId, queries)`, which writes `exec-requests/<requestId>` to the doc. The host's syncBridge sees the doc-update, looks up the source node via `canvasApiAtom`, calls `executeQueries` against the host's DB, then deletes the request entry. Results stream back to the joiner via `results/*` sync. The browser guest takes the same path through the wasm `requestExec`.
+
+### Agent execution (host proxy)
+
+Agent-node conversations run on the **host's** Ollama; joiners (desktop or browser) trigger them remotely, mirroring the exec-requests pattern. Landed 2026-07 together with the browser guest.
+
+- **Request**: joiner puts `agent-requests/<requestId>` = `{nodeId, question}`. `requestId` is read from the key, so any unique id works (the web guest uses `nanoid(8)`).
+- **Host** (`src/multiplayer/agentProxy.ts`, routed host-gated from `useSyncBridge` via `keyKind()`):
+  1. Locates the agent node **document-addressed** via `pageContainingNode(documentAtom, nodeId)` — deliberately not `canvas.getNode`, which only sees the host's active page (a known limitation the exec path still has).
+  2. Guards duplicates with a module-level run registry (`Map<nodeId, {requestId, abort}>`); a second request while one runs appends an "Agent is already running" system message.
+  3. Appends the `user` message to the node's `AgentData.messages` by writing `documentAtom` page-addressed — so the question shows up for every peer through normal node-key sync, exactly like the rest of the transcript. **Completed messages need no dedicated protocol**; they ride whole-node puts.
+  4. Runs the conversation via `runAgentConversation` with `onPartial` broadcasting `agent-stream` gossip (~10 Hz throttle) and `agent-stream-end` when the stream closes.
+  5. Errors surface as a system message on the node (visible to all peers), and the `finally` block **deletes the request key (and any cancel key) on every exit path** — success, error, and cancel. Joiners treat that delete as the reliable completion signal (the web guest also keeps a 120 s timeout so a pre-protocol host that silently ignores the key can't wedge its spinner).
+- **Cancel**: joiner puts `agent-cancels/<requestId>` = `{}`; the host looks up the run by id and aborts it. A cancel that arrives after the run settled just gets its key deleted.
+- **Refactor that enables this**: the agent hook logic was extracted into plain functions so the headless proxy shares one implementation with the node UI — `createPromptRunner` (`useExecutePrompt.ts`, reads `configAtom` fresh at call time), `createAgentToolHandlers` (`useAgentTools.ts`), and `runAgentConversation` (`nodes/Agent/runAgentConversation.ts`); `useAgentStream` is now a thin wrapper. Solo agent behavior is unchanged.
+- Desktop joiners still run agent nodes locally against their own Ollama; migrating them onto this proxy is an open follow-up.
 
 ## Persistence
 
@@ -217,9 +273,10 @@ The legacy migration in `useLoadDocument` (`migrateAndHydrate`) lifts any pre-St
 
 ## Known limitations and TODOs
 
-- **Color palette is two-tone** (`HOST_COLOR` / `JOINER_COLOR` in `syncBridge.ts`). Three+ peers would collide on the joiner color. Easy extension when needed.
+- **Color palette is two-tone on desktop** (`HOST_COLOR` / `JOINER_COLOR` in `syncBridge.ts`). Three+ desktop peers would collide on the joiner color. Browser guests already self-color via the `colorFromName` hash; aligning desktop with that is the easy extension when needed.
 - **iroh-docs entries are keyed by `(namespace, author, key)`**, so concurrent writes from two peers to the same key create two entries. We collapse via last-event-wins at `applyOperation` time. Tombstones from one author also don't suppress non-empty entries from another. Fine for the typical "one peer drives at a time" pattern; document if you hit weirdness.
-- **Subkey split for query nodes** (`pages/.../nodes/<id>/position` vs `data`) was specced but not built. Today the whole node is one key, so a concurrent drag + SQL-edit on the same query node will drop one writer.
+- **Subkey split for query nodes** (`pages/.../nodes/<id>/position` vs `data`) was specced but not built. Today the whole node is one key, so a concurrent drag + SQL-edit on the same query node will drop one writer. Browser guests widen the exposure (more writers), and agent runs amplify it — every message append rewrites the whole agent-node entry, so a peer editing an agent node mid-run can drop messages.
+- **Desktop joiners still run agent nodes on their local Ollama** instead of the host proxy — the two paths coexist. Routing desktop joiners through `agent-requests/*` (like the browser guest) is a follow-up.
 - **`MemStore` for blobs**: no persistence, and the doc grows monotonically (each result re-run is a new entry). If long sessions or large result sets become a problem, switch to `iroh-blobs`'s `fs::Store` and consider stripping `results/*` entries on session end.
 - **Undo/redo in session**: not specially handled. Snapshot-based undo replays the entire page's nodes/edges through the doc, which can race with peer edits. Consider disabling undo in session if it becomes a problem.
 - **Author identity is per-session** (fresh keypair on every `host()`/`join()`). No cross-session user identity yet.
@@ -232,8 +289,8 @@ The legacy migration in `useLoadDocument` (`migrateAndHydrate`) lifts any pre-St
 
 | Want to add                                      | Edit                                                                                                                                                                              |
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A new doc-level key (e.g., `theme/*`)            | `diff.ts` — add to `keyKind()`, extend `diffDocs`/`applyOperation`, add `documentToPuts` lowering if it should land on host start                                                 |
-| A new ephemeral message type (e.g., `selection`) | `useGossipBridge` in `syncBridge.ts` — add a `payload.type === '...'` branch; sender side: `invoke('mp_gossip_send', {payload: {...}})`                                           |
+| A new doc-level key (e.g., `theme/*`)            | `keys.ts` — add the prefix/builder + `keyKind()` branch; extend `diffDocs` (`diff.ts`) / `applyOperation` (`diffApply.ts`), add `documentToPuts` lowering if it should land on host start. **Mirror in peek-web** (`src/join/multiplayer/diff.ts` + bridge routing) |
+| A new ephemeral message type (e.g., `selection`) | `useGossipBridge` in `syncBridge.ts` — add a `payload.type === '...'` branch; sender side: `invoke('mp_gossip_send', {payload: {...}})`. **Mirror in peek-web** (`useGuestSyncBridge.ts` + `session.sendGossip`)                                                    |
 | A new role-gated behavior                        | Read `useAtomValue(sessionStateAtom)` in the relevant hook and gate on `session?.role`                                                                                            |
 | Persist results across sessions                  | They already do (sidecar). To skip persisting, read `sessionStateAtom` in `useAutoSaveResults` and gate similarly                                                                 |
 | Disable a feature on joiner                      | Pattern is everywhere — `if (session?.role === "joiner") return;` early in the effect/handler                                                                                     |
@@ -249,3 +306,5 @@ The plan is in `~/.claude/plans/let-s-start-thinking-about-mutable-peach.md`. Im
 - **Stage 3** — Sessions UI: title bar share button, popover with ticket + participants, join modal, command palette entries.
 - **Stage 5** _(landed before Stage 4 because the user hit it sooner)_ — Results streaming via `results/*` keys, joiner-routed execution via `exec-requests/*` keys.
 - **Stage 4** — Cursors and presence over iroh-gossip.
+- **Browser guest v0** (2026-07, `~/labs/peek-web`) — wasm iroh peer, read-only canvas at `getpeek.dev/join/<ticket>`, cursors/presence, run-on-host.
+- **Browser guest desktop-parity** (2026-07) — guest editing via wasm `docPut`/`docDel` + ported jotai document store; toolbar/zoom/wayfinding/midnight/cursors copied from desktop; the `agent-requests/*` host proxy (desktop `agentProxy.ts` + hook-logic extraction, key namespace moved to `keys.ts`). Plan: `~/.claude/plans/we-recently-implemented-a-temporal-pudding.md`.
