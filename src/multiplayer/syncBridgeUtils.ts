@@ -3,7 +3,7 @@ import { getDefaultStore } from "jotai";
 import { nanoid } from "nanoid";
 import { executeQueries } from "../canvas/executeQueries";
 import { canvasApiAtom, resultsAtom } from "../canvas/state";
-import { execRequestKey } from "./diff";
+import { execRequestKey } from "./keys";
 import { bytesToB64 } from "./bytes";
 import { multiplayerSyncIssueAtom } from "./state";
 import type { AppNode } from "../canvas/types";

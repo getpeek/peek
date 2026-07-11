@@ -5,11 +5,13 @@ import { Tooltip } from "../../../components/Tooltip/Tooltip";
 export function ResultSearchBar({
   query,
   matchCount,
+  autoFocus,
   onChange,
   onClose,
 }: {
   query: string;
   matchCount: number;
+  autoFocus: boolean;
   onChange: (value: string) => void;
   onClose: () => void;
 }) {
@@ -17,7 +19,7 @@ export function ResultSearchBar({
     <div className='result-search-bar'>
       <IconSearch size={14} className='result-search-icon' />
       <input
-        autoFocus
+        autoFocus={autoFocus}
         className='result-search-input'
         type='text'
         autoComplete='off'

@@ -8,7 +8,7 @@ import {
   ToolMessage,
 } from "@langchain/core/messages";
 import { useAtomValue } from "jotai";
-import { configAtom } from "../../state";
+import { configAtom, type Config } from "../../state";
 
 export interface ToolCall {
   id: string;
@@ -28,12 +28,17 @@ export interface Message {
   isError?: boolean;
 }
 
-export const useExecutePrompt = (opts: {
+/**
+ * Build a prompt runner outside of React so it can be driven from the
+ * multiplayer host proxy (no hook context, no atoms). Callers must read
+ * `config` fresh at call time — the model params are captured here.
+ */
+export function createPromptRunner(opts: {
   tools: DynamicStructuredTool[];
   systemPrompt: string;
-}) => {
-  const { tools, systemPrompt } = opts;
-  const config = useAtomValue(configAtom)!;
+  config: Config;
+}) {
+  const { tools, systemPrompt, config } = opts;
 
   const baseModel = new ChatOllama({
     model: config.ai.model,
@@ -85,4 +90,14 @@ export const useExecutePrompt = (opts: {
 
     return model.stream(conversation);
   };
+}
+
+export type PromptRunner = ReturnType<typeof createPromptRunner>;
+
+export const useExecutePrompt = (opts: {
+  tools: DynamicStructuredTool[];
+  systemPrompt: string;
+}): PromptRunner => {
+  const config = useAtomValue(configAtom)!;
+  return createPromptRunner({ ...opts, config });
 };

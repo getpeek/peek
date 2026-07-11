@@ -1,37 +1,13 @@
 import { useRef, useState } from "react";
 import { useCanvas } from "../../hooks/useCanvas";
 import type { AgentData } from "../../types";
-import { type Message, type ToolCall, type useExecutePrompt } from "../../hooks/useExecutePrompt";
+import { type Message, type PromptRunner } from "../../hooks/useExecutePrompt";
 import type { ToolHandlers } from "./useAgentTools";
-
-type RunPrompt = ReturnType<typeof useExecutePrompt>;
-
-const MAX_TOOL_ITERATIONS = 8;
-
-async function callTool(
-  call: ToolCall,
-  handlers: ToolHandlers,
-): Promise<{ text: string; isError: boolean }> {
-  const handler = handlers[call.name];
-  if (!handler) {
-    return { text: `No handler registered for tool "${call.name}"`, isError: true };
-  }
-  try {
-    return { text: await handler(call.args), isError: false };
-  } catch (e) {
-    return {
-      text: `Tool execution failed: ${e instanceof Error ? e.message : String(e)}`,
-      isError: true,
-    };
-  }
-}
-
-const POST_TOOL_INSTRUCTION =
-  "Continue using tools as needed to finish the user's request, then summarize what you did. If the tool results already answer the request, respond to the user instead of calling more tools.";
+import { runAgentConversation } from "./runAgentConversation";
 
 export function useAgentStream(opts: {
   nodeId: string;
-  runPrompt: RunPrompt;
+  runPrompt: PromptRunner;
   handlers: ToolHandlers;
 }) {
   const { nodeId, runPrompt, handlers } = opts;
@@ -60,139 +36,19 @@ export function useAgentStream(opts: {
       return;
     }
 
-    const userMessage: Message = {
-      type: "user",
-      message: question,
-      timestamp: Date.now(),
-    };
-
     abortRef.current = false;
     setIsLoading(true);
-    appendMessage(userMessage);
-
-    let working: Message[] = [...(node.data as AgentData).messages, userMessage];
-    let iterations = 0;
-    const seenCallSignatures = new Set<string>();
-
     try {
-      while (true) {
-        if (abortRef.current) {
-          break;
-        }
-
-        iterations++;
-        if (iterations > MAX_TOOL_ITERATIONS) {
-          appendMessage({
-            type: "system",
-            message: `Tool iteration limit (${MAX_TOOL_ITERATIONS}) reached.`,
-            timestamp: Date.now(),
-          });
-          break;
-        }
-
-        const stream = await runPrompt(working);
-        let text = "";
-        const calls: ToolCall[] = [];
-
-        for await (const chunk of stream) {
-          if (abortRef.current) {
-            break;
-          }
-          if (chunk.text === "<think>" || chunk.text === "</think>") {
-            continue;
-          }
-          if (chunk.tool_calls?.length) {
-            calls.push(
-              ...chunk.tool_calls.map(c => ({
-                id: c.id ?? crypto.randomUUID(),
-                name: c.name,
-                args: c.args,
-              })),
-            );
-          }
-          text += chunk.text ?? "";
-          setIncomingMessage(text);
-        }
-
-        if (abortRef.current) {
-          if (text.trim()) {
-            appendMessage({
-              type: "assistant",
-              message: text,
-              timestamp: Date.now(),
-            });
-          }
-          break;
-        }
-
-        if (calls.length === 0) {
-          if (text.trim()) {
-            appendMessage({
-              type: "assistant",
-              message: text,
-              timestamp: Date.now(),
-            });
-          }
-          break;
-        }
-
-        const signature = calls
-          .map(c => `${c.name}(${JSON.stringify(c.args)})`)
-          .toSorted()
-          .join("|");
-        if (seenCallSignatures.has(signature)) {
-          if (text.trim()) {
-            appendMessage({
-              type: "assistant",
-              message: text,
-              timestamp: Date.now(),
-            });
-          }
-          appendMessage({
-            type: "system",
-            message: "Stopped: the model repeated the same tool call.",
-            timestamp: Date.now(),
-          });
-          break;
-        }
-        seenCallSignatures.add(signature);
-
-        const callMessage: Message = {
-          type: "tool_call",
-          message: text,
-          toolCalls: calls,
-          timestamp: Date.now(),
-        };
-        working = [...working, callMessage];
-        appendMessage(callMessage);
-
-        const resultMessages: Message[] = [];
-        for (const call of calls) {
-          const { text: resultText, isError } = await callTool(call, handlers);
-          const resultMessage: Message = {
-            type: "tool_result",
-            message: resultText,
-            toolCallId: call.id,
-            toolName: call.name,
-            isError,
-            timestamp: Date.now(),
-          };
-          resultMessages.push(resultMessage);
-          appendMessage(resultMessage);
-        }
-        const instruction: Message = {
-          type: "user",
-          message: POST_TOOL_INSTRUCTION,
-          timestamp: Date.now(),
-        };
-        working = [...working, ...resultMessages, instruction];
-
-        setIncomingMessage("");
-      }
-    } catch (e) {
-      console.error("Agent stream error:", e);
+      await runAgentConversation({
+        question,
+        getMessages: () => (node.data as AgentData).messages,
+        appendMessage,
+        runPrompt,
+        handlers,
+        onPartial: setIncomingMessage,
+        shouldAbort: () => abortRef.current,
+      });
     } finally {
-      setIncomingMessage("");
       setIsLoading(false);
     }
   };

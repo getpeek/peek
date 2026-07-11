@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import "./PageSearch.css";
 import { getHotkeyHandler, useClickOutside, useHotkeys } from "@mantine/hooks";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useStore } from "jotai";
 import { IconSearch } from "@tabler/icons-react";
 import { pageSearchOpenAtom } from "../state";
-import { nodesAtom } from "../canvas/state";
+import { NO_FIND, nodesAtom, resultFindAtom, resultsAtom } from "../canvas/state";
 import { useCanvasApi } from "../canvas/hooks/useCanvas";
+import { findCellMatches } from "./cellMatches";
 import { useHotkey } from "../app/useHotkey";
 import { useKeymap } from "../app/keymap";
 import { highlightMatch } from "../Connection/highlightMatch";
@@ -19,14 +20,31 @@ export const PageSearch = () => {
   const [cursor, setCursor] = useState(0);
   const results = useNodeSearch(query);
   const nodes = useAtomValue(nodesAtom);
+  const resultRows = useAtomValue(resultsAtom);
   const canvas = useCanvasApi();
+  const store = useStore();
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   // Guards the live camera against re-flying to the node it already framed
   // when `results` gets a new identity on every keystroke.
   const flownTo = useRef<string | null>(null);
+  // Result-node ids currently driven into find mode, plus the query last applied
+  // to them, so the sync effect only touches nodes whose membership/query changed.
+  const findNodes = useRef<Set<string>>(new Set());
+  const appliedQuery = useRef("");
   const keymap = useKeymap();
 
+  const clearFindMode = () => {
+    for (const id of findNodes.current) {
+      store.set(resultFindAtom(id), NO_FIND);
+    }
+    findNodes.current = new Set();
+    appliedQuery.current = "";
+  };
+
   const close = () => {
+    // The sync effect early-returns once `show` is false, so un-find imperatively
+    // here — this funnels every exit (Escape, click-outside, Enter/commit).
+    clearFindMode();
     setShow(false);
     setQuery("");
     setCursor(0);
@@ -80,6 +98,39 @@ export const PageSearch = () => {
     canvas.selectOnly(id);
     canvas.fitNode(id, { duration: 400 });
   }, [show, canvas, cursor, results]);
+
+  // Put every result node whose cells match the query into find mode (with the
+  // query as its find value) so the matching cells highlight on the canvas, and
+  // drop nodes back out as they stop matching. Cleanup on exit lives in `close()`.
+  useEffect(() => {
+    if (!show) {
+      return;
+    }
+    const next = new Set<string>();
+    if (query.trim().length > 0) {
+      for (const node of nodes) {
+        if (node.type !== "result") {
+          continue;
+        }
+        if (findCellMatches(resultRows[node.id] ?? [], query).length > 0) {
+          next.add(node.id);
+        }
+      }
+    }
+    const queryChanged = appliedQuery.current !== query;
+    for (const id of next) {
+      if (queryChanged || !findNodes.current.has(id)) {
+        store.set(resultFindAtom(id), { active: true, query, autoFocus: false });
+      }
+    }
+    for (const id of findNodes.current) {
+      if (!next.has(id)) {
+        store.set(resultFindAtom(id), NO_FIND);
+      }
+    }
+    findNodes.current = next;
+    appliedQuery.current = query;
+  }, [show, query, nodes, resultRows, store]);
 
   if (!show) {
     return null;

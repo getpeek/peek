@@ -9,7 +9,9 @@ import {
   subscribeResultsMutations,
 } from "../canvas/state";
 import { applyOperation, applyResultOperation } from "./diffApply";
-import { diffDocs, diffResults, keyKind, SCHEMA_INDEX_KEY } from "./diff";
+import { diffDocs, diffResults } from "./diff";
+import { keyKind, SCHEMA_INDEX_KEY } from "./keys";
+import { handleAgentCancel, handleAgentRequest } from "./agentProxy";
 import { b64ToBytes } from "./bytes";
 import {
   multiplayerSyncIssueAtom,
@@ -105,6 +107,10 @@ export function useSyncBridge(): void {
         }
       } else if (kind === "exec-request" && currentSession.role === "host") {
         void handleExecRequest(key, value);
+      } else if (kind === "agent-request" && currentSession.role === "host") {
+        void handleAgentRequest(key, value);
+      } else if (kind === "agent-cancel" && currentSession.role === "host") {
+        handleAgentCancel(key);
       } else if (kind === "schema" && currentSession.role === "joiner") {
         try {
           const parsed: unknown = JSON.parse(new TextDecoder().decode(value));

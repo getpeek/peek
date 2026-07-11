@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useAtom } from "jotai";
+import { NO_FIND, resultFindAtom } from "../../../state";
 
-export function useResultSearch() {
-  const [active, setActive] = useState(false);
-  const [query, setQuery] = useState("");
+export function useResultSearch(nodeId: string) {
+  const [state, setState] = useAtom(resultFindAtom(nodeId));
 
-  const open = () => setActive(true);
-  const close = () => {
-    setActive(false);
-    setQuery("");
+  const open = () => setState(prev => ({ ...prev, active: true, autoFocus: true }));
+  const close = () => setState(NO_FIND);
+  const setQuery = (query: string) => setState(prev => ({ ...prev, query }));
+
+  return {
+    active: state.active,
+    query: state.query,
+    autoFocus: state.autoFocus,
+    setQuery,
+    open,
+    close,
   };
-
-  return { active, query, setQuery, open, close };
 }

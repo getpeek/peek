@@ -50,7 +50,7 @@ export const ResultNode = memo(function ResultNode({
     .join(" ");
 
   const pivoted = data.pivoted ?? false;
-  const search = useResultSearch();
+  const search = useResultSearch(id);
   const matches = useResultSearchMatches(rows, search.query, search.active);
   const keymap = useKeymap();
   useHotkey(keymap["Page::Search"], () => {

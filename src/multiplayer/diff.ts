@@ -1,16 +1,12 @@
 import type { AppEdge, AppNode, CanvasDocument, PageState, RegionState } from "../canvas/types";
 import { stripEdge, stripNode } from "../canvas/stripEphemeral";
+import { PAGE_ORDER_KEY, resultKey } from "./keys";
 import type { DatabaseResult } from "../state";
 import type { Operation } from "./types";
 
 function encode(s: string): Uint8Array {
   return new TextEncoder().encode(s);
 }
-
-const PAGE_ORDER_KEY = "doc/page-order";
-export const RESULTS_PREFIX = "results/";
-export const EXEC_REQUESTS_PREFIX = "exec-requests/";
-export const SCHEMA_INDEX_KEY = "schema/index";
 
 function nodeKey(pageId: string, nodeId: string): string {
   return `pages/${pageId}/nodes/${nodeId}`;
@@ -26,35 +22,6 @@ function pageNameKey(pageId: string): string {
 
 function regionKey(pageId: string, regionId: string): string {
   return `pages/${pageId}/regions/${regionId}`;
-}
-
-export function resultKey(nodeId: string): string {
-  return `${RESULTS_PREFIX}${nodeId}`;
-}
-
-export function execRequestKey(requestId: string): string {
-  return `${EXEC_REQUESTS_PREFIX}${requestId}`;
-}
-
-export type KeyKind = "doc" | "result" | "exec-request" | "schema" | "unknown";
-
-export function keyKind(key: string): KeyKind {
-  if (key === PAGE_ORDER_KEY) {
-    return "doc";
-  }
-  if (key.startsWith("pages/")) {
-    return "doc";
-  }
-  if (key.startsWith(RESULTS_PREFIX)) {
-    return "result";
-  }
-  if (key.startsWith(EXEC_REQUESTS_PREFIX)) {
-    return "exec-request";
-  }
-  if (key === SCHEMA_INDEX_KEY) {
-    return "schema";
-  }
-  return "unknown";
 }
 
 /**

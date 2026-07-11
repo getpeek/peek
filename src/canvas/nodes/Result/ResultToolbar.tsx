@@ -146,6 +146,7 @@ export function ResultToolbar({
         <ResultSearchBar
           query={search.query}
           matchCount={matchCount}
+          autoFocus={search.autoFocus}
           onChange={search.setQuery}
           onClose={search.close}
         />

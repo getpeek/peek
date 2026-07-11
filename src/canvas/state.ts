@@ -109,6 +109,23 @@ export const resultRowsAtom = atomFamily((id: string) =>
   selectAtom(resultsAtom, results => results[id] ?? EMPTY_RESULT),
 );
 
+export interface ResultFindState {
+  active: boolean;
+  query: string;
+  // Whether the find input should grab focus on open. True when the user opens
+  // find directly; false when page search drives it, so it doesn't steal focus
+  // from the page-search input.
+  autoFocus: boolean;
+}
+
+export const NO_FIND: ResultFindState = { active: false, query: "", autoFocus: false };
+
+// In-result find mode ("search the result's cells"), keyed by result-node id.
+// Session-only and held out-of-band from the document on purpose: find mode is
+// ephemeral UI, so it must not enter autosave, undo history, or multiplayer sync.
+// Kept as an atom (not local component state) so page search can drive it.
+export const resultFindAtom = atomFamily((_id: string) => atom<ResultFindState>(NO_FIND));
+
 export const activePageAtom = atom<PageState>(get => {
   const doc = get(documentAtom);
   return doc.pages[doc.activePageId];

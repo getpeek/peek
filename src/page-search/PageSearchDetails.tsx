@@ -1,48 +1,13 @@
 import { useAtomValue } from "jotai";
 import { formatPreservingVars } from "../canvas/variables";
 import { resultRowsAtom } from "../canvas/state";
-import { stringifyValue } from "../canvas/nodes/Result/stringify";
-import type { DatabaseResult } from "../state";
-import { MAX_SEARCHED_ROWS, type NodeSearchEntry } from "./searchCorpus";
+import { type NodeSearchEntry } from "./searchCorpus";
+import { type CellMatch, findCellMatches } from "./cellMatches";
 import { SqlPreview } from "./SqlPreview";
-
-interface CellMatch {
-  column: string;
-  rowIndex: number;
-  value: string;
-  start: number;
-  end: number;
-}
-
-const MAX_CELL_MATCHES = 3;
 
 // How much of a long cell value to keep around the highlighted range.
 const WINDOW_BEFORE = 24;
 const WINDOW_AFTER = 60;
-
-function findCellMatches(rows: DatabaseResult, query: string): CellMatch[] {
-  const terms = query.trim().toLowerCase().split(/\s+/u).filter(Boolean);
-  if (terms.length === 0) {
-    return [];
-  }
-  const matches: CellMatch[] = [];
-  for (const [rowIndex, row] of rows.slice(0, MAX_SEARCHED_ROWS).entries()) {
-    for (const [column, value] of row) {
-      const text = stringifyValue(value);
-      const lower = text.toLowerCase();
-      const term = terms.find(t => lower.includes(t));
-      if (!term) {
-        continue;
-      }
-      const start = lower.indexOf(term);
-      matches.push({ column, rowIndex, value: text, start, end: start + term.length });
-      if (matches.length === MAX_CELL_MATCHES) {
-        return matches;
-      }
-    }
-  }
-  return matches;
-}
 
 const MatchedCell = ({ match }: { match: CellMatch }) => {
   const windowStart = Math.max(0, match.start - WINDOW_BEFORE);

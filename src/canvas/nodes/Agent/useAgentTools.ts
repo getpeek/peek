@@ -18,6 +18,7 @@ import {
 } from "../../../mcp/readTools";
 import { useCanvas } from "../../hooks/useCanvas";
 import { defaultDimensions } from "../../defaults";
+import type { CanvasApi } from "../../state";
 import type { AppNodeType } from "../../types";
 
 // Handlers are awaited by the stream loop, so they may resolve synchronously
@@ -34,9 +35,8 @@ function describe(result: unknown): string {
   return JSON.stringify(result);
 }
 
-export function useAgentTools(opts: { nodeId: string }): ToolHandlers {
-  const { nodeId } = opts;
-  const canvas = useCanvas();
+export function createAgentToolHandlers(opts: { canvas: CanvasApi; nodeId: string }): ToolHandlers {
+  const { canvas, nodeId } = opts;
 
   // Stack created nodes to the right of the agent, one row per existing
   // outgoing edge, so a multi-node build doesn't pile everything in one spot.
@@ -171,4 +171,9 @@ export function useAgentTools(opts: { nodeId: string }): ToolHandlers {
     get_page_content: args =>
       describe(getPageContent({ pageId: (args as { page_id: string }).page_id })),
   };
+}
+
+export function useAgentTools(opts: { nodeId: string }): ToolHandlers {
+  const canvas = useCanvas();
+  return createAgentToolHandlers({ canvas, nodeId: opts.nodeId });
 }
