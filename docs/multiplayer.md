@@ -115,7 +115,7 @@ Cursor rendering and broadcast are mounted _inside_ `<ReactFlowProvider>` becaus
 | `results/<nodeId>`                  | JSON `DatabaseResult`                    | rows for a result node, lifted out of the document                                                                   |
 | `exec-requests/<requestId>`         | JSON `{nodeId, queries}`                 | joiner→host RPC; host deletes after running                                                                          |
 | `agent-requests/<requestId>`        | JSON `{nodeId, question}`                | joiner→host agent RPC; host deletes when the run ends — that delete IS the completion signal (see "Agent execution") |
-| `agent-cancels/<requestId>`         | `{}`                                     | joiner→host cancel for a running agent request; host deletes it alongside the request key                           |
+| `agent-cancels/<requestId>`         | `{}`                                     | joiner→host cancel for a running agent request; host deletes it alongside the request key                            |
 | `schema/index`                      | JSON `{tables, references, primaryKeys}` | host's DB schema; joiners feed this into `schemaAtom` and `lsp_set_schema_cache` so the LSP works without a local DB |
 
 Viewport and `activePageId` are **not** synced — each peer has its own pan/zoom and chooses which page to view independently. `activePageId` still lives on `CanvasDocument` so it persists to disk per-peer; it's just excluded from the multiplayer diff. When a remote `doc/page-order` arrives that no longer contains the local active page (joiner just imported the host's pages, or someone else deleted the page we were on), `applyOperation` falls back to `parsed[0]` so the peer doesn't end up on an orphan page.
@@ -126,13 +126,13 @@ Routing is centralized in `keyKind()`, which lives in **`src/multiplayer/keys.ts
 
 JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}` (where `author` is the sender's iroh `EndpointId`).
 
-| `payload.type`     | Fields                              | Cadence                                                            |
-| ------------------ | ----------------------------------- | ------------------------------------------------------------------ |
-| `cursor`           | `flowX`, `flowY`, `pageId`          | ~15 Hz on mouse move                                               |
-| `presence`         | `name`, `color`, `isHost`, `pageId` | every 5 s, plus immediately on local page switch                   |
-| `leave`            | (none)                              | once on `controls.end()`; browser guest also sends on tab close    |
-| `agent-stream`     | `nodeId`, `requestId`, `text`       | host → peers, ~10 Hz while an agent run streams (see below)        |
-| `agent-stream-end` | `nodeId`, `requestId`               | host → peers, once when the streaming portion of a run finishes    |
+| `payload.type`     | Fields                              | Cadence                                                         |
+| ------------------ | ----------------------------------- | --------------------------------------------------------------- |
+| `cursor`           | `flowX`, `flowY`, `pageId`          | ~15 Hz on mouse move                                            |
+| `presence`         | `name`, `color`, `isHost`, `pageId` | every 5 s, plus immediately on local page switch                |
+| `leave`            | (none)                              | once on `controls.end()`; browser guest also sends on tab close |
+| `agent-stream`     | `nodeId`, `requestId`, `text`       | host → peers, ~10 Hz while an agent run streams (see below)     |
+| `agent-stream-end` | `nodeId`, `requestId`               | host → peers, once when the streaming portion of a run finishes |
 
 `agent-stream.text` is the **full accumulated partial**, not a delta — gossip is lossy, so any received packet supersedes all prior ones and a dropped packet self-heals on the next.
 
@@ -146,12 +146,12 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 
 ## Browser guest (`~/labs/peek-web`)
 
-`getpeek.dev/join/<ticket>` lets anyone join a session from a browser, no install. It lives in the **separate `~/labs/peek-web` repo** (the Next.js 16 marketing site) and is a full peer: as of 2026-07 the guest canvas is **read-write** with near-desktop parity — toolbar (all tools incl. Agent), zoom cluster, full wayfinding/regions (halos, menu, ⌘G grouping, low-zoom beacons; no AI grouping), the `midnight` theme, desktop-style live cursors, Monaco SQL editing, the full Result node (export via Blob download; inline row editing disabled), and host-proxied query + agent execution.
+`getpeek.dev/join/<ticket>` lets anyone join a session from a browser, no install. It lives in the **separate `~/labs/peek-web` repo** (the Next.js 16 marketing site) and is a full peer: as of 2026-07 the guest canvas is **read-write** with near-desktop parity — toolbar (all tools incl. Agent), zoom cluster, full wayfinding/regions (halos, menu, ⌘G grouping, low-zoom beacons; no AI grouping), the `midnight` theme, desktop-style live cursors, Monaco SQL editing, the full Result node (export via Blob download; inline row editing disabled), BarChart (recharts) and TableDefinition (schema) nodes, and host-proxied query + agent execution.
 
 ### Architecture
 
 - **`crates/peek-join/`** — the same iroh stack (`iroh 1`, `iroh-docs 0.101`, `iroh-blobs 0.103`, `iroh-gossip 0.101`) compiled to wasm (`wasm-pack`, ~4.6 MB / 1.6 MB gzipped; build with `yarn build:wasm`, artifacts land in `public/peek-join/`). Browser transport is relay + WebTransport — no UDP hole punching, so the host must be relay-reachable (it is, with `RelayAndAddresses` tickets). The wasm surface (`PeekJoinSession`): `join(ticket)`, `events()` (a single-consumer ReadableStream of entry/delete/syncFinished/gossip/peerUp/peerDown), `endpointId()`, `sendGossip(json)`, `requestExec(nodeId, queries)`, and the generic `docPut(key, value)` / `docDel(key)` that make guest editing possible. It applies the same subscribe-before-sync and per-entry explicit blob-download fixes described above. `doc_put` must never write an empty string (zero-length content reads as a tombstone on receive).
-- **`src/join/` mirrors this repo's `src/`** (`canvas/`, `multiplayer/`, `components/`, `app/`, `themes/`) so most files are **verbatim copies** and future re-syncs are a `diff -r`. This is deliberate: no shared package. Web-authored stubs keep the copies compiling: `src/join/state.ts` (a static `configAtom` whose `WEB_DEFAULT_KEYMAP` omits bindings for desktop-only features — the keymap IS the feature gate), `tauri.ts` (rejecting `invoke`), `Result/queryInfo.ts` (returns null → disables all inline edit affordances), `canvas/hooks/useExecuteQueries.ts` (always the joiner path via `requestExec`).
+- **`src/join/` mirrors this repo's `src/`** (`canvas/`, `multiplayer/`, `components/`, `app/`, `themes/`) so most files are **verbatim copies** and future re-syncs are a `diff -r`. This is deliberate: no shared package. Web-authored stubs keep the copies compiling: `src/join/state.ts` (a static `configAtom` whose `WEB_DEFAULT_KEYMAP` omits bindings for desktop-only features — the keymap IS the feature gate), `tauri.ts` (rejecting `invoke`), `Result/queryInfo.ts` (desktop parses SQL via the Rust host; the web derives `statementType` + the source `tables` from the query text matched against the host-synced `schemaAtom` table names — this is what lights up clickable PK/FK drill-down, whose spawn path already rides the joiner `requestExec` proxy. It reports every table `isJoined: true` so `getEditableTableName` stays `null` and inline edit / add-row / duplicate / delete remain disabled, since a guest's commit path hits rejected invokes), `canvas/hooks/useExecuteQueries.ts` (always the joiner path via `requestExec`).
 - **Sync bridge** (`src/join/multiplayer/useGuestSyncBridge.ts`) is the desktop `useSyncBridge` translated onto the wasm session: inbound events apply into the ported jotai `documentAtom` under the `isApplyingRemoteRef` gate; outbound is `subscribeDocumentMutations → diffDocs → docPut/docDel`. Echo is prevented structurally — the wasm subscribe loop forwards only `InsertRemote` and ignores `InsertLocal`. The canvas stays read-only until `syncFinished` fires, which sidesteps last-write-wins races during initial reconciliation. The guest document starts empty (`activePageId: ""`, no pages) and fills from the host; the page-lens atoms guard the pre-sync window.
 - **CSS isolation**: the marketing site defines its own `--pk-*` tokens, and desktop canvas CSS uses bare `:root` / `.react-flow` selectors — Next.js never unloads global CSS on client navigation, so the app is split into two **route groups with separate root layouts** (`src/app/(marketing)/`, `src/app/(join)/`). Crossing them is a full document load, so the desktop CSS (midnight tokens included) ships byte-for-byte without touching the marketing pages.
 
@@ -159,17 +159,19 @@ JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}`
 
 Three places must stay byte-compatible with this repo, by hand:
 
-| peek-web file                       | Mirrors                                                             |
-| ----------------------------------- | ------------------------------------------------------------------- |
-| `crates/peek-join/src/protocol.rs`  | gossip topic derivation + `exec-requests/` prefix from `session.rs` |
+| peek-web file                       | Mirrors                                                                                                        |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `crates/peek-join/src/protocol.rs`  | gossip topic derivation + `exec-requests/` prefix from `session.rs`                                            |
 | `src/join/multiplayer/diff.ts`      | key scheme + `keyKind()` from `src/multiplayer/keys.ts` + `diff.ts` (web values are strings, not `Uint8Array`) |
-| `src/join/multiplayer/diffApply.ts` | `diffApply.ts`                                                       |
+| `src/join/multiplayer/diffApply.ts` | `diffApply.ts`                                                                                                 |
 
 Gossip payloads and the exec/agent request JSON shapes are shared contracts too. When adding a doc key or gossip type here, add it to peek-web in the same change.
 
 ### What the browser guest doesn't have
 
-LSP completions (Monaco runs bare), AI region grouping (no Ollama), undo history, command palette / page search, camera lock, and BarChart / TableDefinition nodes (labeled placeholders). Local agent runs — everything agent goes through the host proxy.
+LSP completions (Monaco runs bare), AI region grouping (no Ollama), undo history, command palette / page search, and camera lock. Local agent runs — everything agent goes through the host proxy.
+
+BarChart and TableDefinition (schema) nodes **do** render on the guest now. The chart node is a `recharts` rewrite (the guest doesn't bundle `@mantine/charts`/`@mantine/core`, so it's the one node that isn't a verbatim desktop copy); it feeds off the same host-synced `results/*` → `useChartSync` → `BarChartData` path desktop uses. Schema nodes render table + columns + PK/FK badges from the host-synced `schemaAtom`, but **without** the FK relationship lines between tables — those edges are derived locally on the host by `useSchemaForceLayout` (d3-force) and never persisted or synced, so the guest doesn't receive them (and deriving them guest-side would pollute the shared doc via the outbound edge diff).
 
 ## Deep link invites (`peek://invite/<ticket>`)
 
@@ -287,14 +289,14 @@ The legacy migration in `useLoadDocument` (`migrateAndHydrate`) lifts any pre-St
 
 ## Where to extend
 
-| Want to add                                      | Edit                                                                                                                                                                              |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Want to add                                      | Edit                                                                                                                                                                                                                                                                |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | A new doc-level key (e.g., `theme/*`)            | `keys.ts` — add the prefix/builder + `keyKind()` branch; extend `diffDocs` (`diff.ts`) / `applyOperation` (`diffApply.ts`), add `documentToPuts` lowering if it should land on host start. **Mirror in peek-web** (`src/join/multiplayer/diff.ts` + bridge routing) |
 | A new ephemeral message type (e.g., `selection`) | `useGossipBridge` in `syncBridge.ts` — add a `payload.type === '...'` branch; sender side: `invoke('mp_gossip_send', {payload: {...}})`. **Mirror in peek-web** (`useGuestSyncBridge.ts` + `session.sendGossip`)                                                    |
-| A new role-gated behavior                        | Read `useAtomValue(sessionStateAtom)` in the relevant hook and gate on `session?.role`                                                                                            |
-| Persist results across sessions                  | They already do (sidecar). To skip persisting, read `sessionStateAtom` in `useAutoSaveResults` and gate similarly                                                                 |
-| Disable a feature on joiner                      | Pattern is everywhere — `if (session?.role === "joiner") return;` early in the effect/handler                                                                                     |
-| Another `peek://...` action besides invite       | `useDeepLinkInvite.ts` — switch on `u.hostname` in the parser, branch in `handleInvite`. For unrelated features prefer a sibling hook so the multiplayer one stays single-purpose |
+| A new role-gated behavior                        | Read `useAtomValue(sessionStateAtom)` in the relevant hook and gate on `session?.role`                                                                                                                                                                              |
+| Persist results across sessions                  | They already do (sidecar). To skip persisting, read `sessionStateAtom` in `useAutoSaveResults` and gate similarly                                                                                                                                                   |
+| Disable a feature on joiner                      | Pattern is everywhere — `if (session?.role === "joiner") return;` early in the effect/handler                                                                                                                                                                       |
+| Another `peek://...` action besides invite       | `useDeepLinkInvite.ts` — switch on `u.hostname` in the parser, branch in `handleInvite`. For unrelated features prefer a sibling hook so the multiplayer one stays single-purpose                                                                                   |
 
 ## Stage history
 

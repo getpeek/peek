@@ -30,7 +30,7 @@ function subheadFor(
     return "Sync issue: edits may not have propagated.";
   }
   return session.role === "host"
-    ? "Anyone with the ticket can edit this canvas in real-time."
+    ? "Share a Peek link for users with installed clients, or a lighter web version that requires no install, or share the ticket directly."
     : "Connected to host. Edits sync live.";
 }
 
