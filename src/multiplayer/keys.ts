@@ -7,7 +7,11 @@ export const RESULTS_PREFIX = "results/";
 export const EXEC_REQUESTS_PREFIX = "exec-requests/";
 export const AGENT_REQUESTS_PREFIX = "agent-requests/";
 export const AGENT_CANCELS_PREFIX = "agent-cancels/";
+export const LSP_REQUESTS_PREFIX = "lsp-requests/";
+export const LSP_RESPONSES_PREFIX = "lsp-responses/";
 export const SCHEMA_INDEX_KEY = "schema/index";
+
+export type LspRequestKind = "completion" | "diagnostics";
 
 export function resultKey(nodeId: string): string {
   return `${RESULTS_PREFIX}${nodeId}`;
@@ -25,12 +29,18 @@ export function agentCancelKey(requestId: string): string {
   return `${AGENT_CANCELS_PREFIX}${requestId}`;
 }
 
+export function lspResponseKey(nonce: string, kind: LspRequestKind, modelId: string): string {
+  return `${LSP_RESPONSES_PREFIX}${nonce}/${kind}/${modelId}`;
+}
+
 export type KeyKind =
   | "doc"
   | "result"
   | "exec-request"
   | "agent-request"
   | "agent-cancel"
+  | "lsp-request"
+  | "lsp-response"
   | "schema"
   | "unknown";
 
@@ -52,6 +62,12 @@ export function keyKind(key: string): KeyKind {
   }
   if (key.startsWith(AGENT_CANCELS_PREFIX)) {
     return "agent-cancel";
+  }
+  if (key.startsWith(LSP_REQUESTS_PREFIX)) {
+    return "lsp-request";
+  }
+  if (key.startsWith(LSP_RESPONSES_PREFIX)) {
+    return "lsp-response";
   }
   if (key === SCHEMA_INDEX_KEY) {
     return "schema";

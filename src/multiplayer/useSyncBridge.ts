@@ -12,6 +12,7 @@ import { applyOperation, applyResultOperation } from "./diffApply";
 import { diffDocs, diffResults } from "./diff";
 import { keyKind, SCHEMA_INDEX_KEY } from "./keys";
 import { handleAgentCancel, handleAgentRequest } from "./agentProxy";
+import { handleLspRequest } from "./lspProxy";
 import { b64ToBytes } from "./bytes";
 import {
   multiplayerSyncIssueAtom,
@@ -111,6 +112,8 @@ export function useSyncBridge(): void {
         void handleAgentRequest(key, value);
       } else if (kind === "agent-cancel" && currentSession.role === "host") {
         handleAgentCancel(key);
+      } else if (kind === "lsp-request" && currentSession.role === "host") {
+        void handleLspRequest(key, value);
       } else if (kind === "schema" && currentSession.role === "joiner") {
         try {
           const parsed: unknown = JSON.parse(new TextDecoder().decode(value));

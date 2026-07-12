@@ -153,7 +153,16 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
         functionCase: "upper",
         language: "postgresql",
       });
-      canvas.updateNodeData<QueryNodeT["data"]>(id, { query: formatted });
+      // Apply through the editor when it's mounted: the editor is authoritative
+      // while focused (see SqlEditor's reconcile guard), so writing only to node
+      // data wouldn't reach the model on a ⌘S triggered from inside the editor.
+      // `setValue` fires onChange, which updates node data in turn.
+      const ed = editorRef.current;
+      if (ed) {
+        ed.setValue(formatted);
+      } else {
+        canvas.updateNodeData<QueryNodeT["data"]>(id, { query: formatted });
+      }
     } catch {}
   };
 

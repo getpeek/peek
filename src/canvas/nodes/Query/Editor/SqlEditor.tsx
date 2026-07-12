@@ -78,6 +78,7 @@ export const SqlEditor = ({
 }) => {
   const ref = useRef<Monaco | null>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const applyingExternalRef = useRef(false);
   const decorationsRef = useRef<editor.IEditorDecorationsCollection | null>(null);
   const variablesRef = useRef<Record<string, VariableValue>>(variables ?? {});
   const zoom = useStore(s => s.transform[2]);
@@ -155,8 +156,23 @@ export const SqlEditor = ({
     if (!ed) {
       return;
     }
+    // While focused, the editor is the source of truth. In a session the host
+    // re-emits this node as the user types; reconciling that here would setValue
+    // the model back to a value lagging the keystroke, dropping the char just
+    // typed (a lone space most visibly). Local edits flow out via `onChange`.
+    if (ed.hasTextFocus()) {
+      return;
+    }
     if (ed.getValue() !== query) {
-      ed.setValue(query);
+      // setValue fires a content-change that `@monaco-editor/react` reports as
+      // `onChange`; suppress it so a programmatic reconcile isn't re-emitted as a
+      // user edit (which, echoed back, ping-pongs into "Maximum update depth").
+      applyingExternalRef.current = true;
+      try {
+        ed.setValue(query);
+      } finally {
+        applyingExternalRef.current = false;
+      }
     }
   }, [query]);
 
@@ -268,7 +284,12 @@ export const SqlEditor = ({
             renderWhitespace: "none",
             copyWithSyntaxHighlighting: true,
           }}
-          onChange={value => onQueryChange(value ?? "")}
+          onChange={value => {
+            if (applyingExternalRef.current) {
+              return;
+            }
+            onQueryChange(value ?? "");
+          }}
         />
       </div>
     </div>
