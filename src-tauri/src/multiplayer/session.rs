@@ -157,6 +157,10 @@ impl MultiplayerSession {
         let shutdown = Arc::new(Notify::new());
         let tracker = NeighborTracker::new();
         let subscribe_task = spawn_subscribe_loop(
+            doc.clone(),
+            // Host has no bootstrap peers, so its subscribe loop never retries
+            // sync — the empty bootstrap disables the joiner-side retry path.
+            vec![],
             stream,
             node.blobs.clone(),
             app.clone(),
@@ -238,6 +242,8 @@ impl MultiplayerSession {
         let shutdown = Arc::new(Notify::new());
         let tracker = NeighborTracker::new();
         let subscribe_task = spawn_subscribe_loop(
+            doc.clone(),
+            bootstrap_node_addrs.clone(),
             stream,
             node.blobs.clone(),
             app.clone(),
@@ -444,7 +450,19 @@ struct PendingFetch {
     author: String,
 }
 
+/// Cap on re-`start_sync` attempts after a failed initial sync before we give up
+/// retrying and report completion so the UI doesn't hang.
+const MAX_SYNC_ATTEMPTS: u32 = 8;
+
+/// Exponential backoff for the initial-sync retry: 500ms, 1s, 2s, then 4s.
+fn sync_retry_backoff(attempt: u32) -> Duration {
+    let shift = attempt.saturating_sub(1).min(3);
+    Duration::from_millis(500u64 << shift)
+}
+
 fn spawn_subscribe_loop<S>(
+    doc: Doc,
+    bootstrap: Vec<EndpointAddr>,
     stream: S,
     blobs: MemStore,
     app: AppHandle,
@@ -458,6 +476,13 @@ where
         // Hash → list of (key, author) pairs whose blob hasn't yet arrived.
         // ContentReady drains the entry for that hash.
         let mut pending: HashMap<Hash, Vec<PendingFetch>> = HashMap::new();
+        // Whether a sync has ever succeeded, and how many times we've
+        // re-initiated after a failure — so a transiently-failed initial sync
+        // retries instead of stranding the joiner on a blank canvas. Only
+        // joiners (non-empty `bootstrap`) retry; the host has nobody to re-sync
+        // against.
+        let mut synced_ok = false;
+        let mut sync_attempts: u32 = 0;
         let mut stream = stream;
         loop {
             tokio::select! {
@@ -525,9 +550,47 @@ where
                                 }
                             }
                         }
-                        Some(Ok(LiveEvent::SyncFinished(_))) => {
-                            let _ = app.emit("multiplayer:sync-finished", SyncFinishedEvent {});
-                        }
+                        Some(Ok(LiveEvent::SyncFinished(ev))) => match ev.result {
+                            Ok(_) => {
+                                synced_ok = true;
+                                let _ = app
+                                    .emit("multiplayer:sync-finished", SyncFinishedEvent {});
+                            }
+                            // iroh-docs fires SyncFinished for FAILED syncs too and
+                            // then goes Idle without retrying (the NewNeighbor
+                            // trigger mid initial-sync is dropped), so a transiently
+                            // failed first sync strands an empty canvas. Re-initiate
+                            // until one lands.
+                            Err(e)
+                                if !synced_ok
+                                    && !bootstrap.is_empty()
+                                    && sync_attempts < MAX_SYNC_ATTEMPTS =>
+                            {
+                                sync_attempts += 1;
+                                eprintln!(
+                                    "multiplayer: sync failed (attempt {sync_attempts}), retrying: {e}"
+                                );
+                                let wait = sync_retry_backoff(sync_attempts);
+                                tokio::select! {
+                                    () = shutdown.notified() => break,
+                                    () = tokio::time::sleep(wait) => {
+                                        if let Err(e) = doc.start_sync(bootstrap.clone()).await {
+                                            eprintln!("multiplayer: re-start_sync failed: {e}");
+                                        }
+                                    }
+                                }
+                            }
+                            // Host (no bootstrap), already synced, or retries
+                            // exhausted — report completion like before so the UI
+                            // doesn't hang on the sync spinner.
+                            Err(e) => {
+                                if !synced_ok && !bootstrap.is_empty() {
+                                    eprintln!("multiplayer: sync retries exhausted: {e}");
+                                }
+                                let _ = app
+                                    .emit("multiplayer:sync-finished", SyncFinishedEvent {});
+                            }
+                        },
                         Some(Ok(LiveEvent::NeighborUp(_peer))) => {
                             tracker.neighbor_up(&app);
                         }
