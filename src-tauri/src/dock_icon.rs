@@ -14,8 +14,10 @@ use crate::config::Theme;
 pub(crate) fn set_for_theme(app: &AppHandle, theme: Theme) {
     let bytes: &'static [u8] = match theme {
         Theme::Pine => include_bytes!("../icons/themes/pine.png"),
-        Theme::Midday => include_bytes!("../icons/themes/midday.png"),
-        Theme::Midnight | Theme::Terminal => include_bytes!("../icons/themes/midnight.png"),
+        Theme::Midday | Theme::Paper => include_bytes!("../icons/themes/midday.png"),
+        Theme::Midnight | Theme::Terminal | Theme::Blueprint => {
+            include_bytes!("../icons/themes/midnight.png")
+        }
     };
 
     // AppKit must be touched on the main thread; `run_on_main_thread` queues onto the

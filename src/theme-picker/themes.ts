@@ -5,4 +5,6 @@ export const THEMES: { id: Theme; name: string; tagline: string }[] = [
   { id: "midnight", name: "Midnight", tagline: "Pure dark" },
   { id: "midday", name: "Midday", tagline: "Light" },
   { id: "terminal", name: "Terminal", tagline: "Command console" },
+  { id: "paper", name: "Paper", tagline: "Warm editorial light" },
+  { id: "blueprint", name: "Blueprint", tagline: "Drafting sheet" },
 ];

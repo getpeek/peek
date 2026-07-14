@@ -1,0 +1,107 @@
+/* Blueprint — cold technical drafting theme.
+   Deep navy ground, fine cyan engineering grid, hairline square frames, cyan corner
+   crosshairs, type-colored header ticks. Built on the Rosé Pine Moon palette; colors
+   are exact hex from the design prototype rather than the usual oklch. Krypton stays
+   the font (already monospaced) — no --pk-font-* override, same as Terminal.
+
+   Only the active theme's stylesheet is loaded (see ThemeStylesheet.tsx), so the
+   non-:root selectors below apply exclusively while Blueprint is active. */
+:root {
+  --pk-bg: #232136;
+  --pk-bg-grid: #44415a;
+  --pk-node-bg: #2a273f;
+  --pk-node-bg-2: #393552;
+  --pk-node-inset: #201e30;
+  --pk-node-border: #56526e;
+  --pk-node-border-strong: #6e6a86;
+  --pk-node-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --pk-node-shadow-cheap: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+  --pk-fg: #e0def4;
+  --pk-fg-muted: #908caa;
+  --pk-fg-subtle: #6e6a86;
+
+  --pk-accent: #9ccfd8;
+  --pk-accent-soft: #cfe9ee;
+  --pk-accent-bg: rgba(156, 207, 216, 0.14);
+  --pk-accent-line: rgba(156, 207, 216, 0.55);
+  --pk-row-selected-bg: color-mix(in srgb, var(--pk-node-bg), white 6%);
+  --pk-row-selected-bg-hover: color-mix(in srgb, var(--pk-node-bg), white 10%);
+
+  --pk-green: #9ccfd8;
+  --pk-green-soft: rgba(156, 207, 216, 0.16);
+  --pk-yellow: #f6c177;
+  --pk-yellow-soft: rgba(246, 193, 119, 0.16);
+  --pk-blue: #3e8fb0;
+  --pk-blue-soft: rgba(62, 143, 176, 0.16);
+  --pk-red: #eb6f92;
+  --pk-red-soft: rgba(235, 111, 146, 0.16);
+
+  --pk-region-1: #c4a7e7;
+  --pk-region-2: var(--pk-blue);
+  --pk-region-3: var(--pk-yellow);
+  --pk-region-4: var(--pk-green);
+  --pk-region-5: #ea9a97;
+
+  --pk-type-query: #9ccfd8;
+  --pk-type-agent: #c4a7e7;
+  --pk-type-result: #3e8fb0;
+  --pk-type-chart: #f6c177;
+  --pk-type-error: #eb6f92;
+  --pk-type-variable: #ea9a97;
+
+  /* Square everything. Loads after node.css's :root, so these win on source order.
+     --pk-radius-window is left alone — it tracks the native window squircle. */
+  --pk-radius-node: 2px;
+  --pk-radius-card: 2px;
+  --pk-radius-pill: 2px;
+
+  /* Navy ground with a faint top vignette for depth. The cyan engineering grid (fine
+     minor + heavier major) is drawn by CanvasBackground inside the pan/zoom pane so it
+     tracks the canvas — keep grid linework out of this static viewport layer. */
+  --pk-canvas-bg: radial-gradient(140% 100% at 50% -10%, #2a2740 0%, #232136 55%), #232136;
+}
+
+/* ---- Corner brackets: the signature drafting frame ----
+   Absolutely-positioned pseudo (removed from .app-node's flex flow) drawing eight
+   short cyan line segments at the corners. inset:0 keeps it inside the node's existing
+   overflow:hidden, so no overflow change is needed. */
+.app-node {
+  position: relative;
+}
+.app-node::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  --bc: #9ccfd8;
+  --bl: 17px;
+  --bt: 2px;
+  background:
+    linear-gradient(var(--bc), var(--bc)) top left / var(--bl) var(--bt) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) top left / var(--bt) var(--bl) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) top right / var(--bl) var(--bt) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) top right / var(--bt) var(--bl) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) bottom left / var(--bl) var(--bt) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) bottom left / var(--bt) var(--bl) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) bottom right / var(--bl) var(--bt) no-repeat,
+    linear-gradient(var(--bc), var(--bc)) bottom right / var(--bt) var(--bl) no-repeat;
+}
+
+/* ---- Cyan selection: brighter, thicker brackets + a soft glow ---- */
+.app-node.selected {
+  outline-color: var(--pk-accent);
+  box-shadow: 0 0 18px rgba(156, 207, 216, 0.25);
+}
+.app-node.selected::after {
+  --bc: var(--pk-accent);
+  --bl: 22px;
+}
+
+/* ---- Header tick: type-colored vertical bar instead of a round dot ---- */
+.node-indicator .type-dot {
+  width: 3px;
+  height: 14px;
+  border-radius: 0;
+}

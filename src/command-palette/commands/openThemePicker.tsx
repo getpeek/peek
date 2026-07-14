@@ -10,7 +10,8 @@ export const useOpenThemePickerCommand = (): CommandPaletteResult => {
     icon: <IconPalette size={16} />,
     action: "open",
     label: "Change theme",
-    searchAgainst: "theme appearance color dark light pine midnight midday terminal",
+    searchAgainst:
+      "theme appearance color dark light pine midnight midday terminal paper blueprint",
     onSelect: () => setThemePickerOpen(true),
   };
 };

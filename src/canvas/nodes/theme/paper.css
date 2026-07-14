@@ -1,0 +1,69 @@
+/* Paper — warm editorial light theme.
+   Cream ground, espresso ink, terracotta accent, ruled node headers. Built on the
+   Rosé Pine Dawn palette; colors are exact hex from the design prototype rather than
+   the usual oklch. Structurally a "plain+" theme like Midday — a :root token block
+   plus a couple of light-ground flourishes.
+
+   Only the active theme's stylesheet is loaded (see ThemeStylesheet.tsx), so the
+   non-:root selectors below apply exclusively while Paper is active. */
+:root {
+  --pk-bg: #faf4ed;
+  --pk-bg-grid: #dfdad9;
+  --pk-node-bg: #fffaf3;
+  --pk-node-bg-2: #f2e9e1;
+  --pk-node-inset: #ede4dc;
+  --pk-node-border: #cecacd;
+  --pk-node-border-strong: #9893a5;
+  --pk-node-shadow: 0 12px 30px rgba(87, 82, 121, 0.1), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  --pk-node-shadow-cheap: 0 1px 2px rgba(87, 82, 121, 0.06), 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+
+  --pk-fg: #575279;
+  --pk-fg-muted: #797593;
+  --pk-fg-subtle: #9893a5;
+
+  --pk-accent: #d7827e;
+  --pk-accent-soft: #f0c9c7;
+  --pk-accent-bg: rgba(215, 130, 126, 0.14);
+  --pk-accent-line: rgba(215, 130, 126, 0.45);
+  --pk-row-selected-bg: color-mix(in srgb, var(--pk-node-bg), black 4%);
+  --pk-row-selected-bg-hover: color-mix(in srgb, var(--pk-node-bg), black 6%);
+
+  --pk-green: #56949f;
+  --pk-green-soft: rgba(86, 148, 159, 0.16);
+  --pk-yellow: #ea9d34;
+  --pk-yellow-soft: rgba(234, 157, 52, 0.16);
+  --pk-blue: #286983;
+  --pk-blue-soft: rgba(40, 105, 131, 0.14);
+  --pk-red: #b4637a;
+  --pk-red-soft: rgba(180, 99, 122, 0.14);
+
+  --pk-region-1: #907aa9;
+  --pk-region-2: var(--pk-blue);
+  --pk-region-3: var(--pk-yellow);
+  --pk-region-4: var(--pk-green);
+  --pk-region-5: #d7827e;
+
+  --pk-type-query: #b4637a;
+  --pk-type-agent: #907aa9;
+  --pk-type-result: #56949f;
+  --pk-type-chart: #ea9d34;
+  --pk-type-error: #b4637a;
+  --pk-type-variable: #286983;
+
+  /* Softer, rounder controls for the editorial feel. Loads after node.css's :root,
+     so these win on source order. --pk-radius-window tracks the native squircle. */
+  --pk-radius-node: 14px;
+  --pk-radius-card: 12px;
+
+  /* Warm ambient gradient only. The reference grid is the moving warm dot grid drawn by
+     CanvasBackground (inside the pan/zoom pane) — keep grid linework out of this static
+     viewport layer or it reads as broken while navigating. */
+  --pk-canvas-bg: linear-gradient(180deg, #fffaf3 0%, #faf4ed 100%), #faf4ed;
+}
+
+/* Soft, tinted selection ring instead of a harsh dark halo on the light ground. */
+.app-node.selected {
+  box-shadow:
+    0 0 0 1px var(--pk-accent),
+    0 14px 34px rgba(87, 82, 121, 0.16);
+}

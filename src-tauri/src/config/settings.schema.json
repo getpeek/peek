@@ -16,7 +16,7 @@
     },
     "theme": {
       "type": "string",
-      "enum": ["pine", "midnight", "midday", "terminal"],
+      "enum": ["pine", "midnight", "midday", "terminal", "paper", "blueprint"],
       "default": "pine",
       "description": "UI color theme."
     },

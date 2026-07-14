@@ -32,3 +32,19 @@
   --pk-swatch-fg: #ffffff;
   --pk-swatch-accent: #33ff66;
 }
+
+.pk-theme-paper {
+  --pk-swatch-bg: #faf4ed;
+  --pk-swatch-node-bg: #fffaf3;
+  --pk-swatch-border: #cecacd;
+  --pk-swatch-fg: #575279;
+  --pk-swatch-accent: #d7827e;
+}
+
+.pk-theme-blueprint {
+  --pk-swatch-bg: #232136;
+  --pk-swatch-node-bg: #2a273f;
+  --pk-swatch-border: #56526e;
+  --pk-swatch-fg: #e0def4;
+  --pk-swatch-accent: #9ccfd8;
+}

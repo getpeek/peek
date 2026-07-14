@@ -1,6 +1,4 @@
 import {
-  Background,
-  BackgroundVariant,
   ReactFlow,
   ReactFlowProvider,
   SelectionMode,
@@ -26,6 +24,7 @@ import {
   viewportAtom,
 } from "./state";
 import { CanvasApiPublisher } from "./CanvasApiPublisher";
+import { CanvasBackground } from "./CanvasBackground";
 import { historyPreviewAtom } from "./history/state";
 import { AgentNode } from "./nodes/Agent/AgentNode";
 import { BarChartNode } from "./nodes/BarChart/BarChartNode";
@@ -262,13 +261,7 @@ function ReactFlowCanvasInner() {
             .join(" ") || undefined
         }
       >
-        <Background
-          variant={BackgroundVariant.Dots}
-          bgColor='transparent'
-          color='rgba(255, 255, 255, 0.18)'
-          gap={28}
-          size={1}
-        />
+        <CanvasBackground />
         {uiVisible && <Toolbar />}
         {uiVisible && <ZoomIndicator />}
         {!previewing && <RegionHalos />}

@@ -5,6 +5,8 @@ import type { Theme } from "../state";
 const EDITOR_THEME_BY_UI: Partial<Record<Theme, string>> = {
   midday: "rose-pine-dawn",
   terminal: "terminal",
+  paper: "rose-pine-dawn",
+  blueprint: "rose-pine",
 };
 
 export const editorThemeForUiTheme = (theme: Theme): string =>

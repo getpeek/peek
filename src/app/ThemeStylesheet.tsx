@@ -5,12 +5,16 @@ import pineHref from "../canvas/nodes/theme/pine.css?url";
 import midnightHref from "../canvas/nodes/theme/midnight.css?url";
 import middayHref from "../canvas/nodes/theme/midday.css?url";
 import terminalHref from "../canvas/nodes/theme/terminal.css?url";
+import paperHref from "../canvas/nodes/theme/paper.css?url";
+import blueprintHref from "../canvas/nodes/theme/blueprint.css?url";
 
 const themeHrefs = {
   pine: pineHref,
   midnight: midnightHref,
   midday: middayHref,
   terminal: terminalHref,
+  paper: paperHref,
+  blueprint: blueprintHref,
 } as const;
 
 const LINK_ID = "pk-theme";
