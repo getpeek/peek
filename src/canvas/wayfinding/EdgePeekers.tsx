@@ -1,5 +1,6 @@
 import { useStore } from "@xyflow/react";
 import { useState, type CSSProperties } from "react";
+import { useCanvasWheelForward } from "./useCanvasWheelForward";
 import { placePeeker, regionColorVar, type DerivedRegion } from "./regionGeometry";
 import { useRegionActions } from "./useRegionActions";
 import { useViewportMotion } from "./useViewportMotion";
@@ -29,6 +30,7 @@ export function EdgePeekers({ derived, t, transform }: EdgePeekersProps) {
   const moving = useViewportMotion(tx, ty, tz);
   const [hovered, setHovered] = useState(false);
   const { flyToRegion } = useRegionActions();
+  const wheelForwardRef = useCanvasWheelForward();
 
   const peekBase = clamp01(1 - t * PEEK_FADE_FACTOR);
   const opacity = moving || hovered ? peekBase : 0;
@@ -44,6 +46,7 @@ export function EdgePeekers({ derived, t, transform }: EdgePeekersProps) {
 
   return (
     <div
+      ref={wheelForwardRef}
       className={`wf-peekers ${opacity > INTERACTIVE_OPACITY ? "interactive" : ""}`}
       style={{ opacity }}
     >

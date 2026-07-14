@@ -55,7 +55,8 @@
     background: transparent;
     border: 0;
     text-align: center;
-    cursor: pointer;
+    cursor: grab;
+    touch-action: none;
     padding: 14px 22px;
     border-radius: 14px;
     transition: background 0.15s;
@@ -66,6 +67,10 @@
       .bc-meta {
         opacity: 1;
       }
+    }
+
+    &:active {
+      cursor: grabbing;
     }
 
     .bc-name {

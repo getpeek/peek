@@ -1,6 +1,6 @@
-import type { CSSProperties } from "react";
-import { regionColorVar, type DerivedRegion } from "./regionGeometry";
-import { useRegionActions } from "./useRegionActions";
+import { Beacon } from "./Beacon";
+import type { DerivedRegion } from "./regionGeometry";
+import { useCanvasWheelForward } from "./useCanvasWheelForward";
 
 const INTERACTIVE_THRESHOLD_T = 0.35;
 
@@ -16,34 +16,16 @@ interface BeaconsProps {
  * from state, never the DOM (nodes may be culled by onlyRenderVisibleElements).
  */
 export function Beacons({ derived, t, transform }: BeaconsProps) {
-  const [tx, ty, tz] = transform;
-  const { flyToRegion } = useRegionActions();
+  const wheelForwardRef = useCanvasWheelForward();
 
   return (
     <div
+      ref={wheelForwardRef}
       className={`wf-beacons ${t > INTERACTIVE_THRESHOLD_T ? "interactive" : ""}`}
       style={{ opacity: t }}
     >
-      {derived.map(({ region, bbox, memberIds }) => (
-        <button
-          key={region.id}
-          className='wf-beacon'
-          style={
-            {
-              left: (bbox.x + bbox.w / 2) * tz + tx,
-              top: (bbox.y + bbox.h / 2) * tz + ty,
-              "--rc": regionColorVar(region.colorIndex),
-            } as CSSProperties
-          }
-          onClick={() => flyToRegion(region.id)}
-        >
-          <span className='bc-name'>{region.name}</span>
-          {region.desc.length > 0 && <span className='bc-desc'>{region.desc}</span>}
-          <span className='bc-meta'>
-            <span className='dot' />
-            {memberIds.length} nodes · click to enter
-          </span>
-        </button>
+      {derived.map(d => (
+        <Beacon key={d.region.id} derived={d} transform={transform} />
       ))}
     </div>
   );
