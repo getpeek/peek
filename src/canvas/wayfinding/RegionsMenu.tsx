@@ -9,6 +9,7 @@ import type { RegionState } from "../types";
 import { deriveRegions, regionColorVar } from "./regionGeometry";
 import { regionsMenuOpenAtom, renamingRegionIdAtom } from "./state";
 import { useGroupWithAi } from "./useGroupWithAi";
+import { useRegroupAllWithAi } from "./useRegroupAllWithAi";
 import { useRegionActions } from "./useRegionActions";
 import { useRegionsEnabled } from "./useRegionsEnabled";
 import "./wayfinding.css";
@@ -23,7 +24,8 @@ export function RegionsMenu() {
   const nodes = useAtomValue(nodesAtom);
   const { renameRegion, removeRegion, flyToRegion } = useRegionActions();
   const groupWithAi = useGroupWithAi();
-  const [aiBusy, setAiBusy] = useState(false);
+  const regroupAll = useRegroupAllWithAi();
+  const [aiBusy, setAiBusy] = useState<"ungrouped" | "regroup" | null>(null);
   const [cursor, setCursor] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -57,15 +59,27 @@ export function RegionsMenu() {
     itemRefs.current[cursor]?.scrollIntoView({ block: "nearest" });
   }, [cursor]);
 
-  const runGroupWithAi = async () => {
+  const runGroupUngrouped = async () => {
     if (!groupWithAi || aiBusy) {
       return;
     }
-    setAiBusy(true);
+    setAiBusy("ungrouped");
     try {
       await groupWithAi();
     } finally {
-      setAiBusy(false);
+      setAiBusy(null);
+    }
+  };
+
+  const runRegroupAll = async () => {
+    if (!regroupAll || aiBusy) {
+      return;
+    }
+    setAiBusy("regroup");
+    try {
+      await regroupAll();
+    } finally {
+      setAiBusy(null);
     }
   };
 
@@ -121,7 +135,18 @@ export function RegionsMenu() {
             ],
           ])}
         >
-          <div className='rl-title'>Regions</div>
+          <div className='rl-title'>
+            <span>Regions</span>
+            {regroupAll && (
+              <span className='rl-actions ai'>
+                <Tooltip label='Regroup all with AI'>
+                  <button onClick={() => void runRegroupAll()} disabled={aiBusy !== null}>
+                    {aiBusy === "regroup" ? <span className='spin' /> : <IconSparkles size={12} />}
+                  </button>
+                </Tooltip>
+              </span>
+            )}
+          </div>
           {regions.length === 0 && (
             <div className='rl-empty'>Select nodes and press ⌘G to group them</div>
           )}
@@ -201,9 +226,13 @@ export function RegionsMenu() {
               <span className='ct'>{ungroupedCount}</span>
               {groupWithAi && (
                 <span className='rl-actions ai'>
-                  <Tooltip label='Group with AI'>
-                    <button onClick={() => void runGroupWithAi()} disabled={aiBusy}>
-                      {aiBusy ? <span className='spin' /> : <IconSparkles size={12} />}
+                  <Tooltip label='Group ungrouped with AI (slots into existing or creates new)'>
+                    <button onClick={() => void runGroupUngrouped()} disabled={aiBusy !== null}>
+                      {aiBusy === "ungrouped" ? (
+                        <span className='spin' />
+                      ) : (
+                        <IconSparkles size={12} />
+                      )}
                     </button>
                   </Tooltip>
                 </span>

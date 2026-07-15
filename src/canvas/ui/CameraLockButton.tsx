@@ -21,7 +21,12 @@ export function CameraLockButton() {
           onClick={() => setCameraLocked(false)}
         >
           <IconLock size={16} />
-          {combo && <span className='kbd'>{formatCombo(combo).join("")}</span>}
+          {combo &&
+            formatCombo(combo).map(key => (
+              <span className='kbd' key={key}>
+                {key}
+              </span>
+            ))}
         </button>
       </Tooltip>
     </Panel>

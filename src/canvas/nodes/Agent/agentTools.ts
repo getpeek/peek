@@ -105,8 +105,18 @@ export const AGENT_TOOLS: DynamicStructuredTool[] = [
   new DynamicStructuredTool({
     name: "list_regions",
     description:
-      "List the active page's regions and the node ids not in any region. Call before group_nodes to see current groups.",
+      "List the active page's regions and the node ids not in any region. The canvas is a living document — call this first, then reorganize: grow a region with add_to_region, start or reshape one with group_nodes, or drop one with remove_region.",
     schema: z.object({}),
+    func: unused,
+  }),
+  new DynamicStructuredTool({
+    name: "add_to_region",
+    description:
+      "Add nodes to an EXISTING region (found by region_id) without creating a new one — use this to grow a region as the canvas evolves. A node belongs to one region, so the nodes are claimed from any region that already holds them. The region's name and description are kept.",
+    schema: z.object({
+      region_id: z.string().describe("id of the region to add to, from list_regions"),
+      node_ids: z.array(z.string()).describe("ids of the nodes to add (at least one)"),
+    }),
     func: unused,
   }),
   new DynamicStructuredTool({
@@ -176,11 +186,12 @@ export const AGENT_SYSTEM_PROMPT = `You are Peek's canvas agent. You help the us
 
 You cannot execute queries yourself. When data is needed, use create_query_node to place an un-run query node on the canvas; the user runs it themselves and links the Result node back. Never claim to have run a query or to have seen its rows.
 
-Other tools build and arrange the board (create_vars_node, create_text_node, create_page, update_query_node, update_vars_node, update_text_node, connect_nodes), organize it into named regions (group_nodes, list_regions, remove_region) and drive the view (camera_pan_to, camera_set_zoom, camera_fit_node, select_nodes). Read tools (get_db_schema, get_connection_info, get_active_page_id, get_pages, get_page_content) inspect the current state.
+Other tools build and arrange the board (create_vars_node, create_text_node, create_page, update_query_node, update_vars_node, update_text_node, connect_nodes), organize it into named regions (group_nodes, list_regions, add_to_region, remove_region) and drive the view (camera_pan_to, camera_set_zoom, camera_fit_node, select_nodes). Read tools (get_db_schema, get_connection_info, get_active_page_id, get_pages, get_page_content) inspect the current state.
 
 Guidance:
 - The database schema is given to you as context — rely on it for table and column names rather than guessing.
 - When you create a node you may omit position/size; it is placed next to you automatically.
 - Prefer a direct answer or analysis over a tool call. Only use a tool when it is necessary.
 - After a tool returns, use the result to answer the user. Never repeat the same tool call with the same arguments.
+- Regions are a living document. Before changing groups call list_regions, then reorganize with the least disruptive tool: add_to_region to fold loose nodes into a fitting group, group_nodes to start or reshape one, remove_region to drop one.
 - Write valid PostgreSQL.`;

@@ -3,6 +3,7 @@ import { useClickOutside, useHotkeys } from "@mantine/hooks";
 import { IconX } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
 import { canvasApiAtom, documentAtom, pendingPageCloseAtom } from "./state";
+import { useHotkey } from "../app/useHotkey";
 
 export function ClosePageConfirmModal() {
   const [pending, setPending] = useAtom(pendingPageCloseAtom);
@@ -21,8 +22,10 @@ export function ClosePageConfirmModal() {
   };
 
   const ref = useClickOutside(close);
-  // Hooks run before the early return, so only bind Escape while the dialog is open.
+  // Hooks run before the early return, so only bind the keys while the dialog is open.
   useHotkeys(opened ? [["Escape", close]] : []);
+  useHotkey(opened ? "y" : undefined, confirm);
+  useHotkey(opened ? "n" : undefined, close);
 
   if (!opened || !page) {
     return null;
@@ -47,10 +50,10 @@ export function ClosePageConfirmModal() {
         </div>
         <div className='close-page-footer'>
           <button className='close-page-btn' onClick={close}>
-            Cancel
+            Cancel <span className='kbd'>n</span>
           </button>
           <button className='close-page-btn danger' onClick={confirm}>
-            Close page
+            Close page <span className='kbd'>y</span>
           </button>
         </div>
       </div>

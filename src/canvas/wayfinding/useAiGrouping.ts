@@ -31,7 +31,30 @@ Reply with ONLY a JSON array, no prose or markdown:
 [{"name":"Short Name","desc":"one line, <=8 words","nodes":[1,2,3]}]
 "name" is 2-4 words. Use the node NUMBERS from the list.`;
 
+// The living-document variant: existing regions are shown so the model can slot
+// an ungrouped node into one it fits, instead of always minting a new region.
+const SYSTEM_PROMPT_ASSIGN = `/no_think You maintain the regions (named groups of nodes) on a database-exploration canvas.
+
+Some nodes are already organized into existing regions. You are given those regions, then the currently ungrouped nodes with their kind, content and [x,y] position, plus the edges between the ungrouped nodes. Decide where each ungrouped node belongs.
+
+How to decide:
+- If a node clearly fits the topic of an existing region, ADD it there — reference the region by its [R#] label.
+- Otherwise group it with other ungrouped nodes into a NEW region.
+- Prefer several precise regions over one broad catch-all. Edges show flow but do NOT force nodes together.
+- Use spatial position as a hint. Leave a node out only if it truly fits nowhere.
+
+Reply with ONLY a JSON array, no prose or markdown:
+[{"into":"R1","nodes":[1,2]},{"name":"Short Name","desc":"one line, <=8 words","nodes":[3,4]}]
+Use "into" with an existing [R#] label to extend that region (a single node is fine), or "name"+"desc" for a new region (needs at least 2 nodes). "name" is 2-4 words. Use the node NUMBERS from the ungrouped list.`;
+
 export type SuggestedGroup = { name: string; desc: string; nodeIds: string[] };
+
+// Either fold nodes into an existing region, or create a new one.
+export type GroupAssignment =
+  | { existingRegionId: string; nodeIds: string[] }
+  | { name: string; desc: string; nodeIds: string[] };
+
+export type RegionHint = { id: string; name: string; desc: string };
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
@@ -88,12 +111,75 @@ function parseGroups(raw: string, indexToId: string[]): SuggestedGroup[] {
   return groups;
 }
 
+// Like parseGroups, but each item is either an "into" reference to an existing
+// region (by [R#] label) or a new-region spec. New regions still need ≥2 nodes;
+// adding to an existing region can be a single node.
+function parseAssignments(
+  raw: string,
+  indexToId: string[],
+  regionByLabel: Map<string, string>,
+): GroupAssignment[] {
+  const cleaned = raw.replaceAll(/<think>[\s\S]*?<\/think>/giu, "");
+  const match = cleaned.match(/\[[\s\S]*\]/u);
+  if (!match) {
+    throw new Error("AI returned no JSON array");
+  }
+  const parsed = JSON.parse(match[0]) as unknown;
+  if (!Array.isArray(parsed)) {
+    throw new TypeError("AI grouping is not an array");
+  }
+
+  const claimed = new Set<string>();
+  const assignments: GroupAssignment[] = [];
+  for (const item of parsed) {
+    if (typeof item !== "object" || item === null) {
+      continue;
+    }
+    const { into, name, desc, nodes } = item as {
+      into?: unknown;
+      name?: unknown;
+      desc?: unknown;
+      nodes?: unknown;
+    };
+    if (!Array.isArray(nodes)) {
+      continue;
+    }
+    const nodeIds = nodes
+      .map(n => indexToId[Number(n) - 1])
+      .filter((id): id is string => typeof id === "string" && !claimed.has(id));
+    if (nodeIds.length === 0) {
+      continue;
+    }
+
+    const existingRegionId =
+      typeof into === "string" ? regionByLabel.get(into.trim().toUpperCase()) : undefined;
+    if (existingRegionId) {
+      nodeIds.forEach(id => claimed.add(id));
+      assignments.push({ existingRegionId, nodeIds });
+      continue;
+    }
+    if (typeof name !== "string" || nodeIds.length < 2) {
+      continue;
+    }
+    nodeIds.forEach(id => claimed.add(id));
+    assignments.push({
+      name: name.trim().slice(0, MAX_NAME_CHARS),
+      desc: typeof desc === "string" ? desc.trim().slice(0, MAX_DESC_CHARS) : "",
+      nodeIds,
+    });
+  }
+  if (assignments.length === 0) {
+    throw new Error("AI grouping had no usable assignments");
+  }
+  return assignments;
+}
+
 export function useAiGrouping() {
   const config = useAtomValue(configAtom);
   const results = useAtomValue(resultsAtom);
 
-  // Ask the model to partition `nodes` (connected by `edges`) into regions.
-  const suggestGroups = async (nodes: AppNode[], edges: AppEdge[]): Promise<SuggestedGroup[]> => {
+  // Number the (capped) nodes and turn them + their edges into prompt lines.
+  const buildNodeContext = (nodes: AppNode[], edges: AppEdge[]) => {
     const scoped = nodes.slice(0, MAX_PROMPT_NODES);
     const indexToId = scoped.map(n => n.id);
     const indexById = new Map(scoped.map((n, i) => [n.id, i + 1]));
@@ -112,6 +198,10 @@ export function useAiGrouping() {
       return from && to ? [`${from}->${to}`] : [];
     });
 
+    return { indexToId, nodeLines, edgeLines };
+  };
+
+  const runModel = (system: string, human: string) => {
     const model = new ChatOllama({
       model: config?.ai.model,
       baseUrl: config?.ai.url,
@@ -120,7 +210,15 @@ export function useAiGrouping() {
       keepAlive: "10m",
       think: false,
     });
+    return withTimeout(
+      model.invoke([new SystemMessage(system), new HumanMessage(human)]),
+      GROUPING_TIMEOUT_MS,
+    );
+  };
 
+  // Ask the model to partition `nodes` (connected by `edges`) into fresh regions.
+  const suggestGroups = async (nodes: AppNode[], edges: AppEdge[]): Promise<SuggestedGroup[]> => {
+    const { indexToId, nodeLines, edgeLines } = buildNodeContext(nodes, edges);
     const human = [
       "Nodes:",
       ...nodeLines,
@@ -128,13 +226,36 @@ export function useAiGrouping() {
       "Edges:",
       edgeLines.length > 0 ? edgeLines.join(", ") : "(none)",
     ].join("\n");
-
-    const response = await withTimeout(
-      model.invoke([new SystemMessage(SYSTEM_PROMPT), new HumanMessage(human)]),
-      GROUPING_TIMEOUT_MS,
-    );
+    const response = await runModel(SYSTEM_PROMPT, human);
     return parseGroups(response.text, indexToId);
   };
 
-  return { suggestGroups };
+  // Ask the model to slot each ungrouped node into an existing region or a new
+  // one, given the current regions as [R#] anchors.
+  const suggestAssignments = async (
+    ungrouped: AppNode[],
+    edges: AppEdge[],
+    regions: RegionHint[],
+  ): Promise<GroupAssignment[]> => {
+    const { indexToId, nodeLines, edgeLines } = buildNodeContext(ungrouped, edges);
+    const regionLines = regions.map(
+      (r, i) => `[R${i + 1}] ${r.name}${r.desc ? ` — ${r.desc}` : ""}`,
+    );
+    const regionByLabel = new Map(regions.map((r, i) => [`R${i + 1}`, r.id]));
+
+    const human = [
+      "Existing regions:",
+      regionLines.length > 0 ? regionLines.join("\n") : "(none)",
+      "",
+      "Ungrouped nodes:",
+      ...nodeLines,
+      "",
+      "Edges:",
+      edgeLines.length > 0 ? edgeLines.join(", ") : "(none)",
+    ].join("\n");
+    const response = await runModel(SYSTEM_PROMPT_ASSIGN, human);
+    return parseAssignments(response.text, indexToId, regionByLabel);
+  };
+
+  return { suggestGroups, suggestAssignments };
 }

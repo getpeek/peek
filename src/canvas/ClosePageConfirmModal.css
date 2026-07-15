@@ -112,6 +112,9 @@
   border-top: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 70%);
 
   .close-page-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     padding: 7px 14px;
     border: 1px solid var(--pk-node-border);
     border-radius: 7px;
@@ -129,6 +132,15 @@
       border-color: var(--pk-node-border-strong);
     }
 
+    .kbd {
+      font: 500 10px var(--pk-font-mono);
+      color: var(--pk-fg-subtle);
+      background: transparent;
+      padding: 1px 5px;
+      border: 1px solid var(--pk-node-border);
+      border-radius: 3px;
+    }
+
     &.danger {
       border-color: var(--pk-red);
       background: var(--pk-red);
@@ -138,6 +150,11 @@
       &:hover {
         background: color-mix(in oklab, var(--pk-red), black 8%);
         border-color: color-mix(in oklab, var(--pk-red), black 8%);
+      }
+
+      .kbd {
+        color: var(--pk-bg);
+        border-color: color-mix(in oklab, var(--pk-bg) 45%, transparent);
       }
     }
   }

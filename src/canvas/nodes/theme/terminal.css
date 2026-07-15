@@ -97,6 +97,20 @@
   --bt: 2px;
 }
 
+/* ---- Charts: phosphor-green monochrome ramp ----
+   The default rainbow (accent/blue/green/yellow/red) fights the CRT look. Scope the
+   five series tokens to the chart node so the ramp goes bright phosphor → dim green →
+   gray, brightest series first. The overrides are confined to the barchart subtree, so
+   --pk-blue/green/… keep their theme values everywhere else, and --pk-accent-bg (the
+   chart-type toggle) is a separate token left untouched. */
+.react-flow__node-barchart {
+  --pk-accent: #33ff66;
+  --pk-blue: #2bcc52;
+  --pk-green: #7de89a;
+  --pk-yellow: #4a9960;
+  --pk-red: #b8b8b8;
+}
+
 /* ---- Header tick: type-colored vertical bar instead of a round dot ---- */
 .node-indicator .type-dot {
   width: 3px;

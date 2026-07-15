@@ -2,6 +2,12 @@
 
 Peek is a Figma-like database GUI where users place nodes of different types on an infinite 2D canvas. The UI is TypeScript + React 19 in Tauri 2, and talks to the host through a WASM bridge to Rust functions that own all database I/O.
 
+# The web guest client (`~/labs/peek-web`)
+
+Peek has a companion lightweight web UI at `~/labs/peek-web` — the browser client that **guests** use to join a session (getpeek.dev/join) without installing the desktop app. It mirrors a subset of this app's canvas (the guest-facing code lives under `src/join/`) and shares the same conventions, atom shapes, and wayfinding/region code as the desktop client, but has no host bridge, database, or auth of its own.
+
+**Whenever you change desktop-client behavior, investigate whether the web version should be updated to match.** Canvas interactions, wayfinding/regions, node rendering, and multiplayer are the areas most likely to have a peek-web counterpart. If a change belongs there too, port it (keeping the two in parity) or flag it for the user. Changes that are purely desktop/host concerns (Tauri, DB I/O, `src-tauri/`) generally have no web equivalent.
+
 # Stack
 
 - **UI**: React 19 (with the React Compiler enabled — do not add manual `useMemo`/`useCallback` unless you've verified the compiler can't handle it), TypeScript, Vite.

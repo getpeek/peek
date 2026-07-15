@@ -33,6 +33,36 @@ export function useRegionActions() {
     return id;
   };
 
+  // Replace the whole region set in one write — used by "regroup all with AI",
+  // which reshapes every region rather than adding to the existing ones.
+  const replaceRegions = (groups: { memberIds: string[]; name: string; desc?: string }[]) => {
+    setRegions(() =>
+      groups.map((group, index) => ({
+        id: ids.region(),
+        name: group.name,
+        desc: group.desc ?? "",
+        colorIndex: index % REGION_COLOR_COUNT,
+        status: "suggested" as const,
+        memberIds: group.memberIds,
+      })),
+    );
+  };
+
+  // Fold nodes into an existing region. A node lives in one region, so claim the
+  // ids from any other region (dropping ones the claim empties) before appending.
+  const addToRegion = (regionId: string, nodeIds: string[]) => {
+    const claimed = new Set(nodeIds);
+    setRegions(prev =>
+      prev
+        .map(r =>
+          r.id === regionId
+            ? { ...r, memberIds: [...r.memberIds.filter(id => !claimed.has(id)), ...nodeIds] }
+            : { ...r, memberIds: r.memberIds.filter(id => !claimed.has(id)) },
+        )
+        .filter(r => r.id === regionId || r.memberIds.length > 0),
+    );
+  };
+
   // Renaming doubles as accepting an AI suggestion, so it always confirms.
   const renameRegion = (id: string, name: string) => {
     setRegions(prev =>
@@ -60,5 +90,13 @@ export function useRegionActions() {
     canvas.zoomToNodes(liveMemberIds, { padding: 0.15, duration: FLY_DURATION_MS });
   };
 
-  return { createRegion, renameRegion, confirmRegion, removeRegion, flyToRegion };
+  return {
+    createRegion,
+    replaceRegions,
+    addToRegion,
+    renameRegion,
+    confirmRegion,
+    removeRegion,
+    flyToRegion,
+  };
 }

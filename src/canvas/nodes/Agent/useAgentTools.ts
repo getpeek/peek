@@ -6,7 +6,7 @@ import {
   updateVarsNode,
 } from "../../../mcp/createNodes";
 import { createTextNode, updateTextNode } from "../../../mcp/textNodes";
-import { groupNodes, listRegions, removeRegion } from "../../../mcp/regionTools";
+import { addNodesToRegion, groupNodes, listRegions, removeRegion } from "../../../mcp/regionTools";
 import { cameraFitNode, cameraPanTo, cameraSetZoom, selectNodes } from "../../../mcp/viewTools";
 import { createPage } from "../../../mcp/pageTools";
 import {
@@ -149,6 +149,11 @@ export function createAgentToolHandlers(opts: { canvas: CanvasApi; nodeId: strin
     },
 
     list_regions: () => describe(listRegions({})),
+
+    add_to_region: args => {
+      const a = args as { region_id: string; node_ids: string[] };
+      return describe(addNodesToRegion({ regionId: a.region_id, nodeIds: a.node_ids }));
+    },
 
     remove_region: args =>
       describe(removeRegion({ regionId: (args as { region_id: string }).region_id })),

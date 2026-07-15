@@ -337,11 +337,52 @@
   padding-bottom: 4px;
 
   .rl-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 10px 14px 6px;
     font: 500 10px var(--pk-font-mono);
     color: var(--pk-fg-subtle);
     text-transform: uppercase;
     letter-spacing: 0.08em;
+  }
+
+  .rl-actions {
+    display: inline-flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.12s;
+
+    /* Always show when forced: AI actions on the header and non-hoverable rows. */
+    &.ai {
+      opacity: 1;
+    }
+
+    button {
+      background: transparent;
+      border: 0;
+      color: var(--pk-fg-subtle);
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+
+      &:hover {
+        background: var(--pk-node-inset);
+        color: var(--pk-accent);
+      }
+
+      .spin {
+        width: 10px;
+        height: 10px;
+        border: 2px solid var(--pk-accent-bg);
+        border-top-color: var(--pk-accent);
+        border-radius: 50%;
+        animation: wf-spin 0.8s linear infinite;
+      }
+    }
   }
 
   .rl-empty {
@@ -423,44 +464,6 @@
       border-radius: 3px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-    }
-
-    .rl-actions {
-      display: inline-flex;
-      gap: 2px;
-      opacity: 0;
-      transition: opacity 0.12s;
-
-      /* The AI button sits on the non-hoverable "Ungrouped" row — always show it. */
-      &.ai {
-        opacity: 1;
-      }
-
-      button {
-        background: transparent;
-        border: 0;
-        color: var(--pk-fg-subtle);
-        width: 20px;
-        height: 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        display: grid;
-        place-items: center;
-
-        &:hover {
-          background: var(--pk-node-inset);
-          color: var(--pk-accent);
-        }
-
-        .spin {
-          width: 10px;
-          height: 10px;
-          border: 2px solid var(--pk-accent-bg);
-          border-top-color: var(--pk-accent);
-          border-radius: 50%;
-          animation: wf-spin 0.8s linear infinite;
-        }
-      }
     }
   }
 }

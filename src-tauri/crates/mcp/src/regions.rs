@@ -41,6 +41,17 @@ pub(crate) struct ListRegionsInput {
 }
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub(crate) struct AddToRegionInput {
+    #[schemars(description = "Id of the region to add nodes to, as returned by list_regions.")]
+    pub(crate) region_id: String,
+    #[schemars(
+        description = "Ids of the nodes to add. Nodes are claimed from any region that already \
+                       holds them (a region emptied this way is removed)."
+    )]
+    pub(crate) node_ids: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub(crate) struct RemoveRegionInput {
     #[schemars(description = "Id of the region to remove, as returned by group_nodes or list_regions.")]
     pub(crate) region_id: String,
@@ -80,14 +91,39 @@ pub(crate) async fn group_nodes(input: GroupNodesInput) -> Result<CallToolResult
 
 #[tool_fn(
     name = "list_regions",
-    description = "List a page's regions and which nodes are still ungrouped. Call this before \
-                   group_nodes to see the existing groups and pick sensible members. Returns \
-                   { pageId, regions: [{ regionId, name, desc, status, nodeIds }], \
-                   ungroupedNodeIds }."
+    description = "List a page's regions and which nodes are still ungrouped. The canvas is a \
+                   living document — call this first to see the current groups, then reorganize: \
+                   grow a region with add_to_region, start or reshape one with group_nodes, or \
+                   drop one with remove_region. Returns { pageId, regions: [{ regionId, name, \
+                   desc, status, nodeIds }], ungroupedNodeIds }."
 )]
 pub(crate) async fn list_regions(input: ListRegionsInput) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
         match bridge::request("list_regions", json!({ "pageId": input.page_id })).await {
+            Ok(v) => tool_result(&v),
+            Err(e) => CallToolResult::error(e),
+        },
+    )
+}
+
+#[tool_fn(
+    name = "add_to_region",
+    description = "Add nodes to an EXISTING region without creating a new one — use this to grow a \
+                   region as the canvas evolves. Each node belongs to at most one region, so the \
+                   nodes are claimed from any region that already holds them (a region emptied \
+                   this way is removed). The region's name, description and status are unchanged. \
+                   Returns { regionId, pageId }."
+)]
+pub(crate) async fn add_to_region(
+    input: AddToRegionInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
+    Ok(
+        match bridge::request(
+            "add_to_region",
+            json!({ "regionId": input.region_id, "nodeIds": input.node_ids }),
+        )
+        .await
+        {
             Ok(v) => tool_result(&v),
             Err(e) => CallToolResult::error(e),
         },

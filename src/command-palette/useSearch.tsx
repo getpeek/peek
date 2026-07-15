@@ -28,6 +28,7 @@ import {
 } from "./commands/fitNodesToView";
 import { useGroupSelectionIntoRegionCommand } from "./commands/groupSelectionIntoRegion";
 import { useGroupWithAiCommand } from "./commands/groupWithAi";
+import { useRegroupAllWithAiCommand } from "./commands/regroupAllWithAi";
 import { useToggleRegionsCommand } from "./commands/toggleRegions";
 
 export interface SearchResult {
@@ -63,6 +64,7 @@ export const useSearch = (query: string): SearchResult[] => {
   const fitNodesAndLockCommand = useFitNodesToViewAndLockCommand();
   const groupSelectionCommand = useGroupSelectionIntoRegionCommand();
   const groupWithAiCommand = useGroupWithAiCommand();
+  const regroupAllWithAiCommand = useRegroupAllWithAiCommand();
   const toggleRegionsCommand = useToggleRegionsCommand();
 
   const searchSpace: CommandPaletteResult[] = [
@@ -72,6 +74,7 @@ export const useSearch = (query: string): SearchResult[] => {
     ...(fitNodesAndLockCommand ? [fitNodesAndLockCommand] : []),
     ...(groupSelectionCommand ? [groupSelectionCommand] : []),
     ...(groupWithAiCommand ? [groupWithAiCommand] : []),
+    ...(regroupAllWithAiCommand ? [regroupAllWithAiCommand] : []),
     toggleRegionsCommand,
     rerunAllOnPage,
     rerunSelected,

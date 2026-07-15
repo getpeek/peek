@@ -78,6 +78,49 @@ export function groupNodes(params: Record<string, unknown>): GroupNodesResult {
   return { regionId, pageId };
 }
 
+export function addNodesToRegion(params: Record<string, unknown>): GroupNodesResult {
+  const disabled = regionsDisabledError();
+  if (disabled) {
+    return disabled;
+  }
+
+  const regionId = typeof params.regionId === "string" ? params.regionId : "";
+  const doc = getDefaultStore().get(documentAtom);
+  const pageId = doc.pageOrder.find(id =>
+    (doc.pages[id].regions ?? []).some(r => r.id === regionId),
+  );
+  if (!pageId) {
+    return { error: `region ${regionId} not found` };
+  }
+
+  const nodeIds = [...new Set(Array.isArray(params.nodeIds) ? (params.nodeIds as string[]) : [])];
+  if (nodeIds.length === 0) {
+    return { error: "pass at least one node id to add" };
+  }
+  const pageNodeIds = new Set(doc.pages[pageId].nodes.map(n => n.id));
+  const missing = nodeIds.filter(id => !pageNodeIds.has(id));
+  if (missing.length > 0) {
+    return { error: `nodes not on page ${pageId}: ${missing.join(", ")}` };
+  }
+
+  getDefaultStore().set(documentAtom, d => {
+    const page = d.pages[pageId];
+    // A node belongs to one region: claim the ids from any region that holds
+    // them (dropping ones the claim empties), then append to the target region.
+    const memberSet = new Set(nodeIds);
+    const regions = (page.regions ?? [])
+      .map(r =>
+        r.id === regionId
+          ? { ...r, memberIds: [...r.memberIds.filter(id => !memberSet.has(id)), ...nodeIds] }
+          : { ...r, memberIds: r.memberIds.filter(id => !memberSet.has(id)) },
+      )
+      .filter(r => r.id === regionId || r.memberIds.length > 0);
+    return { ...d, pages: { ...d.pages, [pageId]: { ...page, regions } } };
+  });
+
+  return { regionId, pageId };
+}
+
 export function listRegions(params: Record<string, unknown>): ListRegionsResult {
   const doc = getDefaultStore().get(documentAtom);
   const pageId = resolvePageId(doc, params.pageId);

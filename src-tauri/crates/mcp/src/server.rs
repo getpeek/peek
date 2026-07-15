@@ -41,6 +41,7 @@ fn app() -> Router {
         .tool(nodes::connect_nodes_tool())
         .tool(regions::group_nodes_tool())
         .tool(regions::list_regions_tool())
+        .tool(regions::add_to_region_tool())
         .tool(regions::remove_region_tool())
         .tool(view::camera_pan_to_tool())
         .tool(view::camera_set_zoom_tool())
