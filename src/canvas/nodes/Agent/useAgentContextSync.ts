@@ -3,7 +3,6 @@ import { sha1 } from "object-hash";
 import { useAtomValue } from "jotai";
 import { useCanvas } from "../../hooks/useCanvas";
 import { edgesAtom, nodesAtom, resultsAtom } from "../../state";
-import { schemaAtom } from "../../../state";
 import type { AgentData, ResultNode } from "../../types";
 import type { Message } from "../../hooks/useExecutePrompt";
 
@@ -13,20 +12,9 @@ export function useAgentContextSync(opts: { nodeId: string }) {
   const nodes = useAtomValue(nodesAtom);
   const edges = useAtomValue(edgesAtom);
   const results = useAtomValue(resultsAtom);
-  const schema = useAtomValue(schemaAtom);
 
   useEffect(() => {
     const candidates: Message[] = [];
-
-    if (Object.keys(schema.tables).length > 0) {
-      candidates.push({
-        type: "context",
-        contextKind: "schema",
-        message: `Database schema:\n${JSON.stringify(schema)}`,
-        contextKey: sha1({ kind: "schema", schema }),
-        timestamp: Date.now(),
-      });
-    }
 
     for (const edge of edges.filter(e => e.target === nodeId)) {
       const source = nodes.find(
@@ -79,5 +67,5 @@ export function useAgentContextSync(opts: { nodeId: string }) {
       }
       return { ...d, messages: [...d.messages, ...refreshed] };
     });
-  }, [nodeId, nodes, edges, results, schema, canvas]);
+  }, [nodeId, nodes, edges, results, canvas]);
 }

@@ -12,6 +12,7 @@ import { SqlEditor } from "./Editor/SqlEditor";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { useGetVariables } from "./useGetVariables";
+import { useLabelQuery } from "./useLabelQuery";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
 import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
@@ -52,6 +53,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   useScrollFallthrough(bodyRef);
   const session = useAtomValue(sessionStateAtom);
   const variables = useGetVariables(id);
+  useLabelQuery(id, data);
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
   const isRunning = data.isRunning ?? false;
@@ -176,7 +178,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
       >
         <NodeHeader
           nodeId={id}
-          name={nodeHeading(data.query) || "untitled.sql"}
+          name={data.description || nodeHeading(data.query) || "untitled.sql"}
           indicator={<NodeIndicator kind='query' />}
         >
           <Tooltip label={isLive ? "Stop live polling" : "Poll every 10s"}>

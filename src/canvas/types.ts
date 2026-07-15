@@ -17,6 +17,7 @@ export type QueryData = {
   query: string;
   liveIntervalMs?: number | null;
   isRunning?: boolean;
+  description?: string;
 };
 
 export type ResultData = {

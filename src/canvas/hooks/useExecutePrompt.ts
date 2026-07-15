@@ -21,7 +21,7 @@ export interface Message {
   message: string;
   timestamp: number;
   contextKey?: string;
-  contextKind?: "schema" | "result";
+  contextKind?: "result";
   toolCalls?: ToolCall[];
   toolCallId?: string;
   toolName?: string;

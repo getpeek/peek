@@ -8,6 +8,7 @@ export interface Config {
   ai: {
     model: string;
     url: string;
+    automatically_label_queries: boolean;
     mcp: {
       enable: boolean;
       port: number;

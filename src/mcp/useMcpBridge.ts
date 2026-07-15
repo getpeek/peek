@@ -27,7 +27,7 @@ function handleRequest(method: string, params: Record<string, unknown>): unknown
     case "connection_info":
       return getConnectionInfo();
     case "db_schema":
-      return getDbSchema();
+      return getDbSchema(params as { tables?: string[] });
     case "active_page_id":
       return getActivePageId();
     case "pages":

@@ -6,16 +6,21 @@ use tower_mcp::{CallToolResult, tool_fn};
 use super::bridge;
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
-pub(crate) struct NoInput {}
+pub(crate) struct SchemaInput {
+    #[serde(default)]
+    #[schemars(description = "Return only these tables; omit for the full schema.")]
+    pub(crate) tables: Option<Vec<String>>,
+}
 
 #[tool_fn(
     name = "get_db_schema",
-    description = "Schema of the active connection as { tables, references, primaryKeys } — \
-                   table columns with types, foreign-key references, and primary keys. Use it to write queries."
+    description = "Active connection's schema as compact DDL, one line per table: \
+                   `table(col type PK, fk_col type ->ref_table.col, ...)`. Pass `tables` to fetch \
+                   only those tables; omit for the whole schema. Use it to write queries."
 )]
-pub(crate) async fn get_db_schema(_input: NoInput) -> Result<CallToolResult, tower_mcp::Error> {
-    Ok(match bridge::request("db_schema", json!({})).await {
-        Ok(schema) => CallToolResult::text(schema.to_string()),
+pub(crate) async fn get_db_schema(input: SchemaInput) -> Result<CallToolResult, tower_mcp::Error> {
+    Ok(match bridge::request("db_schema", json!({ "tables": input.tables })).await {
+        Ok(schema) => CallToolResult::text(schema.as_str().unwrap_or_default().to_string()),
         Err(e) => CallToolResult::error(e),
     })
 }

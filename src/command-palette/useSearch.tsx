@@ -30,6 +30,7 @@ import { useGroupSelectionIntoRegionCommand } from "./commands/groupSelectionInt
 import { useGroupWithAiCommand } from "./commands/groupWithAi";
 import { useRegroupAllWithAiCommand } from "./commands/regroupAllWithAi";
 import { useToggleRegionsCommand } from "./commands/toggleRegions";
+import { useToggleAutomaticallyLabelQueriesCommand } from "./commands/toggleAutomaticallyLabelQueries";
 
 export interface SearchResult {
   command: CommandPaletteResult;
@@ -66,6 +67,7 @@ export const useSearch = (query: string): SearchResult[] => {
   const groupWithAiCommand = useGroupWithAiCommand();
   const regroupAllWithAiCommand = useRegroupAllWithAiCommand();
   const toggleRegionsCommand = useToggleRegionsCommand();
+  const toggleAutomaticallyLabelQueriesCommand = useToggleAutomaticallyLabelQueriesCommand();
 
   const searchSpace: CommandPaletteResult[] = [
     toggleUiCommand,
@@ -76,6 +78,7 @@ export const useSearch = (query: string): SearchResult[] => {
     ...(groupWithAiCommand ? [groupWithAiCommand] : []),
     ...(regroupAllWithAiCommand ? [regroupAllWithAiCommand] : []),
     toggleRegionsCommand,
+    toggleAutomaticallyLabelQueriesCommand,
     rerunAllOnPage,
     rerunSelected,
     exportCsv,

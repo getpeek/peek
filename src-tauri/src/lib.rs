@@ -197,6 +197,7 @@ pub fn run() {
             config::set_theme,
             config::set_workspaces,
             config::set_canvas_enable_regions,
+            config::set_ai_automatically_label_queries,
             lsp_commands::lsp_did_change,
             lsp_commands::lsp_completion,
             lsp_commands::lsp_set_schema_cache,

@@ -59,9 +59,9 @@ export function describeNode(node: AppNode, rows: DatabaseResult): NodeSearchEnt
       return {
         id: node.id,
         type: node.type,
-        label: nodeHeading(node.data.query),
+        label: node.data.description || nodeHeading(node.data.query),
         snippet: collapse(node.data.query),
-        haystack: node.data.query,
+        haystack: [node.data.description, node.data.query].filter(Boolean).join(" "),
         sql: node.data.query,
       };
     case "result": {

@@ -70,7 +70,10 @@ export function createQueryNode(params: Record<string, unknown>): MutationResult
     position: { x, y },
     width,
     height,
-    data: { query: params.query as string },
+    data: {
+      query: params.query as string,
+      ...(typeof params.description === "string" ? { description: params.description } : {}),
+    },
   };
 
   // A global variable node applies to a query only through an edge, so connect
@@ -219,6 +222,9 @@ export function updateQueryNode(params: Record<string, unknown>): MutationResult
     const next = { ...n, ...geometryPatch(params) } as QueryNode;
     if (params.query !== undefined) {
       next.data = { ...next.data, query: params.query as string };
+    }
+    if (params.description !== undefined) {
+      next.data = { ...next.data, description: params.description as string };
     }
     return next;
   });

@@ -23,10 +23,10 @@ type RenderItem =
   | { kind: "tool_call"; key: string; message: Message; index: number; blocks: ToolBlockData[] };
 
 // Resolve the order-dependent bookkeeping (tool_call/tool_result pairing,
-// schema-context filtering, "updated" vs "inserted" context labels) in a single
-// pass over the full conversation, producing a flat list the virtualizer can
-// index into. Must run in array order — a tool_call marks its result ids
-// consumed so the later tool_result row is suppressed.
+// "updated" vs "inserted" context labels) in a single pass over the full
+// conversation, producing a flat list the virtualizer can index into. Must run
+// in array order — a tool_call marks its result ids consumed so the later
+// tool_result row is suppressed.
 function buildRenderItems(messages: Message[]): RenderItem[] {
   const consumed = new Set<string>();
   let resultContextSeen = 0;
@@ -36,10 +36,6 @@ function buildRenderItems(messages: Message[]): RenderItem[] {
     const key = `${message.timestamp}-${message.type}-${i}`;
 
     if (message.type === "context") {
-      // Schema context feeds the model but isn't a user-facing event.
-      if (message.contextKind === "schema") {
-        return;
-      }
       const contextUpdated = resultContextSeen > 0;
       resultContextSeen++;
       items.push({ kind: "message", key, message, index: i, contextUpdated });

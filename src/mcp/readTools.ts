@@ -2,6 +2,7 @@ import { getDefaultStore } from "jotai";
 import { activeConnectionAtom } from "../Connection/state";
 import { documentAtom } from "../canvas/state";
 import { schemaAtom } from "../state";
+import { formatSchema } from "./formatSchema";
 import type { AppNode } from "../canvas/types";
 
 // Only the URL scheme is exposed — the URL (with credentials) never leaves the
@@ -37,8 +38,8 @@ export function getConnectionInfo(): unknown {
   return { name: conn.connection.name, engine: engineFromUrl(conn.connection.url) };
 }
 
-export function getDbSchema(): unknown {
-  return getDefaultStore().get(schemaAtom);
+export function getDbSchema(params?: { tables?: string[] }): string {
+  return formatSchema(getDefaultStore().get(schemaAtom), params?.tables);
 }
 
 export function getActivePageId(): unknown {

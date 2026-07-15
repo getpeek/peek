@@ -23,7 +23,12 @@ export const AGENT_TOOLS: DynamicStructuredTool[] = [
     name: "create_query_node",
     description:
       "Place an un-run SQL query node on the canvas for the user to run themselves. Use when the user asks you to create/write/add a query. The agent cannot execute queries — the user runs them and links the result back.",
-    schema: z.object({ query: z.string().describe("a valid PostgreSQL query"), position, size }),
+    schema: z.object({
+      query: z.string().describe("a valid PostgreSQL query"),
+      description: z.string().optional().describe("short human-readable title shown on the node"),
+      position,
+      size,
+    }),
     func: unused,
   }),
   new DynamicStructuredTool({
@@ -56,7 +61,13 @@ export const AGENT_TOOLS: DynamicStructuredTool[] = [
   new DynamicStructuredTool({
     name: "update_query_node",
     description: "Edit an existing query node found by node_id. Only the fields you pass change.",
-    schema: z.object({ node_id: z.string(), query: z.string().optional(), position, size }),
+    schema: z.object({
+      node_id: z.string(),
+      query: z.string().optional(),
+      description: z.string().optional().describe("short human-readable title shown on the node"),
+      position,
+      size,
+    }),
     func: unused,
   }),
   new DynamicStructuredTool({
@@ -151,8 +162,14 @@ export const AGENT_TOOLS: DynamicStructuredTool[] = [
   }),
   new DynamicStructuredTool({
     name: "get_db_schema",
-    description: "Get the active connection's schema: tables, columns + types, foreign keys, PKs.",
-    schema: z.object({}),
+    description:
+      "Get the active connection's schema as compact DDL, one line per table: `table(col type PK, fk_col type ->ref_table.col, ...)`. Pass tables to fetch only those; omit for the whole schema.",
+    schema: z.object({
+      tables: z
+        .array(z.string())
+        .optional()
+        .describe("Return only these tables; omit for the full schema."),
+    }),
     func: unused,
   }),
   new DynamicStructuredTool({
@@ -189,7 +206,7 @@ You cannot execute queries yourself. When data is needed, use create_query_node 
 Other tools build and arrange the board (create_vars_node, create_text_node, create_page, update_query_node, update_vars_node, update_text_node, connect_nodes), organize it into named regions (group_nodes, list_regions, add_to_region, remove_region) and drive the view (camera_pan_to, camera_set_zoom, camera_fit_node, select_nodes). Read tools (get_db_schema, get_connection_info, get_active_page_id, get_pages, get_page_content) inspect the current state.
 
 Guidance:
-- The database schema is given to you as context — rely on it for table and column names rather than guessing.
+- Call get_db_schema when you need table or column names rather than guessing; it isn't given to you up front.
 - When you create a node you may omit position/size; it is placed next to you automatically.
 - Prefer a direct answer or analysis over a tool call. Only use a tool when it is necessary.
 - After a tool returns, use the result to answer the user. Never repeat the same tool call with the same arguments.

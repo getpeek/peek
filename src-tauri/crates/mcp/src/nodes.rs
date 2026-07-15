@@ -26,6 +26,11 @@ pub(crate) struct CreateQueryNodeInput {
     pub(crate) page_id: Option<String>,
     #[schemars(description = "SQL query text for the node. May reference variables as @name.")]
     pub(crate) query: String,
+    #[schemars(
+        description = "Optional short human-readable label shown as the node's title (and matched \
+                       by the page find panel). Omit to leave the node titled by its SQL."
+    )]
+    pub(crate) description: Option<String>,
     #[schemars(description = "Canvas position as [x, y] in flow coordinates.")]
     pub(crate) position: [f64; 2],
     #[schemars(description = "Node size as [width, height] in pixels.")]
@@ -67,6 +72,11 @@ pub(crate) struct UpdateQueryNodeInput {
                        variables as @name."
     )]
     pub(crate) query: Option<String>,
+    #[schemars(
+        description = "New short human-readable label shown as the node's title (and matched by \
+                       the page find panel). Omit to leave the current title unchanged."
+    )]
+    pub(crate) description: Option<String>,
     #[schemars(
         description = "New canvas position as [x, y] in flow coordinates. Omit to leave it where \
                        it is."
@@ -156,7 +166,8 @@ pub(crate) struct ConnectNodesInput {
 #[tool_fn(
     name = "create_query_node",
     description = "Create a SQL Query node on the canvas at the given position and size. The page is \
-                   revealed and the node is placed on it; returns { nodeId, pageId }."
+                   revealed and the node is placed on it. Pass description to give it a short \
+                   human-readable title; returns { nodeId, pageId }."
 )]
 pub(crate) async fn create_query_node(
     input: CreateQueryNodeInput,
@@ -167,6 +178,7 @@ pub(crate) async fn create_query_node(
             json!({
                 "pageId": input.page_id,
                 "query": input.query,
+                "description": input.description,
                 "position": input.position,
                 "size": input.size,
             }),
@@ -214,9 +226,10 @@ pub(crate) async fn create_vars_node(
 #[tool_fn(
     name = "update_query_node",
     description = "Update an existing Query node in place, found by node_id (it can be on any \
-                   page). Only the fields you pass change — omit query, position, or size to leave \
-                   them as they are. Does not change the active page. Returns { nodeId, pageId }; \
-                   errors when the id is unknown or names a non-query node."
+                   page). Only the fields you pass change — omit query, description, position, or \
+                   size to leave them as they are. Pass description to set the node's short \
+                   human-readable title. Does not change the active page. Returns { nodeId, \
+                   pageId }; errors when the id is unknown or names a non-query node."
 )]
 pub(crate) async fn update_query_node(
     input: UpdateQueryNodeInput,
@@ -227,6 +240,7 @@ pub(crate) async fn update_query_node(
             json!({
                 "nodeId": input.node_id,
                 "query": input.query,
+                "description": input.description,
                 "position": input.position,
                 "size": input.size,
             }),

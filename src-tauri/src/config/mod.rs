@@ -61,6 +61,15 @@ pub fn set_canvas_enable_regions(enable: bool) -> Result<(), String> {
     config.save_to_disk()
 }
 
+/// # Errors
+/// Returns an error if the updated config cannot be written to disk.
+#[tauri::command]
+pub fn set_ai_automatically_label_queries(enable: bool) -> Result<(), String> {
+    let mut config = PeekConfig::get_or_default();
+    config.ai.automatically_label_queries = enable;
+    config.save_to_disk()
+}
+
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
@@ -157,6 +166,9 @@ impl Default for McpConfig {
 pub struct AIConfig {
     model: String,
     url: String,
+    /// Ask the AI for a short label when a query node is executed.
+    #[serde(default)]
+    pub automatically_label_queries: bool,
     #[serde(default)]
     pub mcp: McpConfig,
 }
@@ -166,6 +178,7 @@ impl Default for AIConfig {
         Self {
             model: "gemma4:e2b".to_string(),
             url: "http://localhost:11434".to_string(),
+            automatically_label_queries: false,
             mcp: McpConfig::default(),
         }
     }

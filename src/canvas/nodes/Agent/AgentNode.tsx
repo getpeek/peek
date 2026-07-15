@@ -55,11 +55,7 @@ export function AgentNode({ id, data, selected, width, height }: NodeProps<Agent
     ask(q);
   };
 
-  // Schema context is injected silently for the model, so it doesn't count as a
-  // user-facing message — a from-scratch agent should still show the empty state.
-  const hasVisibleMessages = data.messages.some(
-    m => !(m.type === "context" && m.contextKind === "schema"),
-  );
+  const hasVisibleMessages = data.messages.length > 0;
 
   return (
     <>

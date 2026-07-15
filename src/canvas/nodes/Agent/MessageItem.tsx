@@ -11,9 +11,6 @@ interface MessageItemProps {
 
 export const MessageItem = ({ message, index, contextUpdated }: MessageItemProps) => {
   if (message.type === "context") {
-    if (message.contextKind === "schema") {
-      return null;
-    }
     return (
       <div className='ev ev-context'>
         <span className='ev-ico'>

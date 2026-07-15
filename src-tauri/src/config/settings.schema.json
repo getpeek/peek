@@ -36,6 +36,11 @@
           "default": "http://localhost:11434",
           "description": "Base URL of the Ollama-compatible AI server."
         },
+        "automatically_label_queries": {
+          "type": "boolean",
+          "default": false,
+          "description": "When a query node is executed, ask the AI for a short label and show it as the node's title."
+        },
         "mcp": {
           "type": "object",
           "description": "Model Context Protocol server. Lets AI agents drive Peek. Takes effect on restart.",

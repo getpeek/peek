@@ -54,10 +54,11 @@ export function createAgentToolHandlers(opts: { canvas: CanvasApi; nodeId: strin
 
   return {
     create_query_node: args => {
-      const a = args as { query: string; position?: Vec; size?: Vec };
+      const a = args as { query: string; description?: string; position?: Vec; size?: Vec };
       const place = placement("query");
       const result = createQueryNode({
         query: a.query,
+        description: a.description,
         position: a.position ?? place.position,
         size: a.size ?? place.size,
       });
@@ -104,9 +105,21 @@ export function createAgentToolHandlers(opts: { canvas: CanvasApi; nodeId: strin
     },
 
     update_query_node: args => {
-      const a = args as { node_id: string; query?: string; position?: Vec; size?: Vec };
+      const a = args as {
+        node_id: string;
+        query?: string;
+        description?: string;
+        position?: Vec;
+        size?: Vec;
+      };
       return describe(
-        updateQueryNode({ nodeId: a.node_id, query: a.query, position: a.position, size: a.size }),
+        updateQueryNode({
+          nodeId: a.node_id,
+          query: a.query,
+          description: a.description,
+          position: a.position,
+          size: a.size,
+        }),
       );
     },
 
@@ -169,7 +182,7 @@ export function createAgentToolHandlers(opts: { canvas: CanvasApi; nodeId: strin
     select_nodes: args =>
       describe(selectNodes({ nodeIds: (args as { node_ids: string[] }).node_ids })),
 
-    get_db_schema: () => describe(getDbSchema()),
+    get_db_schema: args => getDbSchema({ tables: (args as { tables?: string[] }).tables }),
     get_connection_info: () => describe(getConnectionInfo()),
     get_active_page_id: () => describe(getActivePageId()),
     get_pages: () => describe(getPages()),
