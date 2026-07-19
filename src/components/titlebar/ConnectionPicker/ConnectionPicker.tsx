@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Popover, Text } from "@mantine/core";
 import { useAtom, useAtomValue } from "jotai";
 import { activeConnectionAtom } from "../../../Connection/state";
@@ -9,6 +9,7 @@ import { WorkspacePopover } from "../../../Connection/WorkspacePopover";
 import type { Connection } from "../../../Connection/types";
 import { useHotkey } from "../../../app/useHotkey";
 import { useKeymap } from "../../../app/keymap";
+import { useClickAwayCapture } from "../../../app/useClickAwayCapture";
 import { IconChevronDown } from "@tabler/icons-react";
 
 export const ConnectionPicker: React.FC = () => {
@@ -16,6 +17,9 @@ export const ConnectionPicker: React.FC = () => {
   const [, setIsConnecting] = useState(false);
   const activeConnection = useAtomValue(activeConnectionAtom);
   const [showPopover, setShowPopover] = useAtom(connectionPickerOpenAtom);
+  const targetRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  useClickAwayCapture(showPopover, () => setShowPopover(false), [targetRef, dropdownRef]);
   const keymap = useKeymap();
   useHotkey(keymap["ConnectionPicker::Open"], () => {
     setShowPopover(!showPopover);
@@ -82,9 +86,17 @@ export const ConnectionPicker: React.FC = () => {
   );
 
   return (
-    <Popover radius='lg' trapFocus closeOnEscape opened={showPopover} onChange={setShowPopover}>
+    <Popover
+      radius='lg'
+      trapFocus
+      closeOnEscape
+      closeOnClickOutside={false}
+      opened={showPopover}
+      onChange={setShowPopover}
+    >
       <Popover.Target>
         <div
+          ref={targetRef}
           className='titlebar-connection-picker'
           onClick={() => {
             setShowPopover(!showPopover);
@@ -94,6 +106,7 @@ export const ConnectionPicker: React.FC = () => {
         </div>
       </Popover.Target>
       <Popover.Dropdown
+        ref={dropdownRef}
         bg='transparent'
         bd='none'
         my={8}

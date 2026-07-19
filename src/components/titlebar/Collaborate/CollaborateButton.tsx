@@ -1,12 +1,14 @@
 import { Popover } from "@mantine/core";
 import { IconUsers } from "@tabler/icons-react";
 import { useAtom, useAtomValue } from "jotai";
+import { useRef } from "react";
 import {
   collaboratePopoverOpenAtom,
   participantsAtom,
   sessionStateAtom,
 } from "../../../multiplayer/state";
 import { initialFromName } from "../../../multiplayer/identity";
+import { useClickAwayCapture } from "../../../app/useClickAwayCapture";
 import { SharePopover } from "./SharePopover";
 import { Tooltip } from "../../Tooltip/Tooltip";
 import "./CollaborateButton.css";
@@ -17,6 +19,9 @@ export function CollaborateButton() {
   const session = useAtomValue(sessionStateAtom);
   const participants = useAtomValue(participantsAtom);
   const [opened, setOpened] = useAtom(collaboratePopoverOpenAtom);
+  const targetRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  useClickAwayCapture(opened, () => setOpened(false), [targetRef, dropdownRef]);
 
   const avatars: { color: string; name: string; key: string }[] = [];
   if (session) {
@@ -43,9 +48,11 @@ export function CollaborateButton() {
       trapFocus
       withArrow={false}
       position='bottom-end'
+      closeOnClickOutside={false}
     >
       <Popover.Target>
         <button
+          ref={targetRef}
           className={`titlebar-collab-button ${session ? "active" : ""}`}
           onClick={() => setOpened(o => !o)}
           aria-label={session ? "Open session info" : "Start collaborating"}
@@ -69,7 +76,7 @@ export function CollaborateButton() {
           )}
         </button>
       </Popover.Target>
-      <Popover.Dropdown p={0} my={12} bd='none' bg='transparent'>
+      <Popover.Dropdown ref={dropdownRef} p={0} my={12} bd='none' bg='transparent'>
         <SharePopover onClose={() => setOpened(false)} />
       </Popover.Dropdown>
     </Popover>

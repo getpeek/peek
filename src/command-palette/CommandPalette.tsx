@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./CommandPalette.css";
 import { useSearch } from "./useSearch";
-import { getHotkeyHandler, useClickOutside, useHotkeys } from "@mantine/hooks";
+import { getHotkeyHandler, useHotkeys } from "@mantine/hooks";
 import { useAtom } from "jotai";
 import { IconSearch } from "@tabler/icons-react";
 import { commandPaletteOpenAtom } from "../state";
@@ -10,6 +10,7 @@ import { ACTION_GLYPH } from "./commands";
 import { highlightMatch } from "../Connection/highlightMatch";
 import { useHotkey } from "../app/useHotkey";
 import { useKeymap } from "../app/keymap";
+import { useClickAwayCapture } from "../app/useClickAwayCapture";
 
 export const CommandPalette = () => {
   const [show, setShow] = useAtom(commandPaletteOpenAtom);
@@ -17,12 +18,13 @@ export const CommandPalette = () => {
   const [cursor, setCursor] = useState(0);
   const results = useSearch(query);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const paletteRef = useRef<HTMLDivElement>(null);
   const hideSearch = () => {
     setShow(false);
     setQuery("");
     setCursor(0);
   };
-  const ref = useClickOutside(hideSearch);
+  useClickAwayCapture(show, hideSearch, [paletteRef]);
   const keymap = useKeymap();
   useHotkey(keymap["CommandPalette::Open"], () => setShow(true));
   useHotkeys([["Escape", () => hideSearch()]]);
@@ -40,7 +42,7 @@ export const CommandPalette = () => {
   }
 
   return (
-    <div className='command-palette' ref={ref}>
+    <div className='command-palette' ref={paletteRef}>
       <div className='command-palette-input'>
         <IconSearch size={16} className='command-palette-input-icon' />
         <input

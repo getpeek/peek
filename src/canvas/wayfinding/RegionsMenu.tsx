@@ -12,6 +12,7 @@ import { useGroupWithAi } from "./useGroupWithAi";
 import { useRegroupAllWithAi } from "./useRegroupAllWithAi";
 import { useRegionActions } from "./useRegionActions";
 import { useRegionsEnabled } from "./useRegionsEnabled";
+import { useClickAwayCapture } from "../../app/useClickAwayCapture";
 import "./wayfinding.css";
 
 // Icon button + popover, rendered inline inside the bottom-left zoom cluster.
@@ -31,22 +32,10 @@ export function RegionsMenu() {
   const listRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Close on outside click. The popover lives in a React Flow Panel above the
-  // canvas pane, which stops propagation of bubble-phase mouse events — so we
-  // listen in the capture phase to see the click before the pane swallows it.
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-    const onPointerDown = (e: PointerEvent) => {
-      if (!containerRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-        setRenamingId(null);
-      }
-    };
-    document.addEventListener("pointerdown", onPointerDown, true);
-    return () => document.removeEventListener("pointerdown", onPointerDown, true);
-  }, [open, setOpen, setRenamingId]);
+  useClickAwayCapture(open, () => {
+    setOpen(false);
+    setRenamingId(null);
+  }, [containerRef]);
 
   useEffect(() => {
     if (open) {
