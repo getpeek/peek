@@ -47,6 +47,7 @@ pub(crate) enum Page {
     SelectNodeDown,
     GoToNode,
     Search,
+    OpenPicker,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -136,6 +137,7 @@ impl fmt::Display for Action {
             Action::Page(Page::SelectNodeDown) => "Page::SelectNodeDown",
             Action::Page(Page::GoToNode) => "Page::GoToNode",
             Action::Page(Page::Search) => "Page::Search",
+            Action::Page(Page::OpenPicker) => "Page::OpenPicker",
             Action::View(View::ToggleUi) => "View::ToggleUi",
             Action::View(View::ToggleCameraLock) => "View::ToggleCameraLock",
             Action::Result(ResultAction::Pivot) => "Result::Pivot",
@@ -183,6 +185,7 @@ impl FromStr for Action {
             "Page::SelectNodeDown" => Action::Page(Page::SelectNodeDown),
             "Page::GoToNode" => Action::Page(Page::GoToNode),
             "Page::Search" => Action::Page(Page::Search),
+            "Page::OpenPicker" => Action::Page(Page::OpenPicker),
             "View::ToggleUi" => Action::View(View::ToggleUi),
             "View::ToggleCameraLock" => Action::View(View::ToggleCameraLock),
             "Result::Pivot" => Action::Result(ResultAction::Pivot),
@@ -232,6 +235,7 @@ pub(crate) fn default_keymap() -> Vec<(&'static str, Action)> {
         ("meta-arrowup", Action::Page(Page::SelectNodeUp)),
         ("meta-arrowdown", Action::Page(Page::SelectNodeDown)),
         ("g", Action::Page(Page::GoToNode)),
+        ("o", Action::Page(Page::OpenPicker)),
         ("meta-.", Action::View(View::ToggleUi)),
         ("meta-shift-l", Action::View(View::ToggleCameraLock)),
         ("shift-p", Action::Result(ResultAction::Pivot)),

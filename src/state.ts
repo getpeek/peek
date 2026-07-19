@@ -21,6 +21,11 @@ export interface Config {
   canvas: {
     enable_regions: boolean;
   };
+  ui: {
+    pages: {
+      show_as: "tabs" | "list";
+    };
+  };
 }
 
 export const configAtom = atom<Config>();

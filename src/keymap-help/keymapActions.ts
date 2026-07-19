@@ -71,6 +71,10 @@ export const KEYMAP_REFERENCE: KeymapSection[] = [
         action: "Page::Search",
         description: "Search all nodes on the page (searches within a selected result instead)",
       },
+      {
+        action: "Page::OpenPicker",
+        description: "Open the pages picker (list display mode only)",
+      },
     ],
   },
   {

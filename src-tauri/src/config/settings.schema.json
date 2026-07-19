@@ -75,6 +75,25 @@
         }
       }
     },
+    "ui": {
+      "type": "object",
+      "description": "UI chrome behavior.",
+      "additionalProperties": false,
+      "properties": {
+        "pages": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "show_as": {
+              "type": "string",
+              "enum": ["tabs", "list"],
+              "default": "tabs",
+              "description": "How pages are surfaced in the titlebar: 'tabs' shows a horizontal tab strip; 'list' shows a single pill that opens a keyboard-navigable page list."
+            }
+          }
+        }
+      }
+    },
     "workspaces": {
       "type": "array",
       "description": "Workspaces shown in the connection picker. Each groups one or more database connections.",
@@ -117,6 +136,7 @@
           "Page::SelectNodeDown",
           "Page::GoToNode",
           "Page::Search",
+          "Page::OpenPicker",
           "View::ToggleUi",
           "View::ToggleCameraLock",
           "Result::Pivot",

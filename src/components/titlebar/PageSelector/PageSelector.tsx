@@ -5,6 +5,8 @@ import { usePageActions } from "../../../canvas/hooks/usePageActions";
 import { participantsAtom, sessionStateAtom } from "../../../multiplayer/state";
 import type { Peer } from "../../../multiplayer/types";
 import { PageTabAvatars } from "./PageTabAvatars";
+import { PagesMenu } from "./PagesMenu";
+import { usePageDisplayMode } from "./usePageDisplayMode";
 import { siblingSlideX, useTabDragReorder } from "./useTabDragReorder";
 import { Tooltip } from "../../Tooltip/Tooltip";
 import "./PageSelector.css";
@@ -13,6 +15,7 @@ const ENTER_MS = 180;
 const EXIT_MS = 140;
 
 export function PageSelector() {
+  const displayMode = usePageDisplayMode();
   const { pages, activePageId, canClose, newPage, closePage, switchPage, renamePage, reorderPage } =
     usePageActions();
   const session = useAtomValue(sessionStateAtom);
@@ -87,6 +90,10 @@ export function PageSelector() {
 
   const pageIds = pages.map(p => p.id);
   const { dragState, getTabHandlers, wasDragging } = useTabDragReorder(pageIds, reorderPage);
+
+  if (displayMode === "list") {
+    return <PagesMenu />;
+  }
 
   return (
     <div className='titlebar-page-selector'>
