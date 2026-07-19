@@ -3,7 +3,12 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { getDefaultStore, useAtomValue } from "jotai";
 import { useEffect } from "react";
 import { documentAtom, subscribeDocumentMutations } from "../canvas/state";
-import { participantsAtom, remoteCursorsAtom, sessionStateAtom } from "./state";
+import {
+  participantsAtom,
+  remoteCursorsAtom,
+  remoteViewportsAtom,
+  sessionStateAtom,
+} from "./state";
 import { type MultiplayerControls, requestRemoteExecution } from "./syncBridgeUtils";
 import { useSyncBridge } from "./useSyncBridge";
 import { useMultiplayerControls } from "./useMultiplayerControls";
@@ -57,6 +62,27 @@ function useGossipBridge(): void {
             return prev;
           }
           if (now - peer.lastSeen < 2000) {
+            return prev;
+          }
+          return { ...prev, [author]: { ...peer, lastSeen: now } };
+        });
+      } else if (payload.type === "viewport") {
+        const centerX = Number(payload.centerX);
+        const centerY = Number(payload.centerY);
+        const zoom = Number(payload.zoom);
+        const pageId = typeof payload.pageId === "string" ? payload.pageId : "";
+        if (!Number.isFinite(centerX) || !Number.isFinite(centerY) || !zoom || !pageId) {
+          return;
+        }
+        store.set(remoteViewportsAtom, prev => ({
+          ...prev,
+          [author]: { centerX, centerY, zoom, pageId, updatedAt: now },
+        }));
+        // Viewport traffic (pan/zoom without mouse movement) also counts as
+        // liveness. Throttled like the cursor path.
+        store.set(participantsAtom, prev => {
+          const peer = prev[author];
+          if (!peer || now - peer.lastSeen < 2000) {
             return prev;
           }
           return { ...prev, [author]: { ...peer, lastSeen: now } };
@@ -153,6 +179,18 @@ function useGossipBridge(): void {
         for (const [author, cur] of Object.entries(prev)) {
           if (cur.updatedAt >= cutoff) {
             next[author] = cur;
+          } else {
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+      store.set(remoteViewportsAtom, prev => {
+        let changed = false;
+        const next: typeof prev = {};
+        for (const [author, vp] of Object.entries(prev)) {
+          if (vp.updatedAt >= cutoff) {
+            next[author] = vp;
           } else {
             changed = true;
           }

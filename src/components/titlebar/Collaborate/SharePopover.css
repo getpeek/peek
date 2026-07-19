@@ -396,6 +396,18 @@
   letter-spacing: 0.12em;
 }
 
+.collab-row--following {
+  background: color-mix(in oklab, var(--pk-accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--pk-accent) 45%, transparent);
+}
+
+.collab-following {
+  font: 600 10px var(--pk-font-sans);
+  color: var(--pk-accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 /* ---------- End session ---------- */
 
 .collab-end-button {

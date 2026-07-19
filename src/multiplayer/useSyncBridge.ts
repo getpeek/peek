@@ -15,9 +15,11 @@ import { handleAgentCancel, handleAgentRequest } from "./agentProxy";
 import { handleLspRequest } from "./lspProxy";
 import { b64ToBytes } from "./bytes";
 import {
+  followingAuthorAtom,
   multiplayerSyncIssueAtom,
   preSessionSnapshotAtom,
   remoteCursorsAtom,
+  remoteViewportsAtom,
   sessionStateAtom,
   participantsAtom,
 } from "./state";
@@ -212,7 +214,9 @@ export function useSyncBridge(): void {
       store.set(preSessionSnapshotAtom, null);
       store.set(sessionStateAtom, null);
       store.set(remoteCursorsAtom, {});
+      store.set(remoteViewportsAtom, {});
       store.set(participantsAtom, {});
+      store.set(followingAuthorAtom, null);
       store.set(multiplayerSyncIssueAtom, { count: 0, lastError: null });
     }).then(u => {
       unlistenEnded = u;

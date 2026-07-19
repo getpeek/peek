@@ -46,6 +46,9 @@ import { Toolbar } from "./ui/Toolbar";
 import { ZoomIndicator } from "./ui/ZoomIndicator";
 import { RemoteCursorsLayer } from "../multiplayer/RemoteCursorsLayer";
 import { useCursorBroadcast } from "../multiplayer/useCursorBroadcast";
+import { useFollowPeer } from "../multiplayer/useFollowPeer";
+import { useViewportBroadcast } from "../multiplayer/useViewportBroadcast";
+import { followingAuthorAtom } from "../multiplayer/state";
 import type { AppEdge, AppNode, AppNodeType } from "./types";
 import { useCanvas } from "./hooks/useCanvas";
 import { useDrawTool } from "./hooks/useDrawTool";
@@ -112,6 +115,9 @@ function ReactFlowCanvasInner() {
   const { rectRef: selectionRectRef } = useRubberBandSelect();
   useZoomVariable();
   useCursorBroadcast();
+  useFollowPeer();
+  const broadcastViewport = useViewportBroadcast();
+  const setFollowing = useSetAtom(followingAuthorAtom);
   const metaHeld = useMetaKeyHeld();
   const { onSchemaNodeDragStart, onSchemaNodeDrag, onSchemaNodeDragStop } = useSchemaForceLayout();
 
@@ -221,7 +227,15 @@ function ReactFlowCanvasInner() {
         onNodeDragStart={onNodeDragStart}
         onNodeDrag={onNodeDrag}
         onNodeDragStop={onNodeDragStop}
-        onMoveStart={interaction.begin}
+        onMoveStart={e => {
+          // A real pointer/touch event means the local user grabbed the
+          // canvas; programmatic camera moves (including follow) pass null.
+          if (e) {
+            setFollowing(null);
+          }
+          interaction.begin();
+        }}
+        onMove={(_, vp) => broadcastViewport(vp)}
         onMoveEnd={(_, vp) => {
           setViewport(vp);
           interaction.endDebounced();

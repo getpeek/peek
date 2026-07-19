@@ -1,11 +1,18 @@
 import { atom } from "jotai";
-import type { Peer, RemoteCursor, SessionState } from "./types";
+import type { Peer, RemoteCursor, RemoteViewport, SessionState } from "./types";
 
 export const sessionStateAtom = atom<SessionState | null>(null);
 
 export const participantsAtom = atom<Record<string, Peer>>({});
 
 export const remoteCursorsAtom = atom<Record<string, RemoteCursor>>({});
+
+// Peers' cameras (center + zoom), keyed by author. Drives follow-mode.
+export const remoteViewportsAtom = atom<Record<string, RemoteViewport>>({});
+
+// Author id of the peer whose camera the local view is currently following,
+// or null when not following. Session-only, like `cameraLockedAtom`.
+export const followingAuthorAtom = atom<string | null>(null);
 
 export const collaboratePopoverOpenAtom = atom<boolean>(false);
 

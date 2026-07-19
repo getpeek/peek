@@ -6,9 +6,11 @@ import { emptyDocument } from "../canvas/emptyDocument";
 import { documentAtom, isApplyingRemoteRef, resultsAtom } from "../canvas/state";
 import { documentToPuts, resultsToPuts } from "./diff";
 import {
+  followingAuthorAtom,
   multiplayerSyncIssueAtom,
   preSessionSnapshotAtom,
   remoteCursorsAtom,
+  remoteViewportsAtom,
   sessionStateAtom,
   participantsAtom,
 } from "./state";
@@ -29,7 +31,9 @@ export function useMultiplayerControls(): MultiplayerControls {
   const setResults = useSetAtom(resultsAtom);
   const setSnapshot = useSetAtom(preSessionSnapshotAtom);
   const setRemoteCursors = useSetAtom(remoteCursorsAtom);
+  const setRemoteViewports = useSetAtom(remoteViewportsAtom);
   const setParticipants = useSetAtom(participantsAtom);
+  const setFollowing = useSetAtom(followingAuthorAtom);
   const setSchema = useSetAtom(schemaAtom);
   const setSyncIssue = useSetAtom(multiplayerSyncIssueAtom);
 
@@ -189,7 +193,9 @@ export function useMultiplayerControls(): MultiplayerControls {
     //      same content that was force-flushed at join() time).
     setSession(null);
     setRemoteCursors({});
+    setRemoteViewports({});
     setParticipants({});
+    setFollowing(null);
     setSyncIssue({ count: 0, lastError: null });
     setSnapshot(null);
   }, [
@@ -198,7 +204,9 @@ export function useMultiplayerControls(): MultiplayerControls {
     setDoc,
     setResults,
     setRemoteCursors,
+    setRemoteViewports,
     setParticipants,
+    setFollowing,
     setSchema,
     setSyncIssue,
   ]);

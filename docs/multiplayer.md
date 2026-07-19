@@ -118,7 +118,7 @@ Cursor rendering and broadcast are mounted _inside_ `<ReactFlowProvider>` becaus
 | `agent-cancels/<requestId>`         | `{}`                                     | joiner→host cancel for a running agent request; host deletes it alongside the request key                            |
 | `schema/index`                      | JSON `{tables, references, primaryKeys}` | host's DB schema; joiners feed this into `schemaAtom` and `lsp_set_schema_cache` so the LSP works without a local DB |
 
-Viewport and `activePageId` are **not** synced — each peer has its own pan/zoom and chooses which page to view independently. `activePageId` still lives on `CanvasDocument` so it persists to disk per-peer; it's just excluded from the multiplayer diff. When a remote `doc/page-order` arrives that no longer contains the local active page (joiner just imported the host's pages, or someone else deleted the page we were on), `applyOperation` falls back to `parsed[0]` so the peer doesn't end up on an orphan page.
+Viewport and `activePageId` are **not** synced into the doc — each peer has its own pan/zoom and chooses which page to view independently. `activePageId` still lives on `CanvasDocument` so it persists to disk per-peer; it's just excluded from the multiplayer diff. (Viewport is broadcast _ephemerally_ over the `viewport` gossip message to drive follow-mode — see "Follow-mode" — but never lands in the doc or on disk.) When a remote `doc/page-order` arrives that no longer contains the local active page (joiner just imported the host's pages, or someone else deleted the page we were on), `applyOperation` falls back to `parsed[0]` so the peer doesn't end up on an orphan page.
 
 Routing is centralized in `keyKind()`, which lives in **`src/multiplayer/keys.ts`** together with the key prefixes and builder helpers (`nodeKey`, `execRequestKey`, `agentRequestKey`, …) — the namespace outgrew `diff.ts`. All inbound handlers dispatch through it. iroh-docs `del` is a **prefix** delete; the key scheme mostly avoids prefix collisions, but note that `pages/<p>/nodes/<queryId>` is a proper prefix of `pages/<p>/nodes/<queryId>-result-0` (result-node ids are parent-derived), so deleting a query node's key also prunes its result-node entries from the replica.
 
@@ -126,21 +126,24 @@ Routing is centralized in `keyKind()`, which lives in **`src/multiplayer/keys.ts
 
 JSON payloads sent via `mp_gossip_send`. Each recipient gets `{payload, author}` (where `author` is the sender's iroh `EndpointId`).
 
-| `payload.type`     | Fields                              | Cadence                                                         |
-| ------------------ | ----------------------------------- | --------------------------------------------------------------- |
-| `cursor`           | `flowX`, `flowY`, `pageId`          | ~15 Hz on mouse move                                            |
-| `presence`         | `name`, `color`, `isHost`, `pageId` | every 5 s, plus immediately on local page switch                |
-| `leave`            | (none)                              | once on `controls.end()`; browser guest also sends on tab close |
-| `agent-stream`     | `nodeId`, `requestId`, `text`       | host → peers, ~10 Hz while an agent run streams (see below)     |
-| `agent-stream-end` | `nodeId`, `requestId`               | host → peers, once when the streaming portion of a run finishes |
+| `payload.type`     | Fields                                 | Cadence                                                                       |
+| ------------------ | -------------------------------------- | ----------------------------------------------------------------------------- |
+| `cursor`           | `flowX`, `flowY`, `pageId`             | ~15 Hz on mouse move                                                          |
+| `viewport`         | `centerX`, `centerY`, `zoom`, `pageId` | ~15 Hz on pan/zoom (`onMove`), plus a 5 s idle heartbeat — drives follow-mode |
+| `presence`         | `name`, `color`, `isHost`, `pageId`    | every 5 s, plus immediately on local page switch                              |
+| `leave`            | (none)                                 | once on `controls.end()`; browser guest also sends on tab close               |
+| `agent-stream`     | `nodeId`, `requestId`, `text`          | host → peers, ~10 Hz while an agent run streams (see below)                   |
+| `agent-stream-end` | `nodeId`, `requestId`                  | host → peers, once when the streaming portion of a run finishes               |
 
 `agent-stream.text` is the **full accumulated partial**, not a delta — gossip is lossy, so any received packet supersedes all prior ones and a dropped packet self-heals on the next.
 
-`useGossipBridge` filters out events with `author === session.myAuthor`. Peers and remote cursors that haven't been seen in 15 s are pruned. A `leave` message drops the sender from `participantsAtom` and `remoteCursorsAtom` immediately so the UI reflects a clean disconnect without waiting for the prune.
+`useGossipBridge` filters out events with `author === session.myAuthor`. Peers, remote cursors, and remote viewports that haven't been seen in 15 s are pruned. A `leave` message drops the sender from `participantsAtom`, `remoteCursorsAtom`, and `remoteViewportsAtom` immediately so the UI reflects a clean disconnect without waiting for the prune.
 
-**Liveness signal.** `participantsAtom[author].lastSeen` is bumped on **both** presence (5 s) and cursor (15 Hz, throttled to once per peer per 2 s) receipts. Without the cursor path, presence is the only liveness signal — and gossip is best-effort, so three dropped presence packets in a row cause spurious 5–10 s prune windows where the participants pill flickers off.
+**Liveness signal.** `participantsAtom[author].lastSeen` is bumped on presence (5 s), cursor, and viewport receipts (the latter two 15 Hz, throttled to once per peer per 2 s). Without those high-frequency paths, presence is the only liveness signal — and gossip is best-effort, so three dropped presence packets in a row cause spurious 5–10 s prune windows where the participants pill flickers off.
 
 **Per-page cursor filtering.** The cursor payload carries the sender's `documentAtom.activePageId`. `RemoteCursorsLayer` filters cursors whose `pageId` doesn't match the local active page, so peers viewing different pages don't see each other's pointers as ghosts. With active page no longer synced, this filter is what keeps cursors from peers viewing other pages from leaking onto your canvas.
+
+**Follow-mode.** Clicking a participant in the collaborators list (desktop `ShareParticipantList`; web guest avatar row) sets `followingAuthorAtom` to that peer's author and highlights them. `useFollowPeer` (mounted inside `<ReactFlowProvider>`) then keeps the local camera matching that peer's broadcast viewport — `panToPoint(centerX, centerY, { zoom })` on every `remoteViewportsAtom` update, plus `switchPage` when their `pageId` changes. It reads the store imperatively (`store.sub`, not a Jotai subscription) so the 15 Hz viewport stream doesn't re-render the canvas. Following stops when: the local user pans/zooms (`onMoveStart` fires with a non-null event — programmatic follow moves pass `null`), the peer leaves (`apply()` sees them gone and clears the atom), the peer is clicked again (toggle), or the session ends. The broadcast side is `useViewportBroadcast` / `useGuestViewportBroadcast`, wired to React Flow's `onMove` (throttled ~15 Hz) with a 5 s idle heartbeat so a stationary peer is still followable. Viewport is broadcast as the pane's flow-space **center + zoom** (not the raw `{x,y,zoom}` transform) so a follower re-centers faithfully regardless of window size.
 
 **Topic isolation.** `app_gossip_topic()` in `session.rs` derives our gossip `TopicId` as `blake3("peek/multiplayer:" || namespace_id)`. Do **not** use `namespace_id.into()` directly — that's the same topic iroh-docs subscribes to internally for live entry propagation, and our JSON payloads would land in iroh-docs' `receive_loop` where `postcard::from_bytes::<Op>(...)?` fails and `?`-s out, killing live sync. Initial reconciliation still works in that broken state (it goes over the docs ALPN), which is why the symptom presents as "first sync OK, edits don't propagate."
 

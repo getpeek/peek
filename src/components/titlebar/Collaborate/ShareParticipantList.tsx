@@ -1,7 +1,7 @@
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { canvasApiAtom, documentAtom } from "../../../canvas/state";
 import { initialFromName } from "../../../multiplayer/identity";
-import { remoteCursorsAtom } from "../../../multiplayer/state";
+import { followingAuthorAtom } from "../../../multiplayer/state";
 import type { Peer, SessionState } from "../../../multiplayer/types";
 import { Tooltip } from "../../Tooltip/Tooltip";
 
@@ -9,29 +9,31 @@ interface Props {
   session: SessionState;
   peers: Peer[];
   count: number;
-  onClose?: () => void;
 }
 
-export function ShareParticipantList({ session, peers, count, onClose }: Props) {
+export function ShareParticipantList({ session, peers, count }: Props) {
   const isHost = session.role === "host";
   const doc = useAtomValue(documentAtom);
   const canvasApi = useAtomValue(canvasApiAtom);
-  const cursors = useAtomValue(remoteCursorsAtom);
+  const following = useAtomValue(followingAuthorAtom);
+  const setFollowing = useSetAtom(followingAuthorAtom);
 
   const pageNameFor = (pageId: string) => doc.pages[pageId]?.name ?? "—";
 
+  // Clicking a peer toggles follow-mode. `useFollowPeer` drives the camera from
+  // there (initial jump + continuous tracking + page-follow); switching page
+  // here just gives immediate feedback. The popover stays open so the row
+  // highlight is visible and a second click can stop following.
   const handlePeerClick = (peer: Peer) => {
     if (!canvasApi || !doc.pages[peer.currentPageId]) {
       return;
     }
-    canvasApi.switchPage(peer.currentPageId);
-    const cursor = cursors[peer.author];
-    if (cursor && cursor.pageId === peer.currentPageId) {
-      requestAnimationFrame(() =>
-        canvasApi.panToPoint(cursor.flowX, cursor.flowY, { duration: 300 }),
-      );
+    if (following === peer.author) {
+      setFollowing(null);
+      return;
     }
-    onClose?.();
+    setFollowing(peer.author);
+    canvasApi.switchPage(peer.currentPageId);
   };
 
   return (
@@ -53,11 +55,20 @@ export function ShareParticipantList({ session, peers, count, onClose }: Props) 
         </li>
         {peers.map(p => {
           const known = !!doc.pages[p.currentPageId];
+          const isFollowing = following === p.author;
+          const tooltip = isFollowing
+            ? `Stop following ${p.name}`
+            : known
+              ? `Follow ${p.name} on ${pageNameFor(p.currentPageId)}`
+              : p.name;
           return (
-            <li className={`collab-row ${known ? "collab-row--clickable" : ""}`} key={p.author}>
-              <Tooltip
-                label={known ? `Jump to ${p.name} on ${pageNameFor(p.currentPageId)}` : p.name}
-              >
+            <li
+              className={`collab-row ${known ? "collab-row--clickable" : ""} ${
+                isFollowing ? "collab-row--following" : ""
+              }`}
+              key={p.author}
+            >
+              <Tooltip label={tooltip}>
                 <button
                   type='button'
                   className='collab-row-button'
@@ -72,7 +83,11 @@ export function ShareParticipantList({ session, peers, count, onClose }: Props) 
                     {p.name}{" "}
                     <span className='collab-page'>{known ? pageNameFor(p.currentPageId) : ""}</span>
                   </span>
-                  <span className='collab-role'>{p.isHost ? "HOST" : "EDITOR"}</span>
+                  {isFollowing ? (
+                    <span className='collab-following'>Following</span>
+                  ) : (
+                    <span className='collab-role'>{p.isHost ? "HOST" : "EDITOR"}</span>
+                  )}
                 </button>
               </Tooltip>
             </li>

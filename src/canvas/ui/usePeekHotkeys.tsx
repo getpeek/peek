@@ -16,6 +16,8 @@ import { jumpModeAtom } from "../jump/state";
 import { regionsMenuOpenAtom } from "../wayfinding/state";
 import { useGroupSelection } from "../wayfinding/useGroupSelection";
 import { useRegionsEnabled } from "../wayfinding/useRegionsEnabled";
+import { pagesMenuOpenAtom } from "../../components/titlebar/PageSelector/state";
+import { usePageDisplayMode } from "../../components/titlebar/PageSelector/usePageDisplayMode";
 import { useUndoHistory } from "./useUndoHistory";
 import { useHotkey } from "../../app/useHotkey";
 import { useKeymap } from "../../app/keymap";
@@ -40,6 +42,8 @@ export const usePeekHotkeys = () => {
   const groupSelection = useGroupSelection();
   const regionsEnabled = useRegionsEnabled();
   const setRegionsMenuOpen = useSetAtom(regionsMenuOpenAtom);
+  const setPagesMenuOpen = useSetAtom(pagesMenuOpenAtom);
+  const pageDisplayMode = usePageDisplayMode();
   const setJumpMode = useSetAtom(jumpModeAtom);
   const keymap = useKeymap();
 
@@ -137,6 +141,12 @@ export const usePeekHotkeys = () => {
   });
   useHotkey(keymap["Page::Next"], () => {
     pageActions.nextPage();
+  });
+
+  useHotkey(keymap["Page::OpenPicker"], () => {
+    if (pageDisplayMode === "list") {
+      setPagesMenuOpen(v => !v);
+    }
   });
 
   useHotkey(keymap["Page::SelectPreviousQuery"], () => {
