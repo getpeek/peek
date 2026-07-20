@@ -91,6 +91,31 @@
               "description": "How pages are surfaced in the titlebar: 'tabs' shows a horizontal tab strip; 'list' shows a single pill that opens a keyboard-navigable page list."
             }
           }
+        },
+        "titlebar": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Show or hide individual items in the titlebar. Hiding an item only removes it from the titlebar; the underlying feature still works (the command palette via its hotkey, live queries keep running, and the collaboration popover still opens from the command palette).",
+          "properties": {
+            "command_palette_button": {
+              "type": "string",
+              "enum": ["show", "hide"],
+              "default": "show",
+              "description": "Show or hide the command palette button in the titlebar."
+            },
+            "collaboration_button": {
+              "type": "string",
+              "enum": ["show", "hide"],
+              "default": "show",
+              "description": "Show or hide the collaboration button in the titlebar."
+            },
+            "live_query_count": {
+              "type": "string",
+              "enum": ["show", "hide"],
+              "default": "show",
+              "description": "Show or hide the live query count indicator in the titlebar."
+            }
+          }
         }
       }
     },

@@ -9,10 +9,12 @@ import { IconArrowsDiagonal2, IconMinus, IconX } from "@tabler/icons-react";
 import { LiveQueryNotification } from "./LiveQueryNotification/LiveQueryNotification";
 import { sessionStateAtom } from "../../multiplayer/state";
 import { uiVisibilityAtom } from "../../state";
+import { useTitlebarVisibility } from "./useTitlebarVisibility";
 
 export const CustomTitleBar = () => {
   const session = useAtomValue(sessionStateAtom);
   const uiVisible = useAtomValue(uiVisibilityAtom);
+  const titlebar = useTitlebarVisibility();
   const isJoiner = session?.role === "joiner";
 
   const handleMinimize = async () => {
@@ -68,9 +70,9 @@ export const CustomTitleBar = () => {
         </div>
         {uiVisible && (
           <div className='titlebar-right'>
-            <LiveQueryNotification />
-            <CommandPaletteButton />
-            <CollaborateButton />
+            {titlebar.liveQueryCount && <LiveQueryNotification />}
+            {titlebar.commandPalette && <CommandPaletteButton />}
+            <CollaborateButton hidden={!titlebar.collaboration} />
             {!isJoiner && <ConnectionPicker />}
           </div>
         )}

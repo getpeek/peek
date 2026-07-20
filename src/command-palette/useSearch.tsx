@@ -32,6 +32,9 @@ import { useRegroupAllWithAiCommand } from "./commands/regroupAllWithAi";
 import { useToggleRegionsCommand } from "./commands/toggleRegions";
 import { useToggleAutomaticallyLabelQueriesCommand } from "./commands/toggleAutomaticallyLabelQueries";
 import { useTogglePageDisplayCommand } from "./commands/togglePageDisplay";
+import { useToggleCommandPaletteButtonCommand } from "./commands/toggleCommandPaletteButton";
+import { useToggleCollaborationButtonCommand } from "./commands/toggleCollaborationButton";
+import { useToggleLiveQueryCountCommand } from "./commands/toggleLiveQueryCount";
 
 export interface SearchResult {
   command: CommandPaletteResult;
@@ -70,6 +73,9 @@ export const useSearch = (query: string): SearchResult[] => {
   const toggleRegionsCommand = useToggleRegionsCommand();
   const toggleAutomaticallyLabelQueriesCommand = useToggleAutomaticallyLabelQueriesCommand();
   const togglePageDisplayCommand = useTogglePageDisplayCommand();
+  const toggleCommandPaletteButtonCommand = useToggleCommandPaletteButtonCommand();
+  const toggleCollaborationButtonCommand = useToggleCollaborationButtonCommand();
+  const toggleLiveQueryCountCommand = useToggleLiveQueryCountCommand();
 
   const searchSpace: CommandPaletteResult[] = [
     toggleUiCommand,
@@ -82,6 +88,9 @@ export const useSearch = (query: string): SearchResult[] => {
     toggleRegionsCommand,
     toggleAutomaticallyLabelQueriesCommand,
     togglePageDisplayCommand,
+    toggleCommandPaletteButtonCommand,
+    toggleCollaborationButtonCommand,
+    toggleLiveQueryCountCommand,
     rerunAllOnPage,
     rerunSelected,
     exportCsv,

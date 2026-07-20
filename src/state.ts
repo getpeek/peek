@@ -25,6 +25,11 @@ export interface Config {
     pages: {
       show_as: "tabs" | "list";
     };
+    titlebar: {
+      command_palette_button: "show" | "hide";
+      collaboration_button: "show" | "hide";
+      live_query_count: "show" | "hide";
+    };
   };
 }
 

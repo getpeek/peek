@@ -79,6 +79,33 @@ pub fn set_ui_pages_show_as(show_as: PageDisplay) -> Result<(), String> {
     config.save_to_disk()
 }
 
+/// # Errors
+/// Returns an error if the updated config cannot be written to disk.
+#[tauri::command]
+pub fn set_ui_titlebar_command_palette_button(visibility: Visibility) -> Result<(), String> {
+    let mut config = PeekConfig::get_or_default();
+    config.ui.titlebar.command_palette_button = visibility;
+    config.save_to_disk()
+}
+
+/// # Errors
+/// Returns an error if the updated config cannot be written to disk.
+#[tauri::command]
+pub fn set_ui_titlebar_collaboration_button(visibility: Visibility) -> Result<(), String> {
+    let mut config = PeekConfig::get_or_default();
+    config.ui.titlebar.collaboration_button = visibility;
+    config.save_to_disk()
+}
+
+/// # Errors
+/// Returns an error if the updated config cannot be written to disk.
+#[tauri::command]
+pub fn set_ui_titlebar_live_query_count(visibility: Visibility) -> Result<(), String> {
+    let mut config = PeekConfig::get_or_default();
+    config.ui.titlebar.live_query_count = visibility;
+    config.save_to_disk()
+}
+
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Theme {
@@ -161,6 +188,15 @@ pub enum PageDisplay {
     List,
 }
 
+/// Whether a titlebar element is rendered.
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum Visibility {
+    #[default]
+    Show,
+    Hide,
+}
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct PagesConfig {
     #[serde(default)]
@@ -168,9 +204,21 @@ pub struct PagesConfig {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
+pub struct TitlebarConfig {
+    #[serde(default)]
+    pub command_palette_button: Visibility,
+    #[serde(default)]
+    pub collaboration_button: Visibility,
+    #[serde(default)]
+    pub live_query_count: Visibility,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct UiConfig {
     #[serde(default)]
     pub pages: PagesConfig,
+    #[serde(default)]
+    pub titlebar: TitlebarConfig,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

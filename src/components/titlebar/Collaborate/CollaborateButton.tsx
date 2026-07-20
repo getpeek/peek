@@ -15,13 +15,14 @@ import "./CollaborateButton.css";
 
 const MAX_AVATARS = 3;
 
-export function CollaborateButton() {
+export function CollaborateButton({ hidden = false }: { hidden?: boolean }) {
   const session = useAtomValue(sessionStateAtom);
   const participants = useAtomValue(participantsAtom);
   const [opened, setOpened] = useAtom(collaboratePopoverOpenAtom);
   const targetRef = useRef<HTMLButtonElement>(null);
+  const anchorRef = useRef<HTMLSpanElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  useClickAwayCapture(opened, () => setOpened(false), [targetRef, dropdownRef]);
+  useClickAwayCapture(opened, () => setOpened(false), [targetRef, anchorRef, dropdownRef]);
 
   const avatars: { color: string; name: string; key: string }[] = [];
   if (session) {
@@ -51,30 +52,36 @@ export function CollaborateButton() {
       closeOnClickOutside={false}
     >
       <Popover.Target>
-        <button
-          ref={targetRef}
-          className={`titlebar-collab-button ${session ? "active" : ""}`}
-          onClick={() => setOpened(o => !o)}
-          aria-label={session ? "Open session info" : "Start collaborating"}
-        >
-          {session ? (
-            <span className='collab-avatars' aria-hidden>
-              {visible.map(a => (
-                <Tooltip key={a.key} label={a.name} position='bottom'>
-                  <span className='collab-avatar' style={{ backgroundColor: a.color }}>
-                    {initialFromName(a.name)}
-                  </span>
-                </Tooltip>
-              ))}
-              {overflow > 0 && <span className='collab-avatar overflow'>+{overflow}</span>}
-            </span>
-          ) : (
-            <>
-              <IconUsers size={12} stroke={2} />
-              <span className='collab-hint'>Collaborate</span>
-            </>
-          )}
-        </button>
+        {hidden ? (
+          // The button is the popover anchor, but the popover can still be opened from the
+          // command palette (Host/Join session), so keep a zero-size anchor when it's hidden.
+          <span ref={anchorRef} aria-hidden style={{ width: 0, height: 0 }} />
+        ) : (
+          <button
+            ref={targetRef}
+            className={`titlebar-collab-button ${session ? "active" : ""}`}
+            onClick={() => setOpened(o => !o)}
+            aria-label={session ? "Open session info" : "Start collaborating"}
+          >
+            {session ? (
+              <span className='collab-avatars' aria-hidden>
+                {visible.map(a => (
+                  <Tooltip key={a.key} label={a.name} position='bottom'>
+                    <span className='collab-avatar' style={{ backgroundColor: a.color }}>
+                      {initialFromName(a.name)}
+                    </span>
+                  </Tooltip>
+                ))}
+                {overflow > 0 && <span className='collab-avatar overflow'>+{overflow}</span>}
+              </span>
+            ) : (
+              <>
+                <IconUsers size={12} stroke={2} />
+                <span className='collab-hint'>Collaborate</span>
+              </>
+            )}
+          </button>
+        )}
       </Popover.Target>
       <Popover.Dropdown ref={dropdownRef} p={0} my={12} bd='none' bg='transparent'>
         <SharePopover onClose={() => setOpened(false)} />
