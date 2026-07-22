@@ -28,7 +28,7 @@ Under `ai.acp` (defined in `config/mod.rs::AcpConfig`, validated by `settings.sc
 | `command` | string            | `"npx"`                                           | Executable that launches the agent.                                               |
 | `args`    | string[]          | `["-y", "@agentclientprotocol/claude-agent-acp"]` | Arguments — the Claude Code ACP adapter by default.                               |
 | `env`     | object            | `{}`                                              | Extra env for the subprocess. The agent owns its auth (e.g. `ANTHROPIC_API_KEY`). |
-| `cwd`     | string (optional) | user's home                                       | Session root sent at `session/new`.                                               |
+| `cwd`     | string (optional) | `~/peek`                                          | Session root sent at `session/new`.                                               |
 
 ```json
 {
@@ -45,6 +45,8 @@ Under `ai.acp` (defined in `config/mod.rs::AcpConfig`, validated by `settings.sc
 **Enable `ai.mcp.enable` too.** Without it the agent still chats, but Peek forwards no MCP server, so it has no canvas tools — the Agent node shows a warning banner in that case.
 
 **Auth is the agent's job.** Peek passes no Anthropic credentials of its own; the Claude adapter uses an existing Claude Code login or an `ANTHROPIC_API_KEY` in `ai.acp.env`. Requires Node ≥ 22.
+
+**PATH in a packaged app.** A macOS/Linux app launched from the Dock/Finder inherits a stripped `PATH` that omits Homebrew, nvm, Volta, etc., so `npx` wouldn't be found (it works under `tauri dev` only because the terminal passes the full `PATH` through). Before spawning, `acp_commands::build_spawn_config` recovers the login-shell `PATH`, resolves `command` to an absolute path, and passes that `PATH` to the child so `npx` can find `node`. A `PATH` you set explicitly in `ai.acp.env` is left untouched.
 
 ## Modes
 

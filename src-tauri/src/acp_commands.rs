@@ -17,7 +17,7 @@ use tokio::sync::oneshot;
 
 use peek_acp::{AcpConnection, AcpHost, AcpSpawnConfig, SessionInfo};
 
-use crate::config::PeekConfig;
+use crate::config::{AcpConfig, PeekConfig};
 
 const MCP_DISABLED_WARNING: &str = "Peek's MCP server is off (ai.mcp.enable). The agent can chat but can't drive the canvas — enable it and restart.";
 
@@ -125,6 +125,65 @@ fn start_result(info: &SessionInfo, mcp_enabled: bool) -> AcpStartResult {
     }
 }
 
+/// Build the spawn config, recovering the user's real `PATH` first.
+///
+/// macOS/Linux apps launched from the Dock/Finder inherit a stripped `PATH`
+/// (`/usr/bin:/bin:…`) that omits Homebrew, nvm, Volta, etc., so the configured
+/// command (`npx` by default) can't be found — the subprocess dies before
+/// `initialize` and surfaces as "connection closed before initialization". We
+/// resolve the command to an absolute path and hand the child the login-shell
+/// `PATH` so `npx` can in turn find `node` and the package it launches. Under
+/// `tauri dev` the inherited `PATH` already works, so this is a harmless no-op.
+fn build_spawn_config(acp: AcpConfig) -> AcpSpawnConfig {
+    let mut command = acp.command;
+    let mut env: Vec<(String, String)> = acp.env.into_iter().collect();
+
+    if let Some(path) = login_shell_path() {
+        if let Some(absolute) = resolve_in_path(&command, &path) {
+            command = absolute;
+        }
+        // Respect a PATH the user set explicitly in `ai.acp.env`.
+        if !env.iter().any(|(key, _)| key == "PATH") {
+            env.push(("PATH".to_string(), path));
+        }
+    }
+
+    AcpSpawnConfig {
+        command,
+        args: acp.args,
+        env,
+    }
+}
+
+/// The user's real `PATH`, read from their login shell. `None` when `$SHELL` is
+/// unset (e.g. Windows, where GUI apps already inherit the full `PATH`) or the
+/// probe fails; callers then fall back to the inherited environment.
+fn login_shell_path() -> Option<String> {
+    let shell = std::env::var("SHELL").ok()?;
+    let output = std::process::Command::new(shell)
+        .args(["-ilc", "printf '%s' \"$PATH\""])
+        .output()
+        .ok()?;
+    let stdout = String::from_utf8(output.stdout).ok()?;
+    // An interactive login shell can print rc-file noise before our output, so
+    // take the last non-empty line — `printf` emits PATH with no trailing newline.
+    let path = stdout.lines().rev().find(|line| !line.trim().is_empty())?;
+    Some(path.trim().to_string())
+}
+
+/// Resolve a bare command name against `path`, returning its absolute location.
+/// `None` when the command is already a path (contains `/`, so use it verbatim)
+/// or nothing matches on `path`.
+fn resolve_in_path(command: &str, path: &str) -> Option<String> {
+    if command.contains('/') {
+        return None;
+    }
+    path.split(':')
+        .map(|dir| std::path::Path::new(dir).join(command))
+        .find(|candidate| candidate.is_file())
+        .map(|candidate| candidate.to_string_lossy().into_owned())
+}
+
 /// Ensure the shared agent subprocess is running, spawning it (with the
 /// configured command + Peek's MCP forwarding intent) on first use.
 async fn ensure_connection(
@@ -140,11 +199,7 @@ async fn ensure_connection(
         .ai
         .acp
         .ok_or_else(|| "ACP is not configured (ai.acp)".to_string())?;
-    let config = AcpSpawnConfig {
-        command: acp.command,
-        args: acp.args,
-        env: acp.env.into_iter().collect(),
-    };
+    let config = build_spawn_config(acp);
     let host = Arc::new(TauriAcpHost {
         app: app.clone(),
         pending: Arc::clone(&state.pending),
@@ -208,7 +263,14 @@ pub(crate) async fn acp_open_session(
     } else {
         Vec::new()
     };
-    let cwd = ai.acp.and_then(|acp| acp.cwd).map(PathBuf::from);
+    // Default the session root to Peek's own `~/peek` dir when the user hasn't
+    // set `ai.acp.cwd`; a packaged app's `current_dir()` (the crate's last-resort
+    // fallback) would otherwise be `/` or the bundle.
+    let cwd = ai
+        .acp
+        .and_then(|acp| acp.cwd)
+        .map(PathBuf::from)
+        .or_else(|| PeekConfig::config_dir().ok());
 
     let info = connection
         .new_session(cwd, mcp_http_servers)

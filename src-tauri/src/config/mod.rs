@@ -302,8 +302,8 @@ pub struct AcpConfig {
     pub args: Vec<String>,
     #[serde(default)]
     pub env: std::collections::HashMap<String, String>,
-    /// Session root handed to the agent at `session/new`. Falls back to the
-    /// user's home directory when unset.
+    /// Session root handed to the agent at `session/new`. Falls back to Peek's
+    /// config directory (`~/peek`) when unset.
     #[serde(default)]
     pub cwd: Option<String>,
 }

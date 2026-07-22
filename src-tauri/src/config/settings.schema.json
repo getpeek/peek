@@ -77,7 +77,7 @@
             },
             "cwd": {
               "type": "string",
-              "description": "Session root handed to the agent. Defaults to the user's home directory."
+              "description": "Session root handed to the agent. Defaults to Peek's config directory (~/peek)."
             }
           }
         },
