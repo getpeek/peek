@@ -53,7 +53,9 @@ pub(crate) struct AddToRegionInput {
 
 #[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub(crate) struct RemoveRegionInput {
-    #[schemars(description = "Id of the region to remove, as returned by group_nodes or list_regions.")]
+    #[schemars(
+        description = "Id of the region to remove, as returned by group_nodes or list_regions."
+    )]
     pub(crate) region_id: String,
 }
 
@@ -69,7 +71,9 @@ pub(crate) struct RemoveRegionInput {
                    region is a suggestion the user reviews; pass suggested=false to skip review. \
                    Returns { regionId, pageId }."
 )]
-pub(crate) async fn group_nodes(input: GroupNodesInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn group_nodes(
+    input: GroupNodesInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
         match bridge::request(
             "group_nodes",
@@ -97,7 +101,9 @@ pub(crate) async fn group_nodes(input: GroupNodesInput) -> Result<CallToolResult
                    drop one with remove_region. Returns { pageId, regions: [{ regionId, name, \
                    desc, status, nodeIds }], ungroupedNodeIds }."
 )]
-pub(crate) async fn list_regions(input: ListRegionsInput) -> Result<CallToolResult, tower_mcp::Error> {
+pub(crate) async fn list_regions(
+    input: ListRegionsInput,
+) -> Result<CallToolResult, tower_mcp::Error> {
     Ok(
         match bridge::request("list_regions", json!({ "pageId": input.page_id })).await {
             Ok(v) => tool_result(&v),

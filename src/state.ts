@@ -4,11 +4,22 @@ import { Workspace } from "./Connection/types";
 
 export type DatabaseResult = [string, unknown, string][][];
 export type Theme = "pine" | "midnight" | "midday" | "terminal" | "paper" | "blueprint";
+export type AgentProvider = "ollama" | "acp";
 export interface Config {
   ai: {
-    model: string;
-    url: string;
+    default_provider: AgentProvider;
+    // Optional: present only when configured. Absence disables the backend/feature.
+    ollama?: {
+      model: string;
+      url: string;
+    };
     automatically_label_queries: boolean;
+    acp?: {
+      command: string;
+      args: string[];
+      env: Record<string, string>;
+      cwd?: string;
+    };
     mcp: {
       enable: boolean;
       port: number;

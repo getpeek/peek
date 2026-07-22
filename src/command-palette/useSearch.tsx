@@ -86,7 +86,7 @@ export const useSearch = (query: string): SearchResult[] => {
     ...(groupWithAiCommand ? [groupWithAiCommand] : []),
     ...(regroupAllWithAiCommand ? [regroupAllWithAiCommand] : []),
     toggleRegionsCommand,
-    toggleAutomaticallyLabelQueriesCommand,
+    ...(toggleAutomaticallyLabelQueriesCommand ? [toggleAutomaticallyLabelQueriesCommand] : []),
     togglePageDisplayCommand,
     toggleCommandPaletteButtonCommand,
     toggleCollaborationButtonCommand,

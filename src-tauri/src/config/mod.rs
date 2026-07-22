@@ -245,26 +245,110 @@ impl Default for McpConfig {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AIConfig {
-    model: String,
-    url: String,
-    /// Ask the AI for a short label when a query node is executed.
-    #[serde(default)]
-    pub automatically_label_queries: bool,
-    #[serde(default)]
-    pub mcp: McpConfig,
+/// Which backend answers the built-in agent. `Ollama` is the in-frontend
+/// `LangChain` flow against the `ai.ollama` endpoint (OpenAI/Ollama-compatible,
+/// local or remote); `Acp` spawns an external Agent Client Protocol agent (e.g.
+/// Claude Code) that drives the canvas through Peek's own MCP server. Each node
+/// picks its own provider; this is only the default for new nodes.
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum AiProvider {
+    // `alias` keeps configs written with the earlier `"api"` value loading.
+    #[default]
+    #[serde(alias = "api")]
+    Ollama,
+    Acp,
 }
 
-impl Default for AIConfig {
+/// The OpenAI/Ollama-compatible completion endpoint. Backs the agent's `ollama`
+/// provider and all background AI (query labels, AI region names). Its presence
+/// under `ai` is what enables those features — absent means they're unavailable.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct OllamaConfig {
+    #[serde(default = "OllamaConfig::default_model")]
+    pub model: String,
+    #[serde(default = "OllamaConfig::default_url")]
+    pub url: String,
+}
+
+impl OllamaConfig {
+    fn default_model() -> String {
+        "gemma4:e2b".to_string()
+    }
+
+    fn default_url() -> String {
+        "http://localhost:11434".to_string()
+    }
+}
+
+impl Default for OllamaConfig {
     fn default() -> Self {
         Self {
-            model: "gemma4:e2b".to_string(),
-            url: "http://localhost:11434".to_string(),
-            automatically_label_queries: false,
-            mcp: McpConfig::default(),
+            model: Self::default_model(),
+            url: Self::default_url(),
         }
     }
+}
+
+/// How to spawn an ACP agent subprocess. Defaults to the Claude Code adapter run
+/// through `npx`; point `command`/`args` at any ACP-compatible agent (Gemini CLI,
+/// etc.). The agent owns its own auth — pass credentials it expects (e.g.
+/// `ANTHROPIC_API_KEY`) through `env`.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AcpConfig {
+    #[serde(default = "AcpConfig::default_command")]
+    pub command: String,
+    #[serde(default = "AcpConfig::default_args")]
+    pub args: Vec<String>,
+    #[serde(default)]
+    pub env: std::collections::HashMap<String, String>,
+    /// Session root handed to the agent at `session/new`. Falls back to the
+    /// user's home directory when unset.
+    #[serde(default)]
+    pub cwd: Option<String>,
+}
+
+impl AcpConfig {
+    fn default_command() -> String {
+        "npx".to_string()
+    }
+
+    fn default_args() -> Vec<String> {
+        vec![
+            "-y".to_string(),
+            "@agentclientprotocol/claude-agent-acp".to_string(),
+        ]
+    }
+}
+
+impl Default for AcpConfig {
+    fn default() -> Self {
+        Self {
+            command: Self::default_command(),
+            args: Self::default_args(),
+            env: std::collections::HashMap::new(),
+            cwd: None,
+        }
+    }
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct AIConfig {
+    /// Default backend for new Agent nodes; each node can switch. `alias`
+    /// migrates the older flat `provider` key.
+    #[serde(default, alias = "provider")]
+    pub default_provider: AiProvider,
+    /// Present iff the ollama/OpenAI-compatible backend is configured.
+    #[serde(default)]
+    pub ollama: Option<OllamaConfig>,
+    /// Ask the AI for a short label when a query node is executed (needs `ollama`).
+    #[serde(default)]
+    pub automatically_label_queries: bool,
+    /// Present iff an external ACP agent is configured.
+    #[serde(default)]
+    pub acp: Option<AcpConfig>,
+    #[serde(default)]
+    pub mcp: McpConfig,
 }
 
 impl PeekConfig {

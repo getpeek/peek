@@ -1,7 +1,9 @@
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { IconDatabaseImport, IconRobot } from "@tabler/icons-react";
+import { IconBulb, IconDatabaseImport, IconRobot } from "@tabler/icons-react";
 import type { Message } from "../../hooks/useExecutePrompt";
+import { AcpToolBlock } from "./AcpToolBlock";
+import { PlanBlock } from "./PlanBlock";
 
 interface MessageItemProps {
   message: Message;
@@ -24,6 +26,28 @@ export const MessageItem = ({ message, index, contextUpdated }: MessageItemProps
         </span>
       </div>
     );
+  }
+
+  if (message.type === "thought") {
+    return (
+      <div className='ev ev-thought'>
+        <span className='ev-ico'>
+          <IconBulb size={14} />
+        </span>
+        <span className='ev-main'>
+          <span className='ev-title'>Thinking</span>
+          <span className='ev-thought-body'>{message.message}</span>
+        </span>
+      </div>
+    );
+  }
+
+  if (message.type === "plan") {
+    return <PlanBlock entries={message.planEntries ?? []} />;
+  }
+
+  if (message.type === "acp_tool") {
+    return <AcpToolBlock message={message} />;
   }
 
   if (message.type === "system") {

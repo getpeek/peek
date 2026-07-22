@@ -510,3 +510,266 @@ pre.code-block.is-error {
   background: var(--pk-red);
   color: #fff;
 }
+
+/* ---------- ACP: mode selector (header pill + popover) ---------- */
+.acp-mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px 3px 8px;
+  border: 1px solid var(--pk-node-border);
+  border-radius: 999px;
+  background: var(--pk-node-inset);
+  color: var(--pk-fg-muted);
+  font: 600 10.5px var(--pk-font-mono);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    border-color 0.12s;
+}
+.acp-mode-pill:hover {
+  color: var(--pk-fg);
+  border-color: var(--pk-accent-line);
+}
+.acp-mode-pill svg {
+  color: var(--pk-fg-subtle);
+}
+
+.acp-mode-dropdown {
+  padding: 5px !important;
+  background: var(--pk-node-bg) !important;
+  border: 1px solid var(--pk-node-border) !important;
+
+  .acp-mode-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 150px;
+  }
+  .acp-mode-opt {
+    text-align: left;
+    padding: 6px 9px;
+    border: 0;
+    border-radius: var(--pk-radius-card);
+    background: transparent;
+    color: var(--pk-fg-muted);
+    font: 600 11.5px var(--pk-font-mono);
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    transition:
+      color 0.12s,
+      background 0.12s;
+  }
+  .acp-mode-opt:hover {
+    color: var(--pk-fg);
+    background: var(--pk-node-inset);
+  }
+  .acp-mode-opt.is-active {
+    color: var(--pk-accent-soft);
+    background: var(--pk-node-inset);
+  }
+  .acp-mode-hint {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    padding: 6px 9px 2px;
+    border-top: 1px solid var(--pk-node-border);
+    color: var(--pk-fg-subtle);
+    font: 400 10px var(--pk-font-mono);
+  }
+  .acp-mode-hint kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 15px;
+    padding: 1px 3px;
+    border: 1px solid var(--pk-node-border);
+    border-radius: 4px;
+    background: var(--pk-node-inset);
+    color: var(--pk-fg-muted);
+    font: 500 10px var(--pk-font-mono);
+  }
+  .acp-mode-hint span {
+    margin-left: 2px;
+  }
+}
+
+/* ---------- No backend configured ---------- */
+.agent-unconfigured {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  padding: 32px 28px;
+  text-align: center;
+  color: var(--pk-fg-subtle);
+
+  svg {
+    color: var(--pk-red);
+  }
+  .agent-unconfigured-title {
+    font: 600 13px var(--pk-font-mono);
+    color: var(--pk-fg);
+  }
+  .agent-unconfigured-body {
+    font: 400 12px/1.6 var(--pk-font-mono);
+    color: var(--pk-fg-muted);
+    max-width: 42ch;
+  }
+  code {
+    font: 500 0.92em var(--pk-font-mono);
+    color: var(--pk-accent-soft);
+    background: var(--pk-node-inset);
+    padding: 1px 5px;
+    border-radius: 5px;
+    border: 1px solid var(--pk-node-border);
+  }
+}
+
+/* ---------- ACP: MCP-disabled warning ---------- */
+.acp-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: var(--pk-node-inset);
+  border-bottom: 1px solid var(--pk-node-border);
+  color: var(--pk-fg-muted);
+  font: 400 11px var(--pk-font-mono);
+
+  svg {
+    color: var(--pk-red);
+    flex: none;
+  }
+}
+
+/* ---------- ACP: agent thought ---------- */
+.ev-thought .ev-ico {
+  color: var(--pk-fg-subtle);
+  background: var(--pk-node-inset);
+}
+.ev-thought-body {
+  font: 400 11.5px/1.55 var(--pk-font-mono);
+  color: var(--pk-fg-muted);
+  font-style: italic;
+  white-space: pre-wrap;
+}
+
+/* ---------- ACP: plan ---------- */
+.acp-plan {
+  border: 1px solid var(--pk-node-border);
+  border-radius: var(--pk-radius-card);
+  background: var(--pk-node-inset);
+  padding: 9px 11px;
+
+  .acp-plan-title {
+    font: 700 9px var(--pk-font-mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--pk-fg-subtle);
+    margin-bottom: 7px;
+  }
+  .acp-plan-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .acp-plan-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font: 400 12px/1.45 var(--pk-font-mono);
+    color: var(--pk-fg-muted);
+  }
+  .acp-plan-ico {
+    flex: none;
+    display: inline-flex;
+    color: var(--pk-fg-subtle);
+    margin-top: 1px;
+  }
+  .acp-plan-item.is-in_progress {
+    color: var(--pk-fg);
+  }
+  .acp-plan-item.is-in_progress .acp-plan-ico {
+    color: var(--pk-accent);
+  }
+  .acp-plan-item.is-completed {
+    color: var(--pk-fg-subtle);
+    text-decoration: line-through;
+  }
+  .acp-plan-item.is-completed .acp-plan-ico {
+    color: var(--pk-green);
+  }
+}
+
+/* ---------- ACP: permission prompt ---------- */
+.acp-permission {
+  margin: 0 10px 8px;
+  border: 1px solid var(--pk-accent-line);
+  border-radius: var(--pk-radius-card);
+  background: var(--pk-node-inset);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .acp-permission-head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font: 700 10px var(--pk-font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pk-accent-soft);
+  }
+  .acp-permission-tool {
+    font: 500 12.5px var(--pk-font-mono);
+    color: var(--pk-fg);
+  }
+  .acp-permission-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .acp-perm-btn {
+    padding: 5px 11px;
+    border: 1px solid var(--pk-node-border);
+    border-radius: 7px;
+    background: var(--pk-node-bg-2);
+    color: var(--pk-fg);
+    font: 600 11.5px var(--pk-font-mono);
+    cursor: pointer;
+    transition: filter 0.12s;
+  }
+  .acp-perm-btn:hover {
+    filter: brightness(1.12);
+  }
+  .acp-perm-btn.is-allow_once,
+  .acp-perm-btn.is-allow_always {
+    background: var(--pk-accent);
+    border-color: var(--pk-accent);
+    color: #14111b;
+  }
+  .acp-perm-btn.is-reject_once,
+  .acp-perm-btn.is-reject_always,
+  .acp-perm-btn.is-cancel {
+    color: var(--pk-fg-muted);
+  }
+}
+
+/* Spinner for in-flight ACP tool calls. */
+.acp-spin {
+  animation: acp-spin 0.9s linear infinite;
+}
+@keyframes acp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

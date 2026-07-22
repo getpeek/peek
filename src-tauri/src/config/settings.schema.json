@@ -22,24 +22,64 @@
     },
     "ai": {
       "type": "object",
-      "description": "Local AI model configuration. Peek talks to an Ollama-compatible endpoint.",
+      "description": "AI configuration for the built-in agent and background features.",
       "additionalProperties": false,
       "properties": {
-        "model": {
+        "default_provider": {
           "type": "string",
-          "default": "gemma4:e2b",
-          "description": "Model identifier passed to the AI endpoint."
+          "enum": ["ollama", "acp"],
+          "default": "ollama",
+          "description": "Default backend for new Agent nodes (each node can switch). 'ollama' uses the ollama block below; 'acp' spawns an external Agent Client Protocol agent (e.g. Claude Code)."
         },
-        "url": {
-          "type": "string",
-          "format": "uri",
-          "default": "http://localhost:11434",
-          "description": "Base URL of the Ollama-compatible AI server."
+        "ollama": {
+          "type": "object",
+          "description": "OpenAI/Ollama-compatible completion endpoint (local or remote). Backs the 'ollama' agent provider and background AI (query labels, region names). Omit this block to disable those features.",
+          "additionalProperties": false,
+          "properties": {
+            "model": {
+              "type": "string",
+              "default": "gemma4:e2b",
+              "description": "Model identifier passed to the endpoint."
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "default": "http://localhost:11434",
+              "description": "Base URL of the OpenAI/Ollama-compatible server."
+            }
+          }
         },
         "automatically_label_queries": {
           "type": "boolean",
           "default": false,
-          "description": "When a query node is executed, ask the AI for a short label and show it as the node's title."
+          "description": "When a query node is executed, ask the AI for a short label and show it as the node's title. Requires the ollama block."
+        },
+        "acp": {
+          "type": "object",
+          "description": "External ACP agent to spawn when provider is 'acp'. Defaults to the Claude Code adapter via npx. Best paired with mcp.enable so the agent can drive the canvas.",
+          "additionalProperties": false,
+          "properties": {
+            "command": {
+              "type": "string",
+              "default": "npx",
+              "description": "Executable that launches the ACP agent."
+            },
+            "args": {
+              "type": "array",
+              "items": { "type": "string" },
+              "default": ["-y", "@agentclientprotocol/claude-agent-acp"],
+              "description": "Arguments passed to the agent command."
+            },
+            "env": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "description": "Extra environment variables for the agent subprocess (e.g. ANTHROPIC_API_KEY). The agent handles its own auth."
+            },
+            "cwd": {
+              "type": "string",
+              "description": "Session root handed to the agent. Defaults to the user's home directory."
+            }
+          }
         },
         "mcp": {
           "type": "object",
@@ -60,8 +100,7 @@
             }
           }
         }
-      },
-      "required": ["model", "url"]
+      }
     },
     "canvas": {
       "type": "object",

@@ -16,8 +16,26 @@ export interface ToolCall {
   args: unknown;
 }
 
+export interface PlanEntry {
+  content: string;
+  priority: "high" | "medium" | "low";
+  status: "pending" | "in_progress" | "completed";
+}
+
 export interface Message {
-  type: "user" | "assistant" | "system" | "context" | "tool_call" | "tool_result";
+  type:
+    | "user"
+    | "assistant"
+    | "system"
+    | "context"
+    | "tool_call"
+    | "tool_result"
+    // ACP-only kinds: agent reasoning, its plan, and a tool call it ran itself
+    // (the ACP agent drives tools directly, so these don't use the tool_call /
+    // tool_result pairing the Ollama loop uses).
+    | "thought"
+    | "plan"
+    | "acp_tool";
   message: string;
   timestamp: number;
   contextKey?: string;
@@ -26,6 +44,11 @@ export interface Message {
   toolCallId?: string;
   toolName?: string;
   isError?: boolean;
+  /** `acp_tool`: the ACP tool kind (read/edit/execute/…) and live status. */
+  toolKind?: string;
+  toolStatus?: "pending" | "in_progress" | "completed" | "failed";
+  /** `plan`: the agent's current plan snapshot. */
+  planEntries?: PlanEntry[];
 }
 
 /**
@@ -41,8 +64,8 @@ export function createPromptRunner(opts: {
   const { tools, systemPrompt, config } = opts;
 
   const baseModel = new ChatOllama({
-    model: config.ai.model,
-    baseUrl: config.ai.url,
+    model: config.ai.ollama?.model,
+    baseUrl: config.ai.ollama?.url,
     streaming: true,
     numThread: 32,
     keepAlive: "10m",

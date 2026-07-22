@@ -1,99 +1,58 @@
-import { NodeProps, NodeResizer } from "@xyflow/react";
+import { NodeProps } from "@xyflow/react";
 import { useAtomValue } from "jotai";
-import { useEffect, useRef, useState } from "react";
-import { useExecutePrompt } from "../../hooks/useExecutePrompt";
-import { configAtom } from "../../../state";
-import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
-import { HiddenHandles } from "../HiddenHandles";
-import { NodeHeader } from "../NodeHeader";
-import { NodeIndicator } from "../NodeIndicator";
-import { ChatInput } from "./ChatInput";
-import { ChatEmptyState } from "./EmptyState";
-import { MessageItem } from "./MessageItem";
-import { MessageList } from "./MessageList";
-import { ThinkingIndicator } from "./ThinkingIndicator";
-import { AGENT_SYSTEM_PROMPT, AGENT_TOOLS } from "./agentTools";
-import { useAgentContextSync } from "./useAgentContextSync";
-import { useAgentStream } from "./useAgentStream";
-import { useAgentTools } from "./useAgentTools";
-import type { AgentNode as AgentNodeT } from "../../types";
+import { configAtom, type AgentProvider } from "../../../state";
+import { useCanvas } from "../../hooks/useCanvas";
+import { AcpAgentNode } from "./AcpAgentNode";
+import { AgentUnconfigured } from "./AgentUnconfigured";
+import { OllamaAgentNode } from "./OllamaAgentNode";
+import type { AgentData, AgentNode as AgentNodeT } from "../../types";
 import "./agent.css";
 
-const DEFAULT_W = 540;
-const DEFAULT_H = 400;
+export interface AgentBackendProps extends NodeProps<AgentNodeT> {
+  provider: AgentProvider;
+  setProvider: (provider: AgentProvider) => void;
+  availableProviders: AgentProvider[];
+}
 
-export function AgentNode({ id, data, selected, width, height }: NodeProps<AgentNodeT>) {
-  const [question, setQuestion] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesScrollRef = useRef<HTMLDivElement>(null);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  useScrollFallthrough(bodyRef);
-
+// One node kind, two backends: a backend is available only if its settings block
+// (`ai.ollama` / `ai.acp`) is present. The node's own `data.provider` wins, else
+// `ai.default_provider`, else the first available. Each backend owns its own
+// hooks (the ACP one starts a subprocess on mount), so they're separate
+// components rather than a runtime branch inside one hook body.
+export function AgentNode(props: NodeProps<AgentNodeT>) {
   const config = useAtomValue(configAtom);
-  const modelName = config?.ai.model ?? "model";
+  const canvas = useCanvas();
 
-  const runPrompt = useExecutePrompt({ tools: AGENT_TOOLS, systemPrompt: AGENT_SYSTEM_PROMPT });
-  const handlers = useAgentTools({ nodeId: id });
-  const { ask, stop, isLoading, incomingMessage } = useAgentStream({
-    nodeId: id,
-    runPrompt,
-    handlers,
-  });
+  const availableProviders: AgentProvider[] = [];
+  if (config?.ai.ollama) {
+    availableProviders.push("ollama");
+  }
+  if (config?.ai.acp) {
+    availableProviders.push("acp");
+  }
 
-  useAgentContextSync({ nodeId: id });
+  if (availableProviders.length === 0) {
+    return (
+      <AgentUnconfigured
+        id={props.id}
+        selected={!!props.selected}
+        width={props.width}
+        height={props.height}
+      />
+    );
+  }
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [data.messages.length, incomingMessage, isLoading]);
+  const preferred = props.data.provider ?? config?.ai.default_provider;
+  const provider =
+    preferred && availableProviders.includes(preferred) ? preferred : availableProviders[0];
 
-  const w = width ?? DEFAULT_W;
-  const h = height ?? DEFAULT_H;
+  const setProvider = (next: AgentProvider) =>
+    canvas.updateNodeData<AgentData>(props.id, d => ({ ...d, provider: next }));
 
-  const submit = () => {
-    const q = question;
-    setQuestion("");
-    ask(q);
-  };
+  const backendProps: AgentBackendProps = { ...props, provider, setProvider, availableProviders };
 
-  const hasVisibleMessages = data.messages.length > 0;
-
-  return (
-    <>
-      <NodeResizer isVisible={!!selected} minWidth={400} minHeight={300} />
-      <HiddenHandles connectableTarget />
-      <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
-        <NodeHeader nodeId={id} name={modelName} indicator={<NodeIndicator kind='agent' />} />
-        <div className='app-node-body nodrag' ref={bodyRef}>
-          <div className='chat-container'>
-            <div className='messages-container' ref={messagesScrollRef}>
-              {hasVisibleMessages ? (
-                <MessageList messages={data.messages} scrollRef={messagesScrollRef} />
-              ) : (
-                <ChatEmptyState />
-              )}
-              {incomingMessage && (
-                <MessageItem
-                  message={{
-                    type: "assistant",
-                    message: incomingMessage,
-                    timestamp: Date.now(),
-                  }}
-                  index={data.messages.length}
-                />
-              )}
-              {isLoading && !incomingMessage && <ThinkingIndicator />}
-              <div ref={messagesEndRef} />
-            </div>
-            <ChatInput
-              value={question}
-              onChange={setQuestion}
-              onSubmit={submit}
-              onStop={stop}
-              isLoading={isLoading}
-            />
-          </div>
-        </div>
-      </div>
-    </>
-  );
+  if (provider === "acp") {
+    return <AcpAgentNode {...backendProps} />;
+  }
+  return <OllamaAgentNode {...backendProps} />;
 }

@@ -1,3 +1,4 @@
+mod acp_commands;
 pub mod config;
 mod database;
 mod database_commands;
@@ -153,6 +154,7 @@ pub fn run() {
         .manage(schema_cache)
         .manage(backend)
         .manage(Arc::clone(&pending))
+        .manage(acp_commands::AcpState::new())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
@@ -214,6 +216,12 @@ pub fn run() {
             multiplayer_commands::mp_doc_del,
             multiplayer_commands::mp_gossip_send,
             mcp_commands::mcp_respond,
+            acp_commands::acp_open_session,
+            acp_commands::acp_prompt,
+            acp_commands::acp_set_mode,
+            acp_commands::acp_cancel,
+            acp_commands::acp_permission_respond,
+            acp_commands::acp_stop,
             set_connection
         ])
         .run(tauri::generate_context!())

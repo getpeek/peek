@@ -23,6 +23,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 peek-lsp = { path = "crates/lsp" }
 peek-mcp = { path = "crates/mcp" }
+peek-acp = { path = "crates/acp" }
 tauri = { version = "2.11.0", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-fs = "2"
@@ -89,7 +90,7 @@ objc2-app-kit = { version = "0.3", features = ["NSColor", "NSWindow"] }
 opt-level = 1
 
 [workspace]
-members = ["crates/lsp", "crates/mcp"]
+members = ["crates/lsp", "crates/mcp", "crates/acp"]
 
 [workspace.lints.clippy]
 all = { level = "deny", priority = -1 }

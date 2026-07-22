@@ -69,7 +69,8 @@ export function useLabelQuery(nodeId: string, data: QueryData): void {
     const finished = wasRunning.current && !running;
     wasRunning.current = running;
 
-    if (!finished || !config?.ai.automatically_label_queries) {
+    // Needs the ollama endpoint; when it's not configured, auto-labeling is off.
+    if (!finished || !config?.ai.automatically_label_queries || !config.ai.ollama) {
       return;
     }
     if (session?.role === "joiner" || !data.query.trim() || labeledQuery === data.query) {

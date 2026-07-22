@@ -19,8 +19,10 @@ pub(crate) struct SchemaInput {
                    only those tables; omit for the whole schema. Use it to write queries."
 )]
 pub(crate) async fn get_db_schema(input: SchemaInput) -> Result<CallToolResult, tower_mcp::Error> {
-    Ok(match bridge::request("db_schema", json!({ "tables": input.tables })).await {
-        Ok(schema) => CallToolResult::text(schema.as_str().unwrap_or_default().to_string()),
-        Err(e) => CallToolResult::error(e),
-    })
+    Ok(
+        match bridge::request("db_schema", json!({ "tables": input.tables })).await {
+            Ok(schema) => CallToolResult::text(schema.as_str().unwrap_or_default().to_string()),
+            Err(e) => CallToolResult::error(e),
+        },
+    )
 }

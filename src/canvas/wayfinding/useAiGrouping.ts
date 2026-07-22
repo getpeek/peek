@@ -203,8 +203,8 @@ export function useAiGrouping() {
 
   const runModel = (system: string, human: string) => {
     const model = new ChatOllama({
-      model: config?.ai.model,
-      baseUrl: config?.ai.url,
+      model: config?.ai.ollama?.model,
+      baseUrl: config?.ai.ollama?.url,
       streaming: false,
       numThread: 32,
       keepAlive: "10m",

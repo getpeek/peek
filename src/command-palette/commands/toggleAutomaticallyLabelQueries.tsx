@@ -4,9 +4,14 @@ import { useAtom } from "jotai";
 import { configAtom } from "../../state";
 import type { CommandPaletteResult } from ".";
 
-export const useToggleAutomaticallyLabelQueriesCommand = (): CommandPaletteResult => {
+export const useToggleAutomaticallyLabelQueriesCommand = (): CommandPaletteResult | null => {
   const [config, setConfig] = useAtom(configAtom);
   const enabled = config?.ai.automatically_label_queries ?? false;
+
+  // Labeling needs the ollama endpoint; no point offering the toggle without it.
+  if (!config?.ai.ollama) {
+    return null;
+  }
 
   return {
     icon: <IconTag size={16} />,

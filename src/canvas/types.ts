@@ -39,6 +39,8 @@ export type ResultInsertFormData = {
 export type AgentData = {
   query: string;
   messages: Message[];
+  /** Chosen backend for this node; falls back to `ai.default_provider` when unset. */
+  provider?: "ollama" | "acp";
 };
 
 export type ChartType = "bar" | "line" | "area";

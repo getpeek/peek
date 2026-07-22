@@ -1,11 +1,15 @@
 import { IconSparkles } from "@tabler/icons-react";
+import { useAtomValue } from "jotai";
+import { configAtom } from "../../state";
 import { useRegroupAllWithAi } from "../../canvas/wayfinding/useRegroupAllWithAi";
 import type { CommandPaletteResult } from ".";
 
 export const useRegroupAllWithAiCommand = (): CommandPaletteResult | null => {
+  const config = useAtomValue(configAtom);
   const regroupAll = useRegroupAllWithAi();
 
-  if (!regroupAll) {
+  // AI grouping runs through the ollama endpoint; hide it when that's not set up.
+  if (!config?.ai.ollama || !regroupAll) {
     return null;
   }
 

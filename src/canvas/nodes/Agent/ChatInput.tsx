@@ -9,9 +9,18 @@ interface ChatInputProps {
   onSubmit: () => void;
   onStop: () => void;
   isLoading: boolean;
+  /** Shift+Tab cycles the ACP agent's mode; omitted on the Ollama path. */
+  onCycleMode?: () => void;
 }
 
-export function ChatInput({ value, onChange, onSubmit, onStop, isLoading }: ChatInputProps) {
+export function ChatInput({
+  value,
+  onChange,
+  onSubmit,
+  onStop,
+  isLoading,
+  onCycleMode,
+}: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useLayoutEffect(() => {
@@ -31,6 +40,11 @@ export function ChatInput({ value, onChange, onSubmit, onStop, isLoading }: Chat
           value={value}
           onChange={e => onChange(e.target.value)}
           onKeyDown={e => {
+            if (e.key === "Tab" && e.shiftKey && onCycleMode) {
+              e.preventDefault();
+              onCycleMode();
+              return;
+            }
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               if (!isLoading) {
