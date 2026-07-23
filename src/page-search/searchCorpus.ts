@@ -1,13 +1,3 @@
-import type { ComponentType } from "react";
-import {
-  IconAlertTriangle,
-  IconAt,
-  IconChartBar,
-  IconCode,
-  IconLetterT,
-  IconSparkles,
-  IconTable,
-} from "@tabler/icons-react";
 import type { AppNode, AppNodeType } from "../canvas/types";
 import type { DatabaseResult } from "../state";
 import { nodeHeading } from "../canvas/nodes/Result/queryHeading";
@@ -21,25 +11,10 @@ export interface NodeSearchEntry {
   label: string;
   snippet: string;
   haystack: string;
-  /** Source SQL, carried so the active row's fold-out can pretty-print it. */
-  sql?: string;
+  /** What the title is fuzzy-matched against — the same as `label`, except for result
+   *  nodes whose title is their SQL: they match on their data, never the query. */
+  titleMatch: string;
 }
-
-interface KindMeta {
-  badge: string;
-  Icon: ComponentType<{ size?: number }>;
-}
-
-export const KIND_META: Record<SearchableNodeType, KindMeta> = {
-  query: { badge: "SQL", Icon: IconCode },
-  result: { badge: "RESULT", Icon: IconTable },
-  agent: { badge: "AGENT", Icon: IconSparkles },
-  text: { badge: "TEXT", Icon: IconLetterT },
-  variable: { badge: "VARS", Icon: IconAt },
-  "table-definition": { badge: "TABLE", Icon: IconTable },
-  "query-error": { badge: "ERROR", Icon: IconAlertTriangle },
-  barchart: { badge: "CHART", Icon: IconChartBar },
-};
 
 // Cells beyond this row count don't enter the haystack — enough to find a node
 // by a value it displays without stringifying a 100k-row result on every keystroke.
@@ -50,10 +25,22 @@ const collapse = (text: string): string => text.replaceAll(/\s+/gu, " ").trim();
 
 const title = (text: string): string => collapse(text).slice(0, 60);
 
-// The searchable representation of one node: `label` is what the row shows (and what
-// highlight ranges apply to), `haystack` is everything the node contains. Returns null
-// for kinds with nothing meaningful to search (freehand strokes, insert forms).
+// The searchable representation of one node: `label` is what the row shows, `titleMatch`
+// is what the title is fuzzy-matched against (empty for result nodes so they match only on
+// their data), and `haystack` is the node's other searchable content.
 export function describeNode(node: AppNode, rows: DatabaseResult): NodeSearchEntry | null {
+  const entry = baseEntry(node, rows);
+  if (entry === null) {
+    return null;
+  }
+  return { ...entry, titleMatch: entry.type === "result" ? "" : entry.label };
+}
+
+// Returns null for kinds with nothing meaningful to search (freehand strokes, insert forms).
+function baseEntry(
+  node: AppNode,
+  rows: DatabaseResult,
+): Omit<NodeSearchEntry, "titleMatch"> | null {
   switch (node.type) {
     case "query":
       return {
@@ -62,7 +49,6 @@ export function describeNode(node: AppNode, rows: DatabaseResult): NodeSearchEnt
         label: node.data.description || nodeHeading(node.data.query),
         snippet: collapse(node.data.query),
         haystack: [node.data.description, node.data.query].filter(Boolean).join(" "),
-        sql: node.data.query,
       };
     case "result": {
       const columns = rows[0]?.map(([column]) => column) ?? [];
@@ -74,8 +60,7 @@ export function describeNode(node: AppNode, rows: DatabaseResult): NodeSearchEnt
         type: node.type,
         label: nodeHeading(node.data.query),
         snippet: columns.length > 0 ? columns.join(" · ") : collapse(node.data.query),
-        haystack: [node.data.query, ...columns, ...cells].join(" "),
-        sql: node.data.query,
+        haystack: cells.join(" "),
       };
     }
     case "agent": {

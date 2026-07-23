@@ -6,13 +6,16 @@ import { IconSearch } from "@tabler/icons-react";
 import { pageSearchOpenAtom } from "../state";
 import { NO_FIND, nodesAtom, resultFindAtom, resultsAtom } from "../canvas/state";
 import { useCanvasApi } from "../canvas/hooks/useCanvas";
-import { findCellMatches } from "./cellMatches";
+import { findRowMatches } from "./cellMatches";
 import { useHotkey } from "../app/useHotkey";
 import { useKeymap } from "../app/keymap";
 import { highlightMatch } from "../Connection/highlightMatch";
-import { useNodeSearch } from "./useNodeSearch";
-import { KIND_META } from "./searchCorpus";
+import { useNodeSearch, type NodeSearchResult } from "./useNodeSearch";
+import type { SearchableNodeType } from "./searchCorpus";
+import { NodeIndicator } from "../canvas/nodes/NodeIndicator";
 import { PageSearchDetails } from "./PageSearchDetails";
+
+const MAX_RESULTS_PER_TYPE = 3;
 
 export const PageSearch = () => {
   const [show, setShow] = useAtom(pageSearchOpenAtom);
@@ -32,6 +35,31 @@ export const PageSearch = () => {
   const findNodes = useRef<Set<string>>(new Set());
   const appliedQuery = useRef("");
   const keymap = useKeymap();
+
+  // Group the flat fuzzysort results by node type: the group holding the best-ranked
+  // hit leads, and rows keep their score order within a group, capped at the top
+  // MAX_RESULTS_PER_TYPE per type. `ordered` is those rows flattened back into visual
+  // order, so the cursor walks straight down across group boundaries; `groupViews`
+  // carries each row's flat index for keyboard/ref wiring.
+  const groups: { type: SearchableNodeType; rows: NodeSearchResult[] }[] = [];
+  for (const result of results) {
+    const group = groups.find(g => g.type === result.entry.type);
+    if (!group) {
+      groups.push({ type: result.entry.type, rows: [result] });
+    } else if (group.rows.length < MAX_RESULTS_PER_TYPE) {
+      group.rows.push(result);
+    }
+  }
+  const ordered = groups.flatMap(group => group.rows);
+  let flatOffset = 0;
+  const groupViews = groups.map(group => {
+    const start = flatOffset;
+    flatOffset += group.rows.length;
+    return {
+      type: group.type,
+      rows: group.rows.map((result, i) => ({ result, index: start + i })),
+    };
+  });
 
   const clearFindMode = () => {
     for (const id of findNodes.current) {
@@ -77,7 +105,7 @@ export const PageSearch = () => {
   useHotkeys([["Escape", cancel]]);
 
   const moveCursor = (direction: -1 | 1) => {
-    setCursor(prev => Math.max(0, Math.min(results.length - 1, prev + direction)));
+    setCursor(prev => Math.max(0, Math.min(ordered.length - 1, prev + direction)));
   };
 
   useEffect(() => {
@@ -90,14 +118,14 @@ export const PageSearch = () => {
     if (!show || !canvas) {
       return;
     }
-    const id = results[cursor]?.entry.id;
+    const id = ordered[cursor]?.entry.id;
     if (!id || flownTo.current === id) {
       return;
     }
     flownTo.current = id;
     canvas.selectOnly(id);
     canvas.fitNode(id, { duration: 400 });
-  }, [show, canvas, cursor, results]);
+  }, [show, canvas, cursor, ordered]);
 
   // Put every result node whose cells match the query into find mode (with the
   // query as its find value) so the matching cells highlight on the canvas, and
@@ -112,7 +140,7 @@ export const PageSearch = () => {
         if (node.type !== "result") {
           continue;
         }
-        if (findCellMatches(resultRows[node.id] ?? [], query).length > 0) {
+        if (findRowMatches(resultRows[node.id] ?? [], query).length > 0) {
           next.add(node.id);
         }
       }
@@ -154,7 +182,7 @@ export const PageSearch = () => {
             [
               "Enter",
               () => {
-                const entry = results[cursor]?.entry;
+                const entry = ordered[cursor]?.entry;
                 if (entry) {
                   commit(entry.id);
                 }
@@ -177,42 +205,45 @@ export const PageSearch = () => {
             No nodes match <b>“{query}”</b>
           </div>
         ) : (
-          results.map(({ entry, labelHighlight }, i) => {
-            const active = i === cursor;
-            const meta = KIND_META[entry.type];
-            const foldOut = entry.type === "query" || entry.type === "result";
-            return (
-              <div
-                ref={el => {
-                  itemRefs.current[i] = el;
-                }}
-                key={entry.id}
-                className={`page-search-row-wrap ${active ? "active" : ""}`}
-                data-kind={entry.type}
-              >
-                <div
-                  className='page-search-row'
-                  onClick={() => commit(entry.id)}
-                  onMouseEnter={() => setCursor(i)}
-                >
-                  <div className='page-search-row-icon'>
-                    <meta.Icon size={16} />
-                  </div>
-                  <div className='page-search-row-text'>
-                    <span className='page-search-row-title'>
-                      {highlightMatch(labelHighlight, entry.label)}
-                    </span>
-                    <span className='page-search-row-snippet'>{entry.snippet}</span>
-                  </div>
-                  <div className='page-search-row-right'>
-                    <span className='page-search-kind'>{meta.badge}</span>
-                    {active && <kbd>↵</kbd>}
-                  </div>
-                </div>
-                {active && foldOut && <PageSearchDetails entry={entry} query={query} />}
+          groupViews.map(group => (
+            <div className='page-search-group' key={group.type}>
+              <div className='page-search-group-header'>
+                <NodeIndicator kind={group.type} />
               </div>
-            );
-          })
+              {group.rows.map(({ result: { entry, labelHighlight }, index }) => {
+                const active = index === cursor;
+                const foldOut = entry.type === "result";
+                return (
+                  <div
+                    ref={el => {
+                      itemRefs.current[index] = el;
+                    }}
+                    key={entry.id}
+                    className={`page-search-row-wrap ${active ? "active" : ""}`}
+                  >
+                    <div
+                      className='page-search-row'
+                      onClick={() => commit(entry.id)}
+                      onMouseEnter={() => setCursor(index)}
+                    >
+                      <div className='page-search-row-text'>
+                        <span className='page-search-row-title'>
+                          {highlightMatch(labelHighlight, entry.label)}
+                        </span>
+                        <span className='page-search-row-snippet'>{entry.snippet}</span>
+                      </div>
+                      {active && (
+                        <div className='page-search-row-right'>
+                          <kbd>↵</kbd>
+                        </div>
+                      )}
+                    </div>
+                    {active && foldOut && <PageSearchDetails entry={entry} query={query} />}
+                  </div>
+                );
+              })}
+            </div>
+          ))
         )}
       </div>
       <div className='page-search-footer'>

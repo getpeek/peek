@@ -96,30 +96,28 @@
   }
 }
 
+.page-search-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  & + & {
+    margin-top: 10px;
+  }
+}
+
+/* Sticky so the type label stays visible while its rows scroll under it. */
+.page-search-group-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 6px 10px 5px;
+  background: color-mix(in oklab, var(--pk-node-bg), transparent 20%);
+  backdrop-filter: blur(20px);
+}
+
 .page-search-row-wrap {
-  --pk-node-type-color: var(--pk-accent);
-
   border-radius: var(--pk-radius-node);
-
-  /* Same kind → tint mapping as the node cards (node.css). */
-  &[data-kind="query"] {
-    --pk-node-type-color: var(--pk-type-query);
-  }
-  &[data-kind="result"] {
-    --pk-node-type-color: var(--pk-type-result);
-  }
-  &[data-kind="agent"] {
-    --pk-node-type-color: var(--pk-type-agent);
-  }
-  &[data-kind="barchart"] {
-    --pk-node-type-color: var(--pk-type-chart);
-  }
-  &[data-kind="query-error"] {
-    --pk-node-type-color: var(--pk-type-error);
-  }
-  &[data-kind="variable"] {
-    --pk-node-type-color: var(--pk-type-variable);
-  }
 
   &.active {
     background: color-mix(in oklab, var(--pk-fg), transparent 93%);
@@ -133,10 +131,10 @@
 
 .page-search-row {
   display: grid;
-  grid-template-columns: 34px 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 12px;
-  padding: 8px 10px;
+  padding: 7px 10px 7px 22px;
   border-radius: var(--pk-radius-node);
   cursor: pointer;
   user-select: none;
@@ -144,19 +142,6 @@
 
   &:hover {
     background: color-mix(in oklab, var(--pk-fg), transparent 96%);
-  }
-
-  .page-search-row-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    border: 1px solid var(--pk-node-border);
-    background: var(--pk-node-bg-2);
-    color: var(--pk-node-type-color);
-    flex-shrink: 0;
   }
 
   .page-search-row-text {
@@ -200,102 +185,73 @@
     gap: 8px;
     flex-shrink: 0;
   }
-
-  .page-search-kind {
-    font-family: var(--pk-font-mono);
-    font-size: 8.5px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    color: var(--pk-node-type-color);
-    border: 1px solid color-mix(in oklab, var(--pk-node-type-color), transparent 60%);
-    background: color-mix(in oklab, var(--pk-node-type-color), transparent 88%);
-    padding: 2px 5px;
-    border-radius: 3px;
-  }
 }
 
 .page-search-strip {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 2px 8px 8px;
-  padding: 10px 12px;
+  margin: 2px 8px 8px 22px;
   border: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 40%);
   border-radius: 8px;
   overflow: hidden;
   user-select: text;
   animation: page-search-strip-reveal 0.16s ease both;
 
-  .page-search-strip-sql {
-    margin: 0;
-    max-height: 200px;
-    overflow: auto;
-    font-family: var(--pk-font-mono);
-    font-size: 12px;
-    line-height: 1.55;
-    color: var(--pk-fg-muted);
-    white-space: pre;
-
-    .sql-keyword {
-      color: var(--pk-accent);
-      font-weight: 500;
-    }
-
-    .sql-string {
-      color: var(--pk-green);
-    }
-
-    .sql-number {
-      color: var(--pk-yellow);
-    }
-
-    .sql-comment {
-      color: var(--pk-fg-subtle);
-      font-style: italic;
-    }
-
-    .sql-operator {
-      color: var(--pk-red);
-    }
-
-    .sql-identifier {
-      color: var(--pk-fg);
-    }
+  .page-search-table-scroll {
+    overflow-x: auto;
   }
 
-  .page-search-strip-cell {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    min-width: 0;
+  .page-search-table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: collapse;
     font-family: var(--pk-font-mono);
     font-size: 12px;
 
-    .cell-column {
-      flex-shrink: 0;
-      color: var(--pk-accent-soft);
+    th,
+    td {
+      padding: 5px 10px;
+      text-align: left;
+      white-space: nowrap;
+      border-bottom: 1px solid color-mix(in oklab, var(--pk-node-border), transparent 65%);
     }
 
-    .cell-value {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    thead th {
+      color: var(--pk-accent-soft);
+      font-weight: 500;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    td {
       color: var(--pk-fg-muted);
 
-      mark.match {
-        background: color-mix(in oklab, var(--pk-accent), transparent 66%);
+      &[data-match] {
         color: var(--pk-fg);
-        border-radius: 2px;
-        padding: 0 1px;
       }
     }
 
-    .cell-row {
-      flex-shrink: 0;
+    .page-search-cell {
+      display: block;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .page-search-table-index {
       color: var(--pk-fg-subtle);
       font-size: 10.5px;
+      text-align: right;
+    }
+
+    mark.match {
+      background: color-mix(in oklab, var(--pk-accent), transparent 66%);
+      color: var(--pk-fg);
+      border-radius: 2px;
+      padding: 0 1px;
     }
   }
 }

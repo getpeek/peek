@@ -21,6 +21,6 @@ export const useNodeSearch = (query: string): NodeSearchResult[] => {
     .filter((entry): entry is NodeSearchEntry => entry !== null);
 
   return fuzzysort
-    .go(query, entries, { keys: ["label", "haystack"], limit: 20 })
-    .map(result => ({ entry: result.obj, labelHighlight: result[0] }));
+    .go(query, entries, { keys: ["titleMatch", "haystack"] })
+    .map(result => ({ entry: result.obj, labelHighlight: result[0] ?? undefined }));
 };
