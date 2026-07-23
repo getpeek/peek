@@ -70,6 +70,7 @@ tokio = { version = "1", features = [
   "rt-multi-thread",
   "time",
   "fs",
+  "process",
 ] }
 url = "2"
 iroh = "1"

@@ -125,59 +125,131 @@ fn start_result(info: &SessionInfo, mcp_enabled: bool) -> AcpStartResult {
     }
 }
 
-/// Build the spawn config, recovering the user's real `PATH` first.
+/// Build the spawn config, resolving the command to an absolute path first.
 ///
 /// macOS/Linux apps launched from the Dock/Finder inherit a stripped `PATH`
 /// (`/usr/bin:/bin:…`) that omits Homebrew, nvm, Volta, etc., so the configured
-/// command (`npx` by default) can't be found — the subprocess dies before
-/// `initialize` and surfaces as "connection closed before initialization". We
-/// resolve the command to an absolute path and hand the child the login-shell
-/// `PATH` so `npx` can in turn find `node` and the package it launches. Under
-/// `tauri dev` the inherited `PATH` already works, so this is a harmless no-op.
-fn build_spawn_config(acp: AcpConfig) -> AcpSpawnConfig {
-    let mut command = acp.command;
+/// command (`npx` by default) can't be found — the subprocess then dies before
+/// `initialize` with a cryptic `os error 2`. We build a search path from the
+/// login shell's `PATH` plus the well-known locations a GUI launch drops,
+/// resolve the command against it, and hand the child the same `PATH` so a
+/// wrapper launcher (`npx` → `node`) can find its own dependencies. Under
+/// `tauri dev` the inherited `PATH` already works, so this only refines it.
+///
+/// # Errors
+/// Returns an error if a bare command can't be found on the search path, so the
+/// node surfaces an actionable message instead of a downstream `os error 2`.
+async fn build_spawn_config(acp: AcpConfig) -> Result<AcpSpawnConfig, String> {
     let mut env: Vec<(String, String)> = acp.env.into_iter().collect();
+    let search_path = resolved_search_path().await;
 
-    if let Some(path) = login_shell_path() {
-        if let Some(absolute) = resolve_in_path(&command, &path) {
-            command = absolute;
-        }
-        // Respect a PATH the user set explicitly in `ai.acp.env`.
-        if !env.iter().any(|(key, _)| key == "PATH") {
-            env.push(("PATH".to_string(), path));
-        }
+    // Respect a PATH the user pinned in `ai.acp.env`; otherwise give the child
+    // the recovered one so `npx` can in turn resolve `node`.
+    if !env.iter().any(|(key, _)| key == "PATH") {
+        env.push(("PATH".to_string(), search_path.clone()));
     }
 
-    AcpSpawnConfig {
-        command,
+    Ok(AcpSpawnConfig {
+        command: resolve_command(&acp.command, &search_path)?,
         args: acp.args,
         env,
+    })
+}
+
+/// Resolve the agent command to an absolute path. A command that already
+/// contains `/` is a path and used verbatim; a bare name is looked up on
+/// `search_path`. Erroring for an unresolvable bare name (rather than spawning
+/// it and hitting `os error 2`) lets the node tell the user what to fix.
+fn resolve_command(command: &str, search_path: &str) -> Result<String, String> {
+    if command.contains('/') {
+        return Ok(command.to_string());
     }
+    resolve_in_path(command, search_path).ok_or_else(|| {
+        format!(
+            "Couldn't find `{command}` on your PATH. Install it, or set `ai.acp.command` to an absolute path in settings."
+        )
+    })
+}
+
+/// The directories to search for the agent command, and the `PATH` handed to the
+/// child: the login shell's `PATH`, then Peek's own inherited `PATH`, then the
+/// fallbacks a GUI launch strips — de-duplicated, first occurrence wins.
+///
+/// Folding in the inherited `PATH` keeps the child's environment a superset of
+/// Peek's own, so essentials like `/bin` (the `sh` that `npm` shells out to) are
+/// always present even when the login probe fails; the probe and fallbacks then
+/// add Homebrew/nvm so `npx` itself resolves. Because it's a superset, overriding
+/// the child's `PATH` is never worse than inheriting it (which is what made
+/// `tauri dev` work before).
+async fn resolved_search_path() -> String {
+    let login = login_shell_path().await.unwrap_or_default();
+    let inherited = std::env::var("PATH").unwrap_or_default();
+    let mut dirs: Vec<String> = Vec::new();
+    for dir in login
+        .split(':')
+        .chain(inherited.split(':'))
+        .map(str::to_string)
+        .chain(fallback_path_dirs())
+    {
+        if !dir.is_empty() && !dirs.contains(&dir) {
+            dirs.push(dir);
+        }
+    }
+    dirs.join(":")
+}
+
+/// Directories to search even when neither the login-shell probe nor the
+/// inherited `PATH` lists them: the Homebrew/version-manager dirs a Dock/Finder
+/// launch strips, plus the base system dirs so `sh`, `env`, … always resolve.
+fn fallback_path_dirs() -> Vec<String> {
+    let mut dirs = vec![
+        "/opt/homebrew/bin".to_string(),
+        "/opt/homebrew/sbin".to_string(),
+        "/usr/local/bin".to_string(),
+    ];
+    if let Ok(home) = std::env::var("HOME") {
+        for suffix in [".volta/bin", ".local/bin", ".cargo/bin"] {
+            dirs.push(format!("{home}/{suffix}"));
+        }
+    }
+    // Base system dirs last, so a wrapper the user actually uses wins, but `sh`
+    // and friends still resolve if everything else somehow omits them.
+    for dir in ["/usr/bin", "/bin", "/usr/sbin", "/sbin"] {
+        dirs.push(dir.to_string());
+    }
+    dirs
 }
 
 /// The user's real `PATH`, read from their login shell. `None` when `$SHELL` is
 /// unset (e.g. Windows, where GUI apps already inherit the full `PATH`) or the
-/// probe fails; callers then fall back to the inherited environment.
-fn login_shell_path() -> Option<String> {
+/// probe fails or times out; callers then fall back to [`fallback_path_dirs`].
+async fn login_shell_path() -> Option<String> {
     let shell = std::env::var("SHELL").ok()?;
-    let output = std::process::Command::new(shell)
-        .args(["-ilc", "printf '%s' \"$PATH\""])
-        .output()
-        .ok()?;
-    let stdout = String::from_utf8(output.stdout).ok()?;
-    // An interactive login shell can print rc-file noise before our output, so
-    // take the last non-empty line — `printf` emits PATH with no trailing newline.
-    let path = stdout.lines().rev().find(|line| !line.trim().is_empty())?;
-    Some(path.trim().to_string())
+    // Fence the value in sentinels so rc-file chatter (greetings, async prompt
+    // plugins) printed around our line can't be mistaken for the PATH, and cap
+    // the wait so a shell that blocks on init can't hang agent-node creation.
+    let output = tokio::time::timeout(
+        Duration::from_secs(5),
+        tokio::process::Command::new(shell)
+            .args([
+                "-ilc",
+                "printf '__PEEK_PATH_BEGIN__%s__PEEK_PATH_END__' \"$PATH\"",
+            ])
+            .output(),
+    )
+    .await
+    .ok()?
+    .ok()?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let start = stdout.find("__PEEK_PATH_BEGIN__")? + "__PEEK_PATH_BEGIN__".len();
+    let end = stdout[start..].find("__PEEK_PATH_END__")? + start;
+    let path = stdout[start..end].trim();
+    (!path.is_empty()).then(|| path.to_string())
 }
 
-/// Resolve a bare command name against `path`, returning its absolute location.
-/// `None` when the command is already a path (contains `/`, so use it verbatim)
-/// or nothing matches on `path`.
+/// Find a bare command name on `path`, returning its absolute location, or
+/// `None` if nothing matches.
 fn resolve_in_path(command: &str, path: &str) -> Option<String> {
-    if command.contains('/') {
-        return None;
-    }
     path.split(':')
         .map(|dir| std::path::Path::new(dir).join(command))
         .find(|candidate| candidate.is_file())
@@ -199,7 +271,7 @@ async fn ensure_connection(
         .ai
         .acp
         .ok_or_else(|| "ACP is not configured (ai.acp)".to_string())?;
-    let config = build_spawn_config(acp);
+    let config = build_spawn_config(acp).await?;
     let host = Arc::new(TauriAcpHost {
         app: app.clone(),
         pending: Arc::clone(&state.pending),

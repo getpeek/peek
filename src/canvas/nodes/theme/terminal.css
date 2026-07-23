@@ -51,7 +51,7 @@
      --pk-radius-window is left alone — it tracks the native window squircle. */
   --pk-radius-node: 0px;
   --pk-radius-card: 0px;
-  --pk-radius-pill: 0px;
+  --pk-radius-pill: 999px;
 
   /* Black field with an ordered-dither dot overlay; the grid comes from xyflow's
      Background (tinted by --pk-bg-grid above). */
@@ -139,7 +139,6 @@
    Selectors match PageSelector.css's nested specificity so the theme link (loaded
    after the bundled component CSS) wins on source order. */
 .titlebar-page-selector .page-tab {
-  border-radius: 0;
   &:input {
     color: var(--pk-bg);
   }
