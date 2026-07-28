@@ -68,7 +68,7 @@ export function ResultInsertFormNode({
 
   return (
     <>
-      <NodeResizer isVisible={!!selected} minWidth={360} minHeight={140} />
+      <NodeResizer minWidth={360} minHeight={140} />
       <HiddenHandles connectableTarget />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader

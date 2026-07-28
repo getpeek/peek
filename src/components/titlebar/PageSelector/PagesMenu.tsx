@@ -60,12 +60,19 @@ export function PagesMenu() {
     setOpen(false);
   };
 
+  // The rename input owns focus while open; hand it back to the list so the
+  // arrow/Enter/r hotkeys keep working after the input unmounts.
+  const endRename = () => {
+    setRenamingId(null);
+    listRef.current?.focus();
+  };
+
   const commitRename = (id: string, current: string, value: string) => {
     const name = value.trim();
     if (name.length > 0 && name !== current) {
       renamePage(id, name);
     }
-    setRenamingId(null);
+    endRename();
   };
 
   return (
@@ -95,6 +102,15 @@ export function PagesMenu() {
             ],
             ["ArrowUp", () => setCursor(c => Math.max(0, c - 1))],
             ["ArrowDown", () => setCursor(c => Math.min(pages.length - 1, c + 1))],
+            [
+              "r",
+              () => {
+                const page = pages[cursor];
+                if (page) {
+                  setRenamingId(page.id);
+                }
+              },
+            ],
             [
               "Enter",
               () => {
@@ -147,7 +163,10 @@ export function PagesMenu() {
                         commitRename(page.id, page.name, e.currentTarget.value);
                       }
                       if (e.key === "Escape") {
-                        setRenamingId(null);
+                        // endRename moves focus, which fires onBlur while the input is
+                        // still mounted — restore the name first so that commit no-ops.
+                        e.currentTarget.value = page.name;
+                        endRename();
                       }
                       e.stopPropagation();
                     }}
@@ -158,7 +177,7 @@ export function PagesMenu() {
                 )}
                 {!renaming && (
                   <span className='pl-actions'>
-                    <Tooltip label='Rename'>
+                    <Tooltip label='Rename (r)'>
                       <button
                         onClick={e => {
                           e.stopPropagation();

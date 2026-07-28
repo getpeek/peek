@@ -170,7 +170,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
 
   return (
     <>
-      <NodeResizer isVisible={!!selected} minWidth={320} minHeight={200} />
+      <NodeResizer minWidth={320} minHeight={200} />
       <HiddenHandles connectableTarget />
       <div
         className={`app-node ${selected ? "selected" : ""} ${isLive ? "is-live" : ""}`}

@@ -74,7 +74,7 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
 
   return (
     <>
-      <NodeResizer isVisible={!!selected} minWidth={220} minHeight={140} />
+      <NodeResizer minWidth={220} minHeight={140} />
       <Handle
         id='top'
         type='source'

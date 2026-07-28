@@ -61,7 +61,7 @@ export function TextNode({ id, data, selected, width, height }: NodeProps<TextNo
 
   return (
     <>
-      <NodeResizer isVisible={!!selected} minWidth={80} minHeight={32} />
+      <NodeResizer minWidth={80} minHeight={32} />
       <HiddenHandles />
       <div
         ref={wrapperRef}

@@ -63,7 +63,7 @@ export const ResultNode = memo(function ResultNode({
 
   return (
     <>
-      <NodeResizer isVisible={!!selected} minWidth={400} minHeight={260} />
+      <NodeResizer minWidth={400} minHeight={260} />
       <HiddenHandles connectableTarget />
       <Handle
         id='out-top'

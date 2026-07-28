@@ -25,7 +25,7 @@ export function TableDefinitionNode({
 
   return (
     <>
-      <NodeResizer isVisible={!!selected} minWidth={300} minHeight={140} />
+      <NodeResizer minWidth={300} minHeight={140} />
       <HiddenHandles />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader

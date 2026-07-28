@@ -89,7 +89,7 @@ The database schema looks like this ${JSON.stringify(schema, null, 2)}. You can 
 
   return (
     <>
-      <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
+      <NodeResizer minWidth={300} minHeight={200} />
       <HiddenHandles />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader

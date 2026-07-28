@@ -16,7 +16,7 @@ interface AgentUnconfiguredProps {
 export function AgentUnconfigured({ id, selected, width, height }: AgentUnconfiguredProps) {
   return (
     <>
-      <NodeResizer isVisible={selected} minWidth={400} minHeight={300} />
+      <NodeResizer minWidth={400} minHeight={300} />
       <HiddenHandles connectableTarget />
       <div
         className={`app-node ${selected ? "selected" : ""}`}

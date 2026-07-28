@@ -151,13 +151,3 @@
   background: var(--pk-bg);
   box-shadow: none;
 }
-
-/* ---- Square the corner-bracket resize handles ----
-   node.css rounds each handle's outer corner (border-*-radius: 9px). Match its
-   per-corner selector specificity so the shorthand reset wins on source order. */
-.react-flow__node.selected .react-flow__resize-control.handle.top.left,
-.react-flow__node.selected .react-flow__resize-control.handle.top.right,
-.react-flow__node.selected .react-flow__resize-control.handle.bottom.left,
-.react-flow__node.selected .react-flow__resize-control.handle.bottom.right {
-  border-radius: 0;
-}

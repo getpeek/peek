@@ -620,61 +620,23 @@
      compositing layer per highlighted edge). */
 }
 
-/* Resize handles (xyflow NodeResizer) */
+/* Resize handles (xyflow NodeResizer) — every node is resizable at all times,
+   so the handles carry no chrome of their own: they are invisible grab zones
+   centered on each corner, found by the cursor xyflow puts on them. Drawing
+   them would put a mark on every node on the page, and the selection ring
+   above is already the only selection cue. Left uncentered they would also ring
+   each node in `nodrag` area that useRubberBandSelect refuses to start on. */
 .react-flow__resize-control.handle {
   background: transparent;
   border: none;
-  width: 13px;
-  height: 13px;
-}
-/* Push each handle outward from the corner so the bracket wraps just past the
-   node edge, roughly on the selection ring. xyflow keeps the handle a constant
-   screen size via an inline `scale: 1/zoom` transform, but margin is layout —
-   it lands in scaled-viewport space and would render as `4px * zoom`. Divide by
-   --pk-zoom so the gap stays a fixed on-screen distance at any zoom level. */
-.react-flow__resize-control.handle.top {
-  margin-top: calc(-4px / var(--pk-zoom, 1));
-}
-.react-flow__resize-control.handle.bottom {
-  margin-top: calc(4px / var(--pk-zoom, 1));
-}
-.react-flow__resize-control.handle.left {
-  margin-left: calc(-4px / var(--pk-zoom, 1));
-}
-.react-flow__resize-control.handle.right {
-  margin-left: calc(4px / var(--pk-zoom, 1));
+  width: 14px;
+  height: 14px;
 }
 
-/* Corner-bracket handles: two adjacent borders + a rounded outer corner, so
-   each reads as the rounded corner of the node it grabs (└ bottom-left,
-   ┘ bottom-right, etc.) rather than a square dot. */
-.react-flow__node.selected .react-flow__resize-control.handle {
-  background: transparent;
-  border: 2px solid var(--pk-node-type-color);
-}
-.react-flow__node.selected .react-flow__resize-control.handle.top.left {
-  border-right: none;
-  border-bottom: none;
-  border-top-left-radius: 9px;
-}
-.react-flow__node.selected .react-flow__resize-control.handle.top.right {
-  border-left: none;
-  border-bottom: none;
-  border-top-right-radius: 9px;
-}
-.react-flow__node.selected .react-flow__resize-control.handle.bottom.left {
-  border-right: none;
-  border-top: none;
-  border-bottom-left-radius: 9px;
-}
-.react-flow__node.selected .react-flow__resize-control.handle.bottom.right {
-  border-left: none;
-  border-top: none;
-  border-bottom-right-radius: 9px;
-}
-
-/* The resizer's edge lines would draw a second rectangle right on the node
-   border — hide them so only our offset ring reads as the selection. */
+/* Corners only. The edge lines sit right on the node border, so leaving them
+   live would wrap every node in a 1px resize-cursor strip that also swallows
+   rubber-band starts. */
 .react-flow__resize-control.line {
   border-color: transparent;
+  pointer-events: none;
 }

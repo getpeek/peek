@@ -46,7 +46,7 @@ export function BarChartNode({ id, data, selected, width, height }: NodeProps<Ba
   if (data.data.length === 0) {
     return (
       <>
-        <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
+        <NodeResizer minWidth={300} minHeight={200} />
         <HiddenHandles />
         <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
           <NodeHeader nodeId={id} name='empty' indicator={<NodeIndicator kind='barchart' />} />
@@ -71,7 +71,7 @@ export function BarChartNode({ id, data, selected, width, height }: NodeProps<Ba
 
   return (
     <>
-      <NodeResizer isVisible={!!selected} minWidth={300} minHeight={200} />
+      <NodeResizer minWidth={300} minHeight={200} />
       <HiddenHandles />
       <div className={`app-node ${selected ? "selected" : ""}`} style={{ width: w, height: h }}>
         <NodeHeader
