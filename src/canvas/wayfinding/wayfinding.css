@@ -305,6 +305,28 @@
   }
 }
 
+/* One-shot ring marking the region a selection just folded into. Drawn as its own
+   box rather than a state on .wf-region-halo, whose confirmed styling is fully
+   transparent at working zoom. */
+.wf-region-flash {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 28px;
+  border: 2px solid var(--rc);
+  background: color-mix(in oklab, var(--rc) 7%, transparent);
+  animation: wf-region-flash 0.9s ease-out forwards;
+}
+
+@keyframes wf-region-flash {
+  from {
+    opacity: 0.9;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes wf-spin {
   to {
     transform: rotate(360deg);

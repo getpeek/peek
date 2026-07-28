@@ -123,10 +123,11 @@ Action names are `Group::Variant`. The full set, with default bindings:
 
 ### Regions
 
-| Action                   | Default  | Description                        |
-| ------------------------ | -------- | ---------------------------------- |
-| `Region::GroupSelection` | `meta-g` | Group selected nodes into a region |
-| `Region::OpenPicker`     | `r`      | Open the regions picker            |
+| Action                     | Default        | Description                             |
+| -------------------------- | -------------- | --------------------------------------- |
+| `Region::GroupSelection`   | `meta-g`       | Group selected nodes into a region      |
+| `Region::UngroupSelection` | `meta-shift-g` | Remove selected nodes from their region |
+| `Region::OpenPicker`       | `r`            | Open the regions picker                 |
 
 ### Other
 

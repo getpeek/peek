@@ -92,6 +92,10 @@ export const KEYMAP_REFERENCE: KeymapSection[] = [
     title: "Regions",
     entries: [
       { action: "Region::GroupSelection", description: "Group selected nodes into a region" },
+      {
+        action: "Region::UngroupSelection",
+        description: "Remove selected nodes from their region",
+      },
       { action: "Region::OpenPicker", description: "Open the regions picker" },
     ],
   },

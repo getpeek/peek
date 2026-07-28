@@ -1,9 +1,10 @@
 import { ViewportPortal } from "@xyflow/react";
 import { IconSparkles } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
-import { useState, type CSSProperties } from "react";
+import { Fragment, useState, type CSSProperties } from "react";
 import { nodesAtom, regionsAtom } from "../state";
 import { deriveRegions, regionColorVar, type DerivedRegion } from "./regionGeometry";
+import { flashedRegionIdAtom } from "./state";
 import { useRegionActions } from "./useRegionActions";
 import { useRegionsEnabled } from "./useRegionsEnabled";
 import "./wayfinding.css";
@@ -24,6 +25,7 @@ export function RegionHalos() {
   const regionsEnabled = useRegionsEnabled();
   const nodes = useAtomValue(nodesAtom);
   const regions = useAtomValue(regionsAtom);
+  const flashedId = useAtomValue(flashedRegionIdAtom);
 
   const derived = deriveRegions(nodes, regions);
   if (!regionsEnabled || derived.length === 0) {
@@ -32,14 +34,37 @@ export function RegionHalos() {
 
   return (
     <ViewportPortal>
-      {derived.map(d =>
-        d.region.status === "suggested" ? (
-          <SuggestedRegion key={d.region.id} derived={d} />
-        ) : (
-          <ConfirmedRegion key={d.region.id} derived={d} />
-        ),
-      )}
+      {derived.map(d => (
+        <Fragment key={d.region.id}>
+          {d.region.status === "suggested" ? (
+            <SuggestedRegion derived={d} />
+          ) : (
+            <ConfirmedRegion derived={d} />
+          )}
+          {d.region.id === flashedId && <FlashRing derived={d} />}
+        </Fragment>
+      ))}
     </ViewportPortal>
+  );
+}
+
+// Confirmed halos are transparent above the beacon fade threshold, so a fold-in
+// needs its own ring to be visible at working zoom levels.
+function FlashRing({ derived }: { derived: DerivedRegion }) {
+  const { region, bbox } = derived;
+  return (
+    <div
+      className='wf-region-flash'
+      style={
+        {
+          left: bbox.x,
+          top: bbox.y,
+          width: bbox.w,
+          height: bbox.h,
+          "--rc": regionColorVar(region.colorIndex),
+        } as CSSProperties
+      }
+    />
   );
 }
 

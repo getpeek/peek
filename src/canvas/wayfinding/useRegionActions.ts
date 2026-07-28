@@ -19,17 +19,25 @@ export function useRegionActions() {
     status?: RegionStatus;
   }): string => {
     const id = ids.region();
-    setRegions(prev => [
-      ...prev,
-      {
-        id,
-        name: opts.name,
-        desc: opts.desc ?? "",
-        colorIndex: prev.length % REGION_COLOR_COUNT,
-        status: opts.status ?? "confirmed",
-        memberIds: opts.memberIds,
-      },
-    ]);
+    const claimed = new Set(opts.memberIds);
+    setRegions(prev => {
+      // A node belongs to one region: strip the new members from any region that
+      // already holds them, dropping the ones the claim empties out.
+      const others = prev
+        .map(r => ({ ...r, memberIds: r.memberIds.filter(memberId => !claimed.has(memberId)) }))
+        .filter(r => r.memberIds.length > 0);
+      return [
+        ...others,
+        {
+          id,
+          name: opts.name,
+          desc: opts.desc ?? "",
+          colorIndex: others.length % REGION_COLOR_COUNT,
+          status: opts.status ?? "confirmed",
+          memberIds: opts.memberIds,
+        },
+      ];
+    });
     return id;
   };
 
@@ -60,6 +68,17 @@ export function useRegionActions() {
             : { ...r, memberIds: r.memberIds.filter(id => !claimed.has(id)) },
         )
         .filter(r => r.id === regionId || r.memberIds.length > 0),
+    );
+  };
+
+  // Pull nodes out of whatever region holds them. `pruneEmptyRegions` only runs on
+  // node writes, so drop the regions this empties out here.
+  const removeFromRegions = (nodeIds: string[]) => {
+    const removed = new Set(nodeIds);
+    setRegions(prev =>
+      prev
+        .map(r => ({ ...r, memberIds: r.memberIds.filter(id => !removed.has(id)) }))
+        .filter(r => r.memberIds.length > 0),
     );
   };
 
@@ -94,6 +113,7 @@ export function useRegionActions() {
     createRegion,
     replaceRegions,
     addToRegion,
+    removeFromRegions,
     renameRegion,
     confirmRegion,
     removeRegion,

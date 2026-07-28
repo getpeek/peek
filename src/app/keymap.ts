@@ -36,6 +36,7 @@ export type KeymapAction =
   | "View::ToggleCameraLock"
   | "Result::Pivot"
   | "Region::GroupSelection"
+  | "Region::UngroupSelection"
   | "Region::OpenPicker"
   | "CommandPalette::Open"
   | "ConnectionPicker::Open"

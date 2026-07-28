@@ -15,12 +15,15 @@ export const useGroupSelectionIntoRegionCommand = (): CommandPaletteResult | nul
   }
 
   const selectedCount = nodes.filter(n => n.selected).length;
+  const { foldTargetName } = groupSelection;
   return {
     icon: <IconMapPin size={16} />,
     action: "run",
-    label: `Group ${selectedCount} nodes into region`,
-    searchAgainst: "group region cluster area section label waypoint wayfinding",
+    label: foldTargetName
+      ? `Add ${selectedCount} nodes to “${foldTargetName}”`
+      : `Group ${selectedCount} nodes into region`,
+    searchAgainst: "group region cluster area section label waypoint wayfinding merge",
     keybinding,
-    onSelect: groupSelection,
+    onSelect: groupSelection.run,
   };
 };
