@@ -1,11 +1,14 @@
-.titlebar-collab-button {
-  position: relative;
+.collab-trigger {
+  --collab-trigger-green-line: color-mix(in oklab, var(--pk-green) 35%, transparent);
+
   -webkit-app-region: no-drag;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  background: color-mix(in oklab, var(--pk-green-soft), transparent 50%);
+  gap: 8px;
+  /* Matches the intrinsic height of the ConnectionPicker pill sitting next to it. */
+  height: 28px;
+  padding: 0 12px;
+  background: var(--pk-node-bg);
   border: 1px solid var(--pk-node-border);
   border-radius: var(--pk-radius-pill, 9999px);
   backdrop-filter: blur(12px);
@@ -15,106 +18,88 @@
   transition:
     background 0.12s,
     color 0.12s,
-    border-color 0.12s,
-    width 0.2s;
-
-  &:not(.active) {
-    width: 34px;
-  }
+    border-color 0.12s;
 
   & > svg {
     flex-shrink: 0;
   }
 
   &:hover {
-    background: color-mix(in oklab, var(--pk-green-soft), transparent 50%);
     color: var(--pk-fg);
+    border-color: var(--pk-node-border-strong);
+  }
+
+  &.is-open {
+    color: var(--pk-fg);
+    background: var(--pk-node-bg-2);
+    border-color: var(--pk-node-border-strong);
+  }
+
+  /* Live: the pill itself carries the signal, so it goes green rather than
+     relying on an icon the user has to read. */
+  &.is-live {
+    background: var(--pk-green-soft);
+    border-color: var(--collab-trigger-green-line);
+    color: var(--pk-green);
+  }
+
+  &.is-live:hover {
+    border-color: color-mix(in oklab, var(--pk-green) 60%, transparent);
+    color: var(--pk-green);
+  }
+
+  /* Avatars need the pill to hug them on the left. */
+  &:has(.collab-trigger-avatars) {
+    padding: 0 10px 0 6px;
   }
 }
 
-.collab-hint {
-  font: 500 10px var(--pk-font-sans);
-  color: var(--pk-fg);
+.collab-trigger-label {
   white-space: nowrap;
-  overflow: hidden;
-  width: 0;
-  opacity: 0;
-  transition:
-    width 0.2s,
-    opacity 0.2s;
 }
 
-.titlebar-collab-button:not(.active):hover {
-  width: 110px;
+.collab-trigger-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pk-green);
+  box-shadow: 0 0 8px var(--pk-green);
+  flex-shrink: 0;
+  animation: collab-trigger-pulse 2s infinite;
 }
 
-.titlebar-collab-button:not(.active):hover .collab-hint {
-  width: 72px;
-  opacity: 1;
+@keyframes collab-trigger-pulse {
+  50% {
+    opacity: 0.4;
+  }
 }
 
-.titlebar-collab-button.active {
-  border-color: transparent;
-  color: var(--pk-fg);
-  padding: 3px 6px;
-}
-
-.titlebar-collab-button.active::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(
-    90deg,
-    #ff5e5e,
-    #ffb24c,
-    #f5e85c,
-    #6fea7a,
-    #5cd6e8,
-    #6c8cff,
-    #c87cff,
-    #ff5e5e
-  );
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0.55;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.collab-avatars {
+.collab-trigger-avatars {
   display: inline-flex;
   align-items: center;
 }
 
-.collab-avatar {
+.collab-trigger-avatar {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 1.5px solid var(--pk-node-bg);
-  margin-left: -6px;
+  /* Opaque stand-in for the pill's translucent green fill, so the overlapping
+     stack reads as one group instead of showing the canvas through each ring. */
+  border: 2px solid color-mix(in oklab, var(--pk-bg), var(--pk-green) 12%);
+  margin-left: -5px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font: 600 10px var(--pk-font-sans);
+  font: 600 9px var(--pk-font-sans);
   color: #fff;
   flex-shrink: 0;
-}
 
-.titlebar-collab-button:hover .collab-avatar {
-  border-color: var(--pk-node-bg-2);
-}
+  &:first-child {
+    margin-left: 0;
+  }
 
-.collab-avatar:first-child {
-  margin-left: 0;
-}
-
-.collab-avatar.overflow {
-  background: var(--pk-node-bg-2);
-  color: var(--pk-fg-muted);
+  &.overflow {
+    background: var(--pk-node-bg-2);
+    color: var(--pk-fg-muted);
+  }
 }

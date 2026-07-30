@@ -11,8 +11,14 @@ interface Props {
 export function SharePopover({ onClose }: Props) {
   const session = useAtomValue(sessionStateAtom);
 
-  if (!session) {
-    return <ShareIdlePanel onClose={onClose} />;
-  }
-  return <ShareLivePanel session={session} onClose={onClose} />;
+  return (
+    <div className='collab-panel'>
+      <span className='collab-caret' aria-hidden />
+      {session ? (
+        <ShareLivePanel session={session} onClose={onClose} />
+      ) : (
+        <ShareIdlePanel onClose={onClose} />
+      )}
+    </div>
+  );
 }

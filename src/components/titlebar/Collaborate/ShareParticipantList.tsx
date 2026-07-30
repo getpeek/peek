@@ -8,10 +8,9 @@ import { Tooltip } from "../../Tooltip/Tooltip";
 interface Props {
   session: SessionState;
   peers: Peer[];
-  count: number;
 }
 
-export function ShareParticipantList({ session, peers, count }: Props) {
+export function ShareParticipantList({ session, peers }: Props) {
   const isHost = session.role === "host";
   const doc = useAtomValue(documentAtom);
   const canvasApi = useAtomValue(canvasApiAtom);
@@ -39,17 +38,18 @@ export function ShareParticipantList({ session, peers, count }: Props) {
   return (
     <section className='collab-section'>
       <div className='collab-label'>
-        Collaborators · <span className='collab-count'>{count}</span>
+        Collaborators <span className='collab-count'>· {peers.length + 1}</span>
       </div>
 
-      <ul className='collab-list'>
-        <li className='collab-row'>
-          <span className='collab-avatar' style={{ backgroundColor: session.myColor }}>
-            {initialFromName(session.myName)}
-            <span className='collab-presence' />
+      <ul className='collab-people'>
+        <li className='collab-person'>
+          <span className='collab-avwrap'>
+            <span className='collab-person-avatar' style={{ backgroundColor: session.myColor }}>
+              {initialFromName(session.myName)}
+            </span>
           </span>
           <span className='collab-name'>
-            {session.myName} <span className='collab-page'>{pageNameFor(doc.activePageId)}</span>
+            {session.myName} <i>{pageNameFor(doc.activePageId)}</i>
           </span>
           <span className='collab-role'>{isHost ? "HOST" : "EDITOR"}</span>
         </li>
@@ -63,25 +63,25 @@ export function ShareParticipantList({ session, peers, count }: Props) {
               : p.name;
           return (
             <li
-              className={`collab-row ${known ? "collab-row--clickable" : ""} ${
-                isFollowing ? "collab-row--following" : ""
+              className={`collab-person ${known ? "collab-person--clickable" : ""} ${
+                isFollowing ? "collab-person--following" : ""
               }`}
               key={p.author}
             >
               <Tooltip label={tooltip}>
                 <button
                   type='button'
-                  className='collab-row-button'
+                  className='collab-person-button'
                   onClick={() => handlePeerClick(p)}
                   disabled={!known}
                 >
-                  <span className='collab-avatar' style={{ backgroundColor: p.color }}>
-                    {initialFromName(p.name)}
-                    <span className='collab-presence' />
+                  <span className='collab-avwrap'>
+                    <span className='collab-person-avatar' style={{ backgroundColor: p.color }}>
+                      {initialFromName(p.name)}
+                    </span>
                   </span>
                   <span className='collab-name'>
-                    {p.name}{" "}
-                    <span className='collab-page'>{known ? pageNameFor(p.currentPageId) : ""}</span>
+                    {p.name} <i>{known ? pageNameFor(p.currentPageId) : ""}</i>
                   </span>
                   {isFollowing ? (
                     <span className='collab-following'>Following</span>
@@ -93,6 +93,12 @@ export function ShareParticipantList({ session, peers, count }: Props) {
             </li>
           );
         })}
+        {peers.length === 0 && (
+          <li className='collab-empty'>
+            <span className='collab-spinner' />
+            Nobody's joined yet
+          </li>
+        )}
       </ul>
     </section>
   );

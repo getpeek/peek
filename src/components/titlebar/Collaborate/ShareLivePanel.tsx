@@ -1,12 +1,14 @@
-import { CopyButton } from "@mantine/core";
-import { IconAppWindow, IconCheck, IconTicket, IconWorld, IconX } from "@tabler/icons-react";
+import { IconLogout } from "@tabler/icons-react";
 import { useAtomValue } from "jotai";
+import { useState } from "react";
 import { participantsAtom } from "../../../multiplayer/state";
 import type { SessionState } from "../../../multiplayer/types";
-import { ShareLiveHeader } from "./ShareLiveHeader";
+import { ShareHeader } from "./ShareHeader";
 import { ShareParticipantList } from "./ShareParticipantList";
+import { ShareStatusStrip } from "./ShareStatusStrip";
+import { SHARE_TARGET_LABELS, type ShareTargetKey, ShareTargets } from "./ShareTargets";
 import { useCollaborateActions } from "./useCollaborateActions";
-import { Tooltip } from "../../Tooltip/Tooltip";
+import { useSessionStatusText } from "./useSessionStatusText";
 
 interface Props {
   session: SessionState;
@@ -16,80 +18,50 @@ interface Props {
 export function ShareLivePanel({ session, onClose }: Props) {
   const participants = useAtomValue(participantsAtom);
   const { busy, endSession } = useCollaborateActions({ onClose });
+  const [target, setTarget] = useState<ShareTargetKey>("app");
 
-  const peerEntries = Object.values(participants).filter(p => p.author !== session.myAuthor);
-  const collaboratorCount = 1 + peerEntries.length;
-  const inviteUrl = `peek://invite/${session.ticket}`;
-  const webUrl = `https://getpeek.dev/join/${session.ticket}`;
+  const isHost = session.role === "host";
+  const peers = Object.values(participants).filter(p => p.author !== session.myAuthor);
+  const status = useSessionStatusText({
+    session,
+    peerCount: peers.length,
+    targetLabel: SHARE_TARGET_LABELS[target],
+  });
 
   return (
-    <div className='collab-panel'>
-      <ShareLiveHeader session={session} />
+    <>
+      <ShareHeader
+        live
+        heading={isHost ? "Collaborate" : "In a session"}
+        subhead={status.subhead}
+      />
+      <ShareStatusStrip status={status} busy={busy} onToggle={isHost ? endSession : undefined} />
 
-      <section className='collab-section'>
-        <div className='collab-ticket-row'>
-          <CopyButton value={inviteUrl} timeout={1500}>
-            {({ copied, copy }) => (
-              <Tooltip label='App link'>
-                <button type='button' className='collab-copy-button' onClick={copy}>
-                  {copied ? (
-                    <>
-                      <IconCheck size={13} stroke={1.75} /> Copied
-                    </>
-                  ) : (
-                    <>
-                      <IconAppWindow size={13} stroke={2} /> peek://
-                    </>
-                  )}
-                </button>
-              </Tooltip>
-            )}
-          </CopyButton>
-          <CopyButton value={webUrl} timeout={1500}>
-            {({ copied, copy }) => (
-              <Tooltip label='Web link'>
-                <button type='button' className='collab-copy-button' onClick={copy}>
-                  {copied ? (
-                    <>
-                      <IconCheck size={13} stroke={1.75} /> Copied
-                    </>
-                  ) : (
-                    <>
-                      <IconWorld size={13} stroke={2} /> getpeek.dev
-                    </>
-                  )}
-                </button>
-              </Tooltip>
-            )}
-          </CopyButton>
-          <CopyButton value={session.ticket} timeout={1500}>
-            {({ copied, copy }) => (
-              <Tooltip label='Copy ticket'>
-                <button type='button' className='collab-copy-button' onClick={copy}>
-                  {copied ? (
-                    <>
-                      <IconCheck size={13} stroke={1.75} /> Copied
-                    </>
-                  ) : (
-                    <>
-                      <IconTicket size={13} stroke={2} /> Ticket
-                    </>
-                  )}
-                </button>
-              </Tooltip>
-            )}
-          </CopyButton>
-        </div>
-      </section>
+      {isHost && (
+        <>
+          <section className='collab-section'>
+            <div className='collab-label'>Share</div>
+            <ShareTargets ticket={session.ticket} selected={target} onSelect={setTarget} />
+          </section>
+          <div className='collab-divider' />
+        </>
+      )}
 
-      <div className='collab-divider' />
+      <ShareParticipantList session={session} peers={peers} />
 
-      <ShareParticipantList session={session} peers={peerEntries} count={collaboratorCount} />
-
-      <button type='button' className='collab-end-button' onClick={endSession} disabled={busy}>
-        <IconX size={14} stroke={2} />
-        <span>End session</span>
-      </button>
-    </div>
+      {!isHost && (
+        <section className='collab-section'>
+          <button
+            type='button'
+            className='collab-leave-button'
+            onClick={endSession}
+            disabled={busy}
+          >
+            <IconLogout size={13} stroke={2} />
+            <span>Leave session</span>
+          </button>
+        </section>
+      )}
+    </>
   );
 }

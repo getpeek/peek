@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { MultiplayerControls } from "../../../multiplayer/syncBridge";
+import { normalizeInviteTicket } from "./normalizeInviteTicket";
 
 interface PeekMultiplayerWindow extends Window {
   peekMultiplayer?: MultiplayerControls;
@@ -31,15 +32,15 @@ export function useCollaborateActions({ onClose }: { onClose?: () => void }) {
   };
 
   const joinSession = async () => {
-    const trimmed = ticket.trim();
-    if (!trimmed) {
-      setJoinError("Paste a ticket to join.");
+    const normalized = normalizeInviteTicket(ticket);
+    if (!normalized) {
+      setJoinError("That doesn't look like a Peek link or ticket.");
       return;
     }
     setBusy(true);
     setJoinError(null);
     try {
-      await controls()?.join(trimmed);
+      await controls()?.join(normalized);
       setTicketState("");
       onClose?.();
     } catch (e) {
@@ -49,11 +50,12 @@ export function useCollaborateActions({ onClose }: { onClose?: () => void }) {
     }
   };
 
+  // Deliberately leaves the popover open: flipping the switch off (or leaving a
+  // session) should show the panel settle back into its idle state, not vanish.
   const endSession = async () => {
     setBusy(true);
     try {
       await controls()?.end();
-      onClose?.();
     } catch (e) {
       console.error("end session failed:", e);
     } finally {

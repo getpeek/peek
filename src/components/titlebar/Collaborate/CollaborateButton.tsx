@@ -40,6 +40,7 @@ export function CollaborateButton({ hidden = false }: { hidden?: boolean }) {
   }
   const visible = avatars.slice(0, MAX_AVATARS);
   const overflow = avatars.length - visible.length;
+  const hasCompany = avatars.length > 1;
 
   return (
     <Popover
@@ -59,25 +60,37 @@ export function CollaborateButton({ hidden = false }: { hidden?: boolean }) {
         ) : (
           <button
             ref={targetRef}
-            className={`titlebar-collab-button ${session ? "active" : ""}`}
+            className={`collab-trigger ${session ? "is-live" : ""} ${opened ? "is-open" : ""}`}
             onClick={() => setOpened(o => !o)}
             aria-label={session ? "Open session info" : "Start collaborating"}
           >
-            {session ? (
-              <span className='collab-avatars' aria-hidden>
-                {visible.map(a => (
-                  <Tooltip key={a.key} label={a.name} position='bottom'>
-                    <span className='collab-avatar' style={{ backgroundColor: a.color }}>
-                      {initialFromName(a.name)}
-                    </span>
-                  </Tooltip>
-                ))}
-                {overflow > 0 && <span className='collab-avatar overflow'>+{overflow}</span>}
-              </span>
+            {hasCompany ? (
+              <>
+                <span className='collab-trigger-avatars' aria-hidden>
+                  {visible.map(a => (
+                    <Tooltip key={a.key} label={a.name} position='bottom'>
+                      <span className='collab-trigger-avatar' style={{ backgroundColor: a.color }}>
+                        {initialFromName(a.name)}
+                      </span>
+                    </Tooltip>
+                  ))}
+                  {overflow > 0 && (
+                    <span className='collab-trigger-avatar overflow'>+{overflow}</span>
+                  )}
+                </span>
+                <span className='collab-trigger-label'>{avatars.length} here</span>
+              </>
+            ) : session ? (
+              <>
+                <span className='collab-trigger-dot' aria-hidden />
+                <span className='collab-trigger-label'>
+                  {session.role === "host" ? "Sharing" : "In a session"}
+                </span>
+              </>
             ) : (
               <>
-                <IconUsers size={12} stroke={2} />
-                <span className='collab-hint'>Collaborate</span>
+                <IconUsers size={13} stroke={2} />
+                <span className='collab-trigger-label'>Collaborate</span>
               </>
             )}
           </button>
