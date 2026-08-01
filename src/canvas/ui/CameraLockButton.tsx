@@ -1,4 +1,3 @@
-import { Panel } from "@xyflow/react";
 import { IconLock } from "@tabler/icons-react";
 import { useSetAtom } from "jotai";
 import { cameraLockedAtom } from "../state";
@@ -12,23 +11,21 @@ export function CameraLockButton() {
   const combo = useKeymap()["View::ToggleCameraLock"][0];
 
   return (
-    <Panel position='bottom-right'>
-      <Tooltip label='Unlock camera'>
-        <button
-          type='button'
-          className='camera-lock-button'
-          aria-label='Unlock camera'
-          onClick={() => setCameraLocked(false)}
-        >
-          <IconLock size={16} />
-          {combo &&
-            formatCombo(combo).map(key => (
-              <span className='kbd' key={key}>
-                {key}
-              </span>
-            ))}
-        </button>
-      </Tooltip>
-    </Panel>
+    <Tooltip label='Unlock camera'>
+      <button
+        type='button'
+        className='camera-lock-button'
+        aria-label='Unlock camera'
+        onClick={() => setCameraLocked(false)}
+      >
+        <IconLock size={16} />
+        {combo &&
+          formatCombo(combo).map(key => (
+            <span className='kbd' key={key}>
+              {key}
+            </span>
+          ))}
+      </button>
+    </Tooltip>
   );
 }

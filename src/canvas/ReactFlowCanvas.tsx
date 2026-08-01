@@ -37,11 +37,10 @@ import { ResultInsertFormNode } from "./nodes/ResultInsertForm/ResultInsertFormN
 import { TableDefinitionNode } from "./nodes/TableDefinition/TableDefinitionNode";
 import { TextNode } from "./nodes/Text/TextNode";
 import { VariableNode } from "./nodes/Variable/VariableNode";
-import { CameraLockButton } from "./ui/CameraLockButton";
+import { BottomRightStack } from "./ui/BottomRightStack";
 import { JumpLabels } from "./jump/JumpLabels";
 import { RegionHalos } from "./wayfinding/RegionHalos";
 import { WayfindingLayer } from "./wayfinding/WayfindingLayer";
-import { HideUiDot } from "./ui/HideUiDot";
 import { Toolbar } from "./ui/Toolbar";
 import { ZoomIndicator } from "./ui/ZoomIndicator";
 import { RemoteCursorsLayer } from "../multiplayer/RemoteCursorsLayer";
@@ -281,8 +280,7 @@ function ReactFlowCanvasInner() {
         {!previewing && <RegionHalos />}
         <WayfindingLayer />
         {!previewing && <JumpLabels />}
-        {!uiVisible && <HideUiDot />}
-        {cameraLocked && <CameraLockButton />}
+        <BottomRightStack />
         <RemoteCursorsLayer />
       </ReactFlow>
       <LiveStroke

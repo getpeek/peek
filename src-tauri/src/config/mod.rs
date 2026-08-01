@@ -64,6 +64,15 @@ pub fn set_canvas_enable_regions(enable: bool) -> Result<(), String> {
 /// # Errors
 /// Returns an error if the updated config cannot be written to disk.
 #[tauri::command]
+pub fn set_canvas_minimap(visibility: Visibility) -> Result<(), String> {
+    let mut config = PeekConfig::get_or_default();
+    config.canvas.minimap = visibility;
+    config.save_to_disk()
+}
+
+/// # Errors
+/// Returns an error if the updated config cannot be written to disk.
+#[tauri::command]
 pub fn set_ai_automatically_label_queries(enable: bool) -> Result<(), String> {
     let mut config = PeekConfig::get_or_default();
     config.ai.automatically_label_queries = enable;
@@ -161,11 +170,19 @@ pub struct CanvasConfig {
     /// Region grouping and wayfinding (beacons, edge peekers) on the canvas.
     #[serde(default = "CanvasConfig::default_enable_regions")]
     pub enable_regions: bool,
+    /// Overview minimap in the bottom-right corner of the canvas.
+    #[serde(default = "CanvasConfig::default_minimap")]
+    pub minimap: Visibility,
 }
 
 impl CanvasConfig {
     fn default_enable_regions() -> bool {
         true
+    }
+
+    // Opt-in: `Visibility`'s own default is `Show`, which is wrong here.
+    fn default_minimap() -> Visibility {
+        Visibility::Hide
     }
 }
 
@@ -173,6 +190,7 @@ impl Default for CanvasConfig {
     fn default() -> Self {
         Self {
             enable_regions: Self::default_enable_regions(),
+            minimap: Self::default_minimap(),
         }
     }
 }
@@ -188,7 +206,7 @@ pub enum PageDisplay {
     List,
 }
 
-/// Whether a titlebar element is rendered.
+/// Whether a piece of UI chrome is rendered.
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum Visibility {

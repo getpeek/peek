@@ -1,0 +1,38 @@
+.canvas-minimap {
+  display: block;
+  background: var(--pk-bg);
+  border-radius: var(--pk-radius-card);
+  /* The frame is a shadow ring rather than a border so the element's box stays
+     exactly MM_W x MM_H — the drag maths maps client pixels onto the viewBox
+     through getBoundingClientRect, which a border would skew. */
+  box-shadow:
+    0 0 0 1px var(--pk-node-border),
+    var(--pk-node-shadow-cheap);
+  cursor: crosshair;
+  pointer-events: auto;
+  touch-action: none;
+
+  &.dragging {
+    cursor: grabbing;
+  }
+
+  &.locked {
+    cursor: default;
+  }
+
+  & .mm-node {
+    opacity: 0.5;
+  }
+
+  & .mm-node.selected {
+    opacity: 1;
+    stroke: var(--pk-accent);
+    stroke-width: 1;
+  }
+
+  & .mm-viewport {
+    fill: var(--pk-accent-bg);
+    stroke: var(--pk-accent);
+    stroke-width: 1;
+  }
+}

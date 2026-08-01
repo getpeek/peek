@@ -31,6 +31,7 @@ export interface Config {
   keymap: Record<string, string>;
   canvas: {
     enable_regions: boolean;
+    minimap: "show" | "hide";
   };
   ui: {
     pages: {

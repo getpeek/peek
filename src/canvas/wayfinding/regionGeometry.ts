@@ -1,3 +1,4 @@
+import { nodeHeight, nodeWidth } from "../nodeGeometry";
 import type { AppNode, RegionState } from "../types";
 
 export const REGION_PADDING = 56;
@@ -11,13 +12,6 @@ export type DerivedRegion = {
   /** Members that still exist on the page — memberIds may hold deleted node ids. */
   memberIds: string[];
 };
-
-// Unmeasured nodes (first frames after mount) still get a plausible extent so
-// a region's box doesn't collapse while React Flow measures.
-const FALLBACK_SIZE = 200;
-
-const nodeWidth = (n: AppNode) => n.measured?.width ?? n.width ?? FALLBACK_SIZE;
-const nodeHeight = (n: AppNode) => n.measured?.height ?? n.height ?? FALLBACK_SIZE;
 
 /**
  * Resolve each region against the live nodes: filter dangling members and

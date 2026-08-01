@@ -1,0 +1,13 @@
+/* column-reverse so the list reads top-to-bottom in source order but stacks
+   upward from the corner — the dot stays pinned where it has always been. */
+.bottom-right-stack {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 14px;
+  pointer-events: none;
+
+  & > * {
+    pointer-events: auto;
+  }
+}

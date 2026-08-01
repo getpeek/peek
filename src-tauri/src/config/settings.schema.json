@@ -111,6 +111,12 @@
           "type": "boolean",
           "default": true,
           "description": "Region grouping and wayfinding on the canvas: zoom-out beacons, off-screen edge peekers and the regions menu."
+        },
+        "minimap": {
+          "type": "string",
+          "enum": ["show", "hide"],
+          "default": "hide",
+          "description": "Overview minimap in the bottom-right corner of the canvas: a colored rectangle per node plus the current viewport, draggable to pan."
         }
       }
     },

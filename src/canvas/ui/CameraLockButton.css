@@ -4,8 +4,6 @@
   gap: 7px;
   height: 32px;
   padding: 0 10px;
-  /* Lift clear of HideUiDot, which also anchors bottom-right when the UI is hidden. */
-  margin-bottom: 28px;
   color: var(--pk-fg);
   background: color-mix(in oklab, var(--pk-node-bg), transparent);
   border: 1px solid var(--pk-node-border);

@@ -30,6 +30,7 @@ import { useGroupSelectionIntoRegionCommand } from "./commands/groupSelectionInt
 import { useUngroupSelectionFromRegionCommand } from "./commands/ungroupSelectionFromRegion";
 import { useGroupWithAiCommand } from "./commands/groupWithAi";
 import { useRegroupAllWithAiCommand } from "./commands/regroupAllWithAi";
+import { useToggleMinimapCommand } from "./commands/toggleMinimap";
 import { useToggleRegionsCommand } from "./commands/toggleRegions";
 import { useToggleAutomaticallyLabelQueriesCommand } from "./commands/toggleAutomaticallyLabelQueries";
 import { useTogglePageDisplayCommand } from "./commands/togglePageDisplay";
@@ -73,6 +74,7 @@ export const useSearch = (query: string): SearchResult[] => {
   const groupWithAiCommand = useGroupWithAiCommand();
   const regroupAllWithAiCommand = useRegroupAllWithAiCommand();
   const toggleRegionsCommand = useToggleRegionsCommand();
+  const toggleMinimapCommand = useToggleMinimapCommand();
   const toggleAutomaticallyLabelQueriesCommand = useToggleAutomaticallyLabelQueriesCommand();
   const togglePageDisplayCommand = useTogglePageDisplayCommand();
   const toggleCommandPaletteButtonCommand = useToggleCommandPaletteButtonCommand();
@@ -89,6 +91,7 @@ export const useSearch = (query: string): SearchResult[] => {
     ...(groupWithAiCommand ? [groupWithAiCommand] : []),
     ...(regroupAllWithAiCommand ? [regroupAllWithAiCommand] : []),
     toggleRegionsCommand,
+    toggleMinimapCommand,
     ...(toggleAutomaticallyLabelQueriesCommand ? [toggleAutomaticallyLabelQueriesCommand] : []),
     togglePageDisplayCommand,
     toggleCommandPaletteButtonCommand,

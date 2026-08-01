@@ -199,6 +199,7 @@ pub fn run() {
             config::set_theme,
             config::set_workspaces,
             config::set_canvas_enable_regions,
+            config::set_canvas_minimap,
             config::set_ai_automatically_label_queries,
             config::set_ui_pages_show_as,
             config::set_ui_titlebar_command_palette_button,
