@@ -63,7 +63,7 @@ export function MonacoJsonCell({
   error: string | null;
   saving: boolean;
   onChange: (next: string) => void;
-  onCommit: () => void;
+  onCommit: (draft?: string) => void;
   onCancel: () => void;
 }) {
   const theme = editorThemeForUiTheme(useAtomValue(effectiveThemeAtom));
@@ -146,7 +146,7 @@ export function MonacoJsonCell({
               className='json-mini-btn primary'
               disabled={saving}
               onMouseDown={event => event.preventDefault()}
-              onClick={onCommit}
+              onClick={() => onCommit()}
             >
               Save <span className='kbd'>⌘S</span>
             </button>

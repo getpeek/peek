@@ -1,5 +1,6 @@
 import { Menu } from "@mantine/core";
-import { IconAt, IconFileTypeCsv, IconFileTypeSql, IconJson } from "@tabler/icons-react";
+import { IconAt, IconDownload } from "@tabler/icons-react";
+import { FormatSubmenu } from "./FormatSubmenu";
 import { PortalAnchor } from "./PortalAnchor";
 import type { ExportFormat } from "./export/serializeRows";
 
@@ -58,15 +59,11 @@ export function ResultHeaderMenu({
         <Menu.Item leftSection={<IconAt size={14} />} onClick={useAsVariable}>
           Use as variable
         </Menu.Item>
-        <Menu.Item leftSection={<IconFileTypeCsv size={14} />} onClick={() => exportColumn("csv")}>
-          Export column as CSV
-        </Menu.Item>
-        <Menu.Item leftSection={<IconJson size={14} />} onClick={() => exportColumn("json")}>
-          Export column as JSON
-        </Menu.Item>
-        <Menu.Item leftSection={<IconFileTypeSql size={14} />} onClick={() => exportColumn("sql")}>
-          Export column as SQL
-        </Menu.Item>
+        <FormatSubmenu
+          label='Export column'
+          icon={<IconDownload size={14} />}
+          onSelect={exportColumn}
+        />
       </Menu.Dropdown>
     </Menu>
   );

@@ -31,7 +31,7 @@ export function EditCell({
   saving: boolean;
   variableNames: string[];
   onChange: (v: string) => void;
-  onCommit: () => void;
+  onCommit: (draft?: string) => void;
   onCancel: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
@@ -139,11 +139,6 @@ export function EditCell({
     );
   }
 
-  const clearToNull = () => {
-    onChange("");
-    onCommit();
-  };
-
   const kind: VariableInputKind = isNumeric ? "number" : "text";
 
   return (
@@ -171,7 +166,7 @@ export function EditCell({
             onMouseDown={e => e.preventDefault()}
             onClick={e => {
               e.stopPropagation();
-              clearToNull();
+              onCommit("");
             }}
           >
             NULL

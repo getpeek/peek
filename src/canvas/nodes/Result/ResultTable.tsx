@@ -207,7 +207,7 @@ export const ResultTable = memo(function ResultTable({
                     outbound={outbound[header]}
                     onResizeStart={startResize}
                     onContextMenu={openHeaderMenu}
-                    onSelectColumn={cellSelection.selectColumn}
+                    onHeaderMouseDown={cellSelection.onHeaderMouseDown}
                     onHeaderEnter={ghost.onHeaderEnter}
                   />
                 ))}

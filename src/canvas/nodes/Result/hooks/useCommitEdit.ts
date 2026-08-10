@@ -43,90 +43,97 @@ export function useCommitEdit({
   const editableTable = useMemo(() => getEditableTableName(queryInfo), [queryInfo]);
   const vars = useGetVariablesForNode(nodeId);
 
-  return useCallback(async () => {
-    if (!editing) {
-      return;
-    }
-
-    const setError = (error: string) =>
-      setEditing(current => (current ? { ...current, error } : current));
-
-    const { row, col, draft } = editing;
-    const rowData = data[row];
-    if (!rowData) {
-      return;
-    }
-    const cell = rowData[col];
-    if (!cell) {
-      return;
-    }
-    const [columnName, , columnType] = cell;
-
-    if (!editableTable) {
-      setError("Cannot edit: query is not a single-table SELECT");
-      return;
-    }
-
-    const pkColumns = schema.primaryKeys[editableTable] ?? [];
-    if (pkColumns.length === 0) {
-      setError(`Cannot edit: no primary key on "${editableTable}"`);
-      return;
-    }
-
-    const pks = buildPkAssignments(rowData, pkColumns);
-    if (!pks) {
-      setError(`Row is missing primary key columns (${pkColumns.join(", ")})`);
-      return;
-    }
-
-    let updateSql: string;
-    try {
-      // Resolve the draft against connected variables before quoting; undefined
-      // refs (e.g. typing `@test` with no `test` variable) stay as literal text.
-      const resolvedDraft = substituteVariables(draft, vars.direct).resolved;
-      const newLiteral =
-        resolvedDraft === "" ? "NULL" : formatSqlLiteral(resolvedDraft, columnType);
-      updateSql = buildUpdateSql(editableTable, columnName, newLiteral, pks);
-    } catch (err) {
-      setError(String(err));
-      return;
-    }
-
-    let resolvedRefreshQuery: string;
-    try {
-      const refresh = substituteVariables(query, vars.inherited);
-      if (refresh.missing.length > 0) {
-        throw new Error(`Undefined variables: ${refresh.missing.map(m => "@" + m).join(", ")}`);
+  // The draft override exists because callers like the NULL button set the draft
+  // and commit in the same event — the batched state update wouldn't be visible
+  // to the `editing` this callback closed over.
+  return useCallback(
+    async (draftOverride?: string) => {
+      if (!editing) {
+        return;
       }
-      resolvedRefreshQuery = refresh.resolved;
-    } catch (err) {
-      setError(String(err));
-      return;
-    }
 
-    setEditing(current => (current ? { ...current, saving: true, error: null } : current));
-    try {
-      await invoke("execute_statement", { query: updateSql });
-      const refreshed = JSON.parse(
-        (await invoke("get_results", { query: resolvedRefreshQuery })) as string,
-      ) as DatabaseResult;
-      setResults(prev => ({ ...prev, [nodeId]: refreshed }));
-      setEditing(null);
-    } catch (err) {
-      setEditing(current =>
-        current ? { ...current, saving: false, error: String(err) } : current,
-      );
-    }
-  }, [
-    editing,
-    setEditing,
-    data,
-    editableTable,
-    schema.primaryKeys,
-    canvas,
-    nodeId,
-    query,
-    setResults,
-    vars,
-  ]);
+      const setError = (error: string) =>
+        setEditing(current => (current ? { ...current, error } : current));
+
+      const { row, col } = editing;
+      const draft = draftOverride ?? editing.draft;
+      const rowData = data[row];
+      if (!rowData) {
+        return;
+      }
+      const cell = rowData[col];
+      if (!cell) {
+        return;
+      }
+      const [columnName, , columnType] = cell;
+
+      if (!editableTable) {
+        setError("Cannot edit: query is not a single-table SELECT");
+        return;
+      }
+
+      const pkColumns = schema.primaryKeys[editableTable] ?? [];
+      if (pkColumns.length === 0) {
+        setError(`Cannot edit: no primary key on "${editableTable}"`);
+        return;
+      }
+
+      const pks = buildPkAssignments(rowData, pkColumns);
+      if (!pks) {
+        setError(`Row is missing primary key columns (${pkColumns.join(", ")})`);
+        return;
+      }
+
+      let updateSql: string;
+      try {
+        // Resolve the draft against connected variables before quoting; undefined
+        // refs (e.g. typing `@test` with no `test` variable) stay as literal text.
+        const resolvedDraft = substituteVariables(draft, vars.direct).resolved;
+        const newLiteral =
+          resolvedDraft === "" ? "NULL" : formatSqlLiteral(resolvedDraft, columnType);
+        updateSql = buildUpdateSql(editableTable, columnName, newLiteral, pks);
+      } catch (err) {
+        setError(String(err));
+        return;
+      }
+
+      let resolvedRefreshQuery: string;
+      try {
+        const refresh = substituteVariables(query, vars.inherited);
+        if (refresh.missing.length > 0) {
+          throw new Error(`Undefined variables: ${refresh.missing.map(m => "@" + m).join(", ")}`);
+        }
+        resolvedRefreshQuery = refresh.resolved;
+      } catch (err) {
+        setError(String(err));
+        return;
+      }
+
+      setEditing(current => (current ? { ...current, saving: true, error: null } : current));
+      try {
+        await invoke("execute_statement", { query: updateSql });
+        const refreshed = JSON.parse(
+          (await invoke("get_results", { query: resolvedRefreshQuery })) as string,
+        ) as DatabaseResult;
+        setResults(prev => ({ ...prev, [nodeId]: refreshed }));
+        setEditing(null);
+      } catch (err) {
+        setEditing(current =>
+          current ? { ...current, saving: false, error: String(err) } : current,
+        );
+      }
+    },
+    [
+      editing,
+      setEditing,
+      data,
+      editableTable,
+      schema.primaryKeys,
+      canvas,
+      nodeId,
+      query,
+      setResults,
+      vars,
+    ],
+  );
 }

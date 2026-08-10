@@ -18,7 +18,7 @@ type RowData = DatabaseResult[number];
  */
 export type RowEdit = {
   editing: EditingState;
-  commitEdit: () => void;
+  commitEdit: (draft?: string) => void;
   variableNames: string[];
 };
 

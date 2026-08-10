@@ -10,7 +10,7 @@ export const ResultTableHeader = memo(function ResultTableHeader({
   outbound,
   onResizeStart,
   onContextMenu,
-  onSelectColumn,
+  onHeaderMouseDown,
   onHeaderEnter,
 }: {
   header: string;
@@ -20,7 +20,7 @@ export const ResultTableHeader = memo(function ResultTableHeader({
   outbound: Reference[] | undefined;
   onResizeStart: (e: React.PointerEvent<HTMLDivElement>, column: string) => void;
   onContextMenu: (e: React.MouseEvent, columnIdx: number, header: string) => void;
-  onSelectColumn: (columnIdx: number) => void;
+  onHeaderMouseDown: (columnIdx: number, e: React.MouseEvent) => void;
   onHeaderEnter: (columnIdx: number) => void;
 }) {
   const { isPk, isFk } = classifyColumn(header, columnIdx, inbound, outbound);
@@ -35,14 +35,9 @@ export const ResultTableHeader = memo(function ResultTableHeader({
   return (
     <Table.Th
       className={headerClasses.join(" ")}
+      data-col={columnIdx}
       onMouseEnter={() => onHeaderEnter(columnIdx)}
-      onClick={e => {
-        // Cmd/Ctrl lets the drag move the node instead of selecting the column.
-        if (e.metaKey || e.ctrlKey) {
-          return;
-        }
-        onSelectColumn(columnIdx);
-      }}
+      onMouseDown={e => onHeaderMouseDown(columnIdx, e)}
       onContextMenu={e => {
         e.preventDefault();
         e.stopPropagation();
@@ -60,7 +55,9 @@ export const ResultTableHeader = memo(function ResultTableHeader({
       <div
         className='col-resize-handle'
         onPointerDown={e => onResizeStart(e, header)}
-        onClick={e => e.stopPropagation()}
+        // stopPropagation on the pointerdown above doesn't stop the mousedown
+        // that follows it, so the resize would also start a column selection.
+        onMouseDown={e => e.stopPropagation()}
         onDoubleClick={e => e.stopPropagation()}
       />
     </Table.Th>

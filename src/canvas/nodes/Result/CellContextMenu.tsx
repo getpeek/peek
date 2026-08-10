@@ -1,15 +1,6 @@
 import { Menu } from "@mantine/core";
-import {
-  IconAt,
-  IconCopy,
-  IconCopyPlus,
-  IconDownload,
-  IconFileTypeCsv,
-  IconFileTypeSql,
-  IconJson,
-  IconTrash,
-} from "@tabler/icons-react";
-import type { ReactNode } from "react";
+import { IconAt, IconCopy, IconCopyPlus, IconDownload, IconTrash } from "@tabler/icons-react";
+import { FormatSubmenu } from "./FormatSubmenu";
 import { PortalAnchor } from "./PortalAnchor";
 import type { ExportFormat } from "./export/serializeRows";
 import { stringifyValue } from "./stringify";
@@ -17,35 +8,6 @@ import type { CellMenuState } from "./hooks/useCellContextMenu";
 import type { CellRect } from "./hooks/useCellSelection";
 
 const MAX_COPY_VALUE_LENGTH = 13;
-
-function FormatSubmenu({
-  label,
-  icon,
-  onSelect,
-}: {
-  label: string;
-  icon: ReactNode;
-  onSelect: (format: ExportFormat) => void;
-}) {
-  return (
-    <Menu.Sub>
-      <Menu.Sub.Target>
-        <Menu.Sub.Item leftSection={icon}>{label}</Menu.Sub.Item>
-      </Menu.Sub.Target>
-      <Menu.Sub.Dropdown>
-        <Menu.Item leftSection={<IconJson size={14} />} onClick={() => onSelect("json")}>
-          JSON
-        </Menu.Item>
-        <Menu.Item leftSection={<IconFileTypeCsv size={14} />} onClick={() => onSelect("csv")}>
-          CSV
-        </Menu.Item>
-        <Menu.Item leftSection={<IconFileTypeSql size={14} />} onClick={() => onSelect("sql")}>
-          SQL
-        </Menu.Item>
-      </Menu.Sub.Dropdown>
-    </Menu.Sub>
-  );
-}
 
 export function CellContextMenu({
   cellMenu,

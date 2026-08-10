@@ -130,14 +130,58 @@ export function useCellSelection({
     [onStart, applyRect],
   );
 
-  const selectColumn = useCallback(
-    (colIdx: number) => {
-      if (visibleIndices.length === 0) {
+  const onHeaderMouseDown = useCallback(
+    (colIdx: number, e: React.MouseEvent) => {
+      // Cmd/Ctrl lets the drag move the node instead of selecting columns.
+      if (e.metaKey || e.ctrlKey || e.button !== 0 || visibleIndices.length === 0) {
         return;
       }
+      // Deliberately not stopPropagation: the ghost outline clears itself on a
+      // window-level mousedown, which a stopped synthetic event never reaches.
+      e.preventDefault();
+      window.getSelection()?.removeAllRanges();
       onStart();
+
+      const bottom = visibleIndices.length - 1;
       anchorRef.current = { pos: 0, col: colIdx };
-      applyRect({ top: 0, bottom: visibleIndices.length - 1, left: colIdx, right: colIdx });
+      applyRect({ top: 0, bottom, left: colIdx, right: colIdx });
+
+      const prevUserSelect = document.body.style.userSelect;
+      document.body.style.userSelect = "none";
+
+      let lastCol = colIdx;
+
+      const columnFromPoint = (x: number, y: number): number | null => {
+        const th = document.elementFromPoint(x, y)?.closest("th[data-col]");
+        if (!th) {
+          return null;
+        }
+        const col = Number((th as HTMLElement).dataset.col);
+        return Number.isFinite(col) ? col : null;
+      };
+
+      const onMove = (ev: MouseEvent) => {
+        const col = columnFromPoint(ev.clientX, ev.clientY);
+        if (col === null || col === lastCol) {
+          return;
+        }
+        lastCol = col;
+        applyRect({
+          top: 0,
+          bottom,
+          left: Math.min(colIdx, col),
+          right: Math.max(colIdx, col),
+        });
+      };
+
+      const onUp = () => {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        document.body.style.userSelect = prevUserSelect;
+      };
+
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
     },
     [visibleIndices.length, onStart, applyRect],
   );
@@ -162,5 +206,5 @@ export function useCellSelection({
       .map(row => row.slice(rect.left, rect.right + 1));
   }, [rect, visibleIndices, data]);
 
-  return { rect, onCellMouseDown, selectColumn, selectedRowIndices, selectedGrid, clear };
+  return { rect, onCellMouseDown, onHeaderMouseDown, selectedRowIndices, selectedGrid, clear };
 }
