@@ -5527,7 +5527,7 @@ dependencies = [
 
 [[package]]
 name = "peek"
-version = "4.1.1"
+version = "4.1.2"
 dependencies = [
  "anyhow",
  "async-trait",
