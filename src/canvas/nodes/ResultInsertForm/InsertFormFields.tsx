@@ -1,10 +1,17 @@
 import { useLayoutEffect, useRef } from "react";
-import { isBooleanType, isNumericType, isUuidType } from "../Result/cell/inlineEdit";
+import { isBooleanType, isNumericType, isTextType, isUuidType } from "../Result/cell/inlineEdit";
 import { VariableInput, type VariableInputKind } from "../Result/cell/VariableInput";
 import { Tooltip } from "../../../components/Tooltip/Tooltip";
 import { emptyInsertingState, type InsertingState } from "./useCommitInsertForm";
 
 type FieldEl = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+
+function kindForType(sqlType: string): VariableInputKind {
+  if (isTextType(sqlType)) {
+    return "textarea";
+  }
+  return isNumericType(sqlType) ? "number" : "text";
+}
 
 export function InsertFormFields({
   headers,
@@ -102,12 +109,12 @@ export function InsertFormFields({
                   <option value='null'>NULL</option>
                 </select>
               ) : (
-                <div className='insert-cell-row'>
+                <div className={`insert-cell-row ${isTextType(type) ? "is-multiline" : ""}`}>
                   <VariableInput
                     value={isNull ? "" : draft}
                     onChange={next => updateDraft(header, next)}
                     variableNames={variableNames}
-                    kind={isNumericType(type) ? ("number" as VariableInputKind) : "text"}
+                    kind={kindForType(type)}
                     className={`insert-input ${isNull ? "is-null" : ""}`}
                     disabled={inserting.saving || isNull}
                     placeholder={isNull ? "NULL" : "(default)"}

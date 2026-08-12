@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from "react";
-import { isBooleanType, isNumericType } from "./inlineEdit";
+import { isBooleanType, isNumericType, isTextType } from "./inlineEdit";
 import { MonacoJsonCell } from "./MonacoJsonCell";
+import { TextCell } from "./TextCell";
 import { VariableInput, type VariableInputKind } from "./VariableInput";
 import { Tooltip } from "../../../../components/Tooltip/Tooltip";
 
@@ -37,12 +38,13 @@ export function EditCell({
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const selectRef = useRef<HTMLSelectElement | null>(null);
   const isMultiline = type === "JSON" || type === "JSONB";
+  const isText = isTextType(type);
   const isBoolean = isBooleanType(type);
   const isNumeric = isNumericType(type);
 
   useLayoutEffect(() => {
-    if (isMultiline) {
-      // The Monaco JSON editor focuses itself on mount.
+    if (isMultiline || isText) {
+      // The Monaco JSON editor and the TEXT textarea focus themselves on mount.
       return;
     }
     if (isBoolean) {
@@ -64,9 +66,7 @@ export function EditCell({
       return;
     }
     input.focus();
-    if (input instanceof HTMLInputElement) {
-      input.select();
-    }
+    input.select();
   }, [isBoolean]);
 
   const handleCommitKeys = (e: React.KeyboardEvent) => {
@@ -132,6 +132,20 @@ export function EditCell({
         value={draft}
         error={error}
         saving={saving}
+        onChange={onChange}
+        onCommit={onCommit}
+        onCancel={onCancel}
+      />
+    );
+  }
+
+  if (isText) {
+    return (
+      <TextCell
+        draft={draft}
+        error={error}
+        saving={saving}
+        variableNames={variableNames}
         onChange={onChange}
         onCommit={onCommit}
         onCancel={onCancel}

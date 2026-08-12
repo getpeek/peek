@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 import { effectiveThemeAtom } from "../../../../state";
 import { editorThemeForUiTheme } from "../../../../themes/editorTheme";
+import "./cellEditorFooter.css";
 import "./MonacoJsonCell.css";
 
 // The editor grows with its content between these bounds; past the max it scrolls.
@@ -125,16 +126,16 @@ export function MonacoJsonCell({
             setValid(isValidJson(text));
           }}
         />
-        <div className='json-editor-footer'>
+        <div className='cell-editor-footer'>
           <span className='json-editor-status'>
             <span className={valid ? "ok" : "err"}>●</span>
             {valid ? "valid jsonb" : "invalid json"}
           </span>
-          <span className='json-editor-actions'>
-            <span className='json-editor-kbd'>Esc</span>
+          <span className='cell-editor-actions'>
+            <span className='cell-editor-kbd'>Esc</span>
             <button
               type='button'
-              className='json-mini-btn'
+              className='cell-mini-btn'
               disabled={saving}
               onMouseDown={event => event.preventDefault()}
               onClick={format}
@@ -143,7 +144,7 @@ export function MonacoJsonCell({
             </button>
             <button
               type='button'
-              className='json-mini-btn primary'
+              className='cell-mini-btn primary'
               disabled={saving}
               onMouseDown={event => event.preventDefault()}
               onClick={() => onCommit()}

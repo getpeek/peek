@@ -51,6 +51,13 @@ export function isUuidType(sqlType: string): boolean {
   return sqlType.toUpperCase() === "UUID";
 }
 
+// Long-form types get a multiline editor; VARCHAR/CHAR stay single-line.
+const TEXT_TYPES = new Set(["TEXT", "TINYTEXT", "MEDIUMTEXT", "LONGTEXT"]);
+
+export function isTextType(sqlType: string): boolean {
+  return TEXT_TYPES.has(sqlType.toUpperCase());
+}
+
 const TIMESTAMP_TYPES = new Set(["TIMESTAMP", "TIMESTAMPTZ", "DATETIME"]);
 
 export function isTimestampType(sqlType: string): boolean {

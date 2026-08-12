@@ -303,6 +303,15 @@ td.editing {
   }
 }
 
+/* Single-line editors fill the cell; the TEXT textarea sizes itself to its
+   content instead (see TextCell), so it needs bounds rather than a height. */
+.edit-textarea {
+  height: auto;
+  min-height: 60px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
 .edit-row {
   display: flex;
   align-items: stretch;
@@ -313,6 +322,17 @@ td.editing {
   .edit-input {
     flex: 1;
     min-width: 0;
+  }
+}
+
+/* A full-height NULL button next to a tall textarea reads as a sidebar; keep it
+   a button at the top edge. */
+.edit-row-multiline {
+  align-items: flex-start;
+  height: auto;
+
+  .edit-clear-null {
+    padding-top: 6px;
   }
 }
 

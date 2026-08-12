@@ -54,6 +54,17 @@
   border: 1px solid var(--pk-node-border);
   border-radius: 6px;
   background: var(--pk-node-bg-2);
+
+  /* A full-height NULL button beside a multiline field reads as a sidebar; keep
+     it a button at the top edge. */
+  &.is-multiline {
+    align-items: flex-start;
+
+    .insert-null-toggle,
+    .insert-uuid-btn {
+      padding-top: 8px;
+    }
+  }
 }
 
 .insert-input {
