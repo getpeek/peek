@@ -23,6 +23,9 @@ import type { QueryNode as QueryNodeT } from "../../types";
 import { registerEditorFocus } from "../editorFocusRegistry";
 import { isUnboundedWrite } from "./isUnboundedWrite";
 import { Tooltip } from "../../../components/Tooltip/Tooltip";
+import { useKeymap } from "../../../app/keymap";
+import { matchesCombo, type Hotkey } from "../../../app/useHotkey";
+import { formatCombo } from "../../../keymap-help/keymapActions";
 import "./Query.css";
 
 const DEFAULT_W = 420;
@@ -54,6 +57,8 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   const session = useAtomValue(sessionStateAtom);
   const variables = useGetVariables(id);
   useLabelQuery(id, data);
+  const formatKeys = useKeymap()["Query::Format"];
+  const formatHint = formatKeys[0] ? ` (${formatCombo(formatKeys[0]).join("")})` : "";
   const w = width ?? DEFAULT_W;
   const h = height ?? DEFAULT_H;
   const isRunning = data.isRunning ?? false;
@@ -157,8 +162,8 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
       });
       // Apply through the editor when it's mounted: the editor is authoritative
       // while focused (see SqlEditor's reconcile guard), so writing only to node
-      // data wouldn't reach the model on a ⌘S triggered from inside the editor.
-      // `setValue` fires onChange, which updates node data in turn.
+      // data wouldn't reach the model when the format key comes from inside the
+      // editor. `setValue` fires onChange, which updates node data in turn.
       const ed = editorRef.current;
       if (ed) {
         ed.setValue(formatted);
@@ -167,6 +172,13 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
       }
     } catch {}
   };
+
+  // The editor's key handler is installed once on mount, but the keymap only lands with the
+  // async config load, so read the binding through a ref instead of capturing it.
+  const formatKeysRef = useRef<Hotkey[]>(formatKeys);
+  useEffect(() => {
+    formatKeysRef.current = formatKeys;
+  });
 
   return (
     <>
@@ -217,7 +229,9 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
                   e.stopPropagation();
                   runQuery();
                 }
-                if (isMod && e.keyCode === monaco.KeyCode.KeyS) {
+                if (formatKeysRef.current.some(combo => matchesCombo(combo, e.browserEvent))) {
+                  e.preventDefault();
+                  e.stopPropagation();
                   formatQuery();
                 }
               });
@@ -229,7 +243,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
           />
         </div>
         <div className='app-node-footer nodrag'>
-          <Tooltip label='Format query (⌘⇧I)'>
+          <Tooltip label={`Format query${formatHint}`}>
             <button className='btn btn-ghost' onClick={formatQuery}>
               <IconIndentIncrease size={13} />
               Format

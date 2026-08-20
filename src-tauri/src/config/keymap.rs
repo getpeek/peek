@@ -57,6 +57,11 @@ pub(crate) enum View {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum QueryAction {
+    Format,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum ResultAction {
     Pivot,
 }
@@ -99,6 +104,7 @@ pub(crate) enum Action {
     Zoom(Zoom),
     Page(Page),
     View(View),
+    Query(QueryAction),
     Result(ResultAction),
     Region(Region),
     CommandPalette(CommandPalette),
@@ -141,6 +147,7 @@ impl fmt::Display for Action {
             Action::Page(Page::OpenPicker) => "Page::OpenPicker",
             Action::View(View::ToggleUi) => "View::ToggleUi",
             Action::View(View::ToggleCameraLock) => "View::ToggleCameraLock",
+            Action::Query(QueryAction::Format) => "Query::Format",
             Action::Result(ResultAction::Pivot) => "Result::Pivot",
             Action::Region(Region::GroupSelection) => "Region::GroupSelection",
             Action::Region(Region::UngroupSelection) => "Region::UngroupSelection",
@@ -190,6 +197,7 @@ impl FromStr for Action {
             "Page::OpenPicker" => Action::Page(Page::OpenPicker),
             "View::ToggleUi" => Action::View(View::ToggleUi),
             "View::ToggleCameraLock" => Action::View(View::ToggleCameraLock),
+            "Query::Format" => Action::Query(QueryAction::Format),
             "Result::Pivot" => Action::Result(ResultAction::Pivot),
             "Region::GroupSelection" => Action::Region(Region::GroupSelection),
             "Region::UngroupSelection" => Action::Region(Region::UngroupSelection),
@@ -241,6 +249,7 @@ pub(crate) fn default_keymap() -> Vec<(&'static str, Action)> {
         ("o", Action::Page(Page::OpenPicker)),
         ("meta-.", Action::View(View::ToggleUi)),
         ("meta-shift-l", Action::View(View::ToggleCameraLock)),
+        ("meta-s", Action::Query(QueryAction::Format)),
         ("shift-p", Action::Result(ResultAction::Pivot)),
         ("meta-g", Action::Region(Region::GroupSelection)),
         ("meta-shift-g", Action::Region(Region::UngroupSelection)),

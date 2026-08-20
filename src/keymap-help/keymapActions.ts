@@ -85,6 +85,10 @@ export const KEYMAP_REFERENCE: KeymapSection[] = [
     ],
   },
   {
+    title: "Query",
+    entries: [{ action: "Query::Format", description: "Format the SQL in the focused editor" }],
+  },
+  {
     title: "Result",
     entries: [{ action: "Result::Pivot", description: "Pivot/transpose selected result nodes" }],
   },

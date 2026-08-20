@@ -115,6 +115,15 @@ Action names are `Group::Variant`. The full set, with default bindings:
 | `View::ToggleUi`         | `meta-.`       | Show/hide the UI chrome       |
 | `View::ToggleCameraLock` | `meta-shift-l` | Lock/unlock canvas pan & zoom |
 
+### Query
+
+| Action          | Default  | Description                          |
+| --------------- | -------- | ------------------------------------ |
+| `Query::Format` | `meta-s` | Format the SQL in the focused editor |
+
+Unlike the other actions, `Query::Format` fires _while_ the SQL editor is focused — bind it to a
+combo with a modifier, or it will run on every matching keystroke you type.
+
 ### Result
 
 | Action          | Default   | Description                           |
@@ -146,5 +155,4 @@ Action names are `Group::Variant`. The full set, with default bindings:
 ## Not configurable
 
 Context-local keys aren't part of the keymap: pressing `escape` to dismiss a popover, `enter` to
-submit a form, the SQL editor's `meta-enter` (run) / `meta-s` (format), and holding `space` to pan
-during a selection.
+submit a form, the SQL editor's `meta-enter` (run), and holding `space` to pan during a selection.

@@ -71,13 +71,12 @@ export type Hotkey =
 
 const MODIFIER_KEYS: readonly string[] = ["meta", "shift", "alt", "ctrl"];
 
-const matchesHotkey = (keys: Hotkey, event: KeyboardEvent): boolean => {
+// Pure combo match, with no regard for what's focused. Exported for handlers that own their
+// own focus rules — the SQL editor binds a keymap action from inside a focused editor, where
+// `matchesHotkey` deliberately refuses to fire.
+export const matchesCombo = (keys: Hotkey, event: KeyboardEvent): boolean => {
   const input = keys.split("-");
   const trigger = input.find(key => !MODIFIER_KEYS.includes(key)) ?? input.at(-1);
-
-  if (!input.includes("escape") && isTextInputFocused()) {
-    return false;
-  }
 
   const checks: [string, boolean][] = [
     ["meta", event.metaKey],
@@ -96,6 +95,13 @@ const matchesHotkey = (keys: Hotkey, event: KeyboardEvent): boolean => {
   }
 
   return event.key.toLowerCase() === trigger;
+};
+
+const matchesHotkey = (keys: Hotkey, event: KeyboardEvent): boolean => {
+  if (!keys.split("-").includes("escape") && isTextInputFocused()) {
+    return false;
+  }
+  return matchesCombo(keys, event);
 };
 
 // Accepts an array so a single action can be bound to several keys (and `undefined` while the
