@@ -66,6 +66,12 @@ export const terminalTheme: editor.IStandaloneThemeData = {
     "editor.inactiveSelectionBackground": "#1f1f1f",
     "editor.selectionHighlightBackground": "#1f1f1f",
 
+    // Occurrence highlights sit behind the caret's own word, so they tint rather
+    // than cover. editor.wordHighlightTextBackground — the kind SQL gets, since
+    // it has no document-highlight provider — inherits from the read color.
+    "editor.wordHighlightBackground": "#33ff6633",
+    "editor.wordHighlightStrongBackground": "#56d4ff33",
+
     "editor.findMatchBackground": "#333333",
     "editor.findMatchHighlightBackground": "#1f1f1f",
     "editor.findRangeHighlightBackground": "#1f1f1f",

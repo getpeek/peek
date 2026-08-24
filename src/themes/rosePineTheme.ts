@@ -54,6 +54,12 @@ export const rosePineTheme: editor.IStandaloneThemeData = {
     "editor.inactiveSelectionBackground": "#26233a",
     "editor.selectionHighlightBackground": "#26233a",
 
+    // Occurrence highlights sit behind the caret's own word, so they tint rather
+    // than cover. editor.wordHighlightTextBackground — the kind SQL gets, since
+    // it has no document-highlight provider — inherits from the read color.
+    "editor.wordHighlightBackground": "#c4a7e733",
+    "editor.wordHighlightStrongBackground": "#3e8fb033",
+
     "editor.findMatchBackground": "#403d52",
     "editor.findMatchHighlightBackground": "#26233a",
     "editor.findRangeHighlightBackground": "#26233a",
