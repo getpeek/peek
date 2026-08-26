@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useAtomValue } from "jotai";
 import { configAtom, type Config } from "../../../state";
 import { sessionStateAtom } from "../../../multiplayer/state";
@@ -40,29 +40,21 @@ async function generateLabel(query: string, config: Config): Promise<string> {
 }
 
 // When `ai.automatically_label_queries` is on, a finished query run whose text
-// hasn't been labeled yet gets a fresh AI-generated title. Staleness is tracked
-// in component state rather than on the node: a changed query invalidates the
-// label so the next run regenerates it, and an unchanged query (e.g. live-poll
-// re-runs) never re-labels. Joiners skip it — they have no local model.
+// hasn't been labeled yet gets a fresh AI-generated title. Joiners skip it —
+// they have no local model.
+//
+// The attempt is recorded in a ref *before* the request rather than in state
+// after it: a live-polling node tears this effect down every tick, so a marker
+// written on completion never survived, and each poll started another request
+// against the local model. Recording up front also means a failed or empty
+// response isn't retried — editing the query is what asks for a new label.
 export function useLabelQuery(nodeId: string, data: QueryData): void {
   const config = useAtomValue(configAtom);
   const session = useAtomValue(sessionStateAtom);
   const canvas = useCanvas();
-  const [labeledQuery, setLabeledQuery] = useState<string | null>(
-    data.description ? data.query : null,
-  );
+  const attemptedQuery = useRef<string | null>(data.description ? data.query : null);
+  const inFlight = useRef(false);
   const wasRunning = useRef(data.isRunning ?? false);
-  const isInitialQuery = useRef(true);
-
-  // A changed query drops the existing label; keep the initial (seeded) value so
-  // a description already present for the current query survives mounting.
-  useEffect(() => {
-    if (isInitialQuery.current) {
-      isInitialQuery.current = false;
-      return;
-    }
-    setLabeledQuery(null);
-  }, [data.query]);
 
   useEffect(() => {
     const running = data.isRunning ?? false;
@@ -73,20 +65,28 @@ export function useLabelQuery(nodeId: string, data: QueryData): void {
     if (!finished || !config?.ai.automatically_label_queries || !config.ai.ollama) {
       return;
     }
-    if (session?.role === "joiner" || !data.query.trim() || labeledQuery === data.query) {
+    if (session?.role === "joiner" || !data.query.trim()) {
+      return;
+    }
+    if (inFlight.current || attemptedQuery.current === data.query) {
       return;
     }
 
-    let cancelled = false;
-    void generateLabel(data.query, config).then(label => {
-      if (cancelled || !label) {
-        return;
-      }
-      canvas.updateNodeData<QueryData>(nodeId, { description: label });
-      setLabeledQuery(data.query);
-    });
-    return () => {
-      cancelled = true;
-    };
+    const query = data.query;
+    attemptedQuery.current = query;
+    inFlight.current = true;
+    void generateLabel(query, config)
+      .then(label => {
+        const node = canvas.getNode(nodeId);
+        const current = node?.type === "query" ? (node.data as QueryData).query : null;
+        if (!label || current !== query) {
+          return;
+        }
+        canvas.updateNodeData<QueryData>(nodeId, { description: label });
+      })
+      .catch(() => {})
+      .finally(() => {
+        inFlight.current = false;
+      });
   }, [data.isRunning]);
 }
