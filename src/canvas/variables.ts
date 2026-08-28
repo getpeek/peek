@@ -41,7 +41,10 @@ export function substituteVariables(
     out += query.slice(cursor, site.start);
     if (Object.prototype.hasOwnProperty.call(vars, site.name)) {
       const value = vars[site.name];
-      out += Array.isArray(value) ? value.join(", ") : value;
+      // The list editor stores a line per row, so the trailing newline the user
+      // is bound to leave behind arrives as an empty string. Dropping blanks
+      // here rather than on save keeps typing a newline from erasing itself.
+      out += Array.isArray(value) ? value.filter(line => line.trim() !== "").join(", ") : value;
     } else {
       missingSet.add(site.name);
       out += query.slice(site.start, site.end);

@@ -122,11 +122,11 @@
 .variable-array-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   background: var(--pk-accent-bg);
   color: var(--pk-accent);
   border: 1px solid var(--pk-accent-bg);
-  border-radius: 999px;
+  border-radius: var(--pk-radius-pill);
   padding: 2px 10px;
   margin: 4px 6px;
   font: 500 11px var(--pk-font-mono);
@@ -135,46 +135,153 @@
     background 0.1s,
     border-color 0.1s,
     color 0.1s;
+
+  &:hover {
+    border-color: var(--pk-accent-soft);
+  }
+
+  &.empty {
+    color: var(--pk-fg-subtle);
+    background: var(--pk-node-bg-2);
+    border-color: var(--pk-node-border);
+  }
 }
 
-.variable-array-chip:hover {
-  border-color: var(--pk-accent-soft);
+/* Surfaces on the collapsed chip that some line won't survive substitution, so
+   the problem is discoverable without opening the editor. */
+.variable-array-chip-warn {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--pk-radius-pill);
+  background: var(--pk-yellow);
+  flex-shrink: 0;
 }
 
-.variable-array-chip.empty {
-  color: var(--pk-fg-subtle);
-  background: var(--pk-node-bg-2);
-  border-color: var(--pk-node-border);
-}
-
-.variable-array-dropdown {
-  padding: 6px !important;
+.variable-list-dropdown {
+  padding: 0 !important;
+  overflow: hidden;
   background: var(--pk-node-bg) !important;
   border: 1px solid var(--pk-node-border) !important;
+  border-radius: var(--pk-radius-card) !important;
+  box-shadow: var(--pk-node-shadow) !important;
 }
 
-.variable-array-textarea {
-  display: block;
-  width: 240px;
-  min-width: 180px;
-  height: 200px;
-  resize: both;
-  background: var(--pk-node-bg-2);
-  border: 1px solid var(--pk-node-border);
-  border-radius: 4px;
-  outline: none;
-  color: var(--pk-fg);
-  font: 400 12px var(--pk-font-mono);
-  padding: 6px 8px;
-  line-height: 1.5;
-}
+.variable-list {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  height: 300px;
 
-.variable-array-textarea:focus {
-  border-color: var(--pk-accent-soft);
-}
+  .variable-list-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--pk-node-border);
+    background: var(--pk-node-bg-2);
+  }
 
-.variable-array-textarea::placeholder {
-  color: var(--pk-fg-subtle);
+  .variable-list-name {
+    color: var(--pk-accent-soft);
+    font: 500 11px var(--pk-font-mono);
+  }
+
+  .variable-list-count {
+    color: var(--pk-fg-subtle);
+    font: 500 11px var(--pk-font-mono);
+  }
+
+  .variable-list-editor {
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+    background: var(--pk-node-inset);
+  }
+
+  /* Line numbers live outside the textarea because text inside one can't be
+     styled per line; the textarea mirrors its scrollTop onto this column. */
+  .variable-list-gutter {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+    padding: 8px 0;
+    border-right: 1px solid var(--pk-node-border);
+    color: var(--pk-fg-subtle);
+    font: 400 12px/1.5 var(--pk-font-mono);
+    text-align: right;
+    user-select: none;
+
+    span {
+      padding: 0 7px 0 9px;
+      min-width: 3ch;
+    }
+
+    span.unquoted {
+      color: var(--pk-yellow);
+      background: var(--pk-yellow-soft);
+    }
+  }
+
+  .variable-list-textarea {
+    display: block;
+    width: 100%;
+    height: 100%;
+    resize: both;
+    overflow: auto;
+    padding: 8px 10px;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    color: var(--pk-fg);
+    font: 400 12px/1.5 var(--pk-font-mono);
+
+    &::placeholder {
+      color: var(--pk-fg-subtle);
+    }
+  }
+
+  .variable-list-notice {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px 6px 10px;
+    border-top: 1px solid var(--pk-node-border);
+    background: var(--pk-yellow-soft);
+    color: var(--pk-yellow);
+    font: 400 10.5px var(--pk-font-mono);
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  .variable-list-notice-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .variable-list-fix {
+    flex-shrink: 0;
+    padding: 3px 9px;
+    border: 1px solid color-mix(in oklab, var(--pk-yellow) 45%, transparent);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--pk-yellow);
+    font: 500 11px var(--pk-font-sans);
+    cursor: pointer;
+    transition:
+      background 0.1s,
+      border-color 0.1s;
+
+    &:hover {
+      background: color-mix(in oklab, var(--pk-yellow) 18%, transparent);
+      border-color: var(--pk-yellow);
+    }
+  }
 }
 
 .type-variable .type-dot {

@@ -134,6 +134,7 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
                     <td className='variable-value-cell'>
                       {isArray ? (
                         <VariableArrayEditor
+                          name={row.name}
                           value={row.value as string[]}
                           onChange={next => setValue(i, next)}
                         />
