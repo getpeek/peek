@@ -23,6 +23,7 @@ import { useUndoHistory } from "./useUndoHistory";
 import { useHotkey } from "../../app/useHotkey";
 import { useKeymap } from "../../app/keymap";
 import { newIdForType } from "./KeyboardShortcuts";
+import { showRunningQueries } from "../nodes/Activity/showRunningQueries";
 import { useFocusQueryOnEnter } from "./useFocusQueryOnEnter";
 import { pasteTranslation } from "./pasteTranslation";
 import { togglePivot } from "../nodes/Result/togglePivot";
@@ -101,6 +102,13 @@ export const usePeekHotkeys = () => {
       canvas.selectOnly(copies.map(n => n.id));
     }),
   );
+  useHotkey(
+    keymap["View::ShowRunningQueries"],
+    unlessPreviewing(() => {
+      showRunningQueries(canvas);
+    }),
+  );
+
   useHotkey(keymap["History::Undo"], unlessPreviewing(undo));
   useHotkey(keymap["History::Redo"], unlessPreviewing(redo));
 

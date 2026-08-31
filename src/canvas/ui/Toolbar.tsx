@@ -1,4 +1,5 @@
 import {
+  IconActivityHeartbeat,
   IconAt,
   IconCode,
   IconLasso,
@@ -11,6 +12,8 @@ import { Panel } from "@xyflow/react";
 import { useAtom } from "jotai";
 import type { ComponentType } from "react";
 import { placeModeAtom, selectionToolAtom } from "../state";
+import { useCanvas } from "../hooks/useCanvas";
+import { showRunningQueries } from "../nodes/Activity/showRunningQueries";
 import type { AppNodeType } from "../types";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
 import "./Toolbar.css";
@@ -58,6 +61,7 @@ const tools: ToolDef[] = [
 export function Toolbar() {
   const [placeMode, setPlaceMode] = useAtom(placeModeAtom);
   const [selectionTool, setSelectionTool] = useAtom(selectionToolAtom);
+  const canvas = useCanvas();
 
   return (
     <Panel position='bottom-center'>
@@ -102,6 +106,12 @@ export function Toolbar() {
             </Tooltip>
           );
         })}
+        <span className='sep' />
+        <Tooltip label='Activity (⇧⌘A)'>
+          <button className='toolbar-btn' onClick={() => showRunningQueries(canvas)}>
+            <IconActivityHeartbeat size={16} stroke={1.75} />
+          </button>
+        </Tooltip>
       </div>
     </Panel>
   );

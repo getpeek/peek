@@ -41,6 +41,7 @@
   --pk-type-chart: oklch(88% 0.16 108);
   --pk-type-error: oklch(63.4% 0.177 13.6);
   --pk-type-variable: oklch(63.5% 0.055 357);
+  --pk-type-activity: oklch(74% 0.11 195);
 
   --pk-canvas-bg:
     radial-gradient(closest-side at 80% 90%, oklch(63.5% 0.055 357 / 0.14), transparent 70%),

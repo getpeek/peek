@@ -4,6 +4,7 @@ import { useSearchPageCommand } from "./commands/searchPage";
 import { useGoToNodeCommand } from "./commands/goToNode";
 import { useOpenConnectionPickerCommand } from "./commands/openConnectionPicker";
 import { useViewSchemaCommand } from "./commands/viewSchema";
+import { useShowRunningQueriesCommand } from "./commands/showRunningQueries";
 import { useOrganizeCanvasCommand } from "./commands/organizeCanvas";
 import { useRerunAllQueriesOnPageCommand } from "./commands/rerunAllQueriesOnPage";
 import { useRerunSelectedQueriesCommand } from "./commands/rerunSelectedQueries";
@@ -48,6 +49,7 @@ export const useSearch = (query: string): SearchResult[] => {
   const goToNodeCommand = useGoToNodeCommand();
   const connectionPickerCommand = useOpenConnectionPickerCommand();
   const viewSchemaCommand = useViewSchemaCommand();
+  const showRunningQueriesCommand = useShowRunningQueriesCommand();
   const organizeCanvasCommand = useOrganizeCanvasCommand();
   const rerunAllOnPage = useRerunAllQueriesOnPageCommand();
   const rerunSelected = useRerunSelectedQueriesCommand();
@@ -106,6 +108,7 @@ export const useSearch = (query: string): SearchResult[] => {
     goToNodeCommand,
     connectionPickerCommand,
     viewSchemaCommand,
+    showRunningQueriesCommand,
     organizeCanvasCommand,
     newPageCommand,
     ...(closePageCommand ? [closePageCommand] : []),

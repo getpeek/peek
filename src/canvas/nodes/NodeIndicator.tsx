@@ -16,6 +16,7 @@ const KIND_LABELS: Record<AppNodeType, string> = {
   text: "TEXT",
   variable: "VARS",
   draw: "DRAW",
+  activity: "ACTIVITY",
 };
 
 export function NodeIndicator({ kind, label }: NodeIndicatorProps) {

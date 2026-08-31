@@ -34,6 +34,7 @@ export type KeymapAction =
   | "Page::OpenPicker"
   | "View::ToggleUi"
   | "View::ToggleCameraLock"
+  | "View::ShowRunningQueries"
   | "Query::Format"
   | "Result::Pivot"
   | "Region::GroupSelection"

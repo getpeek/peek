@@ -36,6 +36,7 @@ import { ResultNode } from "./nodes/Result/ResultNode";
 import { ResultInsertFormNode } from "./nodes/ResultInsertForm/ResultInsertFormNode";
 import { TableDefinitionNode } from "./nodes/TableDefinition/TableDefinitionNode";
 import { TextNode } from "./nodes/Text/TextNode";
+import { ActivityNode } from "./nodes/Activity/ActivityNode";
 import { VariableNode } from "./nodes/Variable/VariableNode";
 import { BottomRightStack } from "./ui/BottomRightStack";
 import { JumpLabels } from "./jump/JumpLabels";
@@ -77,6 +78,7 @@ const nodeTypes = {
   text: TextNode,
   variable: VariableNode,
   draw: DrawNode,
+  activity: ActivityNode,
 };
 
 const edgeTypes = { floating: FloatingEdge };

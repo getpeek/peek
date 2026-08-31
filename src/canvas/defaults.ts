@@ -12,6 +12,7 @@ export const defaultDimensions: Record<AppNodeType, { w: number; h: number }> = 
   text: { w: 280, h: 140 },
   variable: { w: 280, h: 220 },
   draw: { w: 100, h: 100 },
+  activity: { w: 960, h: 520 },
 };
 
 export const minDimensions: Record<AppNodeType, { w: number; h: number }> = {
@@ -25,6 +26,7 @@ export const minDimensions: Record<AppNodeType, { w: number; h: number }> = {
   text: { w: 80, h: 32 },
   variable: { w: 220, h: 140 },
   draw: { w: 1, h: 1 },
+  activity: { w: 620, h: 320 },
 };
 
 export function makeNode(type: AppNodeType, position: { x: number; y: number }): AppNode {
@@ -94,6 +96,13 @@ export function makeNode(type: AppNodeType, position: { x: number; y: number }):
         id: ids.variable(),
         type: "variable",
         data: { rows: [{ name: "", value: "" }] },
+      };
+    case "activity":
+      return {
+        ...base,
+        id: ids.activity(),
+        type: "activity",
+        data: { filter: "all", live: true, minSecs: 0 },
       };
     case "draw":
       return {

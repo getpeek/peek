@@ -25,6 +25,8 @@ export function newIdForType(type: AppNodeType): string {
       return ids.variable();
     case "draw":
       return ids.draw();
+    case "activity":
+      return ids.activity();
   }
 }
 

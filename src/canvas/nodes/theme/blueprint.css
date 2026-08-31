@@ -49,6 +49,7 @@
   --pk-type-chart: #f6c177;
   --pk-type-error: #eb6f92;
   --pk-type-variable: #ea9a97;
+  --pk-type-activity: #6fd6cf;
 
   /* Square everything. Loads after node.css's :root, so these win on source order.
      --pk-radius-window is left alone — it tracks the native window squircle. */

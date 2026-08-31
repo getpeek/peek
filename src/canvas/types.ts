@@ -11,7 +11,8 @@ export type AppNodeType =
   | "table-definition"
   | "text"
   | "variable"
-  | "draw";
+  | "draw"
+  | "activity";
 
 export type QueryData = {
   query: string;
@@ -80,6 +81,15 @@ export type DrawData = {
   color: string;
 };
 
+export type ActivityFilter = "all" | "active" | "idle-in-txn" | "blocked";
+
+export type ActivityData = {
+  filter: ActivityFilter;
+  live: boolean;
+  /** Backends younger than this are hidden, so the list isn't flooded by short queries. */
+  minSecs: number;
+};
+
 export type QueryNode = Node<QueryData, "query">;
 export type ResultNode = Node<ResultData, "result">;
 export type ResultInsertFormNode = Node<ResultInsertFormData, "result-insert-form">;
@@ -90,6 +100,7 @@ export type TableDefinitionNode = Node<TableDefinitionData, "table-definition">;
 export type TextNode = Node<TextData, "text">;
 export type VariableNode = Node<VariableData, "variable">;
 export type DrawNode = Node<DrawData, "draw">;
+export type ActivityNode = Node<ActivityData, "activity">;
 
 export type AppNode =
   | QueryNode
@@ -101,7 +112,8 @@ export type AppNode =
   | TableDefinitionNode
   | TextNode
   | VariableNode
-  | DrawNode;
+  | DrawNode
+  | ActivityNode;
 
 export type AppEdge = Edge;
 

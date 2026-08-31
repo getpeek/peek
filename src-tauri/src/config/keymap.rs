@@ -54,6 +54,7 @@ pub(crate) enum Page {
 pub(crate) enum View {
     ToggleUi,
     ToggleCameraLock,
+    ShowRunningQueries,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -147,6 +148,7 @@ impl fmt::Display for Action {
             Action::Page(Page::OpenPicker) => "Page::OpenPicker",
             Action::View(View::ToggleUi) => "View::ToggleUi",
             Action::View(View::ToggleCameraLock) => "View::ToggleCameraLock",
+            Action::View(View::ShowRunningQueries) => "View::ShowRunningQueries",
             Action::Query(QueryAction::Format) => "Query::Format",
             Action::Result(ResultAction::Pivot) => "Result::Pivot",
             Action::Region(Region::GroupSelection) => "Region::GroupSelection",
@@ -197,6 +199,7 @@ impl FromStr for Action {
             "Page::OpenPicker" => Action::Page(Page::OpenPicker),
             "View::ToggleUi" => Action::View(View::ToggleUi),
             "View::ToggleCameraLock" => Action::View(View::ToggleCameraLock),
+            "View::ShowRunningQueries" => Action::View(View::ShowRunningQueries),
             "Query::Format" => Action::Query(QueryAction::Format),
             "Result::Pivot" => Action::Result(ResultAction::Pivot),
             "Region::GroupSelection" => Action::Region(Region::GroupSelection),
@@ -249,6 +252,7 @@ pub(crate) fn default_keymap() -> Vec<(&'static str, Action)> {
         ("o", Action::Page(Page::OpenPicker)),
         ("meta-.", Action::View(View::ToggleUi)),
         ("meta-shift-l", Action::View(View::ToggleCameraLock)),
+        ("meta-shift-a", Action::View(View::ShowRunningQueries)),
         ("meta-s", Action::Query(QueryAction::Format)),
         ("shift-p", Action::Result(ResultAction::Pivot)),
         ("meta-g", Action::Region(Region::GroupSelection)),

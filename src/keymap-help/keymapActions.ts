@@ -82,6 +82,7 @@ export const KEYMAP_REFERENCE: KeymapSection[] = [
     entries: [
       { action: "View::ToggleUi", description: "Show/hide the UI chrome" },
       { action: "View::ToggleCameraLock", description: "Lock/unlock canvas pan & zoom" },
+      { action: "View::ShowRunningQueries", description: "Show running queries" },
     ],
   },
   {

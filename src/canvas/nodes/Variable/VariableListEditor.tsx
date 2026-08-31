@@ -1,6 +1,6 @@
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { type ClipboardEvent, useRef } from "react";
-import { countUnquoted, needsQuoting, quoteAllLines } from "./listQuoting";
+import { countUnquoted, quoteAllLines } from "./listQuoting";
 
 export function VariableListEditor({
   name,

@@ -3,7 +3,9 @@ import type { DatabaseResult } from "../state";
 import { nodeHeading } from "../canvas/nodes/Result/queryHeading";
 import { stringifyValue } from "../canvas/nodes/Result/stringify";
 
-export type SearchableNodeType = Exclude<AppNodeType, "draw" | "result-insert-form">;
+// Activity nodes hold no persisted text — their rows are a live poll — so there is
+// nothing for page search to match against.
+export type SearchableNodeType = Exclude<AppNodeType, "draw" | "result-insert-form" | "activity">;
 
 export interface NodeSearchEntry {
   id: string;

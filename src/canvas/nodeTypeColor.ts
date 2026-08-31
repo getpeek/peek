@@ -8,6 +8,7 @@ const COLOR_BY_TYPE: Record<string, string> = {
   barchart: "var(--pk-type-chart)",
   "query-error": "var(--pk-type-error)",
   variable: "var(--pk-type-variable)",
+  activity: "var(--pk-type-activity)",
 };
 
 export function nodeTypeColorVar(type: string | undefined): string | undefined {

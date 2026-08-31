@@ -49,6 +49,7 @@
   --pk-type-chart: #ea9d34;
   --pk-type-error: #b4637a;
   --pk-type-variable: #286983;
+  --pk-type-activity: #3f8f96;
 
   /* Softer, rounder controls for the editorial feel. Loads after node.css's :root,
      so these win on source order. --pk-radius-window tracks the native squircle. */

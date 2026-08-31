@@ -89,6 +89,9 @@
 .react-flow__node-variable {
   --pk-node-type-color: var(--pk-type-variable);
 }
+.react-flow__node-activity {
+  --pk-node-type-color: var(--pk-type-activity);
+}
 
 /* ============================================================
    Node base
@@ -277,6 +280,9 @@
 }
 .type-variable .type-dot {
   background: var(--pk-type-variable);
+}
+.type-activity .type-dot {
+  background: var(--pk-type-activity);
 }
 .type-text .type-dot {
   background: var(--pk-fg-muted);

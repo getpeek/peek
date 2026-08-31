@@ -110,10 +110,11 @@ Action names are `Group::Variant`. The full set, with default bindings:
 
 ### View
 
-| Action                   | Default        | Description                   |
-| ------------------------ | -------------- | ----------------------------- |
-| `View::ToggleUi`         | `meta-.`       | Show/hide the UI chrome       |
-| `View::ToggleCameraLock` | `meta-shift-l` | Lock/unlock canvas pan & zoom |
+| Action                     | Default        | Description                   |
+| -------------------------- | -------------- | ----------------------------- |
+| `View::ToggleUi`           | `meta-.`       | Show/hide the UI chrome       |
+| `View::ToggleCameraLock`   | `meta-shift-l` | Lock/unlock canvas pan & zoom |
+| `View::ShowRunningQueries` | `meta-shift-a` | Show running queries          |
 
 ### Query
 
