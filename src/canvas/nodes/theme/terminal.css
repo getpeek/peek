@@ -140,7 +140,7 @@
    Selectors match PageSelector.css's nested specificity so the theme link (loaded
    after the bundled component CSS) wins on source order. */
 .titlebar-page-selector .page-tab {
-  &:input {
+  &::input {
     color: var(--pk-bg);
   }
 }
