@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useAtomValue } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
 import { schemaAtom } from "../../../../state";
+import { activeEngineAtom } from "../../../../Connection/engine";
 import { useCanvas } from "../../../hooks/useCanvas";
 import { useExecuteQueries } from "../../../hooks/useExecuteQueries";
 import { ids } from "../../../ids";
@@ -34,6 +35,7 @@ export function useCommitDelete({
   nodeId: string;
 }) {
   const schema = useAtomValue(schemaAtom);
+  const engine = useAtomValue(activeEngineAtom);
   const canvas = useCanvas();
   const executeQueries = useExecuteQueries();
   const editableTable = useMemo(() => getEditableTableName(queryInfo), [queryInfo]);
@@ -69,7 +71,7 @@ export function useCommitDelete({
         if (!rowData) {
           return { ok: false, error: `Row ${idx} no longer exists` };
         }
-        const pks = buildPkAssignments(rowData, pkColumns);
+        const pks = buildPkAssignments(rowData, pkColumns, engine);
         if (!pks) {
           return {
             ok: false,
@@ -81,7 +83,7 @@ export function useCommitDelete({
 
       let deleteSql: string;
       try {
-        deleteSql = buildDeleteSql(check.table, pkColumns, rowAssignments);
+        deleteSql = buildDeleteSql({ engine, table: check.table, pkColumns, rows: rowAssignments });
       } catch (err) {
         return { ok: false, error: String(err) };
       }
@@ -115,7 +117,7 @@ export function useCommitDelete({
 
       return { ok: true };
     },
-    [preflight, schema.primaryKeys, data, canvas, nodeId, executeQueries],
+    [preflight, schema.primaryKeys, engine, data, canvas, nodeId, executeQueries],
   );
 
   return { preflight, commit };

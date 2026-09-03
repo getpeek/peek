@@ -1,4 +1,6 @@
 import { useCallback } from "react";
+import { useAtomValue } from "jotai";
+import { activeEngineAtom } from "../../../../Connection/engine";
 import { exportRows } from "../export/exportRows";
 import { getExportTableName } from "../cell/inlineEdit";
 import { useColumnAsVariable } from "./useColumnAsVariable";
@@ -27,6 +29,7 @@ export function useColumnActions({
   selectedRowIndices: () => number[];
   closeCellMenu: () => void;
 }) {
+  const engine = useAtomValue(activeEngineAtom);
   const exportColumn = useCallback(
     async (columnIdx: number, header: string, format: ExportFormat) => {
       const columnData: DatabaseResult = data
@@ -35,9 +38,15 @@ export function useColumnActions({
       if (columnData.length === 0) {
         return;
       }
-      await exportRows(columnData, format, header, getExportTableName(queryInfo, header));
+      await exportRows({
+        rows: columnData,
+        format,
+        engine,
+        defaultName: header,
+        tableName: getExportTableName(queryInfo, header),
+      });
     },
-    [data, queryInfo],
+    [data, queryInfo, engine],
   );
 
   const spawnVariableFromColumn = useColumnAsVariable({ nodeId, data, headerTypes });

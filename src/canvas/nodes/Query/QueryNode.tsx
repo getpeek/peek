@@ -18,6 +18,7 @@ import { HiddenHandles } from "../HiddenHandles";
 import { NodeHeader } from "../NodeHeader";
 import { NodeIndicator } from "../NodeIndicator";
 import { sessionStateAtom } from "../../../multiplayer/state";
+import { activeEngineAtom, formatterLanguage } from "../../../Connection/engine";
 import { formatPreservingVars } from "../../variables";
 import type { QueryNode as QueryNodeT } from "../../types";
 import { registerEditorFocus } from "../editorFocusRegistry";
@@ -55,6 +56,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
   const [confirmingUnbounded, setConfirmingUnbounded] = useState(false);
   useScrollFallthrough(bodyRef);
   const session = useAtomValue(sessionStateAtom);
+  const engine = useAtomValue(activeEngineAtom);
   const variables = useGetVariables(id);
   useLabelQuery(id, data);
   const formatKeys = useKeymap()["Query::Format"];
@@ -158,7 +160,7 @@ export function QueryNode({ id, data, selected, width, height }: NodeProps<Query
       const formatted = formatPreservingVars(current, {
         keywordCase: "upper",
         functionCase: "upper",
-        language: "postgresql",
+        language: formatterLanguage(engine),
       });
       // Apply through the editor when it's mounted: the editor is authoritative
       // while focused (see SqlEditor's reconcile guard), so writing only to node

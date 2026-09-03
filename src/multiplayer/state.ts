@@ -1,7 +1,12 @@
 import { atom } from "jotai";
+import type { Engine } from "../Connection/engine";
 import type { Peer, RemoteCursor, RemoteViewport, SessionState } from "./types";
 
 export const sessionStateAtom = atom<SessionState | null>(null);
+
+// The host's database engine, published over the doc so joiners build statements
+// and format queries in the right dialect. "unknown" outside a session.
+export const hostEngineAtom = atom<Engine>("unknown");
 
 export const participantsAtom = atom<Record<string, Peer>>({});
 

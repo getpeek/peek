@@ -4,7 +4,8 @@ import { canvasApiAtom, documentAtom } from "../canvas/state";
 import { createPromptRunner, type Message } from "../canvas/hooks/useExecutePrompt";
 import { createAgentToolHandlers } from "../canvas/nodes/Agent/useAgentTools";
 import { runAgentConversation } from "../canvas/nodes/Agent/runAgentConversation";
-import { AGENT_SYSTEM_PROMPT, AGENT_TOOLS } from "../canvas/nodes/Agent/agentTools";
+import { agentSystemPrompt, AGENT_TOOLS } from "../canvas/nodes/Agent/agentTools";
+import { getActiveEngine } from "../Connection/engine";
 import { pageContainingNode } from "../mcp/createNodes";
 import { configAtom } from "../state";
 import { AGENT_CANCELS_PREFIX, AGENT_REQUESTS_PREFIX, agentCancelKey } from "./keys";
@@ -137,7 +138,7 @@ export async function handleAgentRequest(key: string, value: Uint8Array): Promis
   try {
     const runPrompt = createPromptRunner({
       tools: AGENT_TOOLS,
-      systemPrompt: AGENT_SYSTEM_PROMPT,
+      systemPrompt: agentSystemPrompt(getActiveEngine()),
       config,
     });
     const handlers = createAgentToolHandlers({ canvas, nodeId: payload.nodeId });

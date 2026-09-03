@@ -1,6 +1,8 @@
 import { useState } from "react";
 
 interface ActivityFooterProps {
+  /** Where the rows come from: "pg_stat_activity" | "processlist". */
+  sourceName: string;
   database: string;
   refreshedAgoSecs: number;
   selectedCount: number;
@@ -10,6 +12,7 @@ interface ActivityFooterProps {
 }
 
 export function ActivityFooter({
+  sourceName,
   database,
   refreshedAgoSecs,
   selectedCount,
@@ -61,7 +64,7 @@ export function ActivityFooter({
   return (
     <div className='app-node-footer nodrag activity-footer'>
       <span className='meta'>
-        pg_stat_activity · {database} · refreshed {refreshedAgoSecs}s ago
+        {sourceName} · {database} · refreshed {refreshedAgoSecs}s ago
       </span>
       <button className='activity-source-link' onClick={onShowSourceQuery} type='button'>
         Show source query

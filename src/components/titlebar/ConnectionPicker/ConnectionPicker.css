@@ -5,6 +5,18 @@
   -webkit-app-region: no-drag;
 }
 
+.connection-error {
+  margin-top: 6px;
+  padding: 6px 10px;
+  max-width: 320px;
+  border: 1px solid var(--pk-red);
+  border-radius: var(--pk-radius-card);
+  background: var(--pk-red-soft);
+  color: var(--pk-red);
+  font: 500 11px var(--pk-font-sans);
+  word-break: break-word;
+}
+
 .connection-button {
   display: inline-flex;
   align-items: center;

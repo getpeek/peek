@@ -24,6 +24,7 @@ import { useAddRow } from "../ResultInsertForm/useInsertFormSpawn";
 import { useCanvas } from "../../hooks/useCanvas";
 import { Tooltip } from "../../../components/Tooltip/Tooltip";
 import { cellSelectionSummaryAtom } from "../../state";
+import { activeEngineAtom } from "../../../Connection/engine";
 import { useAtomValue } from "jotai";
 import type { DatabaseResult } from "../../../state";
 import type { AgentNode, QueryNode } from "../../types";
@@ -52,6 +53,7 @@ export function ResultToolbar({
   const canvas = useCanvas();
   const createChart = useCreateChart();
   const summary = useAtomValue(cellSelectionSummaryAtom);
+  const engine = useAtomValue(activeEngineAtom);
   const selectionStats = summary?.nodeId === nodeId ? summary : null;
 
   const canChart =
@@ -132,12 +134,14 @@ export function ResultToolbar({
       .replaceAll(/[^a-z0-9_-]+/giu, "_")
       .replaceAll(/^_+|_+$/gu, "") || "result";
 
+  const tableName = getExportTableName(queryInfo, baseName);
+
   const exportAs = async (format: ExportFormat) => {
-    await exportRows(rows, format, baseName, getExportTableName(queryInfo, baseName));
+    await exportRows({ rows, format, engine, defaultName: baseName, tableName });
   };
 
   const copyAs = async (format: ExportFormat) => {
-    await copyRows(rows, format, getExportTableName(queryInfo, baseName));
+    await copyRows({ rows, format, engine, tableName });
   };
 
   if (search.active && !pivoted) {

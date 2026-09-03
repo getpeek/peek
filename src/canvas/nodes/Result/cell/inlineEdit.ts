@@ -1,3 +1,4 @@
+import { quoteIdentifier, type Engine } from "../../../../Connection/engine";
 import type { QueryInfo } from "../queryInfo";
 
 export function getEditableTableName(info: QueryInfo | null | undefined): string | null {
@@ -64,7 +65,7 @@ export function isTimestampType(sqlType: string): boolean {
   return TIMESTAMP_TYPES.has(sqlType.toUpperCase());
 }
 
-export function formatSqlLiteral(value: unknown, sqlType: string): string {
+export function formatSqlLiteral(value: unknown, sqlType: string, engine: Engine): string {
   if (value === null || value === undefined) {
     return "NULL";
   }
@@ -87,8 +88,12 @@ export function formatSqlLiteral(value: unknown, sqlType: string): string {
 
   if (upper === "JSON" || upper === "JSONB") {
     const json = typeof value === "string" ? value : JSON.stringify(value);
-    const escaped = json.replaceAll("'", "''");
-    return upper === "JSONB" ? `'${escaped}'::jsonb` : `'${escaped}'::json`;
+    const quoted = `'${json.replaceAll("'", "''")}'`;
+    // MySQL has no cast syntax here and accepts a plain string literal for JSON columns.
+    if (engine === "mysql") {
+      return quoted;
+    }
+    return upper === "JSONB" ? `${quoted}::jsonb` : `${quoted}::json`;
   }
 
   if (isNumericType(upper)) {
@@ -107,26 +112,45 @@ export function formatSqlLiteral(value: unknown, sqlType: string): string {
 export type PkAssignment = { column: string; literal: string };
 export type InsertAssignment = { column: string; literal: string };
 
-export function buildUpdateSql(
-  table: string,
-  column: string,
-  newLiteral: string,
-  pks: PkAssignment[],
-): string {
+export function buildUpdateSql({
+  engine,
+  table,
+  column,
+  newLiteral,
+  pks,
+}: {
+  engine: Engine;
+  table: string;
+  column: string;
+  newLiteral: string;
+  pks: PkAssignment[];
+}): string {
   if (pks.length === 0) {
     throw new Error("buildUpdateSql requires at least one primary key column");
   }
-  const where = pks.map(pk => `"${pk.column}" = ${pk.literal}`).join(" AND ");
-  return `UPDATE "${table}" SET "${column}" = ${newLiteral} WHERE ${where}`;
+  const quote = (name: string) => quoteIdentifier(engine, name);
+  const where = pks.map(pk => `${quote(pk.column)} = ${pk.literal}`).join(" AND ");
+  return `UPDATE ${quote(table)} SET ${quote(column)} = ${newLiteral} WHERE ${where}`;
 }
 
-export function buildDeleteSql(table: string, pkColumns: string[], rows: PkAssignment[][]): string {
+export function buildDeleteSql({
+  engine,
+  table,
+  pkColumns,
+  rows,
+}: {
+  engine: Engine;
+  table: string;
+  pkColumns: string[];
+  rows: PkAssignment[][];
+}): string {
   if (pkColumns.length === 0) {
     throw new Error("buildDeleteSql requires at least one primary key column");
   }
   if (rows.length === 0) {
     throw new Error("buildDeleteSql requires at least one row");
   }
+  const quote = (name: string) => quoteIdentifier(engine, name);
 
   if (pkColumns.length === 1) {
     const col = pkColumns[0];
@@ -137,10 +161,10 @@ export function buildDeleteSql(table: string, pkColumns: string[], rows: PkAssig
       }
       return cell.literal;
     });
-    return `DELETE FROM "${table}" WHERE "${col}" IN (${literals.join(", ")})`;
+    return `DELETE FROM ${quote(table)} WHERE ${quote(col)} IN (${literals.join(", ")})`;
   }
 
-  const colTuple = pkColumns.map(col => `"${col}"`).join(", ");
+  const colTuple = pkColumns.map(col => quote(col)).join(", ");
   const valueTuples = rows.map(row => {
     const literals = pkColumns.map(col => {
       const cell = row.find(pk => pk.column === col);
@@ -151,21 +175,30 @@ export function buildDeleteSql(table: string, pkColumns: string[], rows: PkAssig
     });
     return `(${literals.join(", ")})`;
   });
-  return `DELETE FROM "${table}" WHERE (${colTuple}) IN (${valueTuples.join(", ")})`;
+  return `DELETE FROM ${quote(table)} WHERE (${colTuple}) IN (${valueTuples.join(", ")})`;
 }
 
-export function buildInsertSql(table: string, assignments: InsertAssignment[]): string {
+export function buildInsertSql({
+  engine,
+  table,
+  assignments,
+}: {
+  engine: Engine;
+  table: string;
+  assignments: InsertAssignment[];
+}): string {
   if (assignments.length === 0) {
     throw new Error("buildInsertSql requires at least one column");
   }
-  const cols = assignments.map(a => `"${a.column}"`).join(", ");
+  const cols = assignments.map(a => quoteIdentifier(engine, a.column)).join(", ");
   const vals = assignments.map(a => a.literal).join(", ");
-  return `INSERT INTO "${table}" (${cols}) VALUES (${vals})`;
+  return `INSERT INTO ${quoteIdentifier(engine, table)} (${cols}) VALUES (${vals})`;
 }
 
 export function buildPkAssignments(
   row: [string, unknown, string][],
   pkColumns: string[],
+  engine: Engine,
 ): PkAssignment[] | null {
   const byName = new Map<string, [unknown, string]>();
   for (const [name, value, type] of row) {
@@ -177,7 +210,7 @@ export function buildPkAssignments(
     if (!cell) {
       return null;
     }
-    out.push({ column: pk, literal: formatSqlLiteral(cell[0], cell[1]) });
+    out.push({ column: pk, literal: formatSqlLiteral(cell[0], cell[1], engine) });
   }
   return out;
 }

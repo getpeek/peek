@@ -112,13 +112,19 @@ async fn set_connection(
         return Ok(());
     }
     if scheme == "mysql" || scheme == "mariadb" {
-        let db = MysqlDatabase::new(&rewritten);
+        let connection = sqlx::MySqlConnection::connect(&rewritten)
+            .await
+            .map_err(|e| e.to_string())?;
+        let db = MysqlDatabase::new(connection);
         state.connection = Some(Box::new(db));
         state.tunnel = tunnel;
         *schema_cache.write() = SchemaIndex::default();
+        return Ok(());
     }
 
-    Ok(())
+    Err(format!(
+        "Unsupported database scheme '{scheme}' (expected postgres:// or mysql://)"
+    ))
 }
 
 /// # Panics

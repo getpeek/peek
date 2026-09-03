@@ -1,5 +1,7 @@
 import { useCallback, useMemo } from "react";
+import { useAtomValue } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
+import { activeEngineAtom } from "../../../Connection/engine";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useExecuteQueries } from "../../hooks/useExecuteQueries";
 import { ids } from "../../ids";
@@ -49,6 +51,7 @@ export function useCommitInsertForm({
 }) {
   const canvas = useCanvas();
   const executeQueries = useExecuteQueries();
+  const engine = useAtomValue(activeEngineAtom);
   const editableTable = useMemo(() => getEditableTableName(queryInfo), [queryInfo]);
 
   return useCallback(async () => {
@@ -72,7 +75,7 @@ export function useCommitInsertForm({
         }
         const resolvedDraft = substituteVariables(draft, variables).resolved;
         const type = columnTypes[column] ?? "";
-        assignments.push({ column, literal: formatSqlLiteral(resolvedDraft, type) });
+        assignments.push({ column, literal: formatSqlLiteral(resolvedDraft, type, engine) });
       }
     } catch (err) {
       setError(String(err));
@@ -86,7 +89,7 @@ export function useCommitInsertForm({
 
     let insertSql: string;
     try {
-      insertSql = buildInsertSql(editableTable, assignments);
+      insertSql = buildInsertSql({ engine, table: editableTable, assignments });
     } catch (err) {
       setError(String(err));
       return;
@@ -131,6 +134,7 @@ export function useCommitInsertForm({
     resultNodeId,
     variables,
     executeQueries,
+    engine,
   ]);
 }
 

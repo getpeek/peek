@@ -1,4 +1,7 @@
+import type { FormatOptionsWithLanguage } from "sql-formatter";
 import { formatPreservingVars } from "../../variables";
+
+type Language = FormatOptionsWithLanguage["language"];
 
 // Postgres reports non-statement text for some backends: `<insufficient privilege>`
 // when the query isn't visible to this role, and `autovacuum: VACUUM public.t` for
@@ -7,22 +10,24 @@ import { formatPreservingVars } from "../../variables";
 const NON_STATEMENT = /^\s*(<|\w+:)/u;
 
 // Formatting is pure and the same statement recurs on every poll, so results are
-// cached by source text. Bounded because a busy server shows many distinct queries.
+// cached by dialect + source text — a connection switch must not serve the other
+// dialect's output. Bounded because a busy server shows many distinct queries.
 const MAX_CACHED = 500;
 const cache = new Map<string, string>();
 
 /**
- * Reformats a backend's query for reading. `pg_stat_activity` returns whatever the
+ * Reformats a backend's query for reading. The server returns whatever the
  * client sent, which is usually one unbroken line. Uses the same formatter and
  * options as the query node's format action, so a statement looks the same here as
  * it would once pasted into a query node.
  */
-export function formatActivityQuery(query: string): string {
+export function formatActivityQuery(query: string, language: Language): string {
   if (query === "" || NON_STATEMENT.test(query)) {
     return query;
   }
 
-  const cached = cache.get(query);
+  const key = `${language}\0${query}`;
+  const cached = cache.get(key);
   if (cached !== undefined) {
     return cached;
   }
@@ -32,11 +37,11 @@ export function formatActivityQuery(query: string): string {
     formatted = formatPreservingVars(query, {
       keywordCase: "upper",
       functionCase: "upper",
-      language: "postgresql",
+      language,
     });
   } catch {
-    // Postgres truncates `query` at track_activity_query_size, so a statement can
-    // arrive cut mid-token. Showing it unformatted beats showing nothing.
+    // Servers truncate `query` (Postgres at track_activity_query_size, MySQL at
+    // performance_schema_max_sql_text_length), so a statement can arrive cut mid-token. Showing it unformatted beats showing nothing.
     formatted = query;
   }
 
@@ -46,6 +51,6 @@ export function formatActivityQuery(query: string): string {
       cache.delete(oldest);
     }
   }
-  cache.set(query, formatted);
+  cache.set(key, formatted);
   return formatted;
 }

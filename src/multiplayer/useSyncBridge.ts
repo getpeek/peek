@@ -10,12 +10,13 @@ import {
 } from "../canvas/state";
 import { applyOperation, applyResultOperation } from "./diffApply";
 import { diffDocs, diffResults } from "./diff";
-import { keyKind, SCHEMA_INDEX_KEY } from "./keys";
+import { CONNECTION_ENGINE_KEY, keyKind, SCHEMA_INDEX_KEY } from "./keys";
 import { handleAgentCancel, handleAgentRequest } from "./agentProxy";
 import { handleLspRequest } from "./lspProxy";
 import { b64ToBytes } from "./bytes";
 import {
   followingAuthorAtom,
+  hostEngineAtom,
   multiplayerSyncIssueAtom,
   preSessionSnapshotAtom,
   remoteCursorsAtom,
@@ -24,6 +25,7 @@ import {
   participantsAtom,
 } from "./state";
 import { schemaAtom } from "../state";
+import { activeEngineAtom, isEngine } from "../Connection/engine";
 import {
   type DocUpdatePayload,
   type DocDeletePayload,
@@ -36,6 +38,7 @@ import {
 export function useSyncBridge(): void {
   const session = useAtomValue(sessionStateAtom);
   const schema = useAtomValue(schemaAtom);
+  const engine = useAtomValue(activeEngineAtom);
   const setDoc = useSetAtom(documentAtom);
   const setSession = useSetAtom(sessionStateAtom);
   const setRemoteCursors = useSetAtom(remoteCursorsAtom);
@@ -76,6 +79,17 @@ export function useSyncBridge(): void {
       value: new TextEncoder().encode(JSON.stringify(schema)),
     });
   }, [schema, session]);
+
+  useEffect(() => {
+    if (!session || session.role !== "host") {
+      return;
+    }
+    pushOperation({
+      kind: "put",
+      key: CONNECTION_ENGINE_KEY,
+      value: new TextEncoder().encode(JSON.stringify(engine)),
+    });
+  }, [engine, session]);
 
   useEffect(() => {
     let unlistenUpdate: UnlistenFn | undefined;
@@ -126,6 +140,15 @@ export function useSyncBridge(): void {
           pushSchemaToLspCache(parsed);
         } catch (e) {
           console.error("multiplayer: bad schema/index payload:", e);
+        }
+      } else if (kind === "engine" && currentSession.role === "joiner") {
+        try {
+          const parsed: unknown = JSON.parse(new TextDecoder().decode(value));
+          if (isEngine(parsed)) {
+            store.set(hostEngineAtom, parsed);
+          }
+        } catch (e) {
+          console.error("multiplayer: bad connection/engine payload:", e);
         }
       }
     }).then(u => {
@@ -213,6 +236,7 @@ export function useSyncBridge(): void {
       }
       store.set(preSessionSnapshotAtom, null);
       store.set(sessionStateAtom, null);
+      store.set(hostEngineAtom, "unknown");
       store.set(remoteCursorsAtom, {});
       store.set(remoteViewportsAtom, {});
       store.set(participantsAtom, {});

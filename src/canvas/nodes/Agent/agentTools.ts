@@ -1,5 +1,6 @@
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import { z } from "zod";
+import { dialectName, type Engine } from "../../../Connection/engine";
 
 // These tools are bound to the model only so it knows their schemas — execution
 // happens in useAgentTools' handlers (keyed by name), so the `func` here is never
@@ -24,7 +25,9 @@ export const AGENT_TOOLS: DynamicStructuredTool[] = [
     description:
       "Place an un-run SQL query node on the canvas for the user to run themselves. Use when the user asks you to create/write/add a query. The agent cannot execute queries — the user runs them and links the result back.",
     schema: z.object({
-      query: z.string().describe("a valid PostgreSQL query"),
+      query: z
+        .string()
+        .describe("a valid SQL query in the connected database's dialect (see system prompt)"),
       description: z.string().optional().describe("short human-readable title shown on the node"),
       position,
       size,
@@ -199,7 +202,8 @@ export const AGENT_TOOLS: DynamicStructuredTool[] = [
   }),
 ];
 
-export const AGENT_SYSTEM_PROMPT = `You are Peek's canvas agent. You help the user explore a SQL database and build on an infinite canvas of nodes.
+export function agentSystemPrompt(engine: Engine): string {
+  return `You are Peek's canvas agent. You help the user explore a SQL database and build on an infinite canvas of nodes.
 
 You cannot execute queries yourself. When data is needed, use create_query_node to place an un-run query node on the canvas; the user runs it themselves and links the Result node back. Never claim to have run a query or to have seen its rows.
 
@@ -211,4 +215,5 @@ Guidance:
 - Prefer a direct answer or analysis over a tool call. Only use a tool when it is necessary.
 - After a tool returns, use the result to answer the user. Never repeat the same tool call with the same arguments.
 - Regions are a living document. Before changing groups call list_regions, then reorganize with the least disruptive tool: add_to_region to fold loose nodes into a fitting group, group_nodes to start or reshape one, remove_region to drop one.
-- Write valid PostgreSQL.`;
+- Write valid ${dialectName(engine)}.`;
+}

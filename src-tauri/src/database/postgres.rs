@@ -1,6 +1,6 @@
 use crate::import::{ImportType, ImportedData};
 
-use super::Database;
+use super::{Database, sanitize_table_name};
 use serde_json::{Value, json};
 use sqlx::{Column, PgConnection, Row, TypeInfo};
 use std::collections::HashMap;
@@ -243,7 +243,7 @@ impl Database for PostgresDatabase {
                 let col_type = match kind {
                     ImportType::Uuid(_) => "uuid",
                     ImportType::Date(_) => "date",
-                    ImportType::DateTime(_) => "datetime",
+                    ImportType::DateTime(_) => "timestamp",
                     ImportType::Null | ImportType::Text(_) => "text",
                     ImportType::Number(_) => "int",
                     ImportType::Float(_) => "numeric",
@@ -262,15 +262,17 @@ impl Database for PostgresDatabase {
                 let formatted_values = row
                     .iter()
                     .map(|(_, value)| match value {
-                        ImportType::Uuid(uuid) => format!("'{uuid}'"),
-                        ImportType::Date(date_val) => format!("'{date_val}'"),
-                        ImportType::DateTime(datetime_val) => format!("'{datetime_val}'"),
-                        ImportType::Text(text) => format!("'{text}'"),
+                        ImportType::Uuid(uuid) => quote_literal(&uuid.to_string()),
+                        ImportType::Date(date_val) => quote_literal(&date_val.to_string()),
+                        ImportType::DateTime(datetime_val) => {
+                            quote_literal(&datetime_val.to_string())
+                        }
+                        ImportType::Text(text) => quote_literal(text),
                         ImportType::Number(number) => format!("{number}"),
                         ImportType::Float(float) => format!("{float}"),
                         ImportType::Boolean(boolean) => format!("{boolean}"),
                         ImportType::Null => "NULL".to_string(),
-                        ImportType::Json(json) => format!("'{json}'"),
+                        ImportType::Json(json) => quote_literal(&json.to_string()),
                     })
                     .collect::<Vec<String>>()
                     .join(",");
@@ -282,44 +284,28 @@ impl Database for PostgresDatabase {
         sqlx::query(format!("CREATE TEMP TABLE IF NOT EXISTS {table_name} ({columns})").as_str())
             .execute(&mut self.connection)
             .await
-            .map_err(|_| "Could not create temporary table ".to_string())?;
+            .map_err(|e| format!("Could not create temporary table: {e}"))?;
 
-        for chunk in values.chunks(1) {
+        let column_names = first
+            .iter()
+            .map(|(name, _)| name.as_str())
+            .collect::<Vec<_>>()
+            .join(",");
+
+        for chunk in values.chunks(500) {
             let chunk_values = chunk.join(",");
-            let column_names = first
-                .iter()
-                .map(|(name, _)| name)
-                .cloned()
-                .collect::<Vec<_>>()
-                .join(",");
-
-            if let Err(err) = sqlx::query(
+            sqlx::query(
                 format!("INSERT INTO {table_name} ({column_names}) VALUES {chunk_values}").as_str(),
             )
             .execute(&mut self.connection)
             .await
-            {
-                eprintln!("{err:?}");
-            }
+            .map_err(|e| format!("Could not insert imported rows: {e}"))?;
         }
 
         Ok(())
     }
 }
 
-pub(crate) fn sanitize_table_name(name: &str) -> String {
-    let sanitized: String = name
-        .chars()
-        .filter(|c| c.is_alphanumeric() || *c == '_')
-        .collect::<String>()
-        .replace('-', " ")
-        .to_lowercase();
-
-    if sanitized.chars().next().is_some_and(char::is_numeric) {
-        format!("t_{sanitized}")
-    } else if sanitized.is_empty() {
-        "imported_table".to_string()
-    } else {
-        sanitized
-    }
+fn quote_literal(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "''"))
 }

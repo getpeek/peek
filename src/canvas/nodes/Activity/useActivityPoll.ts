@@ -3,8 +3,9 @@ import { useAtomValue } from "jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import type { DatabaseResult } from "../../../state";
+import { activeEngineAtom } from "../../../Connection/engine";
 import { sessionStateAtom } from "../../../multiplayer/state";
-import { activitySql } from "./activitySql";
+import { activityEngineFor } from "./activitySql";
 import { parseActivity, type ActivityRow } from "./activityRow";
 
 export const POLL_MS = 1000;
@@ -31,6 +32,7 @@ export function useActivityPoll({ live, minSecs, rootRef }: UseActivityPollArgs)
   const [error, setError] = useState<string | null>(null);
   const [receivedAt, setReceivedAt] = useState(() => performance.now());
   const session = useAtomValue(sessionStateAtom);
+  const engine = useAtomValue(activeEngineAtom);
   const inFlightRef = useRef(false);
   const onScreenRef = useRef(true);
 
@@ -40,7 +42,9 @@ export function useActivityPoll({ live, minSecs, rootRef }: UseActivityPollArgs)
     }
     inFlightRef.current = true;
     try {
-      const response = await invoke<string>("get_results", { query: activitySql(minSecs) });
+      const response = await invoke<string>("get_results", {
+        query: activityEngineFor(engine).pollSql(minSecs),
+      });
       const parsed = parseActivity(JSON.parse(response) as DatabaseResult);
       setRows(parsed.rows);
       setSelfPid(parsed.selfPid);
@@ -51,7 +55,7 @@ export function useActivityPoll({ live, minSecs, rootRef }: UseActivityPollArgs)
     } finally {
       inFlightRef.current = false;
     }
-  }, [minSecs]);
+  }, [minSecs, engine]);
 
   useEffect(() => {
     const root = rootRef.current;

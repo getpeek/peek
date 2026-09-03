@@ -21,20 +21,13 @@ function abbreviateType(type: string): string {
 }
 
 // `references` is an inverted FK index (referenced "table.col" → referencing
-// "table.col"[]), and only Postgres populates it that way — MySQL puts a
-// table → column-names map in the same slot. Invert to a forward lookup
-// (referencing "table.col" → referenced "table.col"), keeping only dotted-on-
-// both-sides entries so MySQL's column map is ignored rather than mis-rendered.
+// "table.col"[]); the DDL needs the forward direction so each column can name
+// what it points at.
 function forwardForeignKeys(references: Schema["references"]): Map<string, string> {
   const forward = new Map<string, string>();
   for (const [referenced, referencing] of Object.entries(references)) {
-    if (!referenced.includes(".")) {
-      continue;
-    }
     for (const source of referencing) {
-      if (source.includes(".")) {
-        forward.set(source, referenced);
-      }
+      forward.set(source, referenced);
     }
   }
   return forward;

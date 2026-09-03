@@ -1,22 +1,10 @@
 import { getDefaultStore } from "jotai";
+import { engineFromUrl } from "../Connection/engine";
 import { activeConnectionAtom } from "../Connection/state";
 import { documentAtom } from "../canvas/state";
 import { schemaAtom } from "../state";
 import { formatSchema } from "./formatSchema";
 import type { AppNode } from "../canvas/types";
-
-// Only the URL scheme is exposed — the URL (with credentials) never leaves the
-// frontend.
-function engineFromUrl(url: string): string | null {
-  const scheme = url.split("://", 1)[0]?.toLowerCase();
-  if (scheme === "postgres" || scheme === "postgresql") {
-    return "postgresql";
-  }
-  if (scheme === "mysql" || scheme === "mariadb") {
-    return "mysql";
-  }
-  return scheme || null;
-}
 
 // Result rows must never reach the agent. Result nodes keep their rows in the
 // results sidecar, but barchart nodes embed them in `data.data` — strip any such

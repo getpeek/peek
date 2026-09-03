@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { format } from "sql-formatter";
 import { useAtomValue } from "jotai";
 import { schemaAtom } from "../../../state";
+import { activeEngineAtom, dialectName, formatterLanguage } from "../../../Connection/engine";
 import { useExecutePrompt } from "../../hooks/useExecutePrompt";
 import { useCanvas } from "../../hooks/useCanvas";
 import { useScrollFallthrough } from "../../hooks/useScrollFallthrough";
@@ -20,6 +21,7 @@ export function QueryErrorNode({ id, data, selected, width, height }: NodeProps<
   const canvas = useCanvas();
   const runPrompt = useExecutePrompt({ tools: [], systemPrompt: "" });
   const schema = useAtomValue(schemaAtom);
+  const engine = useAtomValue(activeEngineAtom);
   const suggestionRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   useScrollFallthrough(bodyRef);
@@ -50,7 +52,8 @@ You will be provided with an sql query which resulted in an error as well as the
 You will output the correct sql that fixes the error and nothing else, no markdown, no backticks,
 no comments or descriptions. Just the sql.
 
-The database schema looks like this ${JSON.stringify(schema, null, 2)}. You can use this to correct incorrect spellings or do required joins etc.`,
+The database schema looks like this ${JSON.stringify(schema, null, 2)}. You can use this to correct incorrect spellings or do required joins etc.
+The database engine is ${dialectName(engine)}; write the fix in that dialect.`,
         timestamp: Date.now(),
       },
       {
@@ -70,7 +73,7 @@ The database schema looks like this ${JSON.stringify(schema, null, 2)}. You can 
     setQuery(old => {
       try {
         return format(old, {
-          language: "postgresql",
+          language: formatterLanguage(engine),
           keywordCase: "upper",
           functionCase: "upper",
         });

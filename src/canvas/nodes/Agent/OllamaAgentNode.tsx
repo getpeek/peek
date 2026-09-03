@@ -2,7 +2,8 @@ import { useAtomValue } from "jotai";
 import { useState } from "react";
 import { useExecutePrompt } from "../../hooks/useExecutePrompt";
 import { configAtom } from "../../../state";
-import { AGENT_SYSTEM_PROMPT, AGENT_TOOLS } from "./agentTools";
+import { activeEngineAtom } from "../../../Connection/engine";
+import { agentSystemPrompt, AGENT_TOOLS } from "./agentTools";
 import { AgentProviderSelector } from "./AgentProviderSelector";
 import { AgentView } from "./AgentView";
 import { useAgentContextSync } from "./useAgentContextSync";
@@ -26,7 +27,11 @@ export function OllamaAgentNode({
   const config = useAtomValue(configAtom);
   const modelName = config?.ai.ollama?.model ?? "model";
 
-  const runPrompt = useExecutePrompt({ tools: AGENT_TOOLS, systemPrompt: AGENT_SYSTEM_PROMPT });
+  const engine = useAtomValue(activeEngineAtom);
+  const runPrompt = useExecutePrompt({
+    tools: AGENT_TOOLS,
+    systemPrompt: agentSystemPrompt(engine),
+  });
   const handlers = useAgentTools({ nodeId: id });
   const { ask, stop, isLoading, incomingMessage } = useAgentStream({
     nodeId: id,

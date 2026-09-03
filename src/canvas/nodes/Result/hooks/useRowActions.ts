@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
+import { useAtomValue } from "jotai";
+import { activeEngineAtom } from "../../../../Connection/engine";
 import type { DatabaseResult } from "../../../../state";
 import { copyRows } from "../export/copyRows";
 import { exportRows } from "../export/exportRows";
@@ -33,6 +35,7 @@ export function useRowActions({
   closeCellMenu: () => void;
 }) {
   const commitDelete = useCommitDelete({ data, queryInfo, nodeId });
+  const engine = useAtomValue(activeEngineAtom);
   const [deleteConfirm, setDeleteConfirm] = useState<DeleteConfirmState | null>(null);
 
   const baseExportName = useMemo(() => {
@@ -59,9 +62,15 @@ export function useRowActions({
       if (!row) {
         return;
       }
-      void exportRows([row], format, `${baseExportName}-row-${rowIndex + 1}`, exportTableName);
+      void exportRows({
+        rows: [row],
+        format,
+        engine,
+        defaultName: `${baseExportName}-row-${rowIndex + 1}`,
+        tableName: exportTableName,
+      });
     },
-    [data, baseExportName, exportTableName],
+    [data, baseExportName, exportTableName, engine],
   );
 
   const exportSelectedRows = useCallback(
@@ -70,9 +79,15 @@ export function useRowActions({
       if (rows.length === 0) {
         return;
       }
-      void exportRows(rows, format, `${baseExportName}-${rows.length}-rows`, exportTableName);
+      void exportRows({
+        rows,
+        format,
+        engine,
+        defaultName: `${baseExportName}-${rows.length}-rows`,
+        tableName: exportTableName,
+      });
     },
-    [baseExportName, exportTableName, selectedRows],
+    [baseExportName, exportTableName, selectedRows, engine],
   );
 
   const copyRow = useCallback(
@@ -81,26 +96,26 @@ export function useRowActions({
       if (!row) {
         return;
       }
-      void copyRows([row], format, exportTableName);
+      void copyRows({ rows: [row], format, engine, tableName: exportTableName });
     },
-    [data, exportTableName],
+    [data, exportTableName, engine],
   );
 
   const copySelectedRows = useCallback(
     (format: ExportFormat) => {
-      void copyRows(selectedRows(), format, exportTableName);
+      void copyRows({ rows: selectedRows(), format, engine, tableName: exportTableName });
     },
-    [selectedRows, exportTableName],
+    [selectedRows, exportTableName, engine],
   );
 
   const copyCellSelection = useCallback(
     (format: ExportFormat) => {
       const grid = cellGrid();
       if (grid?.length) {
-        void copyRows(grid, format, exportTableName);
+        void copyRows({ rows: grid, format, engine, tableName: exportTableName });
       }
     },
-    [cellGrid, exportTableName],
+    [cellGrid, exportTableName, engine],
   );
 
   const exportCellSelection = useCallback(
@@ -108,10 +123,16 @@ export function useRowActions({
       const grid = cellGrid();
       if (grid?.length) {
         const name = `${baseExportName}-selection-${grid.length}x${grid[0].length}`;
-        void exportRows(grid, format, name, exportTableName);
+        void exportRows({
+          rows: grid,
+          format,
+          engine,
+          defaultName: name,
+          tableName: exportTableName,
+        });
       }
     },
-    [cellGrid, baseExportName, exportTableName],
+    [cellGrid, baseExportName, exportTableName, engine],
   );
 
   const requestDelete = useCallback(() => {

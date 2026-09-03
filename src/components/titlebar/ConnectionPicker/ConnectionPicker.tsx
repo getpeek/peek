@@ -15,6 +15,7 @@ import { IconChevronDown } from "@tabler/icons-react";
 export const ConnectionPicker: React.FC = () => {
   const [, setSchema] = useAtom(schemaAtom);
   const [, setIsConnecting] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   const activeConnection = useAtomValue(activeConnectionAtom);
   const [showPopover, setShowPopover] = useAtom(connectionPickerOpenAtom);
   const targetRef = useRef<HTMLDivElement>(null);
@@ -42,6 +43,7 @@ export const ConnectionPicker: React.FC = () => {
 
   const setConnection = async (connection: Connection) => {
     setIsConnecting(true);
+    setConnectionError(null);
 
     try {
       await invoke("set_connection", {
@@ -51,7 +53,8 @@ export const ConnectionPicker: React.FC = () => {
 
       const schema = await fetchSchema();
       setSchema(schema);
-    } catch {
+    } catch (e) {
+      setConnectionError(String(e));
     } finally {
       setIsConnecting(false);
     }
@@ -115,6 +118,7 @@ export const ConnectionPicker: React.FC = () => {
         style={{ backdropFilter: "blur(10px)" }}
       >
         <WorkspacePopover onClose={() => setShowPopover(false)} />
+        {connectionError && <div className='connection-error'>{connectionError}</div>}
       </Popover.Dropdown>
     </Popover>
   );

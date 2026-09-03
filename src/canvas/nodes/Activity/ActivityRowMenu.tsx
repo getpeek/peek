@@ -6,6 +6,8 @@ const FLIP_MARGIN_PX = 130;
 
 interface ActivityRowMenuProps {
   pid: number;
+  /** The statement the kill will run, shown under the confirmation. */
+  killLabel: string;
   onCopyQuery: () => void;
   onCopyPid: () => void;
   onKill: () => void;
@@ -14,6 +16,7 @@ interface ActivityRowMenuProps {
 
 export function ActivityRowMenu({
   pid,
+  killLabel,
   onCopyQuery,
   onCopyPid,
   onKill,
@@ -93,7 +96,7 @@ export function ActivityRowMenu({
           {confirming ? (
             <div className='activity-menu-confirm'>
               <div className='activity-menu-confirm-title'>Kill query on pid {pid}?</div>
-              <div className='activity-menu-confirm-sub'>pg_terminate_backend({pid})</div>
+              <div className='activity-menu-confirm-sub'>{killLabel}</div>
               <div className='activity-menu-confirm-actions'>
                 <button className='btn btn-danger' onClick={() => run(onKill)} type='button'>
                   Yes

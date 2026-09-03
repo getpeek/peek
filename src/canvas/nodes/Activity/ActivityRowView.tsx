@@ -1,4 +1,6 @@
+import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
+import { activeEngineAtom, formatterLanguage } from "../../../Connection/engine";
 import { BAR_FULL_MS } from "./activitySql";
 import { formatDuration, severityFor, type ActivityRow as Row } from "./activityRow";
 import { ActivityRowMenu } from "./ActivityRowMenu";
@@ -18,6 +20,7 @@ interface ActivityRowProps {
   displayedMs: number | null;
   selected: boolean;
   killState: KillState | undefined;
+  killLabel: string;
   onToggleSelect: () => void;
   onKill: () => void;
 }
@@ -38,13 +41,15 @@ export function ActivityRowView({
   displayedMs,
   selected,
   killState,
+  killLabel,
   onToggleSelect,
   onKill,
 }: ActivityRowProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const copiedTimer = useRef<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const queryText = formatActivityQuery(row.query);
+  const engine = useAtomValue(activeEngineAtom);
+  const queryText = formatActivityQuery(row.query, formatterLanguage(engine));
   const highlighted = useHighlightedSql(queryText);
   const severity = severityFor(displayedMs);
   const terminating = killState?.phase === "terminating";
@@ -148,6 +153,7 @@ export function ActivityRowView({
         {!terminating && !terminated && (
           <ActivityRowMenu
             pid={row.pid}
+            killLabel={killLabel}
             onCopyQuery={copyQuery}
             onCopyPid={copyPid}
             onKill={onKill}

@@ -144,6 +144,7 @@ export function VariableNode({ id, data, selected, width, height }: NodeProps<Va
                           value={row.value as string}
                           placeholder='value'
                           onChange={next => setValue(i, next)}
+                          onPasteLines={lines => setValue(i, lines)}
                         />
                       )}
                     </td>

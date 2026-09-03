@@ -10,6 +10,7 @@ export const AGENT_CANCELS_PREFIX = "agent-cancels/";
 export const LSP_REQUESTS_PREFIX = "lsp-requests/";
 export const LSP_RESPONSES_PREFIX = "lsp-responses/";
 export const SCHEMA_INDEX_KEY = "schema/index";
+export const CONNECTION_ENGINE_KEY = "connection/engine";
 
 export type LspRequestKind = "completion" | "diagnostics";
 
@@ -42,6 +43,7 @@ export type KeyKind =
   | "lsp-request"
   | "lsp-response"
   | "schema"
+  | "engine"
   | "unknown";
 
 export function keyKind(key: string): KeyKind {
@@ -71,6 +73,9 @@ export function keyKind(key: string): KeyKind {
   }
   if (key === SCHEMA_INDEX_KEY) {
     return "schema";
+  }
+  if (key === CONNECTION_ENGINE_KEY) {
+    return "engine";
   }
   return "unknown";
 }

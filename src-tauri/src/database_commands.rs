@@ -84,6 +84,6 @@ pub(crate) async fn import_file(
 
     let table_name = imported_data.table_name.clone();
 
-    connection.import_data(imported_data).await.ok();
+    connection.import_data(imported_data).await?;
     Ok(table_name)
 }

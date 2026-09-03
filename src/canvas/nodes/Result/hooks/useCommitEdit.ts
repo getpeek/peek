@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { invoke } from "@tauri-apps/api/core";
 import { schemaAtom, type DatabaseResult } from "../../../../state";
+import { activeEngineAtom } from "../../../../Connection/engine";
 import { useCanvas } from "../../../hooks/useCanvas";
 import { resultsAtom } from "../../../state";
 import { useGetVariablesForNode } from "../../../hooks/useGetVariablesForNode";
@@ -38,6 +39,7 @@ export function useCommitEdit({
   nodeId: string;
 }) {
   const schema = useAtomValue(schemaAtom);
+  const engine = useAtomValue(activeEngineAtom);
   const canvas = useCanvas();
   const setResults = useSetAtom(resultsAtom);
   const editableTable = useMemo(() => getEditableTableName(queryInfo), [queryInfo]);
@@ -78,7 +80,7 @@ export function useCommitEdit({
         return;
       }
 
-      const pks = buildPkAssignments(rowData, pkColumns);
+      const pks = buildPkAssignments(rowData, pkColumns, engine);
       if (!pks) {
         setError(`Row is missing primary key columns (${pkColumns.join(", ")})`);
         return;
@@ -90,8 +92,14 @@ export function useCommitEdit({
         // refs (e.g. typing `@test` with no `test` variable) stay as literal text.
         const resolvedDraft = substituteVariables(draft, vars.direct).resolved;
         const newLiteral =
-          resolvedDraft === "" ? "NULL" : formatSqlLiteral(resolvedDraft, columnType);
-        updateSql = buildUpdateSql(editableTable, columnName, newLiteral, pks);
+          resolvedDraft === "" ? "NULL" : formatSqlLiteral(resolvedDraft, columnType, engine);
+        updateSql = buildUpdateSql({
+          engine,
+          table: editableTable,
+          column: columnName,
+          newLiteral,
+          pks,
+        });
       } catch (err) {
         setError(String(err));
         return;
@@ -129,6 +137,7 @@ export function useCommitEdit({
       data,
       editableTable,
       schema.primaryKeys,
+      engine,
       canvas,
       nodeId,
       query,

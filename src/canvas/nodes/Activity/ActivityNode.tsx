@@ -1,6 +1,7 @@
 import { NodeProps, NodeResizer } from "@xyflow/react";
 import { useAtomValue } from "jotai";
 import { useEffect, useRef, useState } from "react";
+import { activeEngineAtom } from "../../../Connection/engine";
 import { activeConnectionAtom } from "../../../Connection/state";
 import { parseConnectionUrl } from "../../../Connection/urlParts";
 import { useCanvas } from "../../hooks/useCanvas";
@@ -13,7 +14,7 @@ import { ActivityFooter } from "./ActivityFooter";
 import { ActivityRowView } from "./ActivityRowView";
 import { ActivityToolbar } from "./ActivityToolbar";
 import { matchesFilter } from "./activityRow";
-import { sourceQuerySql } from "./activitySql";
+import { activityEngineFor } from "./activitySql";
 import { useActivityPoll } from "./useActivityPoll";
 import { useKillBackends } from "./useKillBackends";
 import "./Activity.css";
@@ -35,6 +36,8 @@ export function ActivityNode({ id, data, selected, width, height }: NodeProps<Ac
   const [selectedPids, setSelectedPids] = useState<ReadonlySet<number>>(() => new Set());
   const active = useAtomValue(activeConnectionAtom);
   const database = parseConnectionUrl(active?.connection.url ?? "")?.database ?? "";
+  const engine = useAtomValue(activeEngineAtom);
+  const activity = activityEngineFor(engine);
 
   useScrollFallthrough(bodyRef);
 
@@ -83,7 +86,7 @@ export function ActivityNode({ id, data, selected, width, height }: NodeProps<Ac
   };
 
   const killPids = (pids: number[]) => {
-    kill(pids, selfPid, presentPids);
+    kill({ pids, selfPid, presentPids, engine });
     setSelectedPids(new Set());
   };
 
@@ -93,7 +96,7 @@ export function ActivityNode({ id, data, selected, width, height }: NodeProps<Ac
       return;
     }
     const sourceId = `${id}-source`;
-    const query = sourceQuerySql(data.minSecs);
+    const query = activity.sourceQuerySql(data.minSecs);
     const existing = canvas.getNode(sourceId);
     if (existing) {
       canvas.updateNodeData<QueryNode["data"]>(sourceId, { query });
@@ -153,6 +156,7 @@ export function ActivityNode({ id, data, selected, width, height }: NodeProps<Ac
                 displayedMs={row.durationMs === null ? null : row.durationMs + elapsed}
                 selected={selectedPids.has(row.pid)}
                 killState={states[row.pid]}
+                killLabel={activity.killLabel(row.pid)}
                 onToggleSelect={() => toggleSelected(row.pid)}
                 onKill={() => killPids([row.pid])}
               />
@@ -161,6 +165,7 @@ export function ActivityNode({ id, data, selected, width, height }: NodeProps<Ac
         </div>
 
         <ActivityFooter
+          sourceName={activity.sourceName}
           database={database}
           refreshedAgoSecs={Math.floor(elapsed / 1000)}
           selectedCount={selectedPids.size}

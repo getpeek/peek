@@ -150,14 +150,16 @@ export const ConnectionForm = ({
           <div className='picker-field'>
             <label className='picker-field-label' htmlFor='conn-url'>
               Connection URL
-              <span className='hint'>postgres://user:password@host:port/db</span>
+              <span className='hint'>
+                postgres://user:password@host:port/db or mysql://user:password@host:port/db
+              </span>
             </label>
             <div className='picker-input-row'>
               <input
                 id='conn-url'
                 className='picker-input mono'
                 type={revealPassword ? "text" : "password"}
-                placeholder='postgres://username:password@host/database'
+                placeholder='postgres:// or mysql:// connection URL'
                 value={url}
                 onChange={event => setUrl(event.target.value)}
                 spellCheck={false}

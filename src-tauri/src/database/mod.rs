@@ -35,3 +35,19 @@ pub(crate) trait Database: Send + Sync {
 
     async fn import_data(&mut self, data: ImportedData) -> Result<(), String>;
 }
+
+pub(crate) fn sanitize_table_name(name: &str) -> String {
+    let sanitized: String = name
+        .chars()
+        .filter(|c| c.is_alphanumeric() || *c == '_')
+        .collect::<String>()
+        .to_lowercase();
+
+    if sanitized.chars().next().is_some_and(char::is_numeric) {
+        format!("t_{sanitized}")
+    } else if sanitized.is_empty() {
+        "imported_table".to_string()
+    } else {
+        sanitized
+    }
+}
